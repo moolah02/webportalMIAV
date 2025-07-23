@@ -42,16 +42,12 @@ class Employee extends Authenticatable
     ];
 
     // Relationships
-    public function department()
-    {
-        return $this->belongsTo(Department::class);
-    }
+    
 
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
-    }
-
+   public function role()
+{
+    return $this->belongsTo(Role::class);
+}
     public function manager()
     {
         return $this->belongsTo(Employee::class, 'manager_id');
@@ -221,7 +217,10 @@ class Employee extends Authenticatable
     /**
      * Get employee's dashboard route based on role
      */
-    
+    public function department()
+{
+    return $this->belongsTo(Department::class);
+}
     public function getDashboardRoute(): string
     {
         if ($this->hasPermission('all') || $this->hasPermission('manage_team')) {

@@ -315,90 +315,148 @@ Update this section in your resources/views/layouts/app.blade.php
 ==============================================
 --}}
 
+{{-- 
+==============================================
+UNRESTRICTED SIDEBAR NAVIGATION
+Replace the <nav> section in your resources/views/layouts/app.blade.php
+==============================================
+--}}
+
 <nav>
-    @permission('view_dashboard')
+    {{-- Dashboard --}}
     <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
         📊 Dashboard
     </a>
-    @endpermission
     
-    @permission('manage_assets')
-    <div class="nav-section">Assets</div>
-    <a href="{{ route('assets.internal') }}" class="nav-sub">
-        💻 Internal Assets
+    {{-- Employee Dashboard for regular employees --}}
+    <a href="{{ route('employee.dashboard') }}" class="nav-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
+        📊 My Dashboard
     </a>
-    {{-- FIXED: Changed from assets.pos-terminals to pos-terminals.index --}}
-    <a href="{{ route('pos-terminals.index') }}" class="nav-sub">
+    
+    {{-- Technician Dashboard --}}
+    <a href="{{ route('technician.dashboard') }}" class="nav-item {{ request()->routeIs('technician.dashboard') ? 'active' : '' }}">
+        🔧 Technician Dashboard
+    </a>
+    
+    {{-- Assets Section --}}
+    <div class="nav-section">Assets</div>
+    
+    {{-- Asset Management --}}
+    <a href="{{ route('assets.index') }}" class="nav-sub {{ request()->routeIs('assets.*') ? 'active' : '' }}">
+        📦 Manage Assets
+    </a>
+    <a href="{{ route('pos-terminals.index') }}" class="nav-sub {{ request()->routeIs('pos-terminals.*') ? 'active' : '' }}">
         🖥️ POS Terminals
     </a>
-    <a href="{{ route('assets.requests') }}" class="nav-sub">
-        📝 Asset Requests
+    
+    {{-- Asset Requests --}}
+    <a href="{{ route('asset-requests.catalog') }}" class="nav-sub {{ request()->routeIs('asset-requests.catalog') ? 'active' : '' }}">
+        🛒 Request Assets
     </a>
-    <a href="{{ route('asset-approvals.index') }}" class="nav-sub">
+    <a href="{{ route('asset-requests.index') }}" class="nav-sub {{ request()->routeIs('asset-requests.index') ? 'active' : '' }}">
+        📝 My Requests
+    </a>
+    
+    {{-- Asset Approvals --}}
+    <a href="{{ route('asset-approvals.index') }}" class="nav-sub {{ request()->routeIs('asset-approvals.*') ? 'active' : '' }}">
         ⚖️ Asset Approvals
     </a>
-    <a href="{{ route('assets.licenses') }}" class="nav-sub">
-        🔑 Licenses
-    </a>
-    @endpermission
     
-    {{-- ADDED: Client Management Section --}}
-    @permission('view_clients')
+    {{-- Licenses --}}
+    <a href="{{ route('assets.licenses') }}" class="nav-sub {{ request()->routeIs('assets.licenses') ? 'active' : '' }}">
+        🔑 Business Licenses
+    </a>
+    
+    {{-- Client Management Section --}}
     <div class="nav-section">Client Management</div>
-    <a href="{{ route('clients.index') }}" class="nav-sub">
+    <a href="{{ route('clients.index') }}" class="nav-sub {{ request()->routeIs('clients.*') ? 'active' : '' }}">
         🏢 Clients
     </a>
     
-    @endpermission
-    
-    @permission('view_jobs')
-    <div class="nav-section">Technician</div>
-    <a href="{{ route('technician.jobs') }}" class="nav-sub">
-        🔧 My Jobs
-    </a>
-    <a href="{{ route('technician.reports') }}" class="nav-sub">
-        📋 Service Reports
-    </a>
-    @endpermission
-    
-    @permission('manage_team')
-    <div class="nav-section">Management</div>
-    <a href="{{ route('manager.team') }}" class="nav-sub">
-        👥 Team
-    </a>
-    <a href="{{ route('manager.approvals') }}" class="nav-sub">
-        📋 Approvals
-    </a>
-    {{-- ADDED: Technician Management --}}
-    <a href="{{ route('technicians.index') }}" class="nav-sub">
-        🔧 Technicians
-    </a>
-    @endpermission
-    
-    @admin
-    <div class="nav-section">Administration</div>
-    <a href="{{ route('admin.employees') }}" class="nav-sub">
+    {{-- Employee & Role Management Section --}}
+    <div class="nav-section">Employee Management</div>
+    <a href="{{ route('employees.index') }}" class="nav-sub {{ request()->routeIs('employees.*') ? 'active' : '' }}">
         👥 Employees
     </a>
-    <a href="{{ route('admin.settings') }}" class="nav-sub">
-        ⚙️ Settings
+    <a href="{{ route('roles.index') }}" class="nav-sub {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+        🔑 Role Management
     </a>
-    @endadmin
+    <a href="{{ route('technicians.index') }}" class="nav-sub {{ request()->routeIs('technicians.*') ? 'active' : '' }}">
+        🔧 Technicians
+    </a>
     
+    {{-- Technician Section --}}
+    <div class="nav-section">Technician</div>
+    <a href="{{ route('technician.jobs') }}" class="nav-sub {{ request()->routeIs('technician.jobs') ? 'active' : '' }}">
+        🔧 My Jobs
+    </a>
+    <a href="{{ route('technician.reports') }}" class="nav-sub {{ request()->routeIs('technician.reports') ? 'active' : '' }}">
+        📋 Service Reports
+    </a>
+    <a href="{{ route('technician.schedule') }}" class="nav-sub {{ request()->routeIs('technician.schedule') ? 'active' : '' }}">
+        📅 My Schedule
+    </a>
+    
+    {{-- Management Section --}}
+    <div class="nav-section">Management</div>
+    <a href="{{ route('manager.team') }}" class="nav-sub {{ request()->routeIs('manager.team') ? 'active' : '' }}">
+        👥 Team Overview
+    </a>
+    <a href="{{ route('manager.approvals') }}" class="nav-sub {{ request()->routeIs('manager.approvals') ? 'active' : '' }}">
+        📋 Pending Approvals
+    </a>
+    <a href="{{ route('manager.reports') }}" class="nav-sub {{ request()->routeIs('manager.reports') ? 'active' : '' }}">
+        📊 Team Reports
+    </a>
+    
+    {{-- Administration Section --}}
+    <div class="nav-section">Administration</div>
+    <a href="{{ route('admin.employees') }}" class="nav-sub {{ request()->routeIs('admin.employees') ? 'active' : '' }}">
+        👤 Employee Admin
+    </a>
+    <a href="{{ route('admin.roles') }}" class="nav-sub {{ request()->routeIs('admin.roles') ? 'active' : '' }}">
+        🔐 Role Admin
+    </a>
+    <a href="{{ route('admin.departments') }}" class="nav-sub {{ request()->routeIs('admin.departments') ? 'active' : '' }}">
+        🏢 Departments
+    </a>
+    <a href="{{ route('admin.settings') }}" class="nav-sub {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+        ⚙️ System Settings
+    </a>
+    
+    {{-- Reports Section --}}
+    <div class="nav-section">Reports & Analytics</div>
+    <a href="{{ route('reports.index') }}" class="nav-sub {{ request()->routeIs('reports.index') ? 'active' : '' }}">
+        📊 Reports Dashboard
+    </a>
+    <a href="{{ route('reports.builder') }}" class="nav-sub {{ request()->routeIs('reports.builder') ? 'active' : '' }}">
+        🔨 Report Builder
+    </a>
+    
+    {{-- General Section --}}
     <div class="nav-section">General</div>
-    <a href="{{ route('tickets.index') }}" class="nav-sub">
-        🎫 Tickets
+    <a href="{{ route('tickets.index') }}" class="nav-sub {{ request()->routeIs('tickets.*') ? 'active' : '' }}">
+        🎫 Support Tickets
     </a>
-    <a href="{{ route('reports.index') }}" class="nav-sub">
-        📊 Reports
-    </a>
-    <a href="{{ route('documents.index') }}" class="nav-sub">
+    <a href="{{ route('documents.index') }}" class="nav-sub {{ request()->routeIs('documents.*') ? 'active' : '' }}">
         📁 Documents
     </a>
-    <a href="{{ route('profile.index') }}" class="nav-sub">
-        👤 Profile
+    
+    {{-- Document Upload --}}
+    <a href="{{ route('documents.upload') }}" class="nav-sub {{ request()->routeIs('documents.upload') ? 'active' : '' }}">
+        📤 Upload Documents
     </a>
     
+    {{-- Profile Section --}}
+    <div class="nav-section">My Account</div>
+    <a href="{{ route('profile.index') }}" class="nav-sub {{ request()->routeIs('profile.index') ? 'active' : '' }}">
+        👤 My Profile
+    </a>
+    <a href="{{ route('profile.edit') }}" class="nav-sub {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+        ✏️ Edit Profile
+    </a>
+    
+    {{-- Logout --}}
     <form method="POST" action="{{ route('logout') }}" class="nav-item logout-form">
         @csrf
         <button type="submit" class="logout-btn">

@@ -1,0 +1,1 @@
+"\n?? Has 'all' permission: " . ($admin- ? 'YES' : 'NO');

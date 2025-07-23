@@ -86,62 +86,70 @@ class AssetController extends Controller
     return view('assets.index', compact('assets', 'categories', 'stats'));
 }
     // Create new asset form
-    public function create()
-    {
-        return view('assets.create');
-    }
+   // In your AssetController.php, update the create method:
+public function create()
+{
+    // Get existing categories for dropdown
+    $categories = Asset::select('category')
+        ->distinct()
+        ->whereNotNull('category')
+        ->orderBy('category')
+        ->pluck('category');
+
+    return view('assets.create', compact('categories'));
+}
 
     // Store new asset
     public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'brand' => 'nullable|string|max:255',
-            'model' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'unit_price' => 'required|numeric|min:0',
-            'currency' => 'required|string|in:USD,EUR,GBP',
-            'stock_quantity' => 'required|integer|min:0',
-            'min_stock_level' => 'required|integer|min:0',
-            'sku' => 'nullable|string|unique:assets,sku',
-            'barcode' => 'nullable|string',
-            'image_url' => 'nullable|url',
-            'notes' => 'nullable|string',
-            'status' => 'required|in:active,inactive,discontinued',
-            'is_requestable' => 'boolean',
-            'requires_approval' => 'boolean',
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'category' => 'required|string|max:255',
+        'brand' => 'nullable|string|max:255',
+        'model' => 'nullable|string|max:255',
+        'description' => 'nullable|string',
+        'unit_price' => 'required|numeric|min:0',
+        'currency' => 'required|string|in:USD,EUR,GBP',
+        'stock_quantity' => 'required|integer|min:0',
+        'min_stock_level' => 'required|integer|min:0',
+        'sku' => 'nullable|string|unique:assets,sku',
+        'barcode' => 'nullable|string',
+        'image_url' => 'nullable|url',
+        'notes' => 'nullable|string',
+        'status' => 'nullable|in:active,inactive,discontinued',
+        'is_requestable' => 'boolean',
+        'requires_approval' => 'boolean',
+    ]);
+
+    try {
+        Asset::create([
+            'name' => $request->name,
+            'category' => $request->category,
+            'brand' => $request->brand,
+            'model' => $request->model,
+            'description' => $request->description,
+            'unit_price' => $request->unit_price,
+            'currency' => $request->currency,
+            'stock_quantity' => $request->stock_quantity,
+            'min_stock_level' => $request->min_stock_level,
+            'sku' => $request->sku,
+            'barcode' => $request->barcode,
+            'image_url' => $request->image_url,
+            'notes' => $request->notes,
+            'status' => $request->status ?? 'active',
+            'is_requestable' => $request->has('is_requestable'),
+            'requires_approval' => $request->has('requires_approval'),
         ]);
 
-        try {
-            Asset::create([
-                'name' => $request->name,
-                'category' => $request->category,
-                'brand' => $request->brand,
-                'model' => $request->model,
-                'description' => $request->description,
-                'unit_price' => $request->unit_price,
-                'currency' => $request->currency,
-                'stock_quantity' => $request->stock_quantity,
-                'min_stock_level' => $request->min_stock_level,
-                'sku' => $request->sku,
-                'barcode' => $request->barcode,
-                'image_url' => $request->image_url,
-                'notes' => $request->notes,
-                'status' => $request->status,
-                'is_requestable' => $request->has('is_requestable'),
-                'requires_approval' => $request->has('requires_approval'),
-            ]);
+        return redirect()->route('assets.index')
+            ->with('success', 'Asset created successfully!');
 
-            return redirect()->route('assets.index')
-                ->with('success', 'Asset created successfully!');
-
-        } catch (\Exception $e) {
-            return back()
-                ->with('error', 'Failed to create asset. Please try again.')
-                ->withInput();
-        }
+    } catch (\Exception $e) {
+        return back()
+            ->with('error', 'Failed to create asset. Please try again.')
+            ->withInput();
     }
+}
 
     // View single asset
     public function show(Asset $asset)

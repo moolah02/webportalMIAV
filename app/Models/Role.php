@@ -1,7 +1,4 @@
 <?php
-// 2. ROLE MODEL
-// File: app/Models/Role.php
-// ==============================================
 
 namespace App\Models;
 
@@ -21,13 +18,13 @@ class Role extends Model
         'permissions' => 'array'
     ];
 
-    // Relationships
+    // CHANGE THIS: Use hasMany instead of belongsToMany
     public function employees()
     {
-        return $this->hasMany(Employee::class);
+        return $this->hasMany(Employee::class); // NOT belongsToMany
     }
 
-    // Helper methods
+    // Helper methods (keep these the same)
     public function hasPermission($permission)
     {
         return in_array($permission, $this->permissions ?? []) || in_array('all', $this->permissions ?? []);

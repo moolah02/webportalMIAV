@@ -11,16 +11,20 @@ class CheckPermission
 {
     public function handle(Request $request, Closure $next, string $permission): Response
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
-
-        $employee = Auth::user();
-        
-        if (!$employee->hasPermission($permission)) {
-            abort(403, 'Unauthorized. You do not have the required permission: ' . $permission);
-        }
-
+        // ─── TEMPORARY: ALLOW ALL ACCESS ─────────────────────────────
         return $next($request);
+        // ──────────────────────────────────────────────────────────────
+
+        // ORIGINAL LOGIC (commented out for now)
+        // if (! Auth::check()) {
+        //     return redirect()->route('login');
+        // }
+        //
+        // $employee = Auth::user();
+        // if (! $employee->hasPermission($permission)) {
+        //     abort(403, 'Unauthorized. You do not have the required permission: ' . $permission);
+        // }
+        //
+        // return $next($request);
     }
 }
