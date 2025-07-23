@@ -1,0 +1,8 @@
+?>
+@extends('layouts.app')
+@section('content')
+<div style="background: white; border-radius: 8px; padding: 20px;">
+    <h3>My Profile</h3>
+    <p>Profile management interface will be built here.</p>
+</div>
+@endsection
