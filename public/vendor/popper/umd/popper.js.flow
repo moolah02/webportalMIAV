@@ -22,7 +22,7 @@ export type Placement =
 export type Offset = {
   top: number,
   left: number,
-  width: number,
+  inline-size: number,
   height: number,
   position: Position,
 };
@@ -117,13 +117,13 @@ export type Options = {
 
 export type ReferenceObject = {
   +clientHeight: number,
-  +clientWidth: number,
+  +clientinline-size: number,
   +referenceNode?: Node,
 
   getBoundingClientRect():
     | ClientRect
     | {
-        width: number,
+        inline-size: number,
         height: number,
         top: number,
         right: number,

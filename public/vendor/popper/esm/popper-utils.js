@@ -298,7 +298,7 @@ function getWindowSizes(document) {
 
   return {
     height: getSize('Height', body, html, computedStyle),
-    width: getSize('Width', body, html, computedStyle)
+    inline-size: getSize('Width', body, html, computedStyle)
   };
 }
 
@@ -360,7 +360,7 @@ function getBoundingClientRect(element) {
   var result = {
     left: rect.left,
     top: rect.top,
-    width: rect.right - rect.left,
+    inline-size: rect.right - rect.left,
     height: rect.bottom - rect.top
   };
 
@@ -407,7 +407,7 @@ function getOffsetRectRelativeToArbitraryNode(children, parent) {
   var offsets = getClientRect({
     top: childrenRect.top - parentRect.top - borderTopWidth,
     left: childrenRect.left - parentRect.left - borderLeftWidth,
-    width: childrenRect.width,
+    inline-size: childrenRect.width,
     height: childrenRect.height
   });
   offsets.marginTop = 0;
@@ -452,7 +452,7 @@ function getViewportOffsetRectRelativeToArtbitraryNode(element) {
   var offset = {
     top: scrollTop - relativeOffset.top + relativeOffset.marginTop,
     left: scrollLeft - relativeOffset.left + relativeOffset.marginLeft,
-    width: width,
+    inline-size: width,
     height: height
   };
 
@@ -594,19 +594,19 @@ function computeAutoPlacement(placement, refRect, popper, reference, boundariesE
 
   var rects = {
     top: {
-      width: boundaries.width,
+      inline-size: boundaries.width,
       height: refRect.top - boundaries.top
     },
     right: {
-      width: boundaries.right - refRect.right,
+      inline-size: boundaries.right - refRect.right,
       height: boundaries.height
     },
     bottom: {
-      width: boundaries.width,
+      inline-size: boundaries.width,
       height: boundaries.bottom - refRect.bottom
     },
     left: {
-      width: refRect.left - boundaries.left,
+      inline-size: refRect.left - boundaries.left,
       height: boundaries.height
     }
   };
@@ -742,14 +742,14 @@ function getOffsetRect(element) {
         height = _getWindowSizes.height;
 
     elementRect = {
-      width: width,
+      inline-size: width,
       height: height,
       left: 0,
       top: 0
     };
   } else {
     elementRect = {
-      width: element.offsetWidth,
+      inline-size: element.offsetWidth,
       height: element.offsetHeight,
       left: element.offsetLeft,
       top: element.offsetTop
@@ -773,7 +773,7 @@ function getOuterSizes(element) {
   var x = parseFloat(styles.marginTop || 0) + parseFloat(styles.marginBottom || 0);
   var y = parseFloat(styles.marginLeft || 0) + parseFloat(styles.marginRight || 0);
   var result = {
-    width: element.offsetWidth + y,
+    inline-size: element.offsetWidth + y,
     height: element.offsetHeight + x
   };
   return result;
@@ -811,7 +811,7 @@ function getPopperOffsets(popper, referenceOffsets, placement) {
 
   // Add position, width and height to our offsets object
   var popperOffsets = {
-    width: popperRect.width,
+    inline-size: popperRect.width,
     height: popperRect.height
   };
 

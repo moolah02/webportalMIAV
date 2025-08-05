@@ -9,7 +9,7 @@ File: resources/views/employees/show.blade.php
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <a href="{{ route('employees.index') }}" class="btn" style="text-decoration: none;">
@@ -35,8 +35,8 @@ File: resources/views/employees/show.blade.php
         <!-- Left Column - Profile Card -->
         <div class="profile-card">
             <!-- Avatar -->
-            <div style="text-align: center; margin-bottom: 25px;">
-                <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; font-weight: bold; margin: 0 auto 15px;">
+            <div style="text-align: center; margin-block-end: 25px;">
+                <div style="inline-size: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; font-weight: bold; margin: 0 auto 15px;">
                     {{ substr($employee->first_name ?? 'N', 0, 1) }}{{ substr($employee->last_name ?? 'A', 0, 1) }}
                 </div>
                 <h3 style="margin: 0; color: #333;">{{ $employee->first_name }} {{ $employee->last_name }}</h3>
@@ -56,7 +56,7 @@ File: resources/views/employees/show.blade.php
             </div>
 
             <!-- Quick Info -->
-            <div style="border-top: 1px solid #eee; padding-top: 20px;">
+            <div style="border-block-start: 1px solid #eee; padding-top: 20px;">
                 <div class="info-item">
                     <strong>Employee ID:</strong>
                     <span>{{ $employee->employee_number ?? $employee->id }}</span>
@@ -101,8 +101,8 @@ File: resources/views/employees/show.blade.php
                 @endphp
                 
                 @if($role)
-                    <div style="margin-bottom: 15px;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <div style="margin-block-end: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-block-end: 10px;">
                             <span style="background: #e3f2fd; color: #1976d2; padding: 5px 12px; border-radius: 15px; font-size: 14px; font-weight: 500;">
                                 {{ ucfirst(str_replace('_', ' ', $role->name)) }}
                             </span>
@@ -115,7 +115,7 @@ File: resources/views/employees/show.blade.php
                     </div>
                     
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 10px;">Permissions</div>
+                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 10px;">Permissions</div>
                         <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                             @if(is_array($role->permissions) && !empty($role->permissions))
                                 @foreach($role->permissions as $permission)
@@ -155,7 +155,7 @@ File: resources/views/employees/show.blade.php
                 </h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
-                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;">Department</div>
+                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px;">Department</div>
                         <div style="font-size: 16px; color: #333;">
                             @php
                                 try {
@@ -168,7 +168,7 @@ File: resources/views/employees/show.blade.php
                         </div>
                     </div>
                     <div>
-                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;">Reports To</div>
+                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px;">Reports To</div>
                         <div style="font-size: 16px; color: #333;">
                             @php
                                 try {
@@ -190,15 +190,15 @@ File: resources/views/employees/show.blade.php
                 </h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
-                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;">Time Zone</div>
+                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px;">Time Zone</div>
                         <div style="font-size: 16px; color: #333;">{{ $employee->time_zone ?? 'UTC' }}</div>
                     </div>
                     <div>
-                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;">Language</div>
+                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px;">Language</div>
                         <div style="font-size: 16px; color: #333;">{{ strtoupper($employee->language ?? 'EN') }}</div>
                     </div>
                     <div>
-                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;">Two Factor Auth</div>
+                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px;">Two Factor Auth</div>
                         <div style="font-size: 16px; color: #333;">
                             @if($employee->two_factor_enabled)
                                 <span style="color: #4caf50;">✅ Enabled</span>
@@ -208,7 +208,7 @@ File: resources/views/employees/show.blade.php
                         </div>
                     </div>
                     <div>
-                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;">Account Created</div>
+                        <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px;">Account Created</div>
                         <div style="font-size: 16px; color: #333;">{{ $employee->created_at->format('M d, Y') }}</div>
                     </div>
                 </div>
@@ -238,11 +238,11 @@ File: resources/views/employees/show.blade.php
     justify-content: space-between;
     align-items: center;
     padding: 8px 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-block-end: 1px solid #f0f0f0;
 }
 
 .info-item:last-child {
-    border-bottom: none;
+    border-block-end: none;
 }
 
 .status-badge {

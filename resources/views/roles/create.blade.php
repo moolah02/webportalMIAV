@@ -9,7 +9,7 @@ File: resources/views/roles/create.blade.php
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <h2 style="margin: 0; color: #333;">🔑 Create New Role</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Define a new role with specific permissions</p>
@@ -24,32 +24,32 @@ File: resources/views/roles/create.blade.php
             <!-- Main Form -->
             <div>
                 <!-- Basic Information -->
-                <div class="content-card" style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 20px; color: #333;">📋 Role Information</h4>
+                <div class="content-card" style="margin-block-end: 20px;">
+                    <h4 style="margin-block-end: 20px; color: #333;">📋 Role Information</h4>
                     
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Role Name *</label>
+                    <div style="margin-block-end: 20px;">
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Role Name *</label>
                         <input type="text" name="name" value="{{ old('name') }}" required
                                placeholder="e.g., content_manager, sales_lead"
-                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">Use lowercase with underscores (will be displayed as "Content Manager")</div>
+                               style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                        <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Use lowercase with underscores (will be displayed as "Content Manager")</div>
                         @error('name')
-                            <div style="color: #f44336; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
 
                 <!-- Permissions -->
                 <div class="content-card">
-                    <h4 style="margin-bottom: 20px; color: #333;">🔐 Permissions</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;">🔐 Permissions</h4>
                     
                     @php
                         $groupedPermissions = collect($allPermissions)->groupBy('category');
                     @endphp
                     
                     @foreach($groupedPermissions as $category => $permissions)
-                    <div style="margin-bottom: 25px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
-                        <h6 style="color: #333; margin-bottom: 15px; text-transform: capitalize; display: flex; align-items: center; gap: 8px;">
+                    <div style="margin-block-end: 25px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
+                        <h6 style="color: #333; margin-block-end: 15px; text-transform: capitalize; display: flex; align-items: center; gap: 8px;">
                             @switch($category)
                                 @case('admin')
                                     <span style="color: #f44336;">⚡</span> Admin
@@ -85,7 +85,7 @@ File: resources/views/roles/create.blade.php
                                            {{ in_array($key, old('permissions', [])) ? 'checked' : '' }}
                                            onchange="updatePermissionCard(this)">
                                     <div style="flex: 1;">
-                                        <div style="font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                                        <div style="font-weight: 500; margin-block-end: 4px; display: flex; align-items: center; gap: 8px;">
                                             {{ $permission['name'] }}
                                             @if(isset($permission['danger']) && $permission['danger'])
                                                 <span style="background: #ffebee; color: #d32f2f; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
@@ -107,8 +107,8 @@ File: resources/views/roles/create.blade.php
             <!-- Sidebar -->
             <div>
                 <!-- Selected Permissions Preview -->
-                <div class="content-card" style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 15px; color: #333;">📋 Selected Permissions</h4>
+                <div class="content-card" style="margin-block-end: 20px;">
+                    <h4 style="margin-block-end: 15px; color: #333;">📋 Selected Permissions</h4>
                     
                     <div id="selected-permissions" style="min-height: 100px;">
                         <div style="color: #666; font-style: italic; text-align: center; padding: 20px;">
@@ -118,8 +118,8 @@ File: resources/views/roles/create.blade.php
                 </div>
 
                 <!-- Role Templates -->
-                <div class="content-card" style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 15px; color: #333;">🎨 Quick Templates</h4>
+                <div class="content-card" style="margin-block-end: 20px;">
+                    <h4 style="margin-block-end: 15px; color: #333;">🎨 Quick Templates</h4>
                     
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <button type="button" onclick="applyTemplate('basic_employee')" class="template-btn">
@@ -141,15 +141,15 @@ File: resources/views/roles/create.blade.php
                 </div>
 
                 <!-- Permission Summary -->
-                <div class="content-card" style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 15px; color: #333;">📊 Summary</h4>
+                <div class="content-card" style="margin-block-end: 20px;">
+                    <h4 style="margin-block-end: 15px; color: #333;">📊 Summary</h4>
                     
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-block-end: 10px;">
                         <span>Total Permissions:</span>
                         <span id="total-count" style="font-weight: bold;">0</span>
                     </div>
                     
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-block-end: 10px;">
                         <span>Admin Level:</span>
                         <span id="admin-level" style="font-weight: bold; color: #4caf50;">Safe</span>
                     </div>
@@ -163,10 +163,10 @@ File: resources/views/roles/create.blade.php
                 <!-- Submit Buttons -->
                 <div class="content-card">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px;">
+                        <button type="submit" class="btn btn-primary" style="inline-size: 100%; padding: 15px;">
                             🎉 Create Role
                         </button>
-                        <a href="{{ route('roles.index') }}" class="btn" style="width: 100%; text-align: center;">
+                        <a href="{{ route('roles.index') }}" class="btn" style="inline-size: 100%; text-align: center;">
                             Cancel
                         </a>
                     </div>

@@ -4,7 +4,7 @@
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <h2 style="margin: 0; color: #333;">⚖️ Asset Request Approvals</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Review and approve employee asset requests</p>
@@ -15,7 +15,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-block-end: 30px;">
         <div class="metric-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="font-size: 32px;">⏳</div>
@@ -58,7 +58,7 @@
     </div>
 
     <!-- Filters -->
-    <div class="content-card" style="margin-bottom: 20px;">
+    <div class="content-card" style="margin-block-end: 20px;">
         <form method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
             <select name="status" style="padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
                 <option value="">All Status</option>
@@ -92,7 +92,7 @@
 
     <!-- Bulk Actions -->
     @if($requests->where('status', 'pending')->count() > 0)
-    <div class="content-card" style="margin-bottom: 20px; background: #fff3e0; border-left: 4px solid #ff9800;">
+    <div class="content-card" style="margin-block-end: 20px; background: #fff3e0; border-inline-start: 4px solid #ff9800;">
         <form action="{{ route('asset-approvals.bulk-action') }}" method="POST" style="display: flex; gap: 15px; align-items: center;">
             @csrf
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -116,19 +116,19 @@
 
     <!-- Requests List -->
     @forelse($requests as $request)
-    <div class="content-card request-card" style="margin-bottom: 15px; {{ $request->priority === 'urgent' ? 'border-left: 4px solid #f44336;' : ($request->priority === 'high' ? 'border-left: 4px solid #ff9800;' : '') }}">
+    <div class="content-card request-card" style="margin-block-end: 15px; {{ $request->priority === 'urgent' ? 'border-inline-start: 4px solid #f44336;' : ($request->priority === 'high' ? 'border-inline-start: 4px solid #ff9800;' : '') }}">
         <div style="display: flex; align-items: start; gap: 20px;">
             <!-- Checkbox for bulk actions -->
             @if($request->status === 'pending')
-            <input type="checkbox" name="request_ids[]" value="{{ $request->id }}" class="request-checkbox" style="margin-top: 5px; transform: scale(1.2);">
+            <input type="checkbox" name="request_ids[]" value="{{ $request->id }}" class="request-checkbox" style="margin-block-start: 5px; transform: scale(1.2);">
             @endif
 
             <!-- Request Details -->
             <div style="flex: 1;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-block-end: 10px;">
                     <div>
                         <h4 style="margin: 0; color: #333;">{{ $request->request_number }}</h4>
-                        <div style="color: #666; font-size: 14px; margin-top: 2px;">
+                        <div style="color: #666; font-size: 14px; margin-block-start: 2px;">
                             By {{ $request->employee->full_name }} • {{ $request->created_at->format('M d, Y \a\t g:i A') }}
                             @if($request->employee->department)
                             • {{ $request->employee->department->name }}
@@ -146,13 +146,13 @@
                 </div>
 
                 <!-- Business Justification -->
-                <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
-                    <div style="font-weight: 500; margin-bottom: 5px; font-size: 14px; color: #333;">Business Justification:</div>
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-block-end: 10px;">
+                    <div style="font-weight: 500; margin-block-end: 5px; font-size: 14px; color: #333;">Business Justification:</div>
                     <div style="color: #666; font-size: 14px;">{{ Str::limit($request->business_justification, 200) }}</div>
                 </div>
 
                 <!-- Items Summary -->
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-block-end: 10px;">
                     @foreach($request->items->take(4) as $item)
                     <span style="background: white; border: 1px solid #ddd; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
                         {{ $item->quantity_requested }}× {{ Str::limit($item->asset->name, 20) }}
@@ -177,7 +177,7 @@
             </div>
 
             <!-- Actions -->
-            <div style="display: flex; flex-direction: column; gap: 8px; min-width: 140px;">
+            <div style="display: flex; flex-direction: column; gap: 8px; min-inline-size: 140px;">
                 <a href="{{ route('asset-approvals.show', $request) }}" class="btn btn-small" style="text-align: center;">
                     Review Details
                 </a>
@@ -197,7 +197,7 @@
     </div>
     @empty
     <div class="content-card" style="text-align: center; padding: 60px;">
-        <div style="font-size: 64px; margin-bottom: 20px;">⚖️</div>
+        <div style="font-size: 64px; margin-block-end: 20px;">⚖️</div>
         <h3>No requests to review</h3>
         <p style="color: #666;">All requests have been processed or no requests match your filters.</p>
     </div>
@@ -205,7 +205,7 @@
 
     <!-- Pagination -->
     @if($requests->hasPages())
-    <div style="margin-top: 20px;">
+    <div style="margin-block-start: 20px;">
         {{ $requests->appends(request()->query())->links() }}
     </div>
     @endif
@@ -217,10 +217,10 @@
         <h3 style="margin: 0 0 20px 0;">✅ Quick Approve Request</h3>
         <form id="quickApproveForm" method="POST">
             @csrf
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Approval Notes (Optional)</label>
+            <div style="margin-block-end: 15px;">
+                <label style="display: block; margin-block-end: 5px; font-weight: 500;">Approval Notes (Optional)</label>
                 <textarea name="approval_notes" rows="3" placeholder="Any notes for the requester..."
-                          style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;"></textarea>
+                          style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;"></textarea>
             </div>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button type="button" onclick="closeModal()" class="btn">Cancel</button>
@@ -236,11 +236,11 @@
         <h3 style="margin: 0 0 20px 0; color: #f44336;">❌ Reject Request</h3>
         <form id="quickRejectForm" method="POST">
             @csrf
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #f44336;">Rejection Reason *</label>
+            <div style="margin-block-end: 15px;">
+                <label style="display: block; margin-block-end: 5px; font-weight: 500; color: #f44336;">Rejection Reason *</label>
                 <textarea name="rejection_reason" rows="4" required placeholder="Please explain why this request is being rejected..."
-                          style="width: 100%; padding: 8px; border: 2px solid #f44336; border-radius: 4px;"></textarea>
-                <div style="font-size: 12px; color: #666; margin-top: 5px;">This reason will be visible to the employee</div>
+                          style="inline-size: 100%; padding: 8px; border: 2px solid #f44336; border-radius: 4px;"></textarea>
+                <div style="font-size: 12px; color: #666; margin-block-start: 5px;">This reason will be visible to the employee</div>
             </div>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button type="button" onclick="closeModal()" class="btn">Cancel</button>
@@ -332,7 +332,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    inline-size: 100%;
     height: 100%;
     background: rgba(0,0,0,0.5);
     z-index: 1000;
@@ -346,11 +346,12 @@
     background: white;
     padding: 30px;
     border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
+    inline-size: 90%;
+    max-inline-size: 500px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 </style>
+
 
 <script>
 // Bulk selection
@@ -375,12 +376,43 @@ function showQuickReject(requestId) {
 function closeModal() {
     document.getElementById('quickApproveModal').style.display = 'none';
     document.getElementById('quickRejectModal').style.display = 'none';
+    
+    // Clear form data
+    document.getElementById('quickApproveForm').reset();
+    document.getElementById('quickRejectForm').reset();
 }
 
 // Close modal on backdrop click
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal')) {
         closeModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
+
+// Add confirmation for quick actions
+document.getElementById('quickApproveForm').addEventListener('submit', function(e) {
+    if (!confirm('Are you sure you want to approve this request? All items will be approved with their requested quantities.')) {
+        e.preventDefault();
+    }
+});
+
+document.getElementById('quickRejectForm').addEventListener('submit', function(e) {
+    const reason = this.querySelector('textarea[name="rejection_reason"]').value.trim();
+    if (reason.length < 10) {
+        e.preventDefault();
+        alert('Please provide a detailed rejection reason (at least 10 characters).');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to reject this request? This action cannot be undone.')) {
+        e.preventDefault();
     }
 });
 
@@ -391,6 +423,21 @@ document.querySelector('form[action*="bulk-action"]').addEventListener('submit',
     if (selectedRequests.length === 0) {
         e.preventDefault();
         alert('Please select at least one request.');
+        return;
+    }
+    
+    const actionSelect = this.querySelector('select[name="action"]');
+    if (!actionSelect.value) {
+        e.preventDefault();
+        alert('Please select an action.');
+        return;
+    }
+    
+    // Confirmation message
+    const action = actionSelect.value;
+    const actionText = action === 'approve' ? 'approve' : 'reject';
+    if (!confirm(`Are you sure you want to ${actionText} ${selectedRequests.length} request(s)?`)) {
+        e.preventDefault();
         return;
     }
     

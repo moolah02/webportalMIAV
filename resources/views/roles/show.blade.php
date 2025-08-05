@@ -9,7 +9,7 @@ File: resources/views/roles/show.blade.php
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <h2 style="margin: 0; color: #333;">
                 🔑 {{ ucfirst(str_replace('_', ' ', $role->name)) }}
@@ -29,30 +29,30 @@ File: resources/views/roles/show.blade.php
         <!-- Main Content -->
         <div>
             <!-- Role Information -->
-            <div class="content-card" style="margin-bottom: 20px;">
-                <h4 style="margin-bottom: 20px; color: #333;">📋 Role Information</h4>
+            <div class="content-card" style="margin-block-end: 20px;">
+                <h4 style="margin-block-end: 20px; color: #333;">📋 Role Information</h4>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
-                        <div style="margin-bottom: 15px;">
-                            <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Role Name</div>
+                        <div style="margin-block-end: 15px;">
+                            <div style="font-weight: 600; color: #333; margin-block-end: 5px;">Role Name</div>
                             <div style="color: #666;">{{ $role->name }}</div>
                         </div>
                         
-                        <div style="margin-bottom: 15px;">
-                            <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Display Name</div>
+                        <div style="margin-block-end: 15px;">
+                            <div style="font-weight: 600; color: #333; margin-block-end: 5px;">Display Name</div>
                             <div style="color: #666;">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</div>
                         </div>
                     </div>
                     
                     <div>
-                        <div style="margin-bottom: 15px;">
-                            <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Assigned Employees</div>
+                        <div style="margin-block-end: 15px;">
+                            <div style="font-weight: 600; color: #333; margin-block-end: 5px;">Assigned Employees</div>
                             <div style="color: #666; font-size: 24px; font-weight: bold;">{{ $role->employees->count() }}</div>
                         </div>
                         
-                        <div style="margin-bottom: 15px;">
-                            <div style="font-weight: 600; color: #333; margin-bottom: 5px;">Total Permissions</div>
+                        <div style="margin-block-end: 15px;">
+                            <div style="font-weight: 600; color: #333; margin-block-end: 5px;">Total Permissions</div>
                             <div style="color: #666; font-size: 24px; font-weight: bold;">{{ count($role->permissions ?? []) }}</div>
                         </div>
                     </div>
@@ -60,12 +60,12 @@ File: resources/views/roles/show.blade.php
             </div>
 
             <!-- Permissions Details -->
-            <div class="content-card" style="margin-bottom: 20px;">
-                <h4 style="margin-bottom: 20px; color: #333;">🔐 Permissions</h4>
+            <div class="content-card" style="margin-block-end: 20px;">
+                <h4 style="margin-block-end: 20px; color: #333;">🔐 Permissions</h4>
                 
                 @if(empty($role->permissions))
                     <div style="text-align: center; padding: 40px; color: #666;">
-                        <div style="font-size: 48px; margin-bottom: 15px;">🔒</div>
+                        <div style="font-size: 48px; margin-block-end: 15px;">🔒</div>
                         <div>No permissions assigned to this role</div>
                     </div>
                 @else
@@ -77,8 +77,8 @@ File: resources/views/roles/show.blade.php
                     @endphp
                     
                     @foreach($groupedPermissions as $category => $categoryPermissions)
-                    <div style="margin-bottom: 25px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
-                        <h6 style="color: #333; margin-bottom: 15px; text-transform: capitalize; display: flex; align-items: center; gap: 8px;">
+                    <div style="margin-block-end: 25px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
+                        <h6 style="color: #333; margin-block-end: 15px; text-transform: capitalize; display: flex; align-items: center; gap: 8px;">
                             @switch($category)
                                 @case('admin')
                                     <span style="color: #f44336;">⚡</span> Admin
@@ -106,7 +106,7 @@ File: resources/views/roles/show.blade.php
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px;">
                             @foreach($categoryPermissions as $key => $permission)
                             <div style="border: 1px solid #ddd; border-radius: 6px; padding: 12px; background: #f8f9fa;">
-                                <div style="font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                                <div style="font-weight: 500; margin-block-end: 4px; display: flex; align-items: center; gap: 8px;">
                                     {{ $permission['name'] }}
                                     @if(isset($permission['danger']) && $permission['danger'])
                                         <span style="background: #ffebee; color: #d32f2f; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
@@ -126,13 +126,13 @@ File: resources/views/roles/show.blade.php
             <!-- Assigned Employees -->
             @if($role->employees->count() > 0)
             <div class="content-card">
-                <h4 style="margin-bottom: 20px; color: #333;">👥 Assigned Employees</h4>
+                <h4 style="margin-block-end: 20px; color: #333;">👥 Assigned Employees</h4>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
                     @foreach($role->employees as $employee)
                     <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: #f8f9fa;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-block-end: 10px;">
+                            <div style="inline-size: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
                                 {{ substr($employee->first_name, 0, 1) }}{{ substr($employee->last_name, 0, 1) }}
                             </div>
                             <div>
@@ -142,7 +142,7 @@ File: resources/views/roles/show.blade.php
                         </div>
                         
                         @if($employee->department)
-                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+                        <div style="font-size: 12px; color: #666; margin-block-end: 5px;">
                             🏢 {{ $employee->department->name }}
                         </div>
                         @endif
@@ -165,20 +165,20 @@ File: resources/views/roles/show.blade.php
         <!-- Sidebar -->
         <div>
             <!-- Quick Actions -->
-            <div class="content-card" style="margin-bottom: 20px;">
-                <h4 style="margin-bottom: 15px; color: #333;">⚡ Quick Actions</h4>
+            <div class="content-card" style="margin-block-end: 20px;">
+                <h4 style="margin-block-end: 15px; color: #333;">⚡ Quick Actions</h4>
                 
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="{{ route('roles.edit', $role) }}" class="btn btn-primary" style="width: 100%; text-align: center;">
+                    <a href="{{ route('roles.edit', $role) }}" class="btn btn-primary" style="inline-size: 100%; text-align: center;">
                         ✏️ Edit Role
                     </a>
                     
-                    <button onclick="cloneRole({{ $role->id }})" class="btn" style="width: 100%;">
+                    <button onclick="cloneRole({{ $role->id }})" class="btn" style="inline-size: 100%;">
                         📋 Clone Role
                     </button>
                     
                     @if(!in_array($role->name, ['super_admin', 'admin', 'manager', 'employee', 'technician']))
-                    <button onclick="deleteRole({{ $role->id }}, '{{ $role->name }}')" class="btn" style="width: 100%; color: #f44336; border-color: #f44336;">
+                    <button onclick="deleteRole({{ $role->id }}, '{{ $role->name }}')" class="btn" style="inline-size: 100%; color: #f44336; border-color: #f44336;">
                         🗑️ Delete Role
                     </button>
                     @endif
@@ -186,21 +186,21 @@ File: resources/views/roles/show.blade.php
             </div>
 
             <!-- Role Statistics -->
-            <div class="content-card" style="margin-bottom: 20px;">
-                <h4 style="margin-bottom: 15px; color: #333;">📊 Statistics</h4>
+            <div class="content-card" style="margin-block-end: 20px;">
+                <h4 style="margin-block-end: 15px; color: #333;">📊 Statistics</h4>
                 
-                <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div style="margin-block-end: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-block-end: 8px;">
                         <span style="color: #666;">Assigned Employees:</span>
                         <span style="font-weight: bold;">{{ $role->employees->count() }}</span>
                     </div>
                     
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-block-end: 8px;">
                         <span style="color: #666;">Active Employees:</span>
                         <span style="font-weight: bold;">{{ $role->employees->where('status', 'active')->count() }}</span>
                     </div>
                     
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-block-end: 8px;">
                         <span style="color: #666;">Total Permissions:</span>
                         <span style="font-weight: bold;">{{ count($role->permissions ?? []) }}</span>
                     </div>
@@ -236,7 +236,7 @@ File: resources/views/roles/show.blade.php
 
             <!-- Recent Activity -->
             <div class="content-card">
-                <h4 style="margin-bottom: 15px; color: #333;">📈 Recent Activity</h4>
+                <h4 style="margin-block-end: 15px; color: #333;">📈 Recent Activity</h4>
                 
                 <div style="color: #666; font-style: italic; text-align: center; padding: 20px;">
                     Activity tracking coming soon

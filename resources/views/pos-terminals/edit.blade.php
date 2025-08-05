@@ -3,7 +3,7 @@
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px;">
         <div>
             <h3 style="margin: 0;">Edit Terminal {{ $posTerminal->terminal_id }}</h3>
             <p style="color: #666; margin: 5px 0 0 0;">Update terminal information and settings</p>
@@ -21,11 +21,11 @@
             @method('PUT')
             
             <!-- Terminal Information -->
-            <div style="margin-bottom: 30px;">
-                <h4 style="margin-bottom: 15px; color: #333;">🖥️ Terminal Information</h4>
+            <div style="margin-block-end: 30px;">
+                <h4 style="margin-block-end: 15px; color: #333;">🖥️ Terminal Information</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Terminal ID *</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Terminal ID *</label>
                         <input type="text" name="terminal_id" value="{{ old('terminal_id', $posTerminal->terminal_id) }}" 
                                required style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                         @error('terminal_id')
@@ -34,7 +34,7 @@
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Client/Bank *</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Client/Bank *</label>
                         <select name="client_id" required style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                             @foreach($clients as $client)
                                 <option value="{{ $client->id }}" 
@@ -46,7 +46,7 @@
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Status</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status</label>
                         <select name="status" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                             <option value="active" {{ old('status', $posTerminal->status) == 'active' ? 'selected' : '' }}>Active</option>
                             <option value="offline" {{ old('status', $posTerminal->status) == 'offline' ? 'selected' : '' }}>Offline</option>
@@ -57,7 +57,7 @@
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Terminal Model</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Terminal Model</label>
                         <select name="terminal_model" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                             <option value="">Select Model</option>
                             <option value="Ingenico iWL220" {{ old('terminal_model', $posTerminal->terminal_model) == 'Ingenico iWL220' ? 'selected' : '' }}>Ingenico iWL220</option>
@@ -68,64 +68,64 @@
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Serial Number</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Serial Number</label>
                         <input type="text" name="serial_number" value="{{ old('serial_number', $posTerminal->serial_number) }}"
                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Installation Date</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Installation Date</label>
                         <input type="date" name="installation_date" 
-                               value="{{ old('installation_date', $posTerminal->installation_date?->format('Y-m-d')) }}"
+                               value="{{ old('installation_date', $posTerminal->installation_date ? $posTerminal->installation_date->format('Y-m-d') : '') }}"
                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Last Service Date</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Last Service Date</label>
                         <input type="date" name="last_service_date" 
-                               value="{{ old('last_service_date', $posTerminal->last_service_date?->format('Y-m-d')) }}"
+                               value="{{ old('last_service_date', $posTerminal->last_service_date ? $posTerminal->last_service_date->format('Y-m-d') : '') }}"
                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Next Service Due</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Next Service Due</label>
                         <input type="date" name="next_service_due" 
-                               value="{{ old('next_service_due', $posTerminal->next_service_due?->format('Y-m-d')) }}"
+                               value="{{ old('next_service_due', $posTerminal->next_service_due ? $posTerminal->next_service_due->format('Y-m-d') : '') }}"
                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                     </div>
                 </div>
             </div>
 
             <!-- Merchant Information -->
-            <div style="margin-bottom: 30px;">
-                <h4 style="margin-bottom: 15px; color: #333;">🏪 Merchant Information</h4>
+            <div style="margin-block-end: 30px;">
+                <h4 style="margin-block-end: 15px; color: #333;">🏪 Merchant Information</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Merchant Name *</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Merchant Name *</label>
                         <input type="text" name="merchant_name" value="{{ old('merchant_name', $posTerminal->merchant_name) }}" 
                                required style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Contact Person</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contact Person</label>
                         <input type="text" name="merchant_contact_person" value="{{ old('merchant_contact_person', $posTerminal->merchant_contact_person) }}"
                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Phone Number</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Phone Number</label>
                         <input type="text" name="merchant_phone" value="{{ old('merchant_phone', $posTerminal->merchant_phone) }}"
                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Email Address</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Email Address</label>
                         <input type="email" name="merchant_email" value="{{ old('merchant_email', $posTerminal->merchant_email) }}"
                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                     </div>
                     
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Business Type</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Business Type</label>
                         <select name="business_type" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                             <option value="">Select Type</option>
                             <option value="Retail" {{ old('business_type', $posTerminal->business_type) == 'Retail' ? 'selected' : '' }}>Retail</option>
@@ -140,40 +140,53 @@
             </div>
 
             <!-- Location Information -->
-            <div style="margin-bottom: 30px;">
-                <h4 style="margin-bottom: 15px; color: #333;">📍 Location Information</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="margin-block-end: 30px;">
+                <h4 style="margin-block-end: 15px; color: #333;">📍 Location Information</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <!-- Region -->
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Region</label>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Region</label>
                         <select name="region" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                             <option value="">Select Region</option>
-                            @foreach($regions as $region)
-                                <option value="{{ $region }}" {{ old('region', $posTerminal->region) == $region ? 'selected' : '' }}>
-                                    {{ $region }}
+                            @foreach($regions as $reg)
+                                <option value="{{ $reg }}" {{ old('region', $posTerminal->region) == $reg ? 'selected' : '' }}>
+                                    {{ $reg }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
-                    
+
+                    <!-- City -->
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Area/Suburb</label>
-                        <input type="text" name="area" value="{{ old('area', $posTerminal->area) }}"
-                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">City</label>
+                        <input type="text" name="city" value="{{ old('city', $posTerminal->city) }}"
+                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;"
+                               placeholder="e.g., Harare">
+                    </div>
+
+                    <!-- Province -->
+                    <div>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Province</label>
+                        <input type="text" name="province" value="{{ old('province', $posTerminal->province) }}"
+                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;"
+                               placeholder="e.g., Harare Province">
                     </div>
                 </div>
-                
-                <div style="margin-top: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Physical Address</label>
+
+                <!-- Physical Address -->
+                <div style="margin-top: 20px;">
+                    <label style="display: block; margin-block-end: 5px; font-weight: 500;">Physical Address</label>
                     <textarea name="physical_address" rows="3"
-                              style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">{{ old('physical_address', $posTerminal->physical_address) }}</textarea>
+                              style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;"
+                              placeholder="Full address...">{{ old('physical_address', $posTerminal->physical_address) }}</textarea>
                 </div>
             </div>
 
             <!-- Additional Information -->
-            <div style="margin-bottom: 30px;">
-                <h4 style="margin-bottom: 15px; color: #333;">📋 Additional Information</h4>
+            <div style="margin-block-end: 30px;">
+                <h4 style="margin-block-end: 15px; color: #333;">📋 Additional Information</h4>
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Contract Details</label>
+                    <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contract Details</label>
                     <textarea name="contract_details" rows="3"
                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">{{ old('contract_details', $posTerminal->contract_details) }}</textarea>
                 </div>
@@ -187,4 +200,43 @@
         </form>
     </div>
 </div>
+
+<style>
+.content-card {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    background-color: #e9ecef;
+    border-color: #2196f3;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+</style>
 @endsection

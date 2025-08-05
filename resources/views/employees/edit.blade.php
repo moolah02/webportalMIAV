@@ -9,7 +9,7 @@ File: resources/views/employees/edit.blade.php
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <a href="{{ route('employees.show', $employee) }}" class="btn" style="text-decoration: none;">
@@ -37,43 +37,43 @@ File: resources/views/employees/edit.blade.php
                         👤 Personal Information
                     </h4>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
-                            <label for="first_name" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">First Name *</label>
+                            <label for="first_name" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">First Name *</label>
                             <input type="text" id="first_name" name="first_name" value="{{ old('first_name', $employee->first_name) }}" 
-                                   style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
                             @error('first_name')
-                                <div style="color: #d32f2f; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
                         
                         <div>
-                            <label for="last_name" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Last Name *</label>
+                            <label for="last_name" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Last Name *</label>
                             <input type="text" id="last_name" name="last_name" value="{{ old('last_name', $employee->last_name) }}" 
-                                   style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
                             @error('last_name')
-                                <div style="color: #d32f2f; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
-                            <label for="email" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Email Address *</label>
+                            <label for="email" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Email Address *</label>
                             <input type="email" id="email" name="email" value="{{ old('email', $employee->email) }}" 
-                                   style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
                             @error('email')
-                                <div style="color: #d32f2f; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
                         
                         <div>
-                            <label for="phone" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Phone Number</label>
+                            <label for="phone" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Phone Number</label>
                             <input type="text" id="phone" name="phone" value="{{ old('phone', $employee->phone) }}" 
-                                   style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" 
+                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" 
                                    placeholder="+1 (555) 123-4567">
                             @error('phone')
-                                <div style="color: #d32f2f; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
@@ -85,10 +85,10 @@ File: resources/views/employees/edit.blade.php
                         🔑 Role & Department
                     </h4>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
-                            <label for="role_id" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Role *</label>
-                            <select id="role_id" name="role_id" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                            <label for="role_id" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Role *</label>
+                            <select id="role_id" name="role_id" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
                                 <option value="">Select Role</option>
                                 @php
                                     try {
@@ -107,13 +107,13 @@ File: resources/views/employees/edit.blade.php
                                 @endforeach
                             </select>
                             @error('role_id')
-                                <div style="color: #d32f2f; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
                         
                         <div>
-                            <label for="department_id" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Department</label>
-                            <select id="department_id" name="department_id" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <label for="department_id" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Department</label>
+                            <select id="department_id" name="department_id" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
                                 <option value="">Select Department</option>
                                 @php
                                     try {
@@ -133,31 +133,31 @@ File: resources/views/employees/edit.blade.php
                                 @endforeach
                             </select>
                             @error('department_id')
-                                <div style="color: #d32f2f; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
-                            <label for="status" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Status *</label>
-                            <select id="status" name="status" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                            <label for="status" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Status *</label>
+                            <select id="status" name="status" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
                                 <option value="active" {{ old('status', $employee->status) == 'active' ? 'selected' : '' }}>Active</option>
                                 <option value="inactive" {{ old('status', $employee->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
                                 <option value="pending" {{ old('status', $employee->status) == 'pending' ? 'selected' : '' }}>Pending</option>
                             </select>
                             @error('status')
-                                <div style="color: #d32f2f; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
                         
                         <div>
-                            <label for="hire_date" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Hire Date</label>
+                            <label for="hire_date" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Hire Date</label>
                             <input type="date" id="hire_date" name="hire_date" 
                                    value="{{ old('hire_date', $employee->hire_date ? \Carbon\Carbon::parse($employee->hire_date)->format('Y-m-d') : '') }}" 
-                                   style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
                             @error('hire_date')
-                                <div style="color: #d32f2f; font-size: 12px; margin-top: 5px;">{{ $message }}</div>
+                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
@@ -171,8 +171,8 @@ File: resources/views/employees/edit.blade.php
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
-                            <label for="time_zone" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Time Zone</label>
-                            <select id="time_zone" name="time_zone" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <label for="time_zone" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Time Zone</label>
+                            <select id="time_zone" name="time_zone" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
                                 <option value="UTC" {{ old('time_zone', $employee->time_zone) == 'UTC' ? 'selected' : '' }}>UTC</option>
                                 <option value="America/New_York" {{ old('time_zone', $employee->time_zone) == 'America/New_York' ? 'selected' : '' }}>Eastern Time</option>
                                 <option value="America/Chicago" {{ old('time_zone', $employee->time_zone) == 'America/Chicago' ? 'selected' : '' }}>Central Time</option>
@@ -182,8 +182,8 @@ File: resources/views/employees/edit.blade.php
                         </div>
                         
                         <div>
-                            <label for="language" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Language</label>
-                            <select id="language" name="language" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <label for="language" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Language</label>
+                            <select id="language" name="language" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
                                 <option value="en" {{ old('language', $employee->language) == 'en' ? 'selected' : '' }}>English</option>
                                 <option value="es" {{ old('language', $employee->language) == 'es' ? 'selected' : '' }}>Spanish</option>
                                 <option value="fr" {{ old('language', $employee->language) == 'fr' ? 'selected' : '' }}>French</option>
@@ -191,11 +191,11 @@ File: resources/views/employees/edit.blade.php
                         </div>
                     </div>
                     
-                    <div style="margin-top: 20px;">
+                    <div style="margin-block-start: 20px;">
                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                             <input type="checkbox" name="two_factor_enabled" value="1" 
                                    {{ old('two_factor_enabled', $employee->two_factor_enabled) ? 'checked' : '' }}
-                                   style="width: 18px; height: 18px;">
+                                   style="inline-size: 18px; height: 18px;">
                             <span style="font-weight: 500; color: #333;">Enable Two-Factor Authentication</span>
                         </label>
                     </div>
@@ -218,7 +218,7 @@ File: resources/views/employees/edit.blade.php
                     
                     @if($currentRole)
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-block-end: 10px;">
                                 <span style="background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">
                                     {{ ucfirst(str_replace('_', ' ', $currentRole->name)) }}
                                 </span>
@@ -244,15 +244,15 @@ File: resources/views/employees/edit.blade.php
                     <h4 style="margin: 0 0 15px 0; color: #333;">Actions</h4>
                     
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                        <button type="submit" class="btn btn-primary" style="inline-size: 100%; justify-content: center;">
                             ✅ Save Changes
                         </button>
                         
-                        <a href="{{ route('employees.show', $employee) }}" class="btn" style="width: 100%; text-align: center; text-decoration: none;">
+                        <a href="{{ route('employees.show', $employee) }}" class="btn" style="inline-size: 100%; text-align: center; text-decoration: none;">
                             ❌ Cancel
                         </a>
                         
-                        <button type="button" onclick="resetPassword()" class="btn" style="width: 100%; background: #ff9800; color: white; border-color: #ff9800;">
+                        <button type="button" onclick="resetPassword()" class="btn" style="inline-size: 100%; background: #ff9800; color: white; border-color: #ff9800;">
                             🔑 Reset Password
                         </button>
                     </div>
@@ -263,17 +263,17 @@ File: resources/views/employees/edit.blade.php
                     <h4 style="margin: 0 0 15px 0; color: #333;">Employee Stats</h4>
                     
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-block-end: 1px solid #f0f0f0;">
                             <span style="font-size: 12px; color: #666;">Employee ID</span>
                             <span style="font-size: 14px; color: #333; font-weight: 500;">{{ $employee->employee_number ?? $employee->id }}</span>
                         </div>
                         
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-block-end: 1px solid #f0f0f0;">
                             <span style="font-size: 12px; color: #666;">Member Since</span>
                             <span style="font-size: 14px; color: #333; font-weight: 500;">{{ $employee->created_at->format('M Y') }}</span>
                         </div>
                         
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-block-end: 1px solid #f0f0f0;">
                             <span style="font-size: 12px; color: #666;">Last Updated</span>
                             <span style="font-size: 14px; color: #333; font-weight: 500;">{{ $employee->updated_at->diffForHumans() }}</span>
                         </div>
@@ -354,7 +354,7 @@ input[type="checkbox"] {
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-block-end: 20px;
 }
 
 .form-row {
@@ -363,7 +363,7 @@ input[type="checkbox"] {
     gap: 20px;
 }
 
-@media (max-width: 768px) {
+@media (max-inline-size: 768px) {
     .form-row {
         grid-template-columns: 1fr;
     }

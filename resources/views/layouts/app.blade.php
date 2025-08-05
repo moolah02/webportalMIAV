@@ -1,489 +1,463 @@
-{{-- 
-==============================================
-IMPROVED LAYOUT FILE
-File: resources/views/layouts/app.blade.php
-==============================================
---}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="en">
+<head<link rel="stylesheet" href="{{ asset('css/pos-terminals.css') }}">>
+
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  <title>{{ config('app.name', 'Revival Technologies') }} – {{ $title ?? 'Dashboard' }}</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.bunny.net">
+  <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+  <!-- Scripts -->
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+  <style>
+    /* Reset & Base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+
+    /* Sidebar */
+    .sidebar { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      inline-size: 280px; 
+      height: 100vh; 
+      background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%); 
+      color: #fff; 
+      overflow-y: auto; 
+      box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
     
-    <title>{{ config('app.name', 'Revival Technologies') }} - {{ $title ?? 'Dashboard' }}</title>
+    .sidebar-header { 
+      padding: 25px 20px; 
+      font-size: 20px; 
+      font-weight: 700; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+      border-block-end: 2px solid rgba(255,255,255,0.1);
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    /* Nav items */
+    .nav-item { 
+      display: flex; 
+      align-items: center; 
+      gap: 15px; 
+      padding: 16px 20px; 
+      color: rgba(255,255,255,0.85); 
+      text-decoration: none; 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      font-weight: 500;
+      position: relative;
+    }
     
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    .nav-item:hover { 
+      background: rgba(255,255,255,0.12); 
+      color: #fff; 
+      padding-left: 25px;
+    }
     
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    .nav-item.active { 
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%); 
+      color: #fff; 
+      font-weight: 600;
+      border-inline-start: 4px solid #00d4ff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+    }
+
+    /* Section headers - improved design */
+    .nav-section { 
+      padding: 18px 20px; 
+      font-size: 13px; 
+      font-weight: 600; 
+      text-transform: uppercase; 
+      letter-spacing: 1px;
+      cursor: pointer; 
+      transition: all 0.3s ease; 
+      position: relative;
+      background: rgba(0,0,0,0.15);
+      border-block-start: 1px solid rgba(255,255,255,0.05);
+      border-block-end: 1px solid rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.9);
+    }
     
-    <style>
-        /* Reset and Base Styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    .nav-section:hover { 
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+    
+    /* Modern chevron indicator */
+    .nav-section::after { 
+      content: '';
+      position: absolute; 
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      inline-size: 8px;
+      height: 8px;
+      border-right: 2px solid rgba(255,255,255,0.7);
+      border-block-end: 2px solid rgba(255,255,255,0.7);
+      transform: translateY(-50%) rotate(-45deg);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .nav-section.open::after { 
+      transform: translateY(-50%) rotate(45deg);
+      border-color: rgba(255,255,255,0.9);
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
+    /* Submenus - enhanced styling */
+    .submenu { 
+      max-height: 0;
+      overflow: hidden;
+      background: rgba(0,0,0,0.2);
+      border-block-end: 1px solid rgba(255,255,255,0.05);
+      transition: max-height 0.3s ease-out;
+    }
+    
+    .submenu.show { 
+      max-height: 500px;
+    }
+    
+    .nav-sub { 
+      display: flex;
+      align-items: center;
+      padding: 14px 20px 14px 45px; 
+      font-size: 14px; 
+      color: rgba(255,255,255,0.75); 
+      text-decoration: none;
+      transition: all 0.3s ease; 
+      position: relative;
+      font-weight: 500;
+    }
+    
+    /* Connector line for nested items */
+    .nav-sub::before {
+      content: '';
+      position: absolute;
+      left: 30px;
+      top: 50%;
+      inline-size: 8px;
+      height: 1px;
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-50%);
+    }
+    
+    .nav-sub:hover { 
+      background: rgba(255,255,255,0.08); 
+      color: rgba(255,255,255,0.95); 
+      padding-left: 50px;
+    }
+    
+    .nav-sub.active { 
+      color: #fff; 
+      font-weight: 600;
+      background: rgba(255,255,255,0.1);
+      border-inline-start: 3px solid #00d4ff;
+    }
+    
+    .nav-sub.active::before {
+      background: #00d4ff;
+      inline-size: 12px;
+    }
 
-        /* Sidebar Styles */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
+    /* Main content */
+    .main-content { 
+      margin-left: 280px; 
+      min-height: 100vh; 
+      background: #f5f5f5; 
+    }
+    
+    .content-header { 
+      background: #fff; 
+      padding: 25px 35px; 
+      border-block-end: 1px solid #eee; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    
+    .page-title { 
+      font-size: 28px; 
+      font-weight: 700; 
+      color: #2c3e50;
+      margin: 0;
+    }
+    
+    .user-info { 
+      display: flex; 
+      align-items: center; 
+      gap: 15px; 
+      color: #666;
+      font-weight: 500;
+    }
+    
+    .user-badge { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+      color: #fff; 
+      padding: 6px 14px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .content-body { 
+      padding: 35px; 
+    }
 
-        .sidebar-header {
-            padding: 25px 20px;
-            font-size: 18px;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    /* Dashboard cards */
+    .dashboard-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); 
+      gap: 25px; 
+      margin-block-end: 35px; 
+    }
+    
+    .metric-card { 
+      background: #fff; 
+      border-radius: 12px; 
+      padding: 30px; 
+      text-align: center; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+      border: 1px solid rgba(0,0,0,0.05); 
+      transition: all 0.3s ease; 
+    }
+    
+    .metric-card:hover { 
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12); 
+      transform: translateY(-3px); 
+    }
+    
+    .metric-number { 
+      font-size: 42px; 
+      font-weight: 800; 
+      color: #2196f3; 
+      margin-block-end: 12px; 
+    }
+    
+    .metric-label { 
+      color: #666; 
+      font-size: 14px; 
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-        .nav-item {
-            display: block;
-            padding: 15px 20px;
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    /* Logout styling */
+    .logout-form { 
+      border: none; 
+      margin-block-start: 20px;
+      border-top: 2px solid rgba(255,255,255,0.1);
+    }
+    
+    .logout-btn { 
+      inline-size: 100%; 
+      text-align: start; 
+      padding: 18px 20px; 
+      display: flex; 
+      align-items: center; 
+      gap: 15px; 
+      background: none; 
+      border: none; 
+      color: rgba(255,255,255,0.8); 
+      cursor: pointer; 
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .logout-btn:hover { 
+      color: #ff6b6b;
+      background: rgba(255,107,107,0.1);
+      padding-left: 25px;
+    }
 
-        .nav-item:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            text-decoration: none;
-            transform: translateX(5px);
-        }
+    /* Responsive */
+    @media(max-inline-size:768px){
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; inline-size: 280px; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .content-header { padding: 20px; }
+      .content-body { padding: 20px; }
+    }
 
-        .nav-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-right: 4px solid #00d4ff;
-            color: white;
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.1);
-        }
+    /* Custom scrollbar for sidebar */
+    .sidebar::-webkit-scrollbar {
+      inline-size: 6px;
+    }
+    
+    .sidebar::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.3);
+      border-radius: 3px;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.5);
+    }
 
-        .nav-sub {
-            padding: 12px 20px 12px 55px;
-            font-size: 14px;
-            color: rgba(255,255,255,0.7);
-            background: rgba(0,0,0,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            text-decoration: none;
-            display: block;
-            transition: all 0.3s ease;
-        }
-
-        .nav-sub:hover {
-            background: rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.9);
-            text-decoration: none;
-            transform: translateX(3px);
-        }
-
-        .nav-section {
-            padding: 10px 20px;
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 250px;
-            min-height: 100vh;
-            background: #f5f5f5;
-        }
-
-        .content-header {
-            background: white;
-            padding: 20px 30px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .page-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin: 0;
-            color: #333;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: #666;
-        }
-
-        .user-badge {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .content-body {
-            padding: 30px;
-        }
-
-        /* Dashboard Cards */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .metric-card {
-            background: white;
-            border-radius: 8px;
-            padding: 24px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            border: 1px solid #eee;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-        }
-
-        .metric-number {
-            font-size: 36px;
-            font-weight: bold;
-            color: #2196f3;
-            margin-bottom: 8px;
-            line-height: 1;
-        }
-
-        .metric-label {
-            color: #666;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        /* Content Cards */
-        .content-card {
-            background: white;
-            border-radius: 8px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 1px solid #eee;
-            margin-bottom: 20px;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .info-item {
-            margin-bottom: 12px;
-        }
-
-        .info-label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .info-value {
-            color: #666;
-        }
-
-        /* Activity List */
-        .activity-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-icon {
-            font-size: 16px;
-            margin-top: 2px;
-        }
-
-        .activity-text {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        /* Logout Form */
-        .logout-form {
-            background: none;
-            border: none;
-            width: 100%;
-        }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.8);
-            width: 100%;
-            text-align: left;
-            padding: 0;
-            font-size: inherit;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logout-btn:hover {
-            color: white;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-            
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-        }
-    </style>
+  </style>
+  
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                🚀 Revival Technologies
-            </div>
-            
-            {{-- 
-==============================================
-FIXED SIDEBAR NAVIGATION
-Update this section in your resources/views/layouts/app.blade.php
-==============================================
---}}
+  <div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">🚀 Revival Technologies</div>
+      <nav>
+        <!-- Dashboard -->
+        <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">📊 Dashboard</a>
+        <a href="{{ route('employee.dashboard') }}" class="nav-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">📊 My Dashboard</a>
+        
 
-{{-- 
-==============================================
-UNRESTRICTED SIDEBAR NAVIGATION
-Replace the <nav> section in your resources/views/layouts/app.blade.php
-==============================================
---}}
-
-<nav>
-    {{-- Dashboard --}}
-    <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-        📊 Dashboard
-    </a>
-    
-    {{-- Employee Dashboard for regular employees --}}
-    <a href="{{ route('employee.dashboard') }}" class="nav-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
-        📊 My Dashboard
-    </a>
-    
-    {{-- Technician Dashboard --}}
-    <a href="{{ route('technician.dashboard') }}" class="nav-item {{ request()->routeIs('technician.dashboard') ? 'active' : '' }}">
-        🔧 Technician Dashboard
-    </a>
-    
-    {{-- Assets Section --}}
-    <div class="nav-section">Assets</div>
-    
-    {{-- Asset Management --}}
-    <a href="{{ route('assets.index') }}" class="nav-sub {{ request()->routeIs('assets.*') ? 'active' : '' }}">
-        📦 Manage Assets
-    </a>
-    <a href="{{ route('pos-terminals.index') }}" class="nav-sub {{ request()->routeIs('pos-terminals.*') ? 'active' : '' }}">
-        🖥️ POS Terminals
-    </a>
-    
-    {{-- Asset Requests --}}
-    <a href="{{ route('asset-requests.catalog') }}" class="nav-sub {{ request()->routeIs('asset-requests.catalog') ? 'active' : '' }}">
-        🛒 Request Assets
-    </a>
-    <a href="{{ route('asset-requests.index') }}" class="nav-sub {{ request()->routeIs('asset-requests.index') ? 'active' : '' }}">
-        📝 My Requests
-    </a>
-    
-    {{-- Asset Approvals --}}
-    <a href="{{ route('asset-approvals.index') }}" class="nav-sub {{ request()->routeIs('asset-approvals.*') ? 'active' : '' }}">
-        ⚖️ Asset Approvals
-    </a>
-    
-    {{-- Licenses --}}
-    <a href="{{ route('assets.licenses') }}" class="nav-sub {{ request()->routeIs('assets.licenses') ? 'active' : '' }}">
-        🔑 Business Licenses
-    </a>
-    
-    {{-- Client Management Section --}}
-    <div class="nav-section">Client Management</div>
-    <a href="{{ route('clients.index') }}" class="nav-sub {{ request()->routeIs('clients.*') ? 'active' : '' }}">
-        🏢 Clients
-    </a>
-    
-    {{-- Employee & Role Management Section --}}
-    <div class="nav-section">Employee Management</div>
-    <a href="{{ route('employees.index') }}" class="nav-sub {{ request()->routeIs('employees.*') ? 'active' : '' }}">
-        👥 Employees
-    </a>
-    <a href="{{ route('roles.index') }}" class="nav-sub {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-        🔑 Role Management
-    </a>
-    <a href="{{ route('technicians.index') }}" class="nav-sub {{ request()->routeIs('technicians.*') ? 'active' : '' }}">
-        🔧 Technicians
-    </a>
-    
-    {{-- Technician Section --}}
-    <div class="nav-section">Technician</div>
-    <a href="{{ route('technician.jobs') }}" class="nav-sub {{ request()->routeIs('technician.jobs') ? 'active' : '' }}">
-        🔧 My Jobs
-    </a>
-    <a href="{{ route('technician.reports') }}" class="nav-sub {{ request()->routeIs('technician.reports') ? 'active' : '' }}">
-        📋 Service Reports
-    </a>
-    <a href="{{ route('technician.schedule') }}" class="nav-sub {{ request()->routeIs('technician.schedule') ? 'active' : '' }}">
-        📅 My Schedule
-    </a>
-    
-    {{-- Management Section --}}
-    <div class="nav-section">Management</div>
-    <a href="{{ route('manager.team') }}" class="nav-sub {{ request()->routeIs('manager.team') ? 'active' : '' }}">
-        👥 Team Overview
-    </a>
-    <a href="{{ route('manager.approvals') }}" class="nav-sub {{ request()->routeIs('manager.approvals') ? 'active' : '' }}">
-        📋 Pending Approvals
-    </a>
-    <a href="{{ route('manager.reports') }}" class="nav-sub {{ request()->routeIs('manager.reports') ? 'active' : '' }}">
-        📊 Team Reports
-    </a>
-    
-    {{-- Administration Section --}}
-    <div class="nav-section">Administration</div>
-    <a href="{{ route('admin.employees') }}" class="nav-sub {{ request()->routeIs('admin.employees') ? 'active' : '' }}">
-        👤 Employee Admin
-    </a>
-    <a href="{{ route('admin.roles') }}" class="nav-sub {{ request()->routeIs('admin.roles') ? 'active' : '' }}">
-        🔐 Role Admin
-    </a>
-    <a href="{{ route('admin.departments') }}" class="nav-sub {{ request()->routeIs('admin.departments') ? 'active' : '' }}">
-        🏢 Departments
-    </a>
-    <a href="{{ route('admin.settings') }}" class="nav-sub {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-        ⚙️ System Settings
-    </a>
-    
-    {{-- Reports Section --}}
-    <div class="nav-section">Reports & Analytics</div>
-    <a href="{{ route('reports.index') }}" class="nav-sub {{ request()->routeIs('reports.index') ? 'active' : '' }}">
-        📊 Reports Dashboard
-    </a>
-    <a href="{{ route('reports.builder') }}" class="nav-sub {{ request()->routeIs('reports.builder') ? 'active' : '' }}">
-        🔨 Report Builder
-    </a>
-    
-    {{-- General Section --}}
-    <div class="nav-section">General</div>
-    <a href="{{ route('tickets.index') }}" class="nav-sub {{ request()->routeIs('tickets.*') ? 'active' : '' }}">
-        🎫 Support Tickets
-    </a>
-    <a href="{{ route('documents.index') }}" class="nav-sub {{ request()->routeIs('documents.*') ? 'active' : '' }}">
-        📁 Documents
-    </a>
-    
-    {{-- Document Upload --}}
-    <a href="{{ route('documents.upload') }}" class="nav-sub {{ request()->routeIs('documents.upload') ? 'active' : '' }}">
-        📤 Upload Documents
-    </a>
-    
-    {{-- Profile Section --}}
-    <div class="nav-section">My Account</div>
-    <a href="{{ route('profile.index') }}" class="nav-sub {{ request()->routeIs('profile.index') ? 'active' : '' }}">
-        👤 My Profile
-    </a>
-    <a href="{{ route('profile.edit') }}" class="nav-sub {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-        ✏️ Edit Profile
-    </a>
-    
-    {{-- Logout --}}
-    <form method="POST" action="{{ route('logout') }}" class="nav-item logout-form">
-        @csrf
-        <button type="submit" class="logout-btn">
-            🚪 Logout
-        </button>
-    </form>
-</nav>
+        <!-- Assets -->
+        <div class="nav-section" onclick="toggleMenu(this)">📦 Assets</div>
+        <div class="submenu {{ request()->routeIs('assets.*','asset-requests.*','asset-approvals.*','pos-terminals.*','business-licenses.*') ? 'show' : '' }}">
+          <a href="{{ route('assets.index') }}" class="nav-sub {{ request()->routeIs('assets.*') ? 'active' : '' }}">📦 Internal Assets</a>
+          <a href="{{ route('pos-terminals.index') }}" class="nav-sub {{ request()->routeIs('pos-terminals.*') ? 'active' : '' }}">🖥️ POS Terminals</a>
+          <a href="{{ route('asset-requests.catalog') }}" class="nav-sub {{ request()->routeIs('asset-requests.catalog') ? 'active' : '' }}">🛒 Request Assets</a>
+          <a href="{{ route('asset-requests.index') }}" class="nav-sub {{ request()->routeIs('asset-requests.index') ? 'active' : '' }}">📝 My Requests</a>
+          <a href="{{ route('asset-approvals.index') }}" class="nav-sub {{ request()->routeIs('asset-approvals.*') ? 'active' : '' }}">⚖️ Asset Approvals</a>
+          <a href="{{ route('business-licenses.index') }}" class="nav-sub {{ request()->routeIs('business-licenses.*') ? 'active' : '' }}">📋 Business Licenses</a>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Header -->
-            <div class="content-header">
-                <h1 class="page-title">{{ $title ?? 'Dashboard' }}</h1>
-                <div class="user-info">
-                    Welcome, {{ auth()->user()->full_name }}
-                    <span class="user-badge">
-                        {{ auth()->user()->role->name ?? 'Employee' }}
-                    </span>
-                </div>
-            </div>
+       <!-- Field Operations -->
+<div class="nav-section" onclick="toggleMenu(this)">🗺️ Field Operations</div>
+<div class="submenu {{ request()->routeIs('deployment.index','jobs.*','reports.technician-visits*') ? 'show' : '' }}">
+  <a href="{{ route('deployment.index') }}"
+     class="nav-sub {{ request()->routeIs('deployment.index') ? 'active' : '' }}">
+    🗺️ Deployment Planning
+  </a>
+  <a href="{{ route('jobs.assignment') }}"
+     class="nav-sub {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
+    📋 Job Assignment
+  </a>
+  <a href="{{ route('reports.technician-visits') }}"
+     class="nav-sub {{ request()->routeIs('reports.technician-visits*') ? 'active' : '' }}">
+    📄 Technician Reports
+  </a>
+</div>
 
-            <!-- Content Body -->
-            <div class="content-body">
-                @yield('content')
-            </div>
+
+        <!-- Client Management -->
+        <div class="nav-section" onclick="toggleMenu(this)">🏢 Client Management</div>
+        <div class="submenu {{ request()->routeIs('clients.*') ? 'show' : '' }}">
+          <a href="{{ route('clients.index') }}" class="nav-sub {{ request()->routeIs('clients.*') ? 'active' : '' }}">Clients</a>
         </div>
+
+        <!-- Employee Management -->
+        <div class="nav-section" onclick="toggleMenu(this)">👥 Employee Management</div>
+        <div class="submenu {{ request()->routeIs('employees.*','roles.*','technicians.*') ? 'show' : '' }}">
+          <a href="{{ route('employees.index') }}" class="nav-sub {{ request()->routeIs('employees.*') ? 'active' : '' }}">Employees</a>
+          <a href="{{ route('roles.index') }}" class="nav-sub {{ request()->routeIs('roles.*') ? 'active' : '' }}">Role Management</a>
+          <a href="{{ route('technicians.index') }}" class="nav-sub {{ request()->routeIs('technicians.*') ? 'active' : '' }}">Technicians</a>
+        </div>
+
+        <!-- Technician -->
+        <div class="nav-section" onclick="toggleMenu(this)">🔧 Technician</div>
+        <div class="submenu {{ request()->routeIs('technician.jobs','technician.reports','technician.schedule') ? 'show' : '' }}">
+          <a href="{{ route('technician.jobs') }}" class="nav-sub {{ request()->routeIs('technician.jobs') ? 'active' : '' }}">🔧 My Jobs</a>
+          <a href="{{ route('technician.reports') }}" class="nav-sub {{ request()->routeIs('technician.reports') ? 'active' : '' }}">📋 Service Reports</a>
+          <a href="{{ route('technician.schedule') }}" class="nav-sub {{ request()->routeIs('technician.schedule') ? 'active' : '' }}">📅 My Schedule</a>
+        </div>
+
+      
+        <!-- Administration -->
+        <div class="nav-section" onclick="toggleMenu(this)">🏛️ Administration</div>
+        <div class="submenu {{ request()->routeIs('admin.*') ? 'show' : '' }}">
+          
+          <a href="{{ route('settings.index') }}" class="nav-sub {{ request()->routeIs('settings.*') ? 'active' : '' }}">⚙️ System Settings</a>
+          <a href="{{ route('tickets.index') }}" class="nav-sub {{ request()->routeIs('tickets.*') ? 'active' : '' }}">🎫 Support Tickets</a>
+          <a href="{{ route('documents.index') }}" class="nav-sub {{ request()->routeIs('documents.*') ? 'active' : '' }}">📁 Documents</a>
+        
+        </div>
+
+
+
+
+        <!-- Reports & Analytics -->
+        <div class="nav-section" onclick="toggleMenu(this)">📊 Reports & Analytics</div>
+        <div class="submenu {{ request()->routeIs('reports.*') ? 'show' : '' }}">
+          <a href="{{ route('reports.index') }}" class="nav-sub {{ request()->routeIs('reports.index') ? 'active' : '' }}">📊 Reports Dashboard</a>
+          <a href="{{ route('reports.builder') }}" class="nav-sub {{ request()->routeIs('reports.builder') ? 'active' : '' }}">🔨 Report Builder</a>
+        </div>
+
+        <!-- My Account -->
+        <div class="nav-section" onclick="toggleMenu(this)">👤 My Account</div>
+        <div class="submenu {{ request()->routeIs('profile.*') ? 'show' : '' }}">
+          <a href="{{ route('profile.index') }}" class="nav-sub {{ request()->routeIs('profile.index') ? 'active' : '' }}">👤 My Profile</a>
+        </div>
+
+        <!-- Logout -->
+        <form method="POST" action="{{ route('logout') }}" class="logout-form">
+          @csrf
+          <button type="submit" class="logout-btn">🚪 Logout</button>
+        </form>
+      </nav>
     </div>
+
+    <!-- Main content -->
+    <div class="main-content">
+      <div class="content-header">
+        <h1 class="page-title">{{ $title ?? 'Dashboard' }}</h1>
+        <div class="user-info">
+          Welcome, {{ auth()->user()->full_name }}
+          <span class="user-badge">{{ auth()->user()->role->name ?? 'Employee' }}</span>
+        </div>
+      </div>
+      <div class="content-body">
+        @yield('content')
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleMenu(header) {
+      const submenu = header.nextElementSibling;
+      const isCurrentlyOpen = header.classList.contains('open');
+      
+      // Close all other open menus first
+      document.querySelectorAll('.nav-section').forEach(otherHeader => {
+        if (otherHeader !== header && otherHeader.classList.contains('open')) {
+          const otherSubmenu = otherHeader.nextElementSibling;
+          otherSubmenu.classList.remove('show');
+          otherHeader.classList.remove('open');
+        }
+      });
+      
+      // Toggle the clicked menu
+      if (isCurrentlyOpen) {
+        // Close this menu
+        submenu.classList.remove('show');
+        header.classList.remove('open');
+      } else {
+        // Open this menu
+        submenu.classList.add('show');
+        header.classList.add('open');
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.nav-section').forEach(header => {
+        const submenu = header.nextElementSibling;
+        if (submenu.querySelector('.nav-sub.active')) {
+          submenu.classList.add('show');
+          header.classList.add('open');
+        }
+      });
+    });
+  </script>
 </body>
 </html>

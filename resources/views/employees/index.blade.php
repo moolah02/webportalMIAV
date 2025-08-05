@@ -9,7 +9,7 @@ File: resources/views/employees/index.blade.php
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <h2 style="margin: 0; color: #333;">👥 Employee Management</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Manage employee onboarding and permissions</p>
@@ -18,7 +18,7 @@ File: resources/views/employees/index.blade.php
     </div>
 
     <!-- Statistics Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-block-end: 30px;">
         <div class="metric-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="font-size: 32px;">👥</div>
@@ -97,11 +97,11 @@ File: resources/views/employees/index.blade.php
     </div>
 
     <!-- Search and Filters -->
-    <div class="content-card" style="margin-bottom: 20px;">
+    <div class="content-card" style="margin-block-end: 20px;">
         <form method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
             <input type="text" name="search" value="{{ request('search') }}" 
                    placeholder="Search employees..." 
-                   style="flex: 1; min-width: 250px; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                   style="flex: 1; min-inline-size: 250px; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
             
             <select name="status" style="padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
                 <option value="">All Status</option>
@@ -133,9 +133,9 @@ File: resources/views/employees/index.blade.php
         @forelse($employees as $employee)
         <div class="employee-card">
             <!-- Employee Header -->
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-block-end: 15px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: bold;">
+                    <div style="inline-size: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: bold;">
                         {{ substr($employee->first_name ?? 'N', 0, 1) }}{{ substr($employee->last_name ?? 'A', 0, 1) }}
                     </div>
                     <div>
@@ -159,14 +159,14 @@ File: resources/views/employees/index.blade.php
             </div>
 
             <!-- Employee Info -->
-            <div style="margin-bottom: 15px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+            <div style="margin-block-end: 15px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-block-end: 5px;">
                     <span style="color: #666;">📧</span>
                     <a href="mailto:{{ $employee->email }}" style="color: #2196f3; text-decoration: none;">{{ $employee->email }}</a>
                 </div>
                 
                 @if($employee->phone)
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-block-end: 5px;">
                     <span style="color: #666;">📞</span>
                     <span style="color: #333;">{{ $employee->phone }}</span>
                 </div>
@@ -180,7 +180,7 @@ File: resources/views/employees/index.blade.php
                     }
                 @endphp
                 @if($manager)
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-block-end: 5px;">
                     <span style="color: #666;">👤</span>
                     <span style="color: #666;">Reports to: {{ $manager }}</span>
                 </div>
@@ -188,8 +188,8 @@ File: resources/views/employees/index.blade.php
             </div>
 
             <!-- Role/Permissions Summary -->
-            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
-                <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;">Role & Permissions</div>
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-block-end: 15px;">
+                <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px;">Role & Permissions</div>
                 <div style="display: flex; flex-wrap: wrap; gap: 5px;">
                     @php
                         try {
@@ -240,17 +240,17 @@ File: resources/views/employees/index.blade.php
         </div>
         @empty
         <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #666;">
-            <div style="font-size: 64px; margin-bottom: 20px;">👥</div>
+            <div style="font-size: 64px; margin-block-end: 20px;">👥</div>
             <h3>No employees found</h3>
             <p>Start by onboarding your first employee.</p>
-            <a href="{{ route('employees.create') }}" class="btn btn-primary" style="margin-top: 15px;">Onboard First Employee</a>
+            <a href="{{ route('employees.create') }}" class="btn btn-primary" style="margin-block-start: 15px;">Onboard First Employee</a>
         </div>
         @endforelse
     </div>
 
     <!-- Pagination -->
     @if(isset($employees) && method_exists($employees, 'hasPages') && $employees->hasPages())
-    <div style="margin-top: 30px; display: flex; justify-content: center;">
+    <div style="margin-block-start: 30px; display: flex; justify-content: center;">
         {{ $employees->appends(request()->query())->links() }}
     </div>
     @endif
@@ -331,8 +331,8 @@ File: resources/views/employees/index.blade.php
 </style>
 
 <!-- Quick Actions Modal -->
-<div id="quickActionsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-width: 400px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+<div id="quickActionsModal" style="display: none; position: fixed; top: 0; left: 0; inline-size: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; border-radius: 12px; padding: 0; max-inline-size: 400px; inline-size: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
@@ -391,8 +391,8 @@ File: resources/views/employees/index.blade.php
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-align: left;
-    width: 100%;
+    text-align: start;
+    inline-size: 100%;
 }
 
 .modal-action-btn:hover {

@@ -7,7 +7,7 @@
         <h3>Employee Dashboard</h3>
         <p>Welcome, {{ $employee->full_name }}!</p>
         
-        <div style="margin-top: 20px;">
+        <div style="margin-block-start: 20px;">
             <h4>My Assets</h4>
             @if($assets && $assets->count() > 0)
                 @foreach($assets as $asset)
@@ -18,7 +18,7 @@
             @endif
         </div>
         
-        <div style="margin-top: 20px;">
+        <div style="margin-block-start: 20px;">
             <h4>My Requests</h4>
             @if($requests && $requests->count() > 0)
                 @foreach($requests as $request)

@@ -59,7 +59,7 @@
 
 .fa-fw {
   text-align: center;
-  width: 1.25em; }
+  inline-size: 1.25em; }
 
 .fa-ul {
   list-style-type: none;
@@ -72,7 +72,7 @@
   left: -2em;
   position: absolute;
   text-align: center;
-  width: 2em;
+  inline-size: 2em;
   line-height: inherit; }
 
 .fa-border {
@@ -169,14 +169,14 @@
   line-height: 2em;
   position: relative;
   vertical-align: middle;
-  width: 2.5em; }
+  inline-size: 2.5em; }
 
 .fa-stack-1x,
 .fa-stack-2x {
   left: 0;
   position: absolute;
   text-align: center;
-  width: 100%; }
+  inline-size: 100%; }
 
 .fa-stack-1x {
   line-height: inherit; }
@@ -3939,7 +3939,7 @@ readers do not read off random characters that represent icons */
 .fa-text-height:before {
   content: "\f034"; }
 
-.fa-text-width:before {
+.fa-text-inline-size:before {
   content: "\f035"; }
 
 .fa-th:before {
@@ -4571,7 +4571,7 @@ readers do not read off random characters that represent icons */
   overflow: hidden;
   padding: 0;
   position: absolute;
-  width: 1px; }
+  inline-size: 1px; }
 
 .sr-only-focusable:active, .sr-only-focusable:focus {
   clip: auto;
@@ -4579,7 +4579,7 @@ readers do not read off random characters that represent icons */
   margin: 0;
   overflow: visible;
   position: static;
-  width: auto; }
+  inline-size: auto; }
 @font-face {
   font-family: 'Font Awesome 5 Brands';
   font-style: normal;

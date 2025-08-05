@@ -1,24 +1,28 @@
 <?php
 
-// ==============================================
-// ENHANCED DASHBOARD CONTROLLER
-// File: app/Http/Controllers/DashboardController.php
-// Replace your current DashboardController with this:
-// ==============================================
-
 namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\PosTerminal;
 use App\Models\Employee;
+use App\Models\AssetRequest;
+use App\Models\JobAssignment;
+use App\Models\TechnicianVisit;
+use App\Models\Ticket;
+use App\Models\Category;
+use App\Models\BusinessLicense; // Added for license functionality
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Get comprehensive dashboard statistics
+        // Update user's last login when they access dashboard
+        auth()->user()->updateLastLogin();
+        
+        // Get comprehensive dashboard statistics (enhanced with licenses)
         $stats = $this->getDashboardStats();
         
         return view('dashboard', compact('stats'));
@@ -28,12 +32,24 @@ class DashboardController extends Controller
     {
         $employee = auth()->user();
         
-        // Technician-specific stats
+        // Technician-specific stats from real data
         $stats = [
-            'assigned_jobs' => 0, // Will implement when we build job system
-            'completed_today' => 0,
-            'pending_jobs' => 0,
-            'territories' => ['North', 'Central'], // Example data
+            'assigned_jobs' => JobAssignment::where('technician_id', $employee->id)
+                ->where('status', 'assigned')
+                ->count(),
+            'completed_today' => JobAssignment::where('technician_id', $employee->id)
+                ->where('status', 'completed')
+                ->whereDate('actual_end_time', today())
+                ->count(),
+            'pending_jobs' => JobAssignment::where('technician_id', $employee->id)
+                ->whereIn('status', ['assigned', 'in_progress'])
+                ->count(),
+            'recent_visits' => TechnicianVisit::where('technician_id', $employee->id)
+                ->with(['posTerminal', 'client'])
+                ->latest('visit_date')
+                ->limit(5)
+                ->get(),
+            'territories' => $this->getTechnicianTerritories($employee->id),
         ];
         
         return view('technician.dashboard', compact('stats'));
@@ -43,11 +59,13 @@ class DashboardController extends Controller
     {
         $employee = auth()->user();
         
-        // Employee-specific stats
+        // Employee-specific stats from real data
         $stats = [
-            'my_requests' => 0,
-            'pending_approvals' => 0,
-            'recent_activity' => [],
+            'my_requests' => AssetRequest::where('employee_id', $employee->id)->count(),
+            'pending_approvals' => AssetRequest::where('employee_id', $employee->id)
+                ->where('status', 'pending')
+                ->count(),
+            'recent_activity' => $this->getEmployeeRecentActivity($employee->id),
         ];
         
         return view('employee.dashboard', compact('stats'));
@@ -55,41 +73,68 @@ class DashboardController extends Controller
 
     private function getDashboardStats()
     {
-        // Basic counts
+        // Basic counts from real data
         $totalTerminals = PosTerminal::count();
         $totalClients = Client::where('status', 'active')->count();
         
-        // Terminal status breakdown
-        $activeTerminals = PosTerminal::where('status', 'active')->count();
-        $offlineTerminals = PosTerminal::where('status', 'offline')->count();
-        $maintenanceTerminals = PosTerminal::where('status', 'maintenance')->count();
-        $faultyTerminals = PosTerminal::where('status', 'faulty')->count();
+        // Terminal status breakdown using real data
+        $terminalStats = PosTerminal::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+        
+        $activeTerminals = $terminalStats['active'] ?? 0;
+        $offlineTerminals = $terminalStats['offline'] ?? 0;
+        $maintenanceTerminals = $terminalStats['maintenance'] ?? 0;
+        $faultyTerminals = $terminalStats['faulty'] ?? 0;
+        $decommissionedTerminals = $terminalStats['decommissioned'] ?? 0;
         
         // Calculate metrics
-        $needAttention = $offlineTerminals + $faultyTerminals;
+        $needAttention = $offlineTerminals + $faultyTerminals + $maintenanceTerminals;
         $urgentIssues = $faultyTerminals;
         
-        // Monthly growth (simulate data for now)
-        $newTerminalsThisMonth = PosTerminal::whereMonth('created_at', now()->month)->count();
-        $newClientsThisMonth = Client::whereMonth('created_at', now()->month)->count();
+        // Real monthly growth
+        $newTerminalsThisMonth = PosTerminal::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+        $newClientsThisMonth = Client::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
         
-        // Regional distribution
+        // Real regional distribution
         $regionalData = $this->getRegionalData();
         
-        // Recent activity
+        // Recent activity from real data (enhanced with licenses)
         $recentActivity = $this->getRecentActivity();
         
-        // Top clients by terminal count
+        // Top clients by terminal count (real data)
         $topClients = $this->getTopClients();
         
-        // System health metrics (simulated)
+        // System health metrics
         $networkUptime = $totalTerminals > 0 ? round(($activeTerminals / $totalTerminals) * 100, 1) : 100;
-        $serviceLevel = 98.5; // Simulated
-        $avgResponseTime = 2.3; // Simulated hours
         
-        // Alerts
+        // Service metrics from real data
+        $avgResponseTime = $this->getAverageResponseTime();
+        $serviceLevel = $this->getServiceLevel();
+        
+        // Real alerts (enhanced with license alerts)
         $alerts = $this->getSystemAlerts();
         
+        // Monthly trends (enhanced with licenses)
+        $monthlyTrends = $this->getMonthlyTrends();
+        
+        // Client contract status
+        $contractStats = $this->getContractStats();
+        
+        // Employee/Technician stats
+        $employeeStats = $this->getEmployeeStats();
+
+        // NEW: License statistics
+        $licenseStats = $this->getLicenseStats();
+        
+        // NEW: Upcoming license renewals
+        $upcomingRenewals = $this->getUpcomingRenewals();
+
         return [
             // Main metrics
             'total_terminals' => $totalTerminals,
@@ -97,6 +142,7 @@ class DashboardController extends Controller
             'offline_terminals' => $offlineTerminals,
             'maintenance_terminals' => $maintenanceTerminals,
             'faulty_terminals' => $faultyTerminals,
+            'decommissioned_terminals' => $decommissionedTerminals,
             'need_attention' => $needAttention,
             'urgent_issues' => $urgentIssues,
             'total_clients' => $totalClients,
@@ -119,36 +165,111 @@ class DashboardController extends Controller
             
             // Alerts
             'alerts' => $alerts,
+            
+            // Trends and analytics
+            'monthly_trends' => $monthlyTrends,
+            'contract_stats' => $contractStats,
+            'employee_stats' => $employeeStats,
+            
+            // NEW: License data
+            'license_stats' => $licenseStats,
+            'upcoming_renewals' => $upcomingRenewals,
         ];
+    }
+
+    // NEW: License Statistics Method
+    private function getLicenseStats()
+    {
+        $totalLicenses = BusinessLicense::count();
+        $activeLicenses = BusinessLicense::where('status', 'active')->count();
+        $expiredLicenses = BusinessLicense::expired()->count();
+        $expiringSoon = BusinessLicense::expiringSoon(30)->count();
+        $criticalLicenses = BusinessLicense::where('priority_level', 'critical')->count();
+        $criticalExpired = BusinessLicense::where('priority_level', 'critical')
+            ->expired()->count();
+        $suspendedLicenses = BusinessLicense::where('status', 'suspended')->count();
+        $cancelledLicenses = BusinessLicense::where('status', 'cancelled')->count();
+        
+        // Calculate compliance rate
+        $compliantLicenses = BusinessLicense::where('status', 'active')
+            ->where('expiry_date', '>', now()->addDays(30))
+            ->count();
+        $complianceRate = $totalLicenses > 0 ? round(($compliantLicenses / $totalLicenses) * 100) : 100;
+        
+        // Calculate annual cost
+        $annualCost = BusinessLicense::where('status', 'active')
+            ->sum('renewal_cost') ?: BusinessLicense::where('status', 'active')->sum('cost');
+
+        return [
+            'total_licenses' => $totalLicenses,
+            'active_licenses' => $activeLicenses,
+            'expired' => $expiredLicenses,
+            'expiring_soon' => $expiringSoon,
+            'critical_licenses' => $criticalLicenses,
+            'critical_expired' => $criticalExpired,
+            'suspended' => $suspendedLicenses,
+            'cancelled' => $cancelledLicenses,
+            'compliance_rate' => $complianceRate,
+            'annual_cost' => $annualCost,
+        ];
+    }
+
+    // NEW: Upcoming License Renewals Method
+    private function getUpcomingRenewals()
+    {
+        return BusinessLicense::with(['department', 'responsibleEmployee'])
+            ->where(function($query) {
+                $query->expiringSoon(60) // Next 60 days
+                      ->orWhere('status', 'expired');
+            })
+            ->orderBy('expiry_date', 'asc')
+            ->limit(10)
+            ->get();
     }
 
     private function getRegionalData()
     {
-        $regions = ['North', 'South', 'East', 'West', 'Central'];
-        $regionalData = [];
+        // Get real regional distribution
+        $regionalData = PosTerminal::select('region', 'status', DB::raw('count(*) as count'))
+            ->whereNotNull('region')
+            ->groupBy('region', 'status')
+            ->get()
+            ->groupBy('region')
+            ->map(function ($regionTerminals, $region) {
+                $total = $regionTerminals->sum('count');
+                $active = $regionTerminals->where('status', 'active')->sum('count');
+                $issues = $regionTerminals->whereIn('status', ['offline', 'faulty', 'maintenance'])->sum('count');
+                
+                return [
+                    'total' => $total,
+                    'active' => $active,
+                    'issues' => $issues,
+                    'uptime_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
+                ];
+            });
+
+        // Add regions with no terminals
+        $allRegions = ['North Region', 'South Region', 'East Region', 'West Region', 'Central Region', 'HATFIELD', 'EPWORTH', 'CBD', 'MT PLEASANT'];
         
-        foreach ($regions as $region) {
-            $totalInRegion = PosTerminal::where('region', $region)->count();
-            $activeInRegion = PosTerminal::where('region', $region)->where('status', 'active')->count();
-            $issuesInRegion = PosTerminal::where('region', $region)
-                ->whereIn('status', ['offline', 'faulty', 'maintenance'])
-                ->count();
-            
-            $regionalData[$region] = [
-                'total' => $totalInRegion,
-                'active' => $activeInRegion,
-                'issues' => $issuesInRegion,
-            ];
+        foreach ($allRegions as $region) {
+            if (!$regionalData->has($region)) {
+                $regionalData[$region] = [
+                    'total' => 0,
+                    'active' => 0,
+                    'issues' => 0,
+                    'uptime_percentage' => 0,
+                ];
+            }
         }
-        
-        return $regionalData;
+
+        return $regionalData->take(8); // Limit to 8 regions for display
     }
 
     private function getRecentActivity()
     {
         $activities = collect();
         
-        // Recent terminals added
+        // Recent terminals added (last 10)
         $recentTerminals = PosTerminal::with('client')
             ->latest()
             ->limit(5)
@@ -185,26 +306,99 @@ class DashboardController extends Controller
             ]);
         }
         
-        // Add some example maintenance activities
-        if ($activities->count() < 5) {
+        // NEW: Recent license activities
+        $recentLicenses = BusinessLicense::with(['creator', 'department'])
+            ->latest()
+            ->limit(3)
+            ->get();
+
+        foreach ($recentLicenses as $license) {
             $activities->push([
-                'icon' => '🔧',
-                'color' => '#ff9800',
-                'title' => 'Maintenance Completed',
-                'description' => 'Routine maintenance completed on 3 terminals in North region',
-                'time' => '2 hours ago',
+                'icon' => '📋',
+                'color' => '#2196f3',
+                'title' => 'License Added',
+                'description' => "New {$license->license_type_name}: {$license->license_name}",
+                'time' => $license->created_at->diffForHumans(),
+                'action' => [
+                    'url' => route('business-licenses.show', $license),
+                    'label' => 'View'
+                ]
             ]);
-            
+        }
+
+        // NEW: Recent renewals
+        $recentRenewals = BusinessLicense::whereNotNull('renewal_date')
+            ->where('renewal_date', '>=', now()->subDays(30))
+            ->with(['department'])
+            ->latest('renewal_date')
+            ->limit(2)
+            ->get();
+
+        foreach ($recentRenewals as $license) {
+            $activities->push([
+                'icon' => '🔄',
+                'color' => '#4caf50',
+                'title' => 'License Renewed',
+                'description' => "Renewed: {$license->license_name} until {$license->expiry_date->format('M Y')}",
+                'time' => $license->renewal_date->diffForHumans(),
+                'action' => [
+                    'url' => route('business-licenses.show', $license),
+                    'label' => 'View'
+                ]
+            ]);
+        }
+
+        // NEW: Expired licenses today
+        $expiredToday = BusinessLicense::whereDate('expiry_date', today())
+            ->get();
+
+        foreach ($expiredToday as $license) {
             $activities->push([
                 'icon' => '⚠️',
                 'color' => '#f44336',
-                'title' => 'Service Alert',
-                'description' => 'Terminal POS-045 reported offline, technician dispatched',
-                'time' => '4 hours ago',
+                'title' => 'License Expired',
+                'description' => "EXPIRED: {$license->license_name}",
+                'time' => 'Today',
+                'action' => [
+                    'url' => route('business-licenses.renew', $license),
+                    'label' => 'Renew'
+                ]
             ]);
         }
         
-        return $activities->sortByDesc('time')->take(8);
+        // Recent job assignments
+        $recentJobs = JobAssignment::with('technician')
+            ->latest()
+            ->limit(3)
+            ->get();
+            
+        foreach ($recentJobs as $job) {
+            $activities->push([
+                'icon' => '📋',
+                'color' => '#ff9800',
+                'title' => 'Job Assignment Created',
+                'description' => "Assignment {$job->assignment_id} created for {$job->technician->name}",
+                'time' => $job->created_at->diffForHumans(),
+            ]);
+        }
+        
+        // Recent technician visits
+        $recentVisits = TechnicianVisit::with(['technician', 'posTerminal'])
+            ->latest('visit_date')
+            ->limit(2)
+            ->get();
+            
+        foreach ($recentVisits as $visit) {
+            $activities->push([
+                'icon' => '🔧',
+                'color' => '#9c27b0',
+                'title' => 'Technician Visit Completed',
+                'description' => "{$visit->technician->name} visited terminal {$visit->posTerminal->terminal_id}",
+                'time' => $visit->visit_date->diffForHumans(),
+            ]);
+        }
+
+        return $activities->sortByDesc('time')->take(15); // Increased to 15 to show more activities
     }
 
     private function getTopClients()
@@ -218,6 +412,8 @@ class DashboardController extends Controller
                     'id' => $client->id,
                     'name' => $client->company_name,
                     'terminals' => $client->pos_terminals_count,
+                    'status' => $client->status,
+                    'contract_active' => $client->is_contract_active,
                 ];
             });
     }
@@ -226,16 +422,86 @@ class DashboardController extends Controller
     {
         $alerts = collect();
         
-        // Check for terminals needing attention
+        // NEW: License alerts (highest priority)
+        $expiredLicenses = BusinessLicense::expired()->count();
+        if ($expiredLicenses > 0) {
+            $alerts->push([
+                'type' => 'critical',
+                'icon' => '⚠️',
+                'message' => "{$expiredLicenses} business licenses expired - immediate action required!"
+            ]);
+        }
+
+        $expiringSoon = BusinessLicense::expiringSoon(30)->count();
+        if ($expiringSoon > 0) {
+            $alerts->push([
+                'type' => 'warning',
+                'icon' => '⏰',
+                'message' => "{$expiringSoon} business licenses expiring within 30 days"
+            ]);
+        }
+
+        $criticalExpired = BusinessLicense::where('priority_level', 'critical')
+            ->expired()->count();
+        if ($criticalExpired > 0) {
+            $alerts->push([
+                'type' => 'critical',
+                'icon' => '🚨',
+                'message' => "{$criticalExpired} critical business licenses expired - high business impact!"
+            ]);
+        }
+
+        // High-cost renewals
+        $highCostRenewals = BusinessLicense::expiringSoon(30)
+            ->where('renewal_cost', '>', 5000)
+            ->count();
+        
+        if ($highCostRenewals > 0) {
+            $alerts->push([
+                'type' => 'info',
+                'icon' => '💰',
+                'message' => "{$highCostRenewals} high-cost license renewals (\$5K+) coming up"
+            ]);
+        }
+
+        // Compliance rate alert
+        $totalLicenses = BusinessLicense::count();
+        if ($totalLicenses > 0) {
+            $compliantLicenses = BusinessLicense::where('status', 'active')
+                ->where('expiry_date', '>', now()->addDays(30))
+                ->count();
+            $complianceRate = round(($compliantLicenses / $totalLicenses) * 100);
+            
+            if ($complianceRate < 80) {
+                $alerts->push([
+                    'type' => 'warning',
+                    'icon' => '📋',
+                    'message' => "License compliance rate below 80% ({$complianceRate}%) - review needed"
+                ]);
+            }
+        }
+        
+        // Critical: Faulty terminals
         $faultyCount = PosTerminal::where('status', 'faulty')->count();
         if ($faultyCount > 0) {
             $alerts->push([
                 'type' => 'critical',
-                'message' => "{$faultyCount} terminals require immediate attention"
+                'icon' => '⚠️',
+                'message' => "{$faultyCount} terminals are faulty and need immediate attention"
             ]);
         }
         
-        // Check for clients with expiring contracts
+        // High: Offline terminals
+        $offlineCount = PosTerminal::where('status', 'offline')->count();
+        if ($offlineCount > 5) {
+            $alerts->push([
+                'type' => 'warning',
+                'icon' => '📶',
+                'message' => "{$offlineCount} terminals are offline"
+            ]);
+        }
+        
+        // Contracts expiring soon
         $expiringContracts = Client::where('contract_end_date', '<=', now()->addDays(30))
             ->where('contract_end_date', '>', now())
             ->count();
@@ -243,21 +509,154 @@ class DashboardController extends Controller
         if ($expiringContracts > 0) {
             $alerts->push([
                 'type' => 'warning',
+                'icon' => '📄',
                 'message' => "{$expiringContracts} client contracts expiring within 30 days"
             ]);
         }
         
-        // Check for high offline terminals in any region
-        $regions = $this->getRegionalData();
-        foreach ($regions as $region => $data) {
-            if ($data['total'] > 0 && ($data['issues'] / $data['total']) > 0.2) {
-                $alerts->push([
-                    'type' => 'warning',
-                    'message' => "High offline rate detected in {$region} region"
-                ]);
-            }
+        // Pending asset requests
+        $pendingRequests = AssetRequest::where('status', 'pending')->count();
+        if ($pendingRequests > 10) {
+            $alerts->push([
+                'type' => 'info',
+                'icon' => '📦',
+                'message' => "{$pendingRequests} asset requests pending approval"
+            ]);
+        }
+        
+        // Unassigned job assignments
+        $unassignedJobs = JobAssignment::where('status', 'assigned')
+            ->where('scheduled_date', '<', now())
+            ->count();
+            
+        if ($unassignedJobs > 0) {
+            $alerts->push([
+                'type' => 'warning',
+                'icon' => '📋',
+                'message' => "{$unassignedJobs} overdue job assignments"
+            ]);
         }
         
         return $alerts;
+    }
+
+    private function getMonthlyTrends()
+    {
+        $months = [];
+        $terminals = [];
+        $clients = [];
+        $licenses = []; // NEW: License trends
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $months[] = $date->format('M Y');
+            
+            // Terminals added each month
+            $terminals[] = PosTerminal::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+                
+            // Clients added each month
+            $clients[] = Client::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+                
+            // NEW: Licenses added each month
+            $licenses[] = BusinessLicense::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+        }
+        
+        return [
+            'months' => $months,
+            'terminals' => $terminals,
+            'clients' => $clients,
+            'licenses' => $licenses, // NEW
+        ];
+    }
+
+    private function getContractStats()
+    {
+        $total = Client::whereNotNull('contract_start_date')->count();
+        $active = Client::where('status', 'active')
+            ->whereNotNull('contract_start_date')
+            ->whereNotNull('contract_end_date')
+            ->where('contract_start_date', '<=', now())
+            ->where('contract_end_date', '>=', now())
+            ->count();
+        $expired = Client::where('contract_end_date', '<', now())->count();
+        $expiringSoon = Client::whereBetween('contract_end_date', [now(), now()->addDays(30)])->count();
+        
+        return [
+            'total' => $total,
+            'active' => $active,
+            'expired' => $expired,
+            'expiring_soon' => $expiringSoon,
+        ];
+    }
+
+    private function getEmployeeStats()
+    {
+        $totalEmployees = Employee::where('status', 'active')->count();
+        $technicians = Employee::fieldTechnicians()->active()->count();
+        $managers = Employee::managers()->active()->count();
+        
+        return [
+            'total' => $totalEmployees,
+            'technicians' => $technicians,
+            'managers' => $managers,
+        ];
+    }
+
+    private function getAverageResponseTime()
+    {
+        // Calculate from job assignments (hours between creation and start)
+        $avgHours = JobAssignment::whereNotNull('actual_start_time')
+            ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, created_at, actual_start_time)) as avg_hours')
+            ->value('avg_hours');
+            
+        return round($avgHours ?: 24, 1); // Default to 24 hours if no data
+    }
+
+    private function getServiceLevel()
+    {
+        // Calculate service level based on completed vs assigned jobs
+        $totalJobs = JobAssignment::count();
+        $completedJobs = JobAssignment::where('status', 'completed')->count();
+        
+        return $totalJobs > 0 ? round(($completedJobs / $totalJobs) * 100, 1) : 100;
+    }
+
+    private function getTechnicianTerritories($technicianId)
+    {
+        // Get regions where this technician has worked
+        return JobAssignment::where('technician_id', $technicianId)
+            ->join('regions', 'job_assignments.region_id', '=', 'regions.id')
+            ->pluck('regions.name')
+            ->unique()
+            ->values()
+            ->toArray();
+    }
+
+    private function getEmployeeRecentActivity($employeeId)
+    {
+        $activities = collect();
+        
+        // Recent asset requests
+        $recentRequests = AssetRequest::where('employee_id', $employeeId)
+            ->latest()
+            ->limit(5)
+            ->get();
+            
+        foreach ($recentRequests as $request) {
+            $activities->push([
+                'type' => 'asset_request',
+                'title' => "Asset Request {$request->request_number}",
+                'status' => $request->status,
+                'date' => $request->created_at,
+            ]);
+        }
+        
+        return $activities->sortByDesc('date')->take(5);
     }
 }

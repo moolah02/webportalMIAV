@@ -28,6 +28,12 @@ class Client extends Model
         'contract_end_date' => 'date',
     ];
 
+    // Add this accessor to handle 'name' attribute
+    public function getNameAttribute()
+    {
+        return $this->company_name;
+    }
+
     // Accessors for status badges (matching your existing status values)
     public function getStatusBadgeAttribute()
     {
@@ -73,7 +79,22 @@ class Client extends Model
         return implode(', ', $parts);
     }
 
-    // Relationships (add these when you create related models)
+    // Relationships
+    public function posTerminals()
+    {
+        return $this->hasMany(PosTerminal::class);
+    }
+
+    public function jobAssignments()
+    {
+        return $this->hasMany(JobAssignment::class, 'client_id');
+    }
+
+    public function technicianVisits()
+    {
+        return $this->hasMany(TechnicianVisit::class, 'client_id');
+    }
+
     public function projects()
     {
         return $this->hasMany(Project::class);
@@ -102,12 +123,7 @@ class Client extends Model
             ->where('contract_start_date', '<=', now())
             ->where('contract_end_date', '>=', now());
     }
-public function posTerminals()
-    {
-        return $this->hasMany(PosTerminal::class);
-    }
 
-    
     public function scopeContractExpiring($query, $days = 30)
     {
         return $query->whereNotNull('contract_end_date')
@@ -116,4 +132,5 @@ public function posTerminals()
                 now()->addDays($days)
             ]);
     }
+    
 }

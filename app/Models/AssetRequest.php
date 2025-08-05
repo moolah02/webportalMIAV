@@ -56,7 +56,11 @@ class AssetRequest extends Model
     {
         return $this->hasMany(AssetRequestItem::class);
     }
-
+// In your AssetRequest model
+public function getRouteKeyName()
+{
+    return 'id'; // or whatever column you want to use for route binding
+}
     // Scopes
     public function scopePending($query)
     {

@@ -9,7 +9,7 @@ File: resources/views/roles/index.blade.php
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <h2 style="margin: 0; color: #333;">🔑 Role Management</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Manage user roles and permissions</p>
@@ -18,7 +18,7 @@ File: resources/views/roles/index.blade.php
     </div>
 
     <!-- Statistics Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-block-end: 30px;">
         <div class="metric-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="font-size: 32px;">🔑</div>
@@ -61,7 +61,7 @@ File: resources/views/roles/index.blade.php
     </div>
 
     <!-- Search -->
-    <div class="content-card" style="margin-bottom: 20px;">
+    <div class="content-card" style="margin-block-end: 20px;">
         <form method="GET" style="display: flex; gap: 15px; align-items: center;">
             <input type="text" name="search" value="{{ request('search') }}" 
                    placeholder="Search roles..." 
@@ -78,7 +78,7 @@ File: resources/views/roles/index.blade.php
         @forelse($roles as $role)
         <div class="role-card">
             <!-- Role Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 15px;">
                 <div>
                     <h4 style="margin: 0; color: #333; display: flex; align-items: center; gap: 8px;">
                         @if(is_array($role->permissions) && in_array('all', $role->permissions))
@@ -106,8 +106,8 @@ File: resources/views/roles/index.blade.php
             </div>
 
             <!-- Permissions Preview -->
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px; min-height: 100px;">
-                <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px;">Permissions</div>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-block-end: 15px; min-height: 100px;">
+                <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 8px;">Permissions</div>
                 <div style="display: flex; flex-wrap: wrap; gap: 4px;">
                     @if(!is_array($role->permissions) || empty($role->permissions))
                         <span style="color: #999; font-style: italic;">No permissions assigned</span>
@@ -141,24 +141,24 @@ File: resources/views/roles/index.blade.php
                 <a href="{{ route('roles.edit', $role) }}" class="btn-small" style="text-align: center;">
                     Edit
                 </a>
-                <button onclick="showQuickActions({{ $role->id }}, '{{ $role->name }}')" class="btn-small" style="width: 100%;">
+                <button onclick="showQuickActions({{ $role->id }}, '{{ $role->name }}')" class="btn-small" style="inline-size: 100%;">
                     More
                 </button>
             </div>
         </div>
         @empty
         <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #666;">
-            <div style="font-size: 64px; margin-bottom: 20px;">🔑</div>
+            <div style="font-size: 64px; margin-block-end: 20px;">🔑</div>
             <h3>No roles found</h3>
             <p>Create your first role to get started.</p>
-            <a href="{{ route('roles.create') }}" class="btn btn-primary" style="margin-top: 15px;">Create First Role</a>
+            <a href="{{ route('roles.create') }}" class="btn btn-primary" style="margin-block-start: 15px;">Create First Role</a>
         </div>
         @endforelse
     </div>
 
     <!-- Pagination -->
     @if(method_exists($roles, 'links'))
-    <div style="margin-top: 30px; display: flex; justify-content: center;">
+    <div style="margin-block-start: 30px; display: flex; justify-content: center;">
         {{ $roles->appends(request()->query())->links() }}
     </div>
     @endif

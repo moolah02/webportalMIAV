@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\AssetRequest;
 use App\Models\AssetRequestItem;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,16 +18,43 @@ class AssetRequestController extends Controller
 
     // Shopping Cart - Browse Assets
     public function catalog(Request $request)
-{
-    $assets = Asset::where('is_requestable', true)
-        ->where('status', 'active')
-        ->paginate(12);
-    
-    $categories = collect(['Hardware', 'Software', 'Mobile Devices', 'Furniture', 'Office Supplies']);
-    $cartItemCount = 0;
+    {
+        $query = Asset::where('is_requestable', true)
+            ->where('status', 'asset-active') // Fixed: Use correct status format
+            ->where('stock_quantity', '>', 0); // Only show in-stock items
 
-    return view('asset-requests.catalog', compact('assets', 'categories', 'cartItemCount'));
-}
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhere('model', 'like', "%{$search}%");
+            });
+        }
+
+        // Category filter
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        $assets = $query->latest()->paginate(12);
+
+        // Get actual categories from database
+        $categories = Category::ofType('asset_category')
+            ->active()
+            ->ordered()
+            ->pluck('name')
+            ->toArray();
+
+        // Get cart item count
+        $cart = session('asset_cart', []);
+        $cartItemCount = array_sum(array_column($cart, 'quantity'));
+
+        return view('asset-requests.catalog', compact('assets', 'categories', 'cartItemCount'));
+    }
+
     // Add to Cart
     public function addToCart(Request $request, Asset $asset)
     {
@@ -42,7 +70,12 @@ class AssetRequestController extends Controller
         $assetId = $asset->id;
 
         if (isset($cart[$assetId])) {
-            $cart[$assetId]['quantity'] += $request->quantity;
+            $newQuantity = $cart[$assetId]['quantity'] + $request->quantity;
+            // Check if new quantity exceeds stock
+            if ($newQuantity > $asset->stock_quantity) {
+                return back()->with('error', 'Cannot add more items. Stock limit would be exceeded.');
+            }
+            $cart[$assetId]['quantity'] = $newQuantity;
         } else {
             $cart[$assetId] = [
                 'asset_id' => $asset->id,
@@ -53,14 +86,9 @@ class AssetRequestController extends Controller
             ];
         }
 
-        // Ensure we don't exceed stock
-        if ($cart[$assetId]['quantity'] > $asset->stock_quantity) {
-            $cart[$assetId]['quantity'] = $asset->stock_quantity;
-        }
-
         session(['asset_cart' => $cart]);
 
-        return back()->with('success', 'Asset added to cart!');
+        return back()->with('success', 'Asset added to cart successfully!');
     }
 
     // View Cart
@@ -94,16 +122,18 @@ class AssetRequestController extends Controller
 
         if ($request->quantity == 0) {
             unset($cart[$assetId]);
+            session(['asset_cart' => $cart]);
+            return back()->with('success', 'Item removed from cart!');
         } else {
             $asset = Asset::find($assetId);
             if ($asset && $request->quantity <= $asset->stock_quantity) {
                 $cart[$assetId]['quantity'] = $request->quantity;
+                session(['asset_cart' => $cart]);
+                return back()->with('success', 'Cart updated successfully!');
+            } else {
+                return back()->with('error', 'Invalid quantity or insufficient stock.');
             }
         }
-
-        session(['asset_cart' => $cart]);
-
-        return back()->with('success', 'Cart updated!');
     }
 
     // Remove from Cart
@@ -126,7 +156,21 @@ class AssetRequestController extends Controller
                 ->with('error', 'Your cart is empty.');
         }
 
-        return view('asset-requests.checkout', compact('cart'));
+        // Calculate total and validate cart items
+        $cartItems = [];
+        $total = 0;
+
+        foreach ($cart as $item) {
+            $asset = Asset::find($item['asset_id']);
+            if ($asset && $asset->canBeRequested($item['quantity'])) {
+                $item['asset'] = $asset;
+                $item['subtotal'] = $item['quantity'] * $item['unit_price'];
+                $total += $item['subtotal'];
+                $cartItems[] = $item;
+            }
+        }
+
+        return view('asset-requests.checkout', compact('cartItems', 'total'));
     }
 
     // Submit Request
@@ -148,6 +192,12 @@ class AssetRequestController extends Controller
         try {
             DB::beginTransaction();
 
+            // Calculate total cost
+            $totalCost = 0;
+            foreach ($cart as $item) {
+                $totalCost += $item['quantity'] * $item['unit_price'];
+            }
+
             // Create the main request
             $assetRequest = AssetRequest::create([
                 'employee_id' => auth()->id(),
@@ -155,6 +205,7 @@ class AssetRequestController extends Controller
                 'needed_by_date' => $request->needed_by_date,
                 'delivery_instructions' => $request->delivery_instructions,
                 'priority' => $request->priority,
+                'total_estimated_cost' => $totalCost,
                 'department' => auth()->user()->department->name ?? null,
                 'status' => 'pending',
             ]);
@@ -169,6 +220,7 @@ class AssetRequestController extends Controller
                         'asset_id' => $asset->id,
                         'quantity_requested' => $item['quantity'],
                         'unit_price_at_request' => $asset->unit_price,
+                        'total_price' => $item['quantity'] * $asset->unit_price,
                         'item_status' => 'pending',
                     ]);
                 }
@@ -184,6 +236,7 @@ class AssetRequestController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+            \Log::error('Asset request submission failed: ' . $e->getMessage());
             
             return back()
                 ->with('error', 'Failed to submit request. Please try again.')
@@ -217,7 +270,7 @@ class AssetRequestController extends Controller
             abort(403);
         }
 
-        $assetRequest->load(['items.asset', 'employee', 'approver', 'fulfiller']);
+        $assetRequest->load(['items.asset', 'employee.role', 'employee.department', 'approver', 'fulfiller']);
 
         return view('asset-requests.show', compact('assetRequest'));
     }
@@ -236,5 +289,14 @@ class AssetRequestController extends Controller
         $assetRequest->update(['status' => 'cancelled']);
 
         return back()->with('success', 'Request cancelled successfully.');
+    }
+
+    // Get cart count for AJAX requests
+    public function getCartCount()
+    {
+        $cart = session('asset_cart', []);
+        $count = array_sum(array_column($cart, 'quantity'));
+        
+        return response()->json(['count' => $count]);
     }
 }

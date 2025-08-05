@@ -11,6 +11,37 @@ use App\Http\Controllers\AssetRequestController;
 use App\Http\Controllers\AssetController; 
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\BusinessLicenseController;
+use App\Http\Controllers\DeploymentController;
+use App\Http\Controllers\JobAssignmentController;
+use App\Http\Controllers\TechnicianReportsController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\DeploymentPlanningController;
+
+// ==============================================
+// ROOT ROUTE - SMART REDIRECT
+// ==============================================
+
+Route::get('/', function () {
+    if (auth()->check()) {
+        $employee = auth()->user();
+        
+        if (!$employee->isActive()) {
+            auth()->logout();
+            return redirect('/login')->withErrors(['email' => 'Your account has been deactivated.']);
+        }
+        
+        if ($employee->hasPermission('all') || $employee->hasPermission('view_dashboard')) {
+            return redirect('/dashboard');
+        } elseif ($employee->hasPermission('view_jobs')) {
+            return redirect('/technician/dashboard');
+        } else {
+            return redirect('/employee/dashboard');
+        }
+    }
+    
+    return redirect('/login');
+})->name('home');
 
 // ==============================================
 // GUEST ROUTES (Login/Register)
@@ -30,7 +61,10 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
     // Logout route
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     
-    // Dashboard routes based on permissions
+    // ==============================================
+    // DASHBOARD ROUTES
+    // ==============================================
+    
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware('permission:view_dashboard')
         ->name('dashboard');
@@ -44,36 +78,72 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         ->name('employee.dashboard');
     
     // ==============================================
-    //// ==============================================
-// CLIENT MANAGEMENT ROUTES - FIXED VERSION
-// Replace your current client routes with this:
-// ==============================================
-
-// Client routes with proper middleware separation
-Route::middleware(['auth', 'active.employee'])->group(function () {
+    // CLIENT MANAGEMENT ROUTES
+    // ==============================================
     
-    // Read-only client routes (index, show) - accessible to more roles
-    Route::middleware('permission:view_clients,manage_team,all')->group(function () {
-        Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
-        Route::get('/clients/{client}', [ClientController::class, 'show'])->name('clients.show');
+    Route::prefix('clients')->name('clients.')->group(function () {
+        // Read-only client routes (index, show)
+        Route::middleware('permission:view_clients,manage_team,all')->group(function () {
+            Route::get('/', [ClientController::class, 'index'])->name('index');
+            Route::get('/{client}', [ClientController::class, 'show'])->name('show');
+        });
+        
+        // Write client routes (create, edit, delete)
+        Route::middleware('permission:manage_team,all')->group(function () {
+            Route::get('/create', [ClientController::class, 'create'])->name('create');
+            Route::post('/', [ClientController::class, 'store'])->name('store');
+            Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
+            Route::put('/{client}', [ClientController::class, 'update'])->name('update');
+            Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+        });
     });
     
-    // Write client routes (create, edit, delete) - restricted to managers and admins
-    Route::middleware('permission:manage_team,all')->group(function () {
-        Route::get('/clients/create', [ClientController::class, 'create'])->name('clients.create');
-        Route::post('/clients', [ClientController::class, 'store'])->name('clients.store');
-        Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
-        Route::put('/clients/{client}', [ClientController::class, 'update'])->name('clients.update');
-        Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
-    });
-});
-    
-
-    
     // ==============================================
-    // POS TERMINAL ROUTES
+    // POS TERMINAL ROUTES - FIXED AND CONSOLIDATED
     // ==============================================
+    
     Route::prefix('pos-terminals')->name('pos-terminals.')->group(function () {
+        // SPECIFIC ROUTES FIRST (must come before dynamic routes)
+        
+        // Column Mapping Routes
+        Route::get('/column-mapping', [PosTerminalController::class, 'showColumnMapping'])
+            ->middleware('permission:manage_team,all')
+            ->name('column-mapping');
+            
+        Route::post('/column-mapping', [PosTerminalController::class, 'storeColumnMapping'])
+            ->middleware('permission:manage_team,all')
+            ->name('store-mapping');
+            
+        Route::delete('/column-mapping/{mapping}', [PosTerminalController::class, 'deleteColumnMapping'])
+            ->middleware('permission:manage_team,all')
+            ->name('delete-mapping');
+            
+        Route::patch('/column-mapping/{mapping}/toggle', [PosTerminalController::class, 'toggleColumnMapping'])
+            ->middleware('permission:manage_team,all')
+            ->name('toggle-mapping');
+        
+        // Import/Export Routes
+        Route::get('/import', [PosTerminalController::class, 'showImport'])
+            ->middleware('permission:manage_team,all')
+            ->name('import.form');
+            
+        Route::post('/import', [PosTerminalController::class, 'import'])
+            ->middleware('permission:manage_team,all')
+            ->name('import');
+            
+        Route::post('/preview-import', [PosTerminalController::class, 'previewImport'])
+            ->middleware('permission:manage_team,all')
+            ->name('preview-import');
+            
+        Route::get('/download-template', [PosTerminalController::class, 'downloadTemplate'])
+            ->middleware('permission:manage_team,all')
+            ->name('download-template');
+            
+        Route::get('/export', [PosTerminalController::class, 'export'])
+            ->middleware('permission:view_terminals,manage_team,all')
+            ->name('export');
+        
+        // CRUD Routes (dynamic routes come LAST)
         Route::get('/', [PosTerminalController::class, 'index'])
             ->middleware('permission:view_terminals,manage_team,all')
             ->name('index');
@@ -86,6 +156,7 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->middleware('permission:update_terminals,manage_team,all')
             ->name('store');
             
+        // Individual terminal routes (MUST be last due to {posTerminal} parameter)
         Route::get('/{posTerminal}', [PosTerminalController::class, 'show'])
             ->middleware('permission:view_terminals,manage_team,all')
             ->name('show');
@@ -102,35 +173,272 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->middleware('permission:all')
             ->name('destroy');
             
-        // Status update route
         Route::patch('/{posTerminal}/status', [PosTerminalController::class, 'updateStatus'])
             ->middleware('permission:update_terminals,manage_team,all')
             ->name('update-status');
-            
-        // Import routes
-        Route::get('/import/show', [PosTerminalController::class, 'showImport'])
-            ->middleware('permission:manage_team,all')
-            ->name('import.show');
-            
-        Route::post('/import/process', [PosTerminalController::class, 'import'])
-            ->middleware('permission:manage_team,all')
-            ->name('import.process');
+    });
+    
+    // ==============================================
+    // DEPLOYMENT PLANNING ROUTES (NEW)
+    // ==============================================
+    
+    
+
+
+Route::middleware(['auth','permission:manage_team,all'])->prefix('deployment')->name('deployment.')->group(function() {
+    // GET  /deployment                      → index()
+    Route::get('/', [DeploymentPlanningController::class,'index'])->name('index');
+
+    // POST /deployment                      → store()
+    Route::post('/', [DeploymentPlanningController::class,'store'])->name('store');
+
+    // GET  /deployment/analytics            → analytics()
+    Route::get('/analytics', [DeploymentPlanningController::class,'analytics'])->name('analytics');
+
+    // GET  /deployment/export               → export()
+    Route::get('/export', [DeploymentPlanningController::class,'export'])->name('export');
+
+    // GET  /deployment/{template}           → show()
+    Route::get('/{template}', [DeploymentPlanningController::class,'show'])->name('show');
+
+    // POST /deployment/{template}/deploy    → deploy()
+    Route::post('/{template}/deploy', [DeploymentPlanningController::class,'deploy'])->name('deploy');
+
+    // PUT  /deployment/{template}           → update()
+    Route::put('/{template}', [DeploymentPlanningController::class,'update'])->name('update');
+
+    // DELETE /deployment/{template}         → destroy()
+    Route::delete('/{template}', [DeploymentPlanningController::class,'destroy'])->name('destroy');
+
+    // AJAX: GET /deployment/regions/{region}/terminals → getRegionTerminals()
+    Route::get('/regions/{region}/terminals', [DeploymentPlanningController::class,'getRegionTerminals'])
+         ->name('regions.terminals');
+
+            // Get cities for client (for city grouping)
+    Route::get('/api/clients/{client}/cities', [DeploymentPlanningController::class, 'getCitiesByClient'])
+         ->name('api.cities');
+    
+    // Get addresses for client (for address grouping)  
+    Route::get('/api/clients/{client}/addresses', [DeploymentPlanningController::class, 'getAddressesByClient'])
+         ->name('api.addresses');
+    
+    // Get filtered terminals (enhanced version)
+    Route::get('/api/terminals', [DeploymentPlanningController::class, 'getFilteredTerminals'])
+         ->name('api.terminals');
+});
+
+
+    // ==============================================
+    // JOB ASSIGNMENT ROUTES (FIXED)
+    // ==============================================
+    
+    Route::prefix('jobs')->name('jobs.')->middleware('permission:manage_team,all')->group(function () {
+        // Main assignment page
+        Route::get('/assignment', [JobAssignmentController::class, 'index'])->name('assignment');
+        
+        // Store new assignment
+        Route::post('/assignment', [JobAssignmentController::class, 'store'])->name('assignment.store');
+        
+        // Get region terminals for AJAX
+        Route::get('/regions/{region}/terminals', [JobAssignmentController::class, 'getRegionTerminals'])->name('regions.terminals');
+        
+        // Assignment management routes
+        Route::get('/assignment/{assignment}', [JobAssignmentController::class, 'show'])->name('assignment.show');
+        Route::get('/assignment/{assignment}/edit', [JobAssignmentController::class, 'edit'])->name('assignment.edit');
+        Route::put('/assignment/{assignment}', [JobAssignmentController::class, 'update'])->name('assignment.update');
+        Route::post('/assignment/{assignment}/cancel', [JobAssignmentController::class, 'cancel'])->name('assignment.cancel');
+        Route::post('/assignment/{assignment}/status', [JobAssignmentController::class, 'updateStatus'])->name('assignment.updateStatus');
+        
+        // Export route
+        Route::get('/assignment/export', [JobAssignmentController::class, 'export'])->name('assignment.export');
+    });
+
+    // ==============================================
+    // API ROUTES FOR AJAX CALLS
+    // ==============================================
+    
+    Route::prefix('api')->name('api.')->group(function () {
+        // Terminals API for the JavaScript AJAX calls
+        Route::get('/terminals', [JobAssignmentController::class, 'getRegionTerminals'])->name('terminals');
+        Route::get('/regions/{regionId}/terminals', [JobAssignmentController::class, 'getRegionTerminals']);
+    });
+
+    // ==============================================
+    // ASSIGNMENT ROUTES (for JavaScript compatibility)
+    // ==============================================
+    
+    Route::prefix('assignments')->name('assignments.')->group(function () {
+        Route::get('/{assignment}', [JobAssignmentController::class, 'show'])->name('show');
+        Route::post('/{assignment}/complete', [JobAssignmentController::class, 'updateStatus'])->name('complete');
+        Route::get('/export', [JobAssignmentController::class, 'export'])->name('export');
     });
     
     // ==============================================
     // TECHNICIAN MANAGEMENT ROUTES
     // ==============================================
+    
     Route::middleware('permission:manage_team,all')->group(function () {
         Route::resource('technicians', TechnicianController::class);
         
-        // Availability update route
         Route::patch('/technicians/{technician}/availability', [TechnicianController::class, 'updateAvailability'])
             ->name('technicians.update-availability');
+    });
+    
+   // ==============================================
+// ASSET MANAGEMENT ROUTES (UPDATED)
+// ==============================================
+
+Route::prefix('assets')->name('assets.')->group(function () {
+    // Main CRUD routes
+    Route::get('/', [AssetController::class, 'index'])->name('index');
+    Route::get('/create', [AssetController::class, 'create'])->name('create');
+    Route::post('/', [AssetController::class, 'store'])->name('store');
+    Route::get('/{asset}', [AssetController::class, 'show'])->name('show');
+    Route::get('/{asset}/edit', [AssetController::class, 'edit'])->name('edit');
+    Route::put('/{asset}', [AssetController::class, 'update'])->name('update');
+    Route::delete('/{asset}', [AssetController::class, 'destroy'])->name('destroy');
+    
+    // AJAX and API routes
+    Route::post('/{asset}/update-stock', [AssetController::class, 'updateStock'])->name('update-stock');
+    Route::post('/bulk-update-stock', [AssetController::class, 'bulkUpdateStock'])->name('bulk-update-stock');
+    Route::get('/export/csv', [AssetController::class, 'export'])->name('export');
+    Route::get('/alerts/low-stock', [AssetController::class, 'lowStockAlerts'])->name('low-stock-alerts');
+    Route::get('/{asset}/vehicle-info', [AssetController::class, 'getVehicleInfo'])->name('vehicle-info');
+    
+    // Legacy routes for compatibility
+    Route::get('/internal', function () {
+        if (auth()->user()->hasPermission('manage_assets') || auth()->user()->hasPermission('all')) {
+            return redirect()->route('assets.index');
+        } else {
+            return redirect()->route('asset-requests.catalog');
+        }
+    })->name('internal');
+    
+    Route::get('/licenses', function () { 
+        return view('assets.licenses', ['title' => 'Business Licenses']); 
+    })->middleware('permission:manage_assets,all')->name('licenses');
+});
+    
+    // ==============================================
+    // ASSET REQUEST ROUTES
+    // ==============================================
+    
+    Route::prefix('asset-requests')->name('asset-requests.')->group(function () {
+        Route::get('/catalog', [AssetRequestController::class, 'catalog'])->name('catalog');
+        Route::post('/cart/add/{asset}', [AssetRequestController::class, 'addToCart'])->name('cart.add');
+        Route::get('/cart', [AssetRequestController::class, 'cart'])->name('cart');
+        Route::patch('/cart/{asset}', [AssetRequestController::class, 'updateCart'])->name('cart.update');
+        Route::delete('/cart/{asset}', [AssetRequestController::class, 'removeFromCart'])->name('cart.remove');
+        Route::get('/checkout', [AssetRequestController::class, 'checkout'])->name('checkout');
+        Route::post('/', [AssetRequestController::class, 'store'])->name('store');
+        Route::get('/', [AssetRequestController::class, 'index'])->name('index');
+        Route::get('/{assetRequest}', [AssetRequestController::class, 'show'])->name('show');
+        Route::patch('/{assetRequest}/cancel', [AssetRequestController::class, 'cancel'])->name('cancel');
+    });
+    
+    // ==============================================
+    // ASSET APPROVAL ROUTES
+    // ==============================================
+  Route::middleware(['auth'])->group(function () {
+    Route::get('/asset-approvals', [AssetApprovalController::class, 'index'])->name('asset-approvals.index');
+    Route::get('/asset-approvals/{id}', [AssetApprovalController::class, 'show'])->name('asset-approvals.show');
+    Route::post('/asset-approvals/{id}/approve', [AssetApprovalController::class, 'approve'])->name('asset-approvals.approve');
+    Route::post('/asset-approvals/{id}/reject', [AssetApprovalController::class, 'reject'])->name('asset-approvals.reject');
+    Route::post('/asset-approvals/bulk-action', [AssetApprovalController::class, 'bulkAction'])->name('asset-approvals.bulk-action');
+    
+    // Optional additional routes
+    Route::get('/asset-approvals/stats/data', [AssetApprovalController::class, 'getStats'])->name('asset-approvals.stats');
+    Route::get('/asset-approvals/export/report', [AssetApprovalController::class, 'exportReport'])->name('asset-approvals.export');
+});
+
+
+
+    // ==============================================
+   // ASSET ASSIGNMENT ROUTES (NEW)
+   // ==============================================
+
+Route::middleware(['auth'])->group(function () {
+    
+    // Asset assignment management
+    Route::post('/assets/assign', [AssetController::class, 'assignAsset'])->name('assets.assign');
+    Route::patch('/asset-assignments/{assignment}/return', [AssetController::class, 'returnAsset'])->name('asset-assignments.return');
+    Route::patch('/asset-assignments/{assignment}/transfer', [AssetController::class, 'transferAsset'])->name('asset-assignments.transfer');
+    
+    // AJAX routes for asset assignments
+    Route::get('/asset-assignments/{assignment}/data', [AssetController::class, 'getAssignmentData'])->name('asset-assignments.data');
+    Route::get('/employees/available', [AssetController::class, 'getAvailableEmployees'])->name('employees.available');
+    
+    // Asset assignment reports
+    Route::get('/assets/assignment-report', [AssetController::class, 'assignmentReport'])->name('assets.assignment-report');
+    Route::get('/assets/overdue-report', [AssetController::class, 'overdueReport'])->name('assets.overdue-report');
+    
+
+Route::middleware(['auth'])->group(function () {
+    // Asset assignment data (for Details button)
+    Route::get('/asset-assignments/{assignment}/data', [AssetController::class, 'getAssignmentData'])
+        ->name('asset-assignments.data');
+    
+    // Return asset (for Return button)  
+    Route::patch('/asset-assignments/{assignment}/return', [AssetController::class, 'returnAsset'])
+        ->name('asset-assignments.return');
+    
+   
+    // Asset assignment data (for Details button)
+    Route::get('/asset-assignments/{assignment}/data', [AssetController::class, 'getAssignmentData'])
+        ->name('asset-assignments.data');
+    
+    // Return asset (for Return button)  
+    Route::patch('/asset-assignments/{assignment}/return', [AssetController::class, 'returnAsset'])
+        ->name('asset-assignments.return');
+    
+    // Transfer asset (for Transfer button)
+    Route::patch('/asset-assignments/{assignment}/transfer', [AssetController::class, 'transferAsset'])
+        ->name('asset-assignments.transfer');
+
+    // Existing asset assignment route
+    Route::post('/assets/assign', [AssetController::class, 'assignAsset'])->name('assets.assign');
+});
+});
+    // ==============================================
+    // EMPLOYEE MANAGEMENT ROUTES
+    // ==============================================
+    
+    Route::prefix('employees')->name('employees.')->group(function () {
+        Route::get('/', [EmployeeController::class, 'index'])->name('index');
+        Route::get('/create', [EmployeeController::class, 'create'])->name('create');
+        Route::post('/', [EmployeeController::class, 'store'])->name('store');
+        Route::get('/{employee}', [EmployeeController::class, 'show'])->name('show');
+        Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])->name('edit');
+        Route::put('/{employee}', [EmployeeController::class, 'update'])->name('update');
+        Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->name('destroy');
+        
+        // Quick actions
+        Route::patch('/{employee}/role', [EmployeeController::class, 'updateRole'])->name('update-role');
+        Route::patch('/{employee}/status', [EmployeeController::class, 'toggleStatus'])->name('toggle-status');
+    });
+    
+    // ==============================================
+    // ROLE MANAGEMENT ROUTES
+    // ==============================================
+    
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [RoleController::class, 'index'])->name('index');
+        Route::get('/create', [RoleController::class, 'create'])->name('create');
+        Route::post('/', [RoleController::class, 'store'])->name('store');
+        Route::get('/{role}', [RoleController::class, 'show'])->name('show');
+        Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit');
+        Route::put('/{role}', [RoleController::class, 'update'])->name('update');
+        Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
+        
+        // Additional actions
+        Route::post('/{role}/clone', [RoleController::class, 'clone'])->name('clone');
+        Route::patch('/{role}/permissions', [RoleController::class, 'updatePermissions'])->name('update-permissions');
     });
     
     // ==============================================
     // ADMIN ROUTES
     // ==============================================
+    
     Route::middleware('permission:all')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/employees', function () { 
             return view('admin.employees', ['title' => 'Employee Management']); 
@@ -152,6 +460,7 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
     // ==============================================
     // MANAGER ROUTES
     // ==============================================
+    
     Route::middleware('permission:manage_team')->prefix('manager')->name('manager.')->group(function () {
         Route::get('/team', function () { 
             return view('manager.team', ['title' => 'Team Management']); 
@@ -167,57 +476,9 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
     });
     
     // ==============================================
-    // ASSET MANAGEMENT ROUTES (Simplified for now)
-    // ==============================================
-    Route::prefix('assets')->name('assets.')->group(function () {
-        // Internal Assets - accessible to those with manage_assets or view_own_data permission
-        Route::get('/internal', function () { 
-            return view('assets.internal', ['title' => 'Internal Assets']); 
-        })->middleware('permission:manage_assets,view_own_data')->name('internal');
-        
-     Route::middleware(['auth', 'active.employee'])->group(function () {
-    // Existing routes...
-    
-    // Asset Management Routes
-    Route::resource('assets', AssetController::class);
-    Route::get('assets/{asset}/assign', [AssetController::class, 'assign'])->name('assets.assign');
-    Route::post('assets/{asset}/assign', [AssetController::class, 'assignStore'])->name('assets.assign.store');
-    Route::get('assets/{asset}/history', [AssetController::class, 'history'])->name('assets.history');
-    
-Route::middleware(['auth', 'active.employee'])->group(function () {
-    // Asset Management Routes
-    Route::resource('assets', AssetController::class);
-    Route::post('assets/bulk-update-stock', [AssetController::class, 'bulkUpdateStock'])->name('assets.bulk-update-stock');
-    Route::get('assets/export', [AssetController::class, 'export'])->name('assets.export');
-    Route::get('assets/low-stock-alerts', [AssetController::class, 'lowStockAlerts'])->name('assets.low-stock-alerts');
-    
-    // Other existing routes...
-});
-
-    // Asset Categories
-    Route::get('assets/categories/manage', [AssetController::class, 'categories'])->name('assets.categories');
-    
-    // Quick asset actions
-    Route::patch('assets/{asset}/status', [AssetController::class, 'updateStatus'])->name('assets.status');
-});
-
-        // Asset Requests - accessible to all employees
-        Route::get('/requests', function () { 
-            return view('assets.requests', ['title' => 'Asset Requests']); 
-        })->middleware('permission:view_own_data,request_assets,all')->name('requests');
-        
-        // License Management - admin and managers only
-        Route::get('/licenses', function () { 
-            return view('assets.licenses', ['title' => 'Business Licenses']); 
-        })->middleware('permission:manage_assets,all')->name('licenses');
-    });
-    
-    Route::get('/asset-requests/catalog', [AssetRequestController::class, 'catalog'])->name('asset-requests.catalog');
-Route::get('/asset-requests/cart', [AssetRequestController::class, 'cart'])->name('asset-requests.cart');
-Route::post('/asset-requests/cart/add/{asset}', [AssetRequestController::class, 'addToCart'])->name('asset-requests.cart.add');
-    // ==============================================
     // TECHNICIAN ROUTES
     // ==============================================
+    
     Route::middleware('permission:view_jobs')->prefix('technician')->name('technician.')->group(function () {
         Route::get('/jobs', function () { 
             return view('technician.jobs', ['title' => 'Job Assignments']); 
@@ -235,6 +496,7 @@ Route::post('/asset-requests/cart/add/{asset}', [AssetRequestController::class, 
     // ==============================================
     // TICKET MANAGEMENT ROUTES
     // ==============================================
+    
     Route::prefix('tickets')->name('tickets.')->group(function () {
         Route::get('/', function () { 
             return view('tickets.index', ['title' => 'Tickets']); 
@@ -246,8 +508,9 @@ Route::post('/asset-requests/cart/add/{asset}', [AssetRequestController::class, 
     });
     
     // ==============================================
-    // REPORTS ROUTES
+    // REPORTS ROUTES (UPDATED)
     // ==============================================
+    
     Route::middleware('permission:view_reports,manage_team,all')->prefix('reports')->name('reports.')->group(function () {
         Route::get('/', function () { 
             return view('reports.index', ['title' => 'Reports Dashboard']); 
@@ -256,11 +519,20 @@ Route::post('/asset-requests/cart/add/{asset}', [AssetRequestController::class, 
         Route::get('/builder', function () { 
             return view('reports.builder', ['title' => 'Report Builder']); 
         })->name('builder');
+        
+        // NEW: Technician Visit Reports
+        Route::get('/technician-visits', [TechnicianReportsController::class, 'index'])->name('technician-visits');
+        Route::get('/technician-visits/filter', [TechnicianReportsController::class, 'filter']);
+        Route::get('/technician-visits/{visit}', [TechnicianReportsController::class, 'show']);
+        Route::get('/technician-visits/{visit}/photos', [TechnicianReportsController::class, 'getPhotos']);
+        Route::get('/technician-visits/{visit}/pdf', [TechnicianReportsController::class, 'generatePDF']);
+        Route::get('/technician-visits/export', [TechnicianReportsController::class, 'export']);
     });
     
     // ==============================================
     // DOCUMENT MANAGEMENT ROUTES
     // ==============================================
+    
     Route::prefix('documents')->name('documents.')->group(function () {
         Route::get('/', function () { 
             return view('documents.index', ['title' => 'Documents']); 
@@ -274,6 +546,7 @@ Route::post('/asset-requests/cart/add/{asset}', [AssetRequestController::class, 
     // ==============================================
     // EMPLOYEE PROFILE ROUTES
     // ==============================================
+    
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', function () { 
             return view('profile.index', ['title' => 'My Profile']); 
@@ -283,179 +556,84 @@ Route::post('/asset-requests/cart/add/{asset}', [AssetRequestController::class, 
             return view('profile.edit', ['title' => 'Edit Profile']); 
         })->name('edit');
     });
-});
 
-// ==============================================
-// ROOT ROUTE - SMART REDIRECT
-// ==============================================
-
-Route::get('/', function () {
-    // If user is authenticated, redirect to appropriate dashboard
-    if (auth()->check()) {
-        $employee = auth()->user();
+    // ==============================================
+    // SETTINGS ROUTES
+    // ==============================================
+    
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
         
-        // Check if employee is active
-        if (!$employee->isActive()) {
-            auth()->logout();
-            return redirect('/login')->withErrors(['email' => 'Your account has been deactivated.']);
-        }
+        // Category Management Routes
+        Route::get('/categories/{type}', [SettingsController::class, 'manageCategory'])->name('category.manage');
+        Route::post('/categories/{type}', [SettingsController::class, 'storeCategory'])->name('category.store');
+        Route::put('/categories/{category}', [SettingsController::class, 'updateCategory'])->name('category.update');
+        Route::delete('/categories/{category}', [SettingsController::class, 'deleteCategory'])->name('category.delete');
+        Route::post('/categories/reorder', [SettingsController::class, 'updateCategoryOrder'])->name('category.reorder');
         
-        // Redirect based on permissions
-        if ($employee->hasPermission('all') || $employee->hasPermission('view_dashboard')) {
-            return redirect('/dashboard');
-        } elseif ($employee->hasPermission('view_jobs')) {
-            return redirect('/technician/dashboard');
-        } else {
-            return redirect('/employee/dashboard');
-        }
-    }
-    
-    // If not authenticated, redirect to login
-    return redirect('/login');
-})->name('home');
-
-// ==============================================
-// FALLBACK ROUTES
-
-
-
-// ==============================================
-// ASSET SYSTEM ROUTES
-// Add these to your routes/web.php file
-// ==============================================
-
-Route::middleware(['auth', 'active.employee'])->group(function () {
-    
-    Route::middleware(['auth', 'active.employee'])->group(function () {
-    
-    // ==============================================
-    // ASSET MANAGEMENT ROUTES (Main Routes)
-    // ==============================================
-   // Asset Management Routes - Add this to your routes/web.php
-Route::middleware(['auth', 'active.employee'])->prefix('assets')->name('assets.')->group(function () {
-    Route::get('/', [AssetController::class, 'index'])->name('index');
-    Route::get('/create', [AssetController::class, 'create'])->name('create');
-    Route::post('/', [AssetController::class, 'store'])->name('store');
-    Route::get('/{asset}', [AssetController::class, 'show'])->name('show');
-    Route::get('/{asset}/edit', [AssetController::class, 'edit'])->name('edit');
-    Route::put('/{asset}', [AssetController::class, 'update'])->name('update');
-    Route::delete('/{asset}', [AssetController::class, 'destroy'])->name('destroy');
-    
-    // Additional asset routes
-    Route::post('/bulk-update-stock', [AssetController::class, 'bulkUpdateStock'])->name('bulk-update-stock');
-    Route::get('/export/csv', [AssetController::class, 'export'])->name('export');
-    Route::get('/alerts/low-stock', [AssetController::class, 'lowStockAlerts'])->name('low-stock-alerts');
-});
-    
-    // ==============================================
-    // ASSET REQUEST ROUTES (Employee Shopping Cart)
-    // ==============================================
-    Route::prefix('asset-requests')->name('asset-requests.')->group(function () {
-        Route::get('/catalog', [AssetRequestController::class, 'catalog'])->name('catalog');
-        Route::post('/cart/add/{asset}', [AssetRequestController::class, 'addToCart'])->name('cart.add');
-        Route::get('/cart', [AssetRequestController::class, 'cart'])->name('cart');
-        Route::patch('/cart/{asset}', [AssetRequestController::class, 'updateCart'])->name('cart.update');
-        Route::delete('/cart/{asset}', [AssetRequestController::class, 'removeFromCart'])->name('cart.remove');
-        Route::get('/checkout', [AssetRequestController::class, 'checkout'])->name('checkout');
-        Route::post('/', [AssetRequestController::class, 'store'])->name('store');
-        Route::get('/', [AssetRequestController::class, 'index'])->name('index');
-        Route::get('/{assetRequest}', [AssetRequestController::class, 'show'])->name('show');
-        Route::patch('/{assetRequest}/cancel', [AssetRequestController::class, 'cancel'])->name('cancel');
+        // Role Management Routes
+        Route::get('/roles', [SettingsController::class, 'manageRoles'])->name('roles.manage');
+        Route::post('/roles', [SettingsController::class, 'storeRole'])->name('roles.store');
+        Route::put('/roles/{role}', [SettingsController::class, 'updateRole'])->name('roles.update');
+        Route::delete('/roles/{role}', [SettingsController::class, 'deleteRole'])->name('roles.delete');
     });
     
+     // ==============================================
+      // Column Mapping Management Routes
     // ==============================================
-    // ASSET APPROVAL ROUTES
+  
+
+    Route::prefix('pos-terminals')->name('pos-terminals.')->group(function () {
+    // Column Mapping
+    Route::get('column-mapping', [PosTerminalController::class, 'showColumnMapping'])
+        ->name('column-mapping');
+    Route::post('column-mapping', [PosTerminalController::class, 'storeColumnMapping'])
+        ->name('store-mapping');
+    Route::delete('column-mapping/{mapping}', [PosTerminalController::class, 'deleteColumnMapping'])
+        ->name('delete-mapping');
+    Route::patch('column-mapping/{mapping}/toggle', [PosTerminalController::class, 'toggleColumnMapping'])
+        ->name('toggle-mapping');
+
+        Route::get('/pos-terminals/column-mapping', [App\Http\Controllers\PosTerminalController::class, 'showColumnMapping'])->name('pos-terminals.column-mapping');
+
+
+
+        
+    // Import & Export
+    Route::post('preview-import', [PosTerminalController::class, 'previewImport'])
+        ->name('preview-import');
+    Route::get('download-template', [PosTerminalController::class, 'downloadTemplate'])
+        ->name('download-template');
+    Route::get('export', [PosTerminalController::class, 'export'])
+        ->name('export');
+});
+
+
     // ==============================================
-    Route::prefix('asset-approvals')->name('asset-approvals.')->group(function () {
-        Route::get('/', [AssetApprovalController::class, 'index'])->name('index');
-        Route::get('/{assetRequest}', [AssetApprovalController::class, 'show'])->name('show');
-        Route::post('/{assetRequest}/approve', [AssetApprovalController::class, 'approve'])->name('approve');
-        Route::post('/{assetRequest}/reject', [AssetApprovalController::class, 'reject'])->name('reject');
-        Route::post('/bulk-action', [AssetApprovalController::class, 'bulkAction'])->name('bulk-action');
+    // Business License Routes
+    // ==============================================
+
+Route::middleware(['auth'])->group(function () {
+    // 
+    Route::prefix('business-licenses')->name('business-licenses.')->group(function () {
+        Route::get('/', [BusinessLicenseController::class, 'index'])->name('index');
+        Route::get('/create', [BusinessLicenseController::class, 'create'])->name('create');
+        Route::post('/', [BusinessLicenseController::class, 'store'])->name('store');
+        Route::get('/{businessLicense}', [BusinessLicenseController::class, 'show'])->name('show');
+        Route::get('/{businessLicense}/edit', [BusinessLicenseController::class, 'edit'])->name('edit');
+        Route::put('/{businessLicense}', [BusinessLicenseController::class, 'update'])->name('update');
+        Route::delete('/{businessLicense}', [BusinessLicenseController::class, 'destroy'])->name('destroy');
+        
+        // Special actions
+        Route::get('/{businessLicense}/renew', [BusinessLicenseController::class, 'renew'])->name('renew');
+        Route::post('/{businessLicense}/renew', [BusinessLicenseController::class, 'processRenewal'])->name('process-renewal');
+        Route::get('/{businessLicense}/download', [BusinessLicenseController::class, 'downloadDocument'])->name('download');
+        
+        // Reports and views
+        Route::get('/reports/expiring', [BusinessLicenseController::class, 'expiring'])->name('expiring');
+        Route::get('/reports/compliance', [BusinessLicenseController::class, 'compliance'])->name('compliance');
     });
 });
-    // ==============================================
-    // QUICK ACCESS ROUTES (Update existing asset routes)
-    // ==============================================
-    
-    // Update the existing asset routes to point to new system
-    Route::get('/assets/internal', function () {
-        // Redirect based on permissions
-        if (auth()->user()->hasPermission('manage_assets') || auth()->user()->hasPermission('all')) {
-            return redirect()->route('assets.index');
-        } else {
-            return redirect()->route('asset-requests.catalog');
-        }
-    })->name('assets.internal');
-    
-    Route::get('/assets/requests', [AssetRequestController::class, 'index'])->name('assets.requests');
+   
 });
-
-
-
-
-
-// ==============================================
-// Client Management Routes (We'll create these next)
-// ==============================================
-    
-
-
-Route::middleware(['auth'])->prefix('clients')->name('clients.')->group(function () {
-    Route::get('/', [ClientController::class, 'index'])->name('index');
-    Route::get('/create', [ClientController::class, 'create'])->name('create');
-    Route::post('/', [ClientController::class, 'store'])->name('store');
-    Route::get('/{client}', [ClientController::class, 'show'])->name('show');
-    Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
-    Route::put('/{client}', [ClientController::class, 'update'])->name('update');
-    Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
-});
-
-
-
-Route::middleware(['auth'])->prefix('clients')->name('clients.')->group(function () {
-    Route::get('/', [ClientController::class, 'index'])->name('index');
-    Route::get('/create', [ClientController::class, 'create'])->name('create');
-    Route::post('/', [ClientController::class, 'store'])->name('store');
-    Route::get('/{client}', [ClientController::class, 'show'])->name('show');
-    Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
-    Route::put('/{client}', [ClientController::class, 'update'])->name('update');
-    Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
-});
-
-// ==============================================
-// Employee Management Routes
-// ==============================================
-    
-
-Route::middleware(['auth', 'active.employee'])->prefix('employees')->name('employees.')->group(function () {
-    Route::get('/', [EmployeeController::class, 'index'])->name('index');
-    Route::get('/create', [EmployeeController::class, 'create'])->name('create');
-    Route::post('/', [EmployeeController::class, 'store'])->name('store');
-    Route::get('/{employee}', [EmployeeController::class, 'show'])->name('show');
-    Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])->name('edit');
-    Route::put('/{employee}', [EmployeeController::class, 'update'])->name('update');
-    Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->name('destroy');
-    
-    // Quick actions
-    Route::patch('/{employee}/role', [EmployeeController::class, 'updateRole'])->name('update-role');
-    Route::patch('/{employee}/status', [EmployeeController::class, 'toggleStatus'])->name('toggle-status');
-});
-
-// ==============================================
-// Role Management Routes
-// ==============================================
-
-Route::middleware(['auth', 'active.employee'])->prefix('roles')->name('roles.')->group(function () {
-    Route::get('/', [RoleController::class, 'index'])->name('index');
-    Route::get('/create', [RoleController::class, 'create'])->name('create');
-    Route::post('/', [RoleController::class, 'store'])->name('store');
-    Route::get('/{role}', [RoleController::class, 'show'])->name('show');
-    Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit');
-    Route::put('/{role}', [RoleController::class, 'update'])->name('update');
-    Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
-    
-    // Additional actions
-    Route::post('/{role}/clone', [RoleController::class, 'clone'])->name('clone');
-    Route::patch('/{role}/permissions', [RoleController::class, 'updatePermissions'])->name('update-permissions');
-});
+?>

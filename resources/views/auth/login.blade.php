@@ -1,47 +1,104 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <!-- Login Header -->
+    <div class="login-header">
+        <div class="company-logo">
+            🚀
+        </div>
+        <h1 class="company-name">Revival Technologies</h1>
+        <p class="login-subtitle">Welcome back! Please sign in to your account</p>
+    </div>
 
-    <form method="POST" action="{{ route('login') }}">
+    <!-- Session Status -->
+    @if (session('status'))
+        <div class="success-message">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    <!-- Error Messages -->
+    @if ($errors->any())
+        <div class="error-message">
+            @foreach ($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
+
+    <!-- Login Form -->
+    <form method="POST" action="{{ route('login') }}" autocomplete="on">
         @csrf
 
         <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="form-group">
+            <label for="email" class="form-label">
+                📧 Email Address
+            </label>
+            <input 
+                id="email" 
+                class="form-input" 
+                type="email" 
+                name="email" 
+                value="{{ old('email') }}" 
+                required 
+                autofocus 
+                autocomplete="username"
+                placeholder="Enter your email address" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+        <div class="form-group">
+            <label for="password" class="form-label">
+                🔒 Password
             </label>
+            <div class="password-container">
+                <input 
+                    id="password" 
+                    class="form-input"
+                    type="password"
+                    name="password"
+                    required 
+                    autocomplete="current-password"
+                    placeholder="Enter your password" />
+                <button 
+                    type="button" 
+                    class="password-toggle" 
+                    onclick="togglePassword()"
+                    title="Show/Hide Password">
+                    👁️‍🗨️
+                </button>
+            </div>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <!-- Remember Me & Forgot Password -->
+        <div class="remember-container">
+            <div class="remember-checkbox">
+                <input 
+                    id="remember_me" 
+                    type="checkbox" 
+                    name="remember">
+                <label for="remember_me" class="remember-label">
+                    Remember me
+                </label>
+            </div>
+
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a class="forgot-link" href="{{ route('password.request') }}">
+                    Forgot password?
                 </a>
             @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
         </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="login-button">
+            🚀 Sign In
+        </button>
     </form>
+
+    <!-- Footer -->
+    <div class="login-footer">
+        <p>&copy; {{ date('Y') }} Revival Technologies. All rights reserved.</p>
+        <p style="margin-block-start: 0.5rem; font-size: 0.8rem;">
+            Secure authentication powered by Laravel
+        </p>
+    </div>
 </x-guest-layout>

@@ -449,7 +449,7 @@
                         snapHandle: booleanFalseTemplate                                 //true || false
                     },
                     textarea: {
-                        dynWidth: booleanFalseTemplate,                                  //true || false
+                        dyninline-size: booleanFalseTemplate,                                  //true || false
                         dynHeight: booleanFalseTemplate,                                 //true || false
                         inheritedAttrs: inheritedAttrsTemplate                           //string || array || null
                     },
@@ -1315,7 +1315,7 @@
                                                     generateDiv(_classNameResizeObserverItemFinalElement)
                                                 ) +
                                                 generateDiv(_classNameResizeObserverItemElement,
-                                                    generateDiv({ c: _classNameResizeObserverItemFinalElement, style: 'width: 200%; height: 200%' })
+                                                    generateDiv({ c: _classNameResizeObserverItemFinalElement, style: 'inline-size: 200%; height: 200%' })
                                                 )
                                             )
                                         )
@@ -2073,9 +2073,9 @@
                         _targetElement.css(css);
 
                         return {
-                            _originalWidth: origWidth,
+                            _originalinline-size: origWidth,
                             _originalHeight: origHeight,
-                            _dynamicWidth: width,
+                            _dynamicinline-size: width,
                             _dynamicHeight: height
                         };
                     }
@@ -2206,7 +2206,7 @@
                     var overflowBehavior = _currentPreparedOptions.overflowBehavior;
                     var overflowBehaviorChanged = checkCacheAutoForce(overflowBehavior, _overflowBehaviorCache, force);
 
-                    //dynWidth:
+                    //dyninline-size:
                     var textareaDynWidth = currentPreparedOptionsTextarea.dynWidth;
                     var textareaDynWidthChanged = checkCacheAutoForce(_textareaDynWidthCache, textareaDynWidth);
 
@@ -2983,11 +2983,11 @@
                             dir: cssDirection
                         }, cssDirectionChanged);
                         dispatchCallback('onHostSizeChanged', {
-                            width: _hostSizeCache.w,
+                            inline-size: _hostSizeCache.w,
                             height: _hostSizeCache.h
                         }, hostSizeChanged);
                         dispatchCallback('onContentSizeChanged', {
-                            width: _contentScrollSizeCache.w,
+                            inline-size: _contentScrollSizeCache.w,
                             height: _contentScrollSizeCache.h
                         }, contentSizeChanged);
                         dispatchCallback('onOverflowChanged', {
@@ -4977,7 +4977,7 @@
                             if (settingsBlock.x != strBegin || settingsBlock.y != strBegin || settingsScroll.x == strIfNeeded || settingsScroll.y == strIfNeeded || _isRTL) {
                                 var measuringElm = finalElement[0];
                                 var rawElementSize = _supportTransform ? measuringElm[LEXICON.bCR]() : {
-                                    width: measuringElm[LEXICON.oW],
+                                    inline-size: measuringElm[LEXICON.oW],
                                     height: measuringElm[LEXICON.oH]
                                 };
                                 var elementSize = {

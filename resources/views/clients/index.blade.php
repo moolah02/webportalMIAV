@@ -3,7 +3,7 @@
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <h2 style="margin: 0; color: #333;">👥 Client Management</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Manage your clients and business relationships</p>
@@ -14,7 +14,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-block-end: 30px;">
         <div class="metric-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="font-size: 32px;">👥</div>
@@ -57,11 +57,11 @@
     </div>
 
     <!-- Filters -->
-    <div class="content-card" style="margin-bottom: 20px;">
+    <div class="content-card" style="margin-block-end: 20px;">
         <form method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
             <input type="text" name="search" value="{{ request('search') }}" 
                    placeholder="Search clients..." 
-                   style="flex: 1; min-width: 250px; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                   style="flex: 1; min-inline-size: 250px; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
             
             <select name="status" style="padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
                 <option value="">All Status</option>
@@ -93,9 +93,9 @@
         @forelse($clients as $client)
         <div class="client-card">
             <!-- Client Header -->
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-block-end: 15px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
+                    <div style="inline-size: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
                         {{ $client->client_code ?? substr($client->company_name, 0, 2) }}
                     </div>
                     <div>
@@ -109,25 +109,25 @@
             </div>
 
             <!-- Contact Person -->
-            <div style="margin-bottom: 15px;">
-                <div style="font-weight: 500; margin-bottom: 5px;">{{ $client->contact_person }}</div>
+            <div style="margin-block-end: 15px;">
+                <div style="font-weight: 500; margin-block-end: 5px;">{{ $client->contact_person }}</div>
                 
                 @if($client->email)
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-block-end: 5px;">
                     <span style="color: #666;">📧</span>
                     <a href="mailto:{{ $client->email }}" style="color: #2196f3; text-decoration: none;">{{ $client->email }}</a>
                 </div>
                 @endif
                 
                 @if($client->phone)
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-block-end: 5px;">
                     <span style="color: #666;">📞</span>
                     <a href="tel:{{ $client->phone }}" style="color: #333;">{{ $client->phone }}</a>
                 </div>
                 @endif
 
                 @if($client->city || $client->region)
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-block-end: 5px;">
                     <span style="color: #666;">📍</span>
                     <span style="color: #666;">{{ collect([$client->city, $client->region])->filter()->join(', ') }}</span>
                 </div>
@@ -136,8 +136,8 @@
 
             <!-- Contract Info -->
             @if($client->contract_start_date || $client->contract_end_date)
-            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
-                <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px;">Contract Period</div>
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-block-end: 15px;">
+                <div style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px;">Contract Period</div>
                 @if($client->contract_start_date)
                 <div style="font-size: 14px;">
                     <strong>Start:</strong> {{ \Carbon\Carbon::parse($client->contract_start_date)->format('M d, Y') }}
@@ -171,17 +171,17 @@
         </div>
         @empty
         <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #666;">
-            <div style="font-size: 64px; margin-bottom: 20px;">👥</div>
+            <div style="font-size: 64px; margin-block-end: 20px;">👥</div>
             <h3>No clients yet</h3>
             <p>Start building your client base by adding your first client.</p>
-            <a href="{{ route('clients.create') }}" class="btn btn-primary" style="margin-top: 15px;">Add First Client</a>
+            <a href="{{ route('clients.create') }}" class="btn btn-primary" style="margin-block-start: 15px;">Add First Client</a>
         </div>
         @endforelse
     </div>
 
     <!-- Pagination -->
     @if($clients->hasPages())
-    <div style="margin-top: 30px; display: flex; justify-content: center;">
+    <div style="margin-block-start: 30px; display: flex; justify-content: center;">
         {{ $clients->appends(request()->query())->links() }}
     </div>
     @endif
