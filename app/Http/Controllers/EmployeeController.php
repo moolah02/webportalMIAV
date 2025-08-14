@@ -8,6 +8,7 @@ use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
+
 class EmployeeController extends Controller
 {
     public function __construct()
@@ -277,5 +278,96 @@ class EmployeeController extends Controller
         $employee->update(['status' => $newStatus]);
 
         return back()->with('success', 'Employee status updated to ' . $newStatus);
+    }
+
+    // ADD THESE METHODS TO YOUR EXISTING EmployeeController.php
+
+    /**
+     * Show the employee's profile page
+     */
+    public function profile()
+    {
+        $employee = auth()->user()->load([
+            'role', 
+            'department', 
+            'manager.department',
+            'subordinates.role',
+            'currentAssetAssignments.asset',
+            'assetRequests' => function($query) {
+                $query->latest()->take(5);
+            }
+        ]);
+
+        // Get statistics
+        $stats = [
+            'total_asset_requests' => $employee->assetRequests()->count(),
+            'pending_requests' => $employee->assetRequests()->where('status', 'pending')->count(),
+            'assigned_assets_count' => $employee->currentAssetAssignments()->count(),
+            'assigned_assets_value' => $employee->assigned_assets_value ?? 0,
+            'subordinates_count' => $employee->subordinates()->count(),
+        ];
+
+        return view('employee.profile', compact('employee', 'stats'));
+    }
+
+    /**
+     * Show the form for editing the employee's profile
+     */
+    public function editProfile()
+    {
+        $employee = auth()->user()->load(['role', 'department']);
+        
+        return view('employee.edit-profile', compact('employee'));
+    }
+
+    /**
+     * Update the employee's profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $employee = auth()->user();
+
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:255',
+            'time_zone' => 'required|string|max:255',
+            'language' => 'required|string|max:255',
+        ]);
+
+        $employee->update($request->only([
+            'first_name',
+            'last_name', 
+            'phone',
+            'time_zone',
+            'language'
+        ]));
+
+        return redirect()->route('employee.profile')
+                        ->with('success', 'Profile updated successfully!');
+    }
+
+    /**
+     * Update the employee's password
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $employee = auth()->user();
+
+        if (!Hash::check($request->current_password, $employee->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+
+        $employee->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return redirect()->route('employee.profile')
+                        ->with('success', 'Password updated successfully!');
     }
 }

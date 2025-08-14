@@ -192,4 +192,35 @@ class AssetAssignment extends Model
                 ->count(),
         ];
     }
+    public function getStatusBadgeClassAttribute()
+    {
+        return match($this->status) {
+            'assigned' => 'bg-success',
+            'returned' => 'bg-secondary', 
+            'lost' => 'bg-danger',
+            'damaged' => 'bg-warning',
+            'transferred' => 'bg-info',
+            default => 'bg-secondary'
+        };
+    }
+
+   
+    public function getConditionBadgeClassAttribute()
+    {
+        return match($this->condition_when_assigned) {
+            'new' => 'bg-success',
+            'good' => 'bg-primary',
+            'fair' => 'bg-warning', 
+            'poor' => 'bg-danger',
+            default => 'bg-secondary'
+        };
+    }
+
+    /**
+     * Check if assignment is active
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'assigned';
+    }
 }

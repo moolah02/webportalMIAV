@@ -12,87 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class PosTerminalController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = PosTerminal::with(['client', 'regionModel']);
-
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('terminal_id', 'like', "%{$search}%")
-                  ->orWhere('merchant_name', 'like', "%{$search}%")
-                  ->orWhere('merchant_contact_person', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('client')) {
-            $query->where('client_id', $request->client);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('region')) {
-            $query->where('region', $request->region);
-        }
-
-        if ($request->filled('city')) {
-            $query->where('city', $request->city);
-        }
-
-        if ($request->filled('province')) {
-            $query->where('province', $request->province);
-        }
-
-        $terminals = $query->paginate(20);
-
-        // Get filter options
-        $clients = Client::orderBy('company_name')->get();
-        $regions = PosTerminal::distinct()->pluck('region')->filter()->sort();
-        $cities = PosTerminal::distinct()->pluck('city')->filter()->sort();
-        $provinces = PosTerminal::distinct()->pluck('province')->filter()->sort();
-
-        // Get status options - handle if Category model doesn't exist
-        $statusOptions = collect(['active', 'offline', 'faulty', 'maintenance']);
-        try {
-            if (class_exists('App\Models\Category')) {
-                $statusOptions = Category::getSelectOptions(Category::TYPE_TERMINAL_STATUS);
-            }
-        } catch (\Exception $e) {
-            Log::warning('Category model not available: ' . $e->getMessage());
-        }
-
-        // Get mappings for import tab
-        $mappings = collect(); // Empty collection for now
-        try {
-            if (class_exists('App\Models\ImportMapping')) {
-                $mappings = ImportMapping::where('is_active', true)->get();
-            }
-        } catch (\Exception $e) {
-            Log::warning('ImportMapping model not available: ' . $e->getMessage());
-        }
-
-        // Statistics
-        $stats = [
-            'total_terminals' => PosTerminal::count(),
-            'active_terminals' => PosTerminal::where('status', 'active')->count(),
-            'faulty_terminals' => PosTerminal::whereIn('status', ['faulty', 'maintenance'])->count(),
-            'offline_terminals' => PosTerminal::where('status', 'offline')->count(),
-        ];
-
-        return view('pos-terminals.index', compact(
-            'terminals', 
-            'clients', 
-            'regions', 
-            'cities', 
-            'provinces', 
-            'statusOptions',
-            'mappings', // Add this
-            'stats'
-        ));
-    }
+   
 
     public function create()
     {
@@ -150,6 +70,7 @@ class PosTerminalController extends Controller
         return redirect()->route('pos-terminals.index')
                         ->with('success', 'POS Terminal created successfully.');
     }
+
 
     public function show(PosTerminal $posTerminal)
     {
@@ -1164,4 +1085,313 @@ class PosTerminalController extends Controller
         
         return strlen($cleaned) > 5 ? $cleaned : null;
     }
+
+
+public function index(Request $request)
+{
+    $query = PosTerminal::with(['client', 'regionModel']);
+
+    // Apply filters
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('terminal_id', 'like', "%{$search}%")
+              ->orWhere('merchant_name', 'like', "%{$search}%")
+              ->orWhere('merchant_contact_person', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('client')) {
+        $query->where('client_id', $request->client);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('region')) {
+        $query->where('region', $request->region);
+    }
+
+    if ($request->filled('city')) {
+        $query->where('city', $request->city);
+    }
+
+    if ($request->filled('province')) {
+        $query->where('province', $request->province);
+    }
+
+    $terminals = $query->paginate(20);
+
+    // Get filter options
+    $clients = Client::orderBy('company_name')->get();
+    $regions = PosTerminal::distinct()->pluck('region')->filter()->sort();
+    $cities = PosTerminal::distinct()->pluck('city')->filter()->sort();
+    $provinces = PosTerminal::distinct()->pluck('province')->filter()->sort();
+
+    // Get status options
+    $statusOptions = collect(['active', 'offline', 'faulty', 'maintenance']);
+    try {
+        if (class_exists('App\Models\Category')) {
+            $statusOptions = Category::getSelectOptions(Category::TYPE_TERMINAL_STATUS);
+        }
+    } catch (\Exception $e) {
+        Log::warning('Category model not available: ' . $e->getMessage());
+    }
+
+    // Get mappings for import tab
+    $mappings = collect();
+    try {
+        if (class_exists('App\Models\ImportMapping')) {
+            $mappings = ImportMapping::where('is_active', true)->get();
+        }
+    } catch (\Exception $e) {
+        Log::warning('ImportMapping model not available: ' . $e->getMessage());
+    }
+
+    // Calculate filtered statistics
+    $stats = $this->calculateFilteredStats($query);
+
+    // Handle AJAX requests
+    if ($request->ajax() || $request->has('ajax')) {
+        return $this->handleAjaxRequest($request, $query, $stats);
+    }
+
+    return view('pos-terminals.index', compact(
+        'terminals', 
+        'clients', 
+        'regions', 
+        'cities', 
+        'provinces', 
+        'statusOptions',
+        'mappings',
+        'stats'
+    ));
+}
+
+/**
+ * Calculate statistics for filtered results
+ */
+private function calculateFilteredStats($query)
+{
+    // Clone the query to avoid modifying the original
+    $statsQuery = clone $query;
+
+    // Get total count
+    $totalTerminals = $statsQuery->count();
+
+    // Calculate status-based statistics
+    $activeTerminals = (clone $query)->where('status', 'active')->count();
+    $offlineTerminals = (clone $query)->where('status', 'offline')->count();
+    $faultyTerminals = (clone $query)->whereIn('status', ['faulty', 'maintenance'])->count();
+
+    return [
+        'total_terminals' => $totalTerminals,
+        'active_terminals' => $activeTerminals,
+        'offline_terminals' => $offlineTerminals,
+        'faulty_terminals' => $faultyTerminals,
+    ];
+}
+
+/**
+ * Handle AJAX requests for filtered data
+ */
+private function handleAjaxRequest(Request $request, $query, $stats)
+{
+    try {
+        // Get filtered terminals for charts
+        $terminals = $query->get();
+
+        // Generate chart data
+        $chartData = $this->generateChartData($terminals);
+
+        // Generate table HTML
+        $tableHtml = $this->generateTableHtml($terminals, $request);
+
+        return response()->json([
+            'success' => true,
+            'stats' => $stats,
+            'chartData' => $chartData,
+            'tableHtml' => $tableHtml
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('AJAX request error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading filtered data'
+        ], 500);
+    }
+}
+
+/**
+ * Generate chart data from filtered terminals
+ */
+private function generateChartData($terminals)
+{
+    // Status distribution
+    $statusCounts = $terminals->countBy('status');
+    
+    // Location distribution (top 10)
+    $locationCounts = $terminals->countBy(function($terminal) {
+        return $terminal->region ?: 'No Region';
+    })->sortDesc()->take(10);
+
+    return [
+        'status' => [
+            'active' => $statusCounts['active'] ?? 0,
+            'offline' => $statusCounts['offline'] ?? 0,
+            'faulty' => ($statusCounts['faulty'] ?? 0) + ($statusCounts['maintenance'] ?? 0)
+        ],
+        'locations' => [
+            'labels' => $locationCounts->keys()->toArray(),
+            'data' => $locationCounts->values()->toArray()
+        ]
+    ];
+}
+
+/**
+ * Generate table HTML for filtered results
+ */
+private function generateTableHtml($terminals, Request $request)
+{
+    // Paginate the terminals
+    $currentPage = $request->get('page', 1);
+    $perPage = 20;
+    $paginatedTerminals = new \Illuminate\Pagination\LengthAwarePaginator(
+        $terminals->forPage($currentPage, $perPage),
+        $terminals->count(),
+        $perPage,
+        $currentPage,
+        [
+            'path' => $request->url(),
+            'pageName' => 'page',
+        ]
+    );
+    $paginatedTerminals->appends($request->query());
+
+    return view('pos-terminals.partials.table', ['terminals' => $paginatedTerminals])->render();
+}
+
+/**
+ * Get filtered statistics endpoint
+ */
+public function getFilteredStats(Request $request)
+{
+    $query = PosTerminal::query();
+
+    // Apply same filters as index method
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('terminal_id', 'like', "%{$search}%")
+              ->orWhere('merchant_name', 'like', "%{$search}%")
+              ->orWhere('merchant_contact_person', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('client')) {
+        $query->where('client_id', $request->client);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('region')) {
+        $query->where('region', $request->region);
+    }
+
+    if ($request->filled('city')) {
+        $query->where('city', $request->city);
+    }
+
+    if ($request->filled('province')) {
+        $query->where('province', $request->province);
+    }
+
+    $stats = $this->calculateFilteredStats($query);
+    $chartData = $this->generateChartData($query->get());
+
+    return response()->json([
+        'success' => true,
+        'stats' => $stats,
+        'chartData' => $chartData
+    ]);
+}
+
+
+public function createTicket(Request $request, PosTerminal $posTerminal)
+{
+    $validated = $request->validate([
+        'priority' => 'required|in:low,medium,high,critical',
+        'issue_type' => 'required|string',
+        'description' => 'required|string',
+        'reported_by' => 'nullable|string',
+        'contact_number' => 'nullable|string'
+    ]);
+    
+    // Create ticket logic here
+    // $ticket = $posTerminal->tickets()->create($validated);
+    
+    return response()->json(['success' => true, 'message' => 'Ticket created successfully']);
+}
+
+public function scheduleService(Request $request, PosTerminal $posTerminal)
+{
+    $validated = $request->validate([
+        'service_type' => 'required|string',
+        'scheduled_date' => 'required|date|after:today',
+        'scheduled_time' => 'required',
+        'technician_id' => 'nullable|exists:users,id',
+        'notes' => 'nullable|string'
+    ]);
+    
+    if ($request->update_next_service) {
+        $posTerminal->update([
+            'next_service_due' => $validated['scheduled_date']
+        ]);
+    }
+    
+    // Create service appointment logic
+    
+    return response()->json(['success' => true, 'message' => 'Service scheduled successfully']);
+}
+
+public function addNote(Request $request, PosTerminal $posTerminal)
+{
+    $validated = $request->validate([
+        'note_type' => 'required|string',
+        'notes' => 'required|string',
+        'is_important' => 'boolean'
+    ]);
+    
+    // Add note logic here
+    
+    return response()->json(['success' => true, 'message' => 'Note added successfully']);
+}
+
+/*public function generateReport(Request $request, PosTerminal $posTerminal, $type)
+{
+    // Report generation logic based on type
+    $format = $request->input('format', 'pdf');
+    
+    // Generate report based on type and format
+    
+    return response()->download($reportPath);
+}*/
+
+public function getStatistics(PosTerminal $posTerminal)
+{
+    return response()->json([
+        'total_jobs' => $posTerminal->jobs()->count(),
+        'service_reports' => $posTerminal->serviceReports()->count(),
+        'open_tickets' => $posTerminal->tickets()->where('status', 'open')->count(),
+        'days_since_service' => $posTerminal->last_service_date 
+            ? $posTerminal->last_service_date->diffInDays(now()) 
+            : null
+    ]);
+}
+
+
 }

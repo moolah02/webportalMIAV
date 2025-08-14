@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\TerminalApiController;
 use App\Http\Controllers\DeploymentPlanningController;
 use Illuminate\Http\Request;
 use App\Models\PosTerminal;
+use App\Http\Controllers\TicketController;
 
 Route::prefix('v1')->group(function () {
     
@@ -147,3 +148,10 @@ Route::prefix('api')->name('api.')->middleware(['auth'])->group(function () {
 Route::get('/api/clients/{id}/cities', 'TerminalController@getCitiesByClient');
 Route::get('/api/clients/{id}/addresses', 'TerminalController@getAddressesByClient');
 Route::get('/api/terminals', 'TerminalController@getFilteredTerminals');
+
+// API Routes for Mobile App (add to routes/api.php if you have mobile app)
+Route::middleware(['auth:sanctum'])->prefix('api/v1')->group(function () {
+    Route::get('tickets', [TicketController::class, 'mobileIndex']);
+    Route::post('tickets', [TicketController::class, 'mobileStore']);
+    Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
+});

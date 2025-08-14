@@ -20,7 +20,7 @@ class DeploymentPlanningController extends Controller
     /**
      * Display deployment planning page
      */
-    public function index()
+   public function index()
     {
         // Get regions with terminal counts
         $regions = Region::where('is_active', true)
@@ -37,12 +37,17 @@ class DeploymentPlanningController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Get service types from categories
-        $serviceTypes = Category::getServiceTypesWithDetails();
+        // Get service types from categories - FIXED
+        $serviceTypes = Category::where('type', 'service_type')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
         
-        // Get technicians
-        $technicians = Employee::active()
-            ->fieldTechnicians()
+        // Get technicians - FIXED
+        $technicians = Employee::where('status', 'active')
+            ->whereHas('role', function($query) {
+                $query->whereIn('name', ['Technician', 'Field Technician', 'Maintenance']);
+            })
             ->select('id', 'first_name', 'last_name', 'phone', 'role_id')
             ->with('role:id,name')
             ->orderBy('first_name')
@@ -54,7 +59,7 @@ class DeploymentPlanningController extends Controller
             });
 
         // Get clients
-        $clients = Client::orderBy('company_name')->get();
+        $clients = Client::where('status', 'active')->orderBy('company_name')->get();
 
         // Calculate stats
         $stats = [
@@ -134,24 +139,23 @@ class DeploymentPlanningController extends Controller
         }
     }
 
-    /**
-     * Store new deployment template
-     */
-    public function store(Request $request)
+    
+// In your store method, update the validation and creation
+ public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-    'template_name'            => 'required|string|max:255|unique:deployment_templates,template_name',
-    'region_id'                => 'required|exists:regions,id',
-    'pos_terminals'            => 'required|string|min:3',
-    'service_type'             => 'required|string',
-    'priority'                 => 'required|in:low,normal,high,emergency',
-    'group_by'                 => 'required|in:region,city,address',      // ← add this line
-    'estimated_duration_hours' => 'nullable|numeric|min:0.5|max:12',
-    'description'              => 'nullable|string|max:500',
-    'notes'                    => 'nullable|string|max:1000',
-    'tags'                     => 'nullable|string',
-]);
-
+            'template_name'            => 'required|string|max:255|unique:deployment_templates,template_name',
+            'client_id'                => 'required|exists:clients,id', 
+            'pos_terminals'            => 'required|string|min:3',
+            'group_by'                 => 'required|in:city,province,area,address',
+            'location_value'           => 'required|string',
+            'service_type'             => 'nullable|string',
+            'priority'                 => 'nullable|in:low,normal,high,emergency',
+            'estimated_duration_hours' => 'nullable|numeric|min:0.5|max:12',
+            'description'              => 'nullable|string|max:500',
+            'notes'                    => 'nullable|string|max:1000',
+            'tags'                     => 'nullable|string',
+        ]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -164,21 +168,20 @@ class DeploymentPlanningController extends Controller
         DB::beginTransaction();
 
         try {
-            // Decode and validate terminals
+            // Decode terminals
             $terminals = json_decode($request->get('pos_terminals'), true);
             
             if (json_last_error() !== JSON_ERROR_NONE || empty($terminals)) {
                 throw new \Exception('Invalid terminals selection');
             }
 
-            // Verify terminals belong to the region
-            $validTerminals = PosTerminal::where('region_id', $request->region_id)
+            // Get the region from the first terminal
+            $firstTerminal = PosTerminal::where('client_id', $request->client_id)
                 ->whereIn('id', $terminals)
-                ->pluck('id')
-                ->toArray();
+                ->first();
 
-            if (count($validTerminals) !== count($terminals)) {
-                throw new \Exception('Some terminals don\'t belong to the selected region');
+            if (!$firstTerminal) {
+                throw new \Exception('No valid terminals found for the selected client');
             }
 
             // Parse tags
@@ -186,19 +189,19 @@ class DeploymentPlanningController extends Controller
 
             // Create template
             $template = DeploymentTemplate::create([
-    'template_name'            => $request->template_name,
-    'region_id'                => $request->region_id,
-    'group_by'                 => $request->group_by,     // ← add this
-    'description'              => $request->description,
-    'pos_terminals'            => $validTerminals,
-    'service_type'             => $request->service_type,
-    'priority'                 => $request->priority,
-    'estimated_duration_hours' => $request->estimated_duration_hours,
-    'notes'                    => $request->notes,
-    'tags'                     => $tags,
-    'is_active'                => true,
-    'created_by'               => auth()->id() ?? 1
-]);
+                'template_name'            => $request->template_name,
+                'region_id'                => $firstTerminal->region_id,
+                'group_by'                 => $request->group_by,
+                'description'              => $request->description,
+                'pos_terminals'            => $terminals,
+                'service_type'             => $request->service_type ?? 'routine_maintenance',
+                'priority'                 => $request->priority ?? 'normal',
+                'estimated_duration_hours' => $request->estimated_duration_hours,
+                'notes'                    => $request->notes,
+                'tags'                     => $tags,
+                'is_active'                => true,
+                'created_by'               => auth()->id() ?? 1
+            ]);
 
             DB::commit();
 
@@ -223,9 +226,50 @@ class DeploymentPlanningController extends Controller
         }
     }
 
-    /**
-     * Show template details
-     */
+// Add this method to your DeploymentPlanningController
+public function getClientLocations($clientId, $locationType)
+{
+    try {
+        \Log::info("Getting {$locationType} for client: " . $clientId);
+        
+        // Map the location type to the correct database field
+        $fieldMap = [
+            'cities' => 'city',
+            'provinces' => 'province', 
+            'areas' => 'area',
+            'addresses' => 'physical_address'
+        ];
+        
+        if (!isset($fieldMap[$locationType])) {
+            return response()->json([
+                'error' => 'Invalid location type'
+            ], 400);
+        }
+        
+        $field = $fieldMap[$locationType];
+        
+        $locations = PosTerminal::where('client_id', $clientId)
+            ->whereNotNull($field)
+            ->where($field, '!=', '')
+            ->distinct()
+            ->orderBy($field)
+            ->pluck($field)
+            ->filter()
+            ->values();
+
+        \Log::info("Found {$locationType}: " . $locations->count());
+
+        return response()->json($locations);
+
+    } catch (\Exception $e) {
+        \Log::error("Error loading {$locationType}: " . $e->getMessage());
+        
+        return response()->json([
+            'error' => "Error loading {$locationType}: " . $e->getMessage()
+        ], 500);
+    }
+}
+   
     public function show($templateId)
     {
         try {
@@ -535,75 +579,161 @@ class DeploymentPlanningController extends Controller
             ], 500);
         }
     }
-    public function getCitiesByClient($clientId)
+
+/**
+ * Get cities for a specific client
+ */
+public function getCitiesByClient($clientId)
 {
     try {
+        \Log::info("Getting cities for client: " . $clientId);
+        
         $cities = PosTerminal::where('client_id', $clientId)
             ->whereNotNull('city')
             ->where('city', '!=', '')
             ->distinct()
+            ->orderBy('city')
             ->pluck('city')
             ->filter()
-            ->sort()
             ->values();
+
+        \Log::info("Found cities: " . $cities->count());
 
         return response()->json($cities);
 
     } catch (\Exception $e) {
-        return response()->json(['error' => 'Error loading cities'], 500);
+        \Log::error('Error loading cities: ' . $e->getMessage());
+        
+        return response()->json([
+            'error' => 'Error loading cities: ' . $e->getMessage(),
+            'client_id' => $clientId
+        ], 500);
     }
 }
 
 /**
- * Get addresses for a specific client (for AJAX calls)
+ * Get provinces for a specific client
  */
+public function getProvincesByClient($clientId)
+{
+    try {
+        \Log::info("Getting provinces for client: " . $clientId);
+        
+        $provinces = PosTerminal::where('client_id', $clientId)
+            ->whereNotNull('province')
+            ->where('province', '!=', '')
+            ->distinct()
+            ->orderBy('province')
+            ->pluck('province')
+            ->filter()
+            ->values();
+
+        \Log::info("Found provinces: " . $provinces->count());
+
+        return response()->json($provinces);
+
+    } catch (\Exception $e) {
+        \Log::error('Error loading provinces: ' . $e->getMessage());
+        
+        return response()->json([
+            'error' => 'Error loading provinces: ' . $e->getMessage(),
+            'client_id' => $clientId
+        ], 500);
+    }
+}
+
+/**
+ * Get areas for a specific client
+ */
+public function getAreasByClient($clientId)
+{
+    try {
+        \Log::info("Getting areas for client: " . $clientId);
+        
+        $areas = PosTerminal::where('client_id', $clientId)
+            ->whereNotNull('area')
+            ->where('area', '!=', '')
+            ->distinct()
+            ->orderBy('area')
+            ->pluck('area')
+            ->filter()
+            ->values();
+
+        \Log::info("Found areas: " . $areas->count());
+
+        return response()->json($areas);
+
+    } catch (\Exception $e) {
+        \Log::error('Error loading areas: ' . $e->getMessage());
+        
+        return response()->json([
+            'error' => 'Error loading areas: ' . $e->getMessage(),
+            'client_id' => $clientId
+        ], 500);
+    }
+}
+
 public function getAddressesByClient($clientId)
 {
     try {
+        \Log::info("Getting addresses for client: " . $clientId);
+        
         $addresses = PosTerminal::where('client_id', $clientId)
             ->whereNotNull('physical_address')
             ->where('physical_address', '!=', '')
             ->distinct()
+            ->orderBy('physical_address')
             ->pluck('physical_address')
             ->filter()
-            ->sort()
             ->values();
+
+        \Log::info("Found addresses: " . $addresses->count());
 
         return response()->json($addresses);
 
     } catch (\Exception $e) {
-        return response()->json(['error' => 'Error loading addresses'], 500);
+        \Log::error('Error loading addresses: ' . $e->getMessage());
+        
+        return response()->json([
+            'error' => 'Error loading addresses: ' . $e->getMessage(),
+            'client_id' => $clientId
+        ], 500);
     }
 }
 
 /**
- * Get filtered terminals (for AJAX calls)
- * This replaces/complements the existing getRegionTerminals method
+ * Get filtered terminals - UPDATED for correct field mapping
  */
 public function getFilteredTerminals(Request $request)
 {
     try {
+        \Log::info("Getting filtered terminals", $request->all());
+        
         $clientId = $request->get('client_id');
         $groupBy = $request->get('group_by');
         $filterValue = $request->get('filter_value');
 
-        if (!$clientId || !$groupBy || !$filterValue) {
-            return response()->json(['terminals' => []]);
+        if (!$clientId || !$groupBy || !$filterValue) {  // ← REMOVED REGION_ID CHECK
+            return response()->json([
+                'terminals' => [],
+                'message' => 'Missing required parameters'
+            ]);
         }
 
         $query = PosTerminal::where('client_id', $clientId)
             ->where('deployment_status', '!=', 'decommissioned');
+            // ← REMOVED REGION FILTER
 
-        // Apply grouping filter
+        // Apply grouping filter based on actual database fields
         switch ($groupBy) {
-            case 'region':
-                $region = Region::find($filterValue);
-                if ($region) {
-                    $query->where('region_id', $filterValue);
-                }
-                break;
             case 'city':
                 $query->where('city', $filterValue);
+                break;
+            case 'province':
+                $query->where('province', $filterValue);
+                break;
+            case 'area':
+                $query->where('area', $filterValue);
                 break;
             case 'address':
                 $query->where('physical_address', $filterValue);
@@ -611,11 +741,16 @@ public function getFilteredTerminals(Request $request)
         }
 
         $terminals = $query->select([
-            'id', 'terminal_id', 'merchant_name', 'physical_address', 
-            'city', 'region', 'current_status'
-        ])->orderBy('terminal_id')->get();
+    'id', 'terminal_id', 'merchant_name', 'physical_address', 
+    'city', 'province', 'area', 'region', 'merchant_phone'  
+      ])->orderBy('terminal_id')->get();
 
-        return response()->json(['terminals' => $terminals]);
+        \Log::info("Found terminals: " . $terminals->count());
+
+        return response()->json([
+            'terminals' => $terminals,
+            'total_count' => $terminals->count()
+        ]);
 
     } catch (\Exception $e) {
         \Log::error('Error loading filtered terminals', [

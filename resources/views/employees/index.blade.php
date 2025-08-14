@@ -343,43 +343,89 @@ File: resources/views/employees/index.blade.php
         </div>
         
         <!-- Modal Body -->
-        <div style="padding: 20px;">
-            <div style="display: grid; gap: 12px;">
-                <button onclick="viewEmployee()" class="modal-action-btn" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
-                    <span style="font-size: 20px;">👤</span>
-                    <div>
-                        <div style="font-weight: bold;">View Profile</div>
-                        <div style="font-size: 12px; opacity: 0.9;">See complete employee details</div>
-                    </div>
-                </button>
-                
-                <button onclick="editEmployee()" class="modal-action-btn" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
-                    <span style="font-size: 20px;">✏️</span>
-                    <div>
-                        <div style="font-weight: bold;">Edit Employee</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Update employee information</div>
-                    </div>
-                </button>
-                
-                <button onclick="changeRole()" class="modal-action-btn" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
-                    <span style="font-size: 20px;">🔑</span>
-                    <div>
-                        <div style="font-weight: bold;">Change Role</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Assign different role & permissions</div>
-                    </div>
-                </button>
-                
-                <button onclick="sendEmail()" class="modal-action-btn" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">
-                    <span style="font-size: 20px;">📧</span>
-                    <div>
-                        <div style="font-weight: bold;">Send Email</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Contact this employee</div>
-                    </div>
-                </button>
-            </div>
-        </div>
-    </div>
+<div style="padding: 20px;">
+  <div style="display: grid; gap: 12px;">
+
+    <!-- View Profile -->
+    <button 
+      onclick="location.href='{{ route('employees.show', $employee) }}'"
+      class="modal-action-btn"
+      style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;"
+    >
+      <span style="font-size: 20px;">👤</span>
+      <div>
+        <div style="font-weight: bold;">View Profile</div>
+        <div style="font-size: 12px; opacity: 0.9;">See complete employee details</div>
+      </div>
+    </button>
+
+    <!-- Edit Employee -->
+    <button
+      onclick="location.href='{{ route('employees.edit', $employee) }}'"
+      class="modal-action-btn"
+      style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;"
+    >
+      <span style="font-size: 20px;">✏️</span>
+      <div>
+        <div style="font-weight: bold;">Edit Employee</div>
+        <div style="font-size: 12px; opacity: 0.9;">Update employee information</div>
+      </div>
+    </button>
+
+    <!-- Change Role -->
+    <button
+      onclick="changeRole({{ $employee->id }})"
+      class="modal-action-btn"
+      style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;"
+    >
+      <span style="font-size: 20px;">🔑</span>
+      <div>
+        <div style="font-weight: bold;">Change Role</div>
+        <div style="font-size: 12px; opacity: 0.9;">Assign different role & permissions</div>
+      </div>
+    </button>
+
+    <!-- Send Email -->
+    <button
+      onclick="sendEmail('{{ $employee->email }}')"
+      class="modal-action-btn"
+      style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;"
+    >
+      <span style="font-size: 20px;">📧</span>
+      <div>
+        <div style="font-weight: bold;">Send Email</div>
+        <div style="font-size: 12px; opacity: 0.9;">Contact this employee</div>
+      </div>
+    </button>
+
+  </div>
 </div>
+
+<script>
+  // Quick AJAX PATCH to change role
+  function changeRole(id) {
+    const newRole = prompt("Enter the new role ID for employee #" + id);
+    if (!newRole) return;
+    fetch(`{{ url('employees') }}/${id}/role`, {
+      method: 'PATCH',
+      headers: {
+        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ role_id: newRole })
+    })
+    .then(r => r.json())
+    .then(data => alert(data.message || 'Role updated'))
+    .catch(e => alert('Error: ' + e.message));
+  }
+
+  // Opens the user’s email client
+  function sendEmail(email) {
+    window.location.href = `mailto:${email}`;
+  }
+</script>
+
 
 <style>
 .modal-action-btn {

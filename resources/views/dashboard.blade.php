@@ -3,14 +3,14 @@
 @section('content')
 <div>
     <!-- Welcome Header -->
-    <div style="margin-block-end: 30px;">
+    <div style="margin-block-end: 20px;">
         <h2 style="margin: 0; color: #333;">Welcome back, {{ auth()->user()->first_name }}! 👋</h2>
         <p style="color: #666; margin: 5px 0 0 0;">Here's what's happening with your POS terminal network and business licenses today</p>
     </div>
 
-    <!-- System Alerts (Enhanced with License Alerts) -->
+    <!-- System Alerts (Compact Design) -->
     @if($stats['alerts']->count() > 0)
-    <div style="margin-block-end: 25px;">
+    <div style="margin-block-end: 20px;">
         @foreach($stats['alerts'] as $alert)
         @php
             $alertUrl = match(true) {
@@ -26,84 +26,84 @@
                 default => '#'
             };
         @endphp
-        <a href="{{ $alertUrl }}" class="alert-link alert-{{ $alert['type'] }}" style="margin-block-end: 10px; padding: 12px 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; text-decoration: none; transition: all 0.2s ease;">
-            <span style="font-size: 18px;">{{ $alert['icon'] }}</span>
-            <span>{{ $alert['message'] }}</span>
-            <span style="margin-left: auto; font-size: 14px; opacity: 0.7;">Click to view →</span>
+        <a href="{{ $alertUrl }}" class="alert-link-compact alert-{{ $alert['type'] }}" style="margin-block-end: 6px; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px; text-decoration: none; transition: all 0.2s ease; font-size: 14px;">
+            <span style="font-size: 14px;">{{ $alert['icon'] }}</span>
+            <span style="flex: 1;">{{ $alert['message'] }}</span>
+            <span style="font-size: 12px; opacity: 0.7;">→</span>
         </a>
         @endforeach
     </div>
     @endif
 
-    <!-- Main Statistics Grid (Enhanced) -->
+    <!-- Main Statistics Grid (Subtle Design) -->
     <div class="dashboard-grid">
         <!-- Total Terminals -->
-        <a href="{{ route('pos-terminals.index') }}" class="metric-card clickable-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none;">
-            <div class="metric-icon">🖥️</div>
+        <a href="{{ route('pos-terminals.index') }}" class="metric-card-subtle clickable-card" style="text-decoration: none;">
+            <div class="metric-icon-subtle">🖥️</div>
             <div class="metric-content">
-                <div class="metric-number">{{ number_format($stats['total_terminals']) }}</div>
-                <div class="metric-label">Total Terminals</div>
-                <div class="metric-change">
-                    <span style="color: #a8d8a8;">↗ +{{ $stats['new_terminals_this_month'] }} this month</span>
+                <div class="metric-number-subtle">{{ number_format($stats['total_terminals']) }}</div>
+                <div class="metric-label-subtle">Total Terminals</div>
+                <div class="metric-change-subtle">
+                    <span style="color: #4caf50;">↗ +{{ $stats['new_terminals_this_month'] }} this month</span>
                 </div>
             </div>
         </a>
 
         <!-- Active Terminals -->
-        <a href="{{ route('pos-terminals.index', ['status' => 'active']) }}" class="metric-card clickable-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; text-decoration: none;">
-            <div class="metric-icon">✅</div>
+        <a href="{{ route('pos-terminals.index', ['status' => 'active']) }}" class="metric-card-subtle clickable-card" style="text-decoration: none;">
+            <div class="metric-icon-subtle">✅</div>
             <div class="metric-content">
-                <div class="metric-number">{{ number_format($stats['active_terminals']) }}</div>
-                <div class="metric-label">Active Terminals</div>
-                <div class="metric-change">
-                    <span style="color: #a8d8a8;">{{ $stats['network_uptime'] }}% uptime</span>
+                <div class="metric-number-subtle">{{ number_format($stats['active_terminals']) }}</div>
+                <div class="metric-label-subtle">Active Terminals</div>
+                <div class="metric-change-subtle">
+                    <span style="color: #4caf50;">{{ $stats['network_uptime'] }}% uptime</span>
                 </div>
             </div>
         </a>
 
-        <!-- Business Licenses (NEW) -->
-        <a href="{{ route('business-licenses.index') }}" class="metric-card clickable-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; text-decoration: none;">
-            <div class="metric-icon">📋</div>
+        <!-- Business Licenses -->
+        <a href="{{ route('business-licenses.index') }}" class="metric-card-subtle clickable-card" style="text-decoration: none;">
+            <div class="metric-icon-subtle">📋</div>
             <div class="metric-content">
-                <div class="metric-number">{{ number_format($stats['license_stats']['total_licenses']) }}</div>
-                <div class="metric-label">Business Licenses</div>
-                <div class="metric-change">
-                    <span style="color: #a8d8a8;">{{ $stats['license_stats']['active_licenses'] }} active</span>
+                <div class="metric-number-subtle">{{ number_format($stats['license_stats']['total_licenses']) }}</div>
+                <div class="metric-label-subtle">Business Licenses</div>
+                <div class="metric-change-subtle">
+                    <span style="color: #4caf50;">{{ $stats['license_stats']['active_licenses'] }} active</span>
                 </div>
             </div>
         </a>
 
         <!-- Need Attention -->
-        <a href="{{ route('pos-terminals.index') }}?status=faulty&status=offline&status=maintenance" class="metric-card alert clickable-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; text-decoration: none;">
-            <div class="metric-icon">⚠️</div>
+        <a href="{{ route('pos-terminals.index') }}?status=faulty&status=offline&status=maintenance" class="metric-card-subtle metric-card-alert clickable-card" style="text-decoration: none;">
+            <div class="metric-icon-subtle">⚠️</div>
             <div class="metric-content">
-                <div class="metric-number">{{ number_format($stats['need_attention']) }}</div>
-                <div class="metric-label">Need Attention</div>
-                <div class="metric-change">
-                    <span style="color: #fff3cd;">{{ $stats['urgent_issues'] }} urgent</span>
+                <div class="metric-number-subtle">{{ number_format($stats['need_attention']) }}</div>
+                <div class="metric-label-subtle">Need Attention</div>
+                <div class="metric-change-subtle">
+                    <span style="color: #f44336;">{{ $stats['urgent_issues'] }} urgent</span>
                 </div>
             </div>
         </a>
 
         <!-- Total Clients -->
-        <a href="{{ route('clients.index') }}" class="metric-card clickable-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; text-decoration: none;">
-            <div class="metric-icon">🏢</div>
+        <a href="{{ route('clients.index') }}" class="metric-card-subtle clickable-card" style="text-decoration: none;">
+            <div class="metric-icon-subtle">🏢</div>
             <div class="metric-content">
-                <div class="metric-number">{{ number_format($stats['total_clients']) }}</div>
-                <div class="metric-label">Active Clients</div>
-                <div class="metric-change">
+                <div class="metric-number-subtle">{{ number_format($stats['total_clients']) }}</div>
+                <div class="metric-label-subtle">Active Clients</div>
+                <div class="metric-change-subtle">
                     <span style="color: #666;">{{ $stats['new_clients_this_month'] }} new this month</span>
                 </div>
             </div>
         </a>
 
-        <!-- License Compliance (NEW) -->
-        <a href="{{ route('business-licenses.compliance') }}" class="metric-card clickable-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; text-decoration: none;">
-            <div class="metric-icon">✅</div>
+        <!-- License Compliance -->
+        <a href="{{ route('business-licenses.compliance') }}" class="metric-card-subtle clickable-card" style="text-decoration: none;">
+            <div class="metric-icon-subtle">✅</div>
             <div class="metric-content">
-                <div class="metric-number">{{ number_format($stats['license_stats']['compliance_rate']) }}%</div>
-                <div class="metric-label">License Compliance</div>
-                <div class="metric-change">
+                <div class="metric-number-subtle">{{ number_format($stats['license_stats']['compliance_rate']) }}%</div>
+                <div class="metric-label-subtle">License Compliance</div>
+                <div class="metric-change-subtle">
                     <span style="color: #666;">{{ $stats['license_stats']['expiring_soon'] }} expiring soon</span>
                 </div>
             </div>
@@ -114,42 +114,42 @@
         <!-- Main Content Area -->
         <div style="display: flex; flex-direction: column; gap: 20px;">
             
-            <!-- License Compliance Alert (NEW) -->
+            <!-- License Compliance Alert (Compact) -->
             @if($stats['license_stats']['expiring_soon'] > 0 || $stats['license_stats']['expired'] > 0)
-            <div class="content-card" style="background: linear-gradient(135deg, #fff3e0 0%, #ffecb3 100%); border-left: 4px solid #ff9800;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 15px;">
-                    <h4 style="margin: 0; color: #f57c00;">📋 License Compliance Alert</h4>
+            <div class="content-card" style="background: #fff8f0; border-left: 4px solid #ff9800;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 12px;">
+                    <h4 style="margin: 0; color: #f57c00; font-size: 16px;">📋 License Compliance Alert</h4>
                     <a href="{{ route('business-licenses.compliance') }}" class="btn-small" style="background: #ff9800; color: white; border-color: #ff9800;">View All</a>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
                     @if($stats['license_stats']['expired'] > 0)
-                    <a href="{{ route('business-licenses.index', ['status' => 'expired']) }}" class="license-alert-card" style="background: #ffebee; border: 1px solid #f44336; padding: 15px; border-radius: 8px; text-decoration: none; color: inherit;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-block-end: 8px;">
-                            <span style="font-size: 20px;">⚠️</span>
-                            <span style="font-weight: bold; color: #f44336;">{{ $stats['license_stats']['expired'] }} Expired</span>
+                    <a href="{{ route('business-licenses.index', ['status' => 'expired']) }}" class="license-alert-card-compact" style="background: #fef7f7; border: 1px solid #f44336; padding: 12px; border-radius: 6px; text-decoration: none; color: inherit;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-block-end: 6px;">
+                            <span style="font-size: 16px;">⚠️</span>
+                            <span style="font-weight: 600; color: #f44336; font-size: 14px;">{{ $stats['license_stats']['expired'] }} Expired</span>
                         </div>
-                        <div style="font-size: 12px; color: #666;">Immediate action required</div>
+                        <div style="font-size: 11px; color: #666;">Immediate action required</div>
                     </a>
                     @endif
 
                     @if($stats['license_stats']['expiring_soon'] > 0)
-                    <a href="{{ route('business-licenses.expiring') }}" class="license-alert-card" style="background: #fff3e0; border: 1px solid #ff9800; padding: 15px; border-radius: 8px; text-decoration: none; color: inherit;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-block-end: 8px;">
-                            <span style="font-size: 20px;">⏰</span>
-                            <span style="font-weight: bold; color: #f57c00;">{{ $stats['license_stats']['expiring_soon'] }} Expiring Soon</span>
+                    <a href="{{ route('business-licenses.expiring') }}" class="license-alert-card-compact" style="background: #fff9f0; border: 1px solid #ff9800; padding: 12px; border-radius: 6px; text-decoration: none; color: inherit;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-block-end: 6px;">
+                            <span style="font-size: 16px;">⏰</span>
+                            <span style="font-weight: 600; color: #f57c00; font-size: 14px;">{{ $stats['license_stats']['expiring_soon'] }} Expiring Soon</span>
                         </div>
-                        <div style="font-size: 12px; color: #666;">Within next 30 days</div>
+                        <div style="font-size: 11px; color: #666;">Within next 30 days</div>
                     </a>
                     @endif
 
                     @if($stats['license_stats']['critical_expired'] > 0)
-                    <a href="{{ route('business-licenses.index', ['priority' => 'critical', 'status' => 'expired']) }}" class="license-alert-card" style="background: #ffebee; border: 1px solid #f44336; padding: 15px; border-radius: 8px; text-decoration: none; color: inherit;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-block-end: 8px;">
-                            <span style="font-size: 20px;">🚨</span>
-                            <span style="font-weight: bold; color: #f44336;">{{ $stats['license_stats']['critical_expired'] }} Critical Expired</span>
+                    <a href="{{ route('business-licenses.index', ['priority' => 'critical', 'status' => 'expired']) }}" class="license-alert-card-compact" style="background: #fef7f7; border: 1px solid #f44336; padding: 12px; border-radius: 6px; text-decoration: none; color: inherit;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-block-end: 6px;">
+                            <span style="font-size: 16px;">🚨</span>
+                            <span style="font-weight: 600; color: #f44336; font-size: 14px;">{{ $stats['license_stats']['critical_expired'] }} Critical Expired</span>
                         </div>
-                        <div style="font-size: 12px; color: #666;">High business impact</div>
+                        <div style="font-size: 11px; color: #666;">High business impact</div>
                     </a>
                     @endif
                 </div>
@@ -174,7 +174,7 @@
                 </div>
             </div>
 
-            <!-- License Status Chart (NEW) -->
+            <!-- License Status Chart -->
             <div class="content-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px;">
                     <h4 style="margin: 0; color: #333;">📋 License Status Overview</h4>
@@ -222,7 +222,7 @@
                 </div>
             </div>
 
-            <!-- Recent Activity Feed (Enhanced with License Activities) -->
+            <!-- Recent Activity Feed -->
             <div class="content-card">
                 <h4 style="margin-block-end: 20px; color: #333;">📋 Recent Activity</h4>
                 <div style="max-height: 400px; overflow-y: auto;">
@@ -250,10 +250,10 @@
             </div>
         </div>
 
-        <!-- Sidebar (Enhanced) -->
+        <!-- Sidebar -->
         <div style="display: flex; flex-direction: column; gap: 20px;">
             
-            <!-- Quick Actions (Enhanced) -->
+            <!-- Quick Actions -->
             <div class="content-card">
                 <h4 style="margin-block-end: 15px; color: #333;">⚡ Quick Actions</h4>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -284,7 +284,7 @@
                 </div>
             </div>
 
-            <!-- License Status Summary (NEW) -->
+            <!-- License Status Summary -->
             <div class="content-card">
                 <h4 style="margin-block-end: 15px; color: #333;">📋 License Summary</h4>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -320,7 +320,7 @@
                 </div>
             </div>
 
-            <!-- Upcoming License Renewals (NEW) -->
+            <!-- Upcoming License Renewals -->
             @if(isset($stats['upcoming_renewals']) && $stats['upcoming_renewals']->count() > 0)
             <div class="content-card">
                 <h4 style="margin-block-end: 15px; color: #333;">🔄 Upcoming Renewals</h4>
@@ -447,47 +447,105 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-.alert-link {
+/* Compact Alert Styles */
+.alert-link-compact {
     border: 1px solid;
     text-decoration: none !important;
 }
 
-.alert-link:hover {
+.alert-link-compact:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .alert-critical {
-    background: #ffebee;
+    background: #fef7f7;
     border-color: #f44336;
     color: #c62828;
 }
 
 .alert-critical:hover {
-    background: #ffcdd2;
+    background: #ffebee;
     color: #b71c1c;
 }
 
 .alert-warning {
-    background: #fff3e0;
+    background: #fff9f0;
     border-color: #ff9800;
     color: #f57c00;
 }
 
 .alert-warning:hover {
-    background: #ffe0b2;
+    background: #fff3e0;
     color: #ef6c00;
 }
 
 .alert-info {
-    background: #e3f2fd;
+    background: #f0f8ff;
     border-color: #2196f3;
     color: #1976d2;
 }
 
 .alert-info:hover {
-    background: #bbdefb;
+    background: #e3f2fd;
     color: #1565c0;
+}
+
+/* Subtle Card Styles */
+.metric-card-subtle {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    color: inherit;
+}
+
+.metric-card-subtle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #d0d0d0;
+    text-decoration: none;
+    color: inherit;
+}
+
+.metric-card-alert {
+    border-left: 4px solid #f44336;
+}
+
+.metric-icon-subtle {
+    font-size: 28px;
+    opacity: 0.8;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 50%;
+}
+
+.metric-number-subtle {
+    font-size: 32px;
+    font-weight: bold;
+    margin-block-end: 4px;
+    color: #333;
+}
+
+.metric-label-subtle {
+    font-size: 14px;
+    color: #666;
+    margin-block-end: 4px;
+    font-weight: 500;
+}
+
+.metric-change-subtle {
+    font-size: 12px;
+    color: #888;
 }
 
 .clickable-card {
@@ -495,20 +553,13 @@
     transition: all 0.3s ease;
 }
 
-.clickable-card:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    text-decoration: none;
-    color: inherit;
-}
-
-.license-alert-card {
+.license-alert-card-compact {
     transition: all 0.2s ease;
 }
 
-.license-alert-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+.license-alert-card-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     text-decoration: none;
     color: inherit;
 }
@@ -540,52 +591,12 @@
     transform: translateY(-1px);
 }
 
-.metric-card {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease;
-}
-
-.metric-card:hover {
-    transform: translateY(-2px);
-}
-
-.metric-icon {
-    font-size: 32px;
-    opacity: 0.9;
-}
-
-.metric-content {
-    flex: 1;
-}
-
-.metric-number {
-    font-size: 28px;
-    font-weight: bold;
-    margin-block-end: 5px;
-}
-
-.metric-label {
-    font-size: 14px;
-    opacity: 0.9;
-    margin-block-end: 5px;
-}
-
-.metric-change {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
 .content-card {
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .btn-small {
@@ -692,7 +703,7 @@ const statusChart = new Chart(ctx, {
     }
 });
 
-// License Status Chart (NEW)
+// License Status Chart
 const licenseCtx = document.getElementById('licenseChart').getContext('2d');
 const licenseChart = new Chart(licenseCtx, {
     type: 'bar',

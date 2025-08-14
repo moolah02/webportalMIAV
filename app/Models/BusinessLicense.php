@@ -10,6 +10,7 @@ class BusinessLicense extends Model
     use HasFactory;
 
     protected $fillable = [
+        // Existing fields
         'license_name',
         'license_number',
         'license_type',
@@ -34,16 +35,44 @@ class BusinessLicense extends Model
         'license_conditions',
         'created_by',
         'updated_by',
+        
+        // New fields for direction and customer licenses
+        'license_direction',
+        'customer_id',
+        'customer_name',
+        'customer_email',
+        'customer_company',
+        'customer_phone',
+        'customer_address',
+        'revenue_amount',
+        'billing_cycle',
+        'license_terms',
+        'usage_limit',
+        'support_level',
+        'customer_reference',
+        'service_start_date',
+        'license_quantity',
+        'auto_renewal_customer'
     ];
 
     protected $casts = [
         'issue_date' => 'date',
         'expiry_date' => 'date',
         'renewal_date' => 'date',
+        'service_start_date' => 'date',
         'cost' => 'decimal:2',
         'renewal_cost' => 'decimal:2',
+        'revenue_amount' => 'decimal:2',
         'auto_renewal' => 'boolean',
+        'auto_renewal_customer' => 'boolean',
         'renewal_reminder_days' => 'integer',
+        'license_quantity' => 'integer',
+    ];
+
+    // License Direction Constants
+    const LICENSE_DIRECTIONS = [
+        'company_held' => 'Company Held License',
+        'customer_issued' => 'Customer Issued License'
     ];
 
     // License Types
@@ -58,6 +87,10 @@ class BusinessLicense extends Model
         'software' => 'Software License',
         'broadcasting' => 'Broadcasting License',
         'financial' => 'Financial License',
+        'service_permit' => 'Service Permit',
+        'product_license' => 'Product License',
+        'api_access' => 'API Access License',
+        'data_license' => 'Data License',
         'other' => 'Other'
     ];
 
@@ -77,6 +110,21 @@ class BusinessLicense extends Model
         'high' => 'High',
         'medium' => 'Medium',
         'low' => 'Low'
+    ];
+
+    // New constants for customer licenses
+    const BILLING_CYCLES = [
+        'monthly' => 'Monthly',
+        'quarterly' => 'Quarterly',
+        'annually' => 'Annually',
+        'one_time' => 'One Time'
+    ];
+
+    const SUPPORT_LEVELS = [
+        'basic' => 'Basic Support',
+        'standard' => 'Standard Support',
+        'premium' => 'Premium Support',
+        'enterprise' => 'Enterprise Support'
     ];
 
     // Relationships
@@ -100,7 +148,105 @@ class BusinessLicense extends Model
         return $this->belongsTo(Employee::class, 'updated_by');
     }
 
-    // Accessors & Mutators
+    // License Direction Scopes
+    public function scopeCompanyHeld($query)
+    {
+        return $query->where('license_direction', 'company_held');
+    }
+
+    public function scopeCustomerIssued($query)
+    {
+        return $query->where('license_direction', 'customer_issued');
+    }
+
+    // Existing Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeExpired($query)
+    {
+        return $query->where('expiry_date', '<', now());
+    }
+
+    public function scopeExpiringSoon($query, $days = 30)
+    {
+        return $query->where('expiry_date', '<=', now()->addDays($days))
+                    ->where('expiry_date', '>', now());
+    }
+
+    public function scopeCritical($query)
+    {
+        return $query->where('priority_level', 'critical');
+    }
+
+    public function scopeByType($query, $type)
+    {
+        return $query->where('license_type', $type);
+    }
+
+    public function scopeByDepartment($query, $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
+    }
+
+    // Direction Helper Methods
+    public function isCompanyHeld()
+    {
+        return $this->license_direction === 'company_held';
+    }
+
+    public function isCustomerIssued()
+    {
+        return $this->license_direction === 'customer_issued';
+    }
+
+    public function getLicenseDirectionNameAttribute()
+    {
+        return self::LICENSE_DIRECTIONS[$this->license_direction] ?? 'Unknown';
+    }
+
+    // Customer License Helper Methods
+    public function getBillingCycleNameAttribute()
+    {
+        return self::BILLING_CYCLES[$this->billing_cycle] ?? 'N/A';
+    }
+
+    public function getSupportLevelNameAttribute()
+    {
+        return self::SUPPORT_LEVELS[$this->support_level] ?? 'N/A';
+    }
+
+    public function getCustomerDisplayNameAttribute()
+    {
+        if ($this->customer_company) {
+            return $this->customer_company . ($this->customer_name ? " ({$this->customer_name})" : '');
+        }
+        return $this->customer_name ?? 'N/A';
+    }
+
+    public function getAnnualRevenueAttribute()
+    {
+        if (!$this->revenue_amount || !$this->billing_cycle) {
+            return 0;
+        }
+
+        switch ($this->billing_cycle) {
+            case 'monthly':
+                return $this->revenue_amount * 12;
+            case 'quarterly':
+                return $this->revenue_amount * 4;
+            case 'annually':
+                return $this->revenue_amount;
+            case 'one_time':
+                return $this->revenue_amount;
+            default:
+                return 0;
+        }
+    }
+
+    // Existing Accessors & Mutators
     public function getLicenseTypeNameAttribute()
     {
         return self::LICENSE_TYPES[$this->license_type] ?? ucfirst(str_replace('_', ' ', $this->license_type));
@@ -149,38 +295,6 @@ class BusinessLicense extends Model
         return 'compliant';
     }
 
-    // Scopes
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
-    }
-
-    public function scopeExpired($query)
-    {
-        return $query->where('expiry_date', '<', now());
-    }
-
-    public function scopeExpiringSoon($query, $days = 30)
-    {
-        return $query->where('expiry_date', '<=', now()->addDays($days))
-                    ->where('expiry_date', '>', now());
-    }
-
-    public function scopeCritical($query)
-    {
-        return $query->where('priority_level', 'critical');
-    }
-
-    public function scopeByType($query, $type)
-    {
-        return $query->where('license_type', $type);
-    }
-
-    public function scopeByDepartment($query, $departmentId)
-    {
-        return $query->where('department_id', $departmentId);
-    }
-
     // Helper Methods
     public function canRenew()
     {
@@ -209,30 +323,33 @@ class BusinessLicense extends Model
             'renewal_date' => now(),
             'expiry_date' => $newExpiryDate,
             'renewal_cost' => $cost ?: $this->renewal_cost,
+            'updated_by' => auth()->id()
         ]);
     }
 
     public function getStatusColorClass()
     {
-        return match($this->status) {
-            'active' => 'text-green-600 bg-green-100',
-            'expired' => 'text-red-600 bg-red-100',
-            'pending_renewal' => 'text-yellow-600 bg-yellow-100',
-            'suspended' => 'text-orange-600 bg-orange-100',
-            'cancelled' => 'text-gray-600 bg-gray-100',
-            'under_review' => 'text-blue-600 bg-blue-100',
-            default => 'text-gray-600 bg-gray-100'
-        };
+        $colors = [
+            'active' => 'background: #e8f5e8; color: #4caf50;',
+            'expired' => 'background: #ffebee; color: #f44336;',
+            'pending_renewal' => 'background: #fff3e0; color: #ff9800;',
+            'suspended' => 'background: #fce4ec; color: #e91e63;',
+            'cancelled' => 'background: #f3e5f5; color: #9c27b0;',
+            'under_review' => 'background: #e3f2fd; color: #2196f3;'
+        ];
+        
+        return $colors[$this->status] ?? 'background: #f5f5f5; color: #666;';
     }
 
     public function getPriorityColorClass()
     {
-        return match($this->priority_level) {
-            'critical' => 'text-red-600 bg-red-100',
-            'high' => 'text-orange-600 bg-orange-100',
-            'medium' => 'text-yellow-600 bg-yellow-100',
-            'low' => 'text-green-600 bg-green-100',
-            default => 'text-gray-600 bg-gray-100'
-        };
+        $colors = [
+            'critical' => 'background: #ffebee; color: #f44336;',
+            'high' => 'background: #fff3e0; color: #ff9800;',
+            'medium' => 'background: #e3f2fd; color: #2196f3;',
+            'low' => 'background: #f3e5f5; color: #9c27b0;'
+        ];
+        
+        return $colors[$this->priority_level] ?? 'background: #f5f5f5; color: #666;';
     }
 }

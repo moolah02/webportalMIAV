@@ -12,11 +12,12 @@ use App\Http\Controllers\AssetController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\BusinessLicenseController;
-use App\Http\Controllers\DeploymentController;
 use App\Http\Controllers\JobAssignmentController;
 use App\Http\Controllers\TechnicianReportsController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\DeploymentPlanningController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TerminalDeploymentController;
 
 // ==============================================
 // ROOT ROUTE - SMART REDIRECT
@@ -82,21 +83,20 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
     // ==============================================
     
     Route::prefix('clients')->name('clients.')->group(function () {
-        // Read-only client routes (index, show)
-        Route::middleware('permission:view_clients,manage_team,all')->group(function () {
-            Route::get('/', [ClientController::class, 'index'])->name('index');
-            Route::get('/{client}', [ClientController::class, 'show'])->name('show');
-        });
-        
-        // Write client routes (create, edit, delete)
-        Route::middleware('permission:manage_team,all')->group(function () {
-            Route::get('/create', [ClientController::class, 'create'])->name('create');
-            Route::post('/', [ClientController::class, 'store'])->name('store');
-            Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
-            Route::put('/{client}', [ClientController::class, 'update'])->name('update');
-            Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
-        });
-    });
+    // index
+    Route::get('/', [ClientController::class, 'index'])->name('index');
+
+    // create & store must come before the “show” {client} route
+    Route::get('/create', [ClientController::class, 'create'])->name('create');
+    Route::post('/',      [ClientController::class, 'store'])->name('store');
+
+    // now the show, edit, update, destroy
+    Route::get('/{client}',       [ClientController::class, 'show'])->name('show');
+    Route::get('/{client}/edit',  [ClientController::class, 'edit'])->name('edit');
+    Route::put('/{client}',       [ClientController::class, 'update'])->name('update');
+    Route::delete('/{client}',    [ClientController::class, 'destroy'])->name('destroy');
+});
+
     
     // ==============================================
     // POS TERMINAL ROUTES - FIXED AND CONSOLIDATED
@@ -176,113 +176,58 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         Route::patch('/{posTerminal}/status', [PosTerminalController::class, 'updateStatus'])
             ->middleware('permission:update_terminals,manage_team,all')
             ->name('update-status');
+
+            // POS Terminal additional routes
+Route::prefix('pos-terminals/{posTerminal}')->group(function () {
+    Route::post('/tickets', 'PosTerminalController@createTicket')->name('pos-terminals.tickets.create');
+    Route::post('/services', 'PosTerminalController@scheduleService')->name('pos-terminals.services.create');
+    Route::post('/notes', 'PosTerminalController@addNote')->name('pos-terminals.notes.create');
+    Route::get('/reports/{type}', 'PosTerminalController@generateReport')->name('pos-terminals.reports.generate');
+    Route::get('/statistics', 'PosTerminalController@getStatistics')->name('pos-terminals.statistics');
+});
     });
+
+
+
+// ==============================================
+// JOB ASSIGNMENT ROUTES (EXISTING - FIXED)
+// ==============================================
+
+Route::prefix('jobs')->name('jobs.')->middleware('permission:manage_team,all')->group(function () {
+    // Main assignment page
+    Route::get('/assignment', [JobAssignmentController::class, 'index'])->name('assignment');
     
-    // ==============================================
-    // DEPLOYMENT PLANNING ROUTES (NEW)
-    // ==============================================
+    // Store new assignment
+    Route::post('/assignment', [JobAssignmentController::class, 'store'])->name('assignment.store');
     
+    // Get region terminals for AJAX
+    Route::get('/regions/{region}/terminals', [JobAssignmentController::class, 'getRegionTerminals'])->name('regions.terminals');
     
-
-
-Route::middleware(['auth','permission:manage_team,all'])->prefix('deployment')->name('deployment.')->group(function() {
-    // GET  /deployment                      → index()
-    Route::get('/', [DeploymentPlanningController::class,'index'])->name('index');
-
-    // POST /deployment                      → store()
-    Route::post('/', [DeploymentPlanningController::class,'store'])->name('store');
-
-    // GET  /deployment/analytics            → analytics()
-    Route::get('/analytics', [DeploymentPlanningController::class,'analytics'])->name('analytics');
-
-    // GET  /deployment/export               → export()
-    Route::get('/export', [DeploymentPlanningController::class,'export'])->name('export');
-
-    // GET  /deployment/{template}           → show()
-    Route::get('/{template}', [DeploymentPlanningController::class,'show'])->name('show');
-
-    // POST /deployment/{template}/deploy    → deploy()
-    Route::post('/{template}/deploy', [DeploymentPlanningController::class,'deploy'])->name('deploy');
-
-    // PUT  /deployment/{template}           → update()
-    Route::put('/{template}', [DeploymentPlanningController::class,'update'])->name('update');
-
-    // DELETE /deployment/{template}         → destroy()
-    Route::delete('/{template}', [DeploymentPlanningController::class,'destroy'])->name('destroy');
-
-    // AJAX: GET /deployment/regions/{region}/terminals → getRegionTerminals()
-    Route::get('/regions/{region}/terminals', [DeploymentPlanningController::class,'getRegionTerminals'])
-         ->name('regions.terminals');
-
-            // Get cities for client (for city grouping)
-    Route::get('/api/clients/{client}/cities', [DeploymentPlanningController::class, 'getCitiesByClient'])
-         ->name('api.cities');
+    // Assignment management routes
+    Route::get('/assignment/{assignment}', [JobAssignmentController::class, 'show'])->name('assignment.show');
+    Route::get('/assignment/{assignment}/edit', [JobAssignmentController::class, 'edit'])->name('assignment.edit');
+    Route::put('/assignment/{assignment}', [JobAssignmentController::class, 'update'])->name('assignment.update');
+    Route::post('/assignment/{assignment}/cancel', [JobAssignmentController::class, 'cancel'])->name('assignment.cancel');
+    Route::post('/assignment/{assignment}/status', [JobAssignmentController::class, 'updateStatus'])->name('assignment.updateStatus');
     
-    // Get addresses for client (for address grouping)  
-    Route::get('/api/clients/{client}/addresses', [DeploymentPlanningController::class, 'getAddressesByClient'])
-         ->name('api.addresses');
-    
-    // Get filtered terminals (enhanced version)
-    Route::get('/api/terminals', [DeploymentPlanningController::class, 'getFilteredTerminals'])
-         ->name('api.terminals');
+    // Export route
+    Route::get('/assignment/export', [JobAssignmentController::class, 'export'])->name('assignment.export');
 });
 
 
-    // ==============================================
-    // JOB ASSIGNMENT ROUTES (FIXED)
-    // ==============================================
-    
-    Route::prefix('jobs')->name('jobs.')->middleware('permission:manage_team,all')->group(function () {
-        // Main assignment page
-        Route::get('/assignment', [JobAssignmentController::class, 'index'])->name('assignment');
-        
-        // Store new assignment
-        Route::post('/assignment', [JobAssignmentController::class, 'store'])->name('assignment.store');
-        
-        // Get region terminals for AJAX
-        Route::get('/regions/{region}/terminals', [JobAssignmentController::class, 'getRegionTerminals'])->name('regions.terminals');
-        
-        // Assignment management routes
-        Route::get('/assignment/{assignment}', [JobAssignmentController::class, 'show'])->name('assignment.show');
-        Route::get('/assignment/{assignment}/edit', [JobAssignmentController::class, 'edit'])->name('assignment.edit');
-        Route::put('/assignment/{assignment}', [JobAssignmentController::class, 'update'])->name('assignment.update');
-        Route::post('/assignment/{assignment}/cancel', [JobAssignmentController::class, 'cancel'])->name('assignment.cancel');
-        Route::post('/assignment/{assignment}/status', [JobAssignmentController::class, 'updateStatus'])->name('assignment.updateStatus');
-        
-        // Export route
-        Route::get('/assignment/export', [JobAssignmentController::class, 'export'])->name('assignment.export');
-    });
 
-    // ==============================================
-    // API ROUTES FOR AJAX CALLS
-    // ==============================================
-    
-    Route::prefix('api')->name('api.')->group(function () {
-        // Terminals API for the JavaScript AJAX calls
-        Route::get('/terminals', [JobAssignmentController::class, 'getRegionTerminals'])->name('terminals');
-        Route::get('/regions/{regionId}/terminals', [JobAssignmentController::class, 'getRegionTerminals']);
-    });
+// ==============================================
+// TECHNICIAN MANAGEMENT ROUTES (EXISTING)
+// ==============================================
 
-    // ==============================================
-    // ASSIGNMENT ROUTES (for JavaScript compatibility)
-    // ==============================================
+Route::middleware(['auth', 'permission:manage_team,all'])->group(function () {
+    Route::resource('technicians', TechnicianController::class);
     
-    Route::prefix('assignments')->name('assignments.')->group(function () {
-        Route::get('/{assignment}', [JobAssignmentController::class, 'show'])->name('show');
-        Route::post('/{assignment}/complete', [JobAssignmentController::class, 'updateStatus'])->name('complete');
-        Route::get('/export', [JobAssignmentController::class, 'export'])->name('export');
-    });
-    
-    // ==============================================
-    // TECHNICIAN MANAGEMENT ROUTES
-    // ==============================================
-    
-    Route::middleware('permission:manage_team,all')->group(function () {
-        Route::resource('technicians', TechnicianController::class);
-        
-        Route::patch('/technicians/{technician}/availability', [TechnicianController::class, 'updateAvailability'])
-            ->name('technicians.update-availability');
-    });
+    Route::patch('/technicians/{technician}/availability', [TechnicianController::class, 'updateAvailability'])
+        ->name('technicians.update-availability');
+});
+
+
     
    // ==============================================
 // ASSET MANAGEMENT ROUTES (UPDATED)
@@ -412,6 +357,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{employee}', [EmployeeController::class, 'update'])->name('update');
         Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->name('destroy');
         
+        
         // Quick actions
         Route::patch('/{employee}/role', [EmployeeController::class, 'updateRole'])->name('update-role');
         Route::patch('/{employee}/status', [EmployeeController::class, 'toggleStatus'])->name('toggle-status');
@@ -497,15 +443,16 @@ Route::middleware(['auth'])->group(function () {
     // TICKET MANAGEMENT ROUTES
     // ==============================================
     
-    Route::prefix('tickets')->name('tickets.')->group(function () {
-        Route::get('/', function () { 
-            return view('tickets.index', ['title' => 'Tickets']); 
-        })->name('index');
-        
-        Route::get('/create', function () { 
-            return view('tickets.create', ['title' => 'Create Ticket']); 
-        })->name('create');
-    });
+Route::middleware(['auth'])->group(function () {
+    Route::resource('tickets', TicketController::class);
+
+    Route::patch('tickets/{ticket}/status',   [TicketController::class, 'updateStatus'])
+         ->name('tickets.updateStatus');
+    Route::post ('tickets/{ticket}/assign',   [TicketController::class, 'assignTicket'])
+         ->name('tickets.assign');
+});
+
+
     
     // ==============================================
     // REPORTS ROUTES (UPDATED)
@@ -547,15 +494,12 @@ Route::middleware(['auth'])->group(function () {
     // EMPLOYEE PROFILE ROUTES
     // ==============================================
     
-    Route::prefix('profile')->name('profile.')->group(function () {
-        Route::get('/', function () { 
-            return view('profile.index', ['title' => 'My Profile']); 
-        })->name('index');
-        
-        Route::get('/edit', function () { 
-            return view('profile.edit', ['title' => 'Edit Profile']); 
-        })->name('edit');
-    });
+   Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [EmployeeController::class, 'profile'])->name('employee.profile');
+    Route::get('/profile/edit', [EmployeeController::class, 'editProfile'])->name('employee.edit-profile');
+    Route::patch('/profile/update', [EmployeeController::class, 'updateProfile'])->name('employee.update-profile');
+    Route::patch('/profile/password', [EmployeeController::class, 'updatePassword'])->name('employee.update-password');
+});
 
     // ==============================================
     // SETTINGS ROUTES
@@ -615,6 +559,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     // 
+    
     Route::prefix('business-licenses')->name('business-licenses.')->group(function () {
         Route::get('/', [BusinessLicenseController::class, 'index'])->name('index');
         Route::get('/create', [BusinessLicenseController::class, 'create'])->name('create');
@@ -633,7 +578,174 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/expiring', [BusinessLicenseController::class, 'expiring'])->name('expiring');
         Route::get('/reports/compliance', [BusinessLicenseController::class, 'compliance'])->name('compliance');
     });
+// Add this line to your routes/web.php file
+
+Route::get('business-licenses/filtered-stats', [BusinessLicenseController::class, 'getFilteredStats'])->name('business-licenses.filtered-stats');
 });
    
+
+// ==============================================
+// HIERARCHICAL DEPLOYMENT ROUTES (NEW - Real-time System)
+// ==============================================
+
+Route::prefix('deployment')->name('deployment.')->middleware(['auth'])->group(function () {
+    // MAIN: Hierarchical deployment page (YOUR NEW SYSTEM)
+    Route::get('/hierarchical', [TerminalDeploymentController::class, 'index'])
+        ->name('hierarchical');
+
+    
+    
+    
+    // =====================
+    // AJAX ENDPOINTS FOR UI
+    // =====================
+    
+    // Get projects filtered by selected clients
+    Route::post('/projects', [TerminalDeploymentController::class, 'getProjectsByClients'])->name('projects');
+    
+    // Get hierarchical terminals structure
+    Route::post('/terminals', [TerminalDeploymentController::class, 'getHierarchicalTerminals'])->name('terminals');
+    
+    // Create assignment
+    Route::post('/assign', [TerminalDeploymentController::class, 'createAssignment'])->name('assign');
+    
+    // Bulk assignment operations
+    Route::post('/bulk-assign', [TerminalDeploymentController::class, 'bulkAssign'])->name('bulk-assign');
+    
+    // =====================
+    // PROJECT MANAGEMENT
+    // =====================
+    
+    // Create new project inline
+    Route::post('/projects/create', [TerminalDeploymentController::class, 'createProject'])->name('projects.create');
+    
+    // Update project (mark as completed, etc.)
+    Route::patch('/projects/{project}', [TerminalDeploymentController::class, 'updateProject'])->name('projects.update');
+    
+    // =====================
+    // EXPORT & WORK ORDERS
+    // =====================
+    
+    // Export assignments in various formats
+    Route::get('/export/{format}', [TerminalDeploymentController::class, 'exportAssignments'])->name('export');
+    
+    // Generate work orders (PDF, Excel, mobile sync)
+    Route::post('/work-orders', [TerminalDeploymentController::class, 'generateWorkOrders'])->name('work-orders');
+    
+    // Export for mobile sync
+    Route::get('/mobile-sync', [TerminalDeploymentController::class, 'mobileSync'])->name('mobile-sync');
+    
+    // =====================
+    // ASSIGNMENT MANAGEMENT
+    // =====================
+    
+    // Get assignment details
+    Route::get('/assignments/{assignment}', [TerminalDeploymentController::class, 'getAssignmentDetails'])->name('assignments.show');
+    
+    // Update assignment
+    Route::patch('/assignments/{assignment}', [TerminalDeploymentController::class, 'updateAssignment'])->name('assignments.update');
+    
+    // Cancel assignment
+    Route::delete('/assignments/{assignment}', [TerminalDeploymentController::class, 'cancelAssignment'])->name('assignments.cancel');
+    
+    // =====================
+    // QUICK ACTIONS
+    // =====================
+    
+    // Quick assign single terminal via drag & drop
+    Route::post('/quick-assign', [TerminalDeploymentController::class, 'quickAssignTerminal'])->name('quick-assign');
+    
+    // Auto-assign algorithm
+    Route::post('/auto-assign', [TerminalDeploymentController::class, 'autoAssignTerminals'])->name('auto-assign');
+    
+    // Get unassigned terminals
+    Route::get('/unassigned', [TerminalDeploymentController::class, 'getUnassignedTerminals'])->name('unassigned');
+    
+    // =====================
+    // DEPLOYMENT TRACKING
+    // =====================
+    
+    // Save deployment as draft
+    Route::post('/drafts', [TerminalDeploymentController::class, 'saveAsDraft'])->name('drafts.store');
+    
+    // Load draft deployment
+    Route::get('/drafts/{draft}', [TerminalDeploymentController::class, 'loadDraft'])->name('drafts.show');
+    
+    // Deploy all assignments (finalize)
+    Route::post('/deploy', [TerminalDeploymentController::class, 'deployAll'])->name('deploy');
+    
+    // Get deployment progress
+    Route::get('/progress/{deployment}', [TerminalDeploymentController::class, 'getDeploymentProgress'])->name('progress');
+    
+    // =====================
+    // STATISTICS & REPORTING
+    // =====================
+    
+    // Get deployment statistics
+    Route::get('/stats', [TerminalDeploymentController::class, 'getStatistics'])->name('stats');
+    
+    // Get technician workload
+    Route::get('/technician-workload', [TerminalDeploymentController::class, 'getTechnicianWorkload'])->name('technician-workload');
+    
+    // Get regional deployment summary
+    Route::get('/regional-summary', [TerminalDeploymentController::class, 'getRegionalSummary'])->name('regional-summary');
+    
+});
+// Add these routes to your routes/web.php file
+Route::prefix('deployment')->name('deployment.')->group(function () {
+    Route::get('/', [TerminalDeploymentController::class, 'index'])->name('index');
+    Route::post('/projects', [TerminalDeploymentController::class, 'getProjectsByClients'])->name('projects');
+    Route::post('/projects/create', [TerminalDeploymentController::class, 'createProject'])->name('projects.create');
+    Route::post('/terminals', [TerminalDeploymentController::class, 'getHierarchicalTerminals'])->name('terminals');
+    Route::post('/assign', [TerminalDeploymentController::class, 'createAssignment'])->name('assign');
+   Route::get('/assigned-terminals', [TerminalDeploymentController::class, 'getAssignedTerminals'])->name('assigned-terminals'); 
+    Route::post('/export/{format}', [TerminalDeploymentController::class, 'exportAssignments'])->name('export');
+});
+// =====================
+// ALTERNATIVE: Resourceful Routes (Optional)
+// =====================
+
+// If you prefer RESTful resource routes, you can use these instead:
+
+/*
+Route::prefix('deployment')->name('deployment.')->middleware(['auth'])->group(function () {
+    
+    // Main deployment resource
+    Route::resource('deployments', TerminalDeploymentController::class);
+    
+    // Nested resources
+    Route::resource('deployments.assignments', AssignmentController::class)->except(['create', 'edit']);
+    Route::resource('projects', ProjectController::class)->only(['store', 'update', 'destroy']);
+    
+    // Additional routes
+    Route::post('deployments/{deployment}/deploy', [TerminalDeploymentController::class, 'deploy'])->name('deployments.deploy');
+    Route::get('terminals/hierarchy', [TerminalDeploymentController::class, 'getHierarchy'])->name('terminals.hierarchy');
+    Route::post('assignments/bulk', [AssignmentController::class, 'bulkStore'])->name('assignments.bulk');
+    
+});
+*/
+
+// =====================
+// API ROUTES (Optional - for mobile app)
+// =====================
+
+// If you need API endpoints for mobile app, add these to routes/api.php:
+
+/*
+Route::prefix('deployment')->name('api.deployment.')->middleware(['auth:sanctum'])->group(function () {
+    
+    // Mobile sync endpoints
+    Route::get('/sync/assignments', [Api\DeploymentController::class, 'syncAssignments']);
+    Route::post('/sync/progress', [Api\DeploymentController::class, 'updateProgress']);
+    Route::get('/sync/terminals', [Api\DeploymentController::class, 'getTerminals']);
+    
+    // Technician app endpoints
+    Route::get('/technician/assignments', [Api\TechnicianController::class, 'getAssignments']);
+    Route::post('/technician/checkin', [Api\TechnicianController::class, 'checkIn']);
+    Route::post('/technician/complete', [Api\TechnicianController::class, 'completeAssignment']);
+    
+});
+*/
+
 });
 ?>

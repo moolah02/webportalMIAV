@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head<link rel="stylesheet" href="{{ asset('css/pos-terminals.css') }}">>
-
+<head>
+  <link rel="stylesheet" href="{{ asset('css/pos-terminals.css') }}">
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,6 +12,11 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+  
+  <!-- Add Inter font for modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Scripts -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -310,6 +315,9 @@
 
   </style>
   
+  <!-- ADD THIS LINE: Support for pushed styles from individual pages -->
+  @stack('styles')
+  
 </head>
 <body>
   <div class="app-container">
@@ -333,21 +341,37 @@
           <a href="{{ route('business-licenses.index') }}" class="nav-sub {{ request()->routeIs('business-licenses.*') ? 'active' : '' }}">📋 Business Licenses</a>
         </div>
 
-       <!-- Field Operations -->
+      <!-- Field Operations -->
 <div class="nav-section" onclick="toggleMenu(this)">🗺️ Field Operations</div>
-<div class="submenu {{ request()->routeIs('deployment.index','jobs.*','reports.technician-visits*') ? 'show' : '' }}">
-  <a href="{{ route('deployment.index') }}"
-     class="nav-sub {{ request()->routeIs('deployment.index') ? 'active' : '' }}">
-    🗺️ Deployment Planning
+<div class="submenu {{ request()->routeIs('deployment.*','jobs.*','reports.technician-visits*') ? 'show' : '' }}">
+  
+  <!-- REPLACE the old deployment planning with the new hierarchical system -->
+  <a href="{{ route('deployment.hierarchical') }}"
+     class="nav-sub {{ request()->routeIs('deployment.hierarchical') ? 'active' : '' }}">
+    🗺️ Terminal Deployment
   </a>
+  
+  <!-- Keep Job Assignment separate -->
   <a href="{{ route('jobs.assignment') }}"
      class="nav-sub {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
     📋 Job Assignment
   </a>
+
+  <!-- Optional: Add Technician Visits if you have this -->
+  <!-- 
+  <a href="{{ route('reports.technician-visits') }}"
+     class="nav-sub {{ request()->routeIs('reports.technician-visits*') ? 'active' : '' }}">
+    📊 Technician Reports
+  </a>
+  -->
+
+
   <a href="{{ route('reports.technician-visits') }}"
      class="nav-sub {{ request()->routeIs('reports.technician-visits*') ? 'active' : '' }}">
     📄 Technician Reports
   </a>
+  <a href="{{ route('tickets.index') }}"
+   class="nav-sub {{ request()->routeIs('tickets.*') ? 'active' : '' }}">🎫 Support Tickets</a>
 </div>
 
 
@@ -362,7 +386,6 @@
         <div class="submenu {{ request()->routeIs('employees.*','roles.*','technicians.*') ? 'show' : '' }}">
           <a href="{{ route('employees.index') }}" class="nav-sub {{ request()->routeIs('employees.*') ? 'active' : '' }}">Employees</a>
           <a href="{{ route('roles.index') }}" class="nav-sub {{ request()->routeIs('roles.*') ? 'active' : '' }}">Role Management</a>
-          <a href="{{ route('technicians.index') }}" class="nav-sub {{ request()->routeIs('technicians.*') ? 'active' : '' }}">Technicians</a>
         </div>
 
         <!-- Technician -->
@@ -395,10 +418,10 @@
         </div>
 
         <!-- My Account -->
-        <div class="nav-section" onclick="toggleMenu(this)">👤 My Account</div>
-        <div class="submenu {{ request()->routeIs('profile.*') ? 'show' : '' }}">
-          <a href="{{ route('profile.index') }}" class="nav-sub {{ request()->routeIs('profile.index') ? 'active' : '' }}">👤 My Profile</a>
-        </div>
+<div class="nav-section" onclick="toggleMenu(this)">👤 My Account</div>
+<div class="submenu {{ request()->routeIs('employee.profile*') ? 'show' : '' }}">
+  <a href="{{ route('employee.profile') }}" class="nav-sub {{ request()->routeIs('employee.profile*') ? 'active' : '' }}">👤 My Profile</a>
+</div>
 
         <!-- Logout -->
         <form method="POST" action="{{ route('logout') }}" class="logout-form">
@@ -422,6 +445,9 @@
       </div>
     </div>
   </div>
+
+  <!-- ADD THIS LINE: Support for pushed scripts from individual pages -->
+  @stack('scripts')
 
   <script>
     function toggleMenu(header) {

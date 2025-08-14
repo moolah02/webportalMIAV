@@ -202,27 +202,21 @@ class Employee extends Authenticatable
     }
 
     
-    /**
- * Asset assignments relationship - assets currently assigned to this employee
- */
+   
 public function assetAssignments()
 {
     return $this->hasMany(AssetAssignment::class, 'employee_id');
 }
 
-/**
- * Currently assigned assets
- */
-public function currentAssetAssignments()
-{
-    return $this->hasMany(AssetAssignment::class, 'employee_id')
-                ->where('status', 'assigned')
-                ->with('asset');
-}
 
-/**
- * Assets assigned by this employee (if they're a manager/admin)
- */
+    public function getAssignedAssetsValueAttribute()
+    {
+        return $this->currentAssetAssignments()
+                    ->join('assets', 'asset_assignments.asset_id', '=', 'assets.id')
+                    ->sum(\DB::raw('assets.unit_price * asset_assignments.quantity_assigned')) ?? 0;
+    }
+
+
 public function assignedAssets()
 {
     return $this->hasMany(AssetAssignment::class, 'assigned_by');
@@ -264,48 +258,32 @@ public function getAssignmentHistory()
                 ->get();
 }
 
-/**
- * Check if employee has any assigned assets
- */
-public function hasAssignedAssets(): bool
-{
-    return $this->currentAssetAssignments()->exists();
-}
-
+public function currentAssetAssignments()
+    {
+        return $this->hasMany(AssetAssignment::class, 'employee_id')
+                    ->where('asset_assignments.status', 'assigned')
+                    ->with('asset');
+    }
 /**
  * Get overdue asset returns for this employee
  */
 public function getOverdueAssets()
-{
-    return $this->assetAssignments()
-                ->where('status', 'assigned')
-                ->where('expected_return_date', '<', now())
-                ->whereNull('actual_return_date')
-                ->with('asset')
-                ->get();
-}
-
+    {
+        return $this->assetAssignments()
+                    ->where('asset_assignments.status', 'assigned')
+                    ->where('expected_return_date', '<', now())
+                    ->whereNull('actual_return_date')
+                    ->with('asset')
+                    ->get();
+    }
 /**
  * Get count of assets assigned to this employee
  */
-public function getAssignedAssetsCountAttribute()
-{
-    return $this->currentAssetAssignments()->count();
-}
 
 /**
  * Get total value of assets assigned to this employee
  */
-public function getAssignedAssetsValueAttribute()
-{
-    return $this->currentAssetAssignments()
-                ->join('assets', 'asset_assignments.asset_id', '=', 'assets.id')
-                ->sum(\DB::raw('assets.unit_price * asset_assignments.quantity_assigned')) ?? 0;
-}
 
-/**
- * Check if employee can be assigned more assets (based on role/limits)
- */
 public function canReceiveAssetAssignment(): bool
 {
     // Basic check - employee must be active
@@ -342,13 +320,12 @@ public function scopeWithAssignedAssets($query)
  * Scope to get employees with overdue returns
  */
 public function scopeWithOverdueReturns($query)
-{
-    return $query->whereHas('assetAssignments', function($q) {
-        $q->where('status', 'assigned')
-          ->where('expected_return_date', '<', now())
-          ->whereNull('actual_return_date');
-    });
-}
-
-
+    {
+        return $query->whereHas('assetAssignments', function($q) {
+            $q->where('asset_assignments.status', 'assigned')
+              ->where('expected_return_date', '<', now())
+              ->whereNull('actual_return_date');
+        });
+    }
+   
 }

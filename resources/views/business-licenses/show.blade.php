@@ -6,8 +6,12 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333;">📋 {{ $businessLicense->license_name }}</h2>
-            <p style="color: #666; margin: 5px 0 0 0;">License #{{ $businessLicense->license_number }}</p>
+            <h2 style="margin: 0; color: #333;">
+                {{ $businessLicense->isCompanyHeld() ? '🏢' : '👥' }} {{ $businessLicense->license_name }}
+            </h2>
+            <p style="color: #666; margin: 5px 0 0 0;">
+                License #{{ $businessLicense->license_number }} • {{ $businessLicense->license_direction_name }}
+            </p>
         </div>
         <div style="display: flex; gap: 10px;">
             @if($businessLicense->document_path)
@@ -17,7 +21,7 @@
             <a href="{{ route('business-licenses.renew', $businessLicense) }}" class="btn" style="background: #ff9800; color: white; border-color: #ff9800;">🔄 Renew</a>
             @endif
             <a href="{{ route('business-licenses.edit', $businessLicense) }}" class="btn">✏️ Edit</a>
-            <a href="{{ route('business-licenses.index') }}" class="btn">← Back</a>
+            <a href="{{ route('business-licenses.index', ['direction' => $businessLicense->license_direction]) }}" class="btn">← Back</a>
         </div>
     </div>
 
@@ -29,12 +33,21 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px;">
                     <h4 style="margin: 0; color: #333;">📊 License Overview</h4>
                     <div style="display: flex; gap: 10px;">
+                        <span class="direction-badge" style="padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; background: #e3f2fd; color: #1976d2;">
+                            {{ $businessLicense->license_direction_name }}
+                        </span>
                         <span class="status-badge" style="padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; {{ $businessLicense->getStatusColorClass() }}">
                             {{ $businessLicense->status_name }}
                         </span>
+                        @if($businessLicense->isCompanyHeld())
                         <span class="priority-badge" style="padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; {{ $businessLicense->getPriorityColorClass() }}">
                             {{ $businessLicense->priority_level_name }} Priority
                         </span>
+                        @else
+                        <span class="support-badge" style="padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; background: #e3f2fd; color: #1976d2;">
+                            {{ $businessLicense->support_level_name }}
+                        </span>
+                        @endif
                     </div>
                 </div>
 
@@ -80,6 +93,58 @@
                 </div>
             </div>
 
+            @if($businessLicense->isCustomerIssued())
+            <!-- Customer Information -->
+            <div class="content-card" style="margin-block-end: 20px;">
+                <h4 style="margin-block-end: 15px; color: #333;">👤 Customer Information</h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-block-end: 15px;">
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Customer Name</label>
+                        <div style="font-weight: 500;">{{ $businessLicense->customer_name }}</div>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Email</label>
+                        <div style="font-weight: 500;">
+                            <a href="mailto:{{ $businessLicense->customer_email }}" style="color: #2196f3; text-decoration: none;">
+                                {{ $businessLicense->customer_email }}
+                            </a>
+                        </div>
+                    </div>
+                    @if($businessLicense->customer_company)
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Company</label>
+                        <div style="font-weight: 500;">{{ $businessLicense->customer_company }}</div>
+                    </div>
+                    @endif
+                    @if($businessLicense->customer_phone)
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Phone</label>
+                        <div style="font-weight: 500;">
+                            <a href="tel:{{ $businessLicense->customer_phone }}" style="color: #2196f3; text-decoration: none;">
+                                {{ $businessLicense->customer_phone }}
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
+                @if($businessLicense->customer_address)
+                <div style="margin-block-end: 15px;">
+                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Address</label>
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 4px;">{{ $businessLicense->customer_address }}</div>
+                </div>
+                @endif
+
+                @if($businessLicense->customer_reference)
+                <div>
+                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Customer Reference</label>
+                    <div style="font-weight: 500;">{{ $businessLicense->customer_reference }}</div>
+                </div>
+                @endif
+            </div>
+            @endif
+
             <!-- Description & Details -->
             @if($businessLicense->description)
             <div class="content-card" style="margin-block-end: 20px;">
@@ -91,7 +156,7 @@
             @endif
 
             <!-- Financial Information -->
-            @if($businessLicense->cost || $businessLicense->renewal_cost)
+            @if($businessLicense->isCompanyHeld() && ($businessLicense->cost || $businessLicense->renewal_cost))
             <div class="content-card" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">💰 Financial Information</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
@@ -109,10 +174,56 @@
                     @endif
                 </div>
             </div>
+            @elseif($businessLicense->isCustomerIssued())
+            <!-- Revenue Information -->
+            <div class="content-card" style="margin-block-end: 20px;">
+                <h4 style="margin-block-end: 15px; color: #333;">💰 Revenue Information</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Revenue Amount</label>
+                        <div style="font-weight: 500; color: #4caf50; font-size: 18px;">${{ number_format($businessLicense->revenue_amount, 2) }}</div>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Billing Cycle</label>
+                        <div style="font-weight: 500;">{{ $businessLicense->billing_cycle_name }}</div>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Annual Revenue</label>
+                        <div style="font-weight: 500; color: #4caf50; font-size: 18px;">${{ number_format($businessLicense->annual_revenue, 2) }}</div>
+                    </div>
+                    @if($businessLicense->license_quantity)
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">License Quantity</label>
+                        <div style="font-weight: 500;">{{ $businessLicense->license_quantity }}</div>
+                    </div>
+                    @endif
+                </div>
+            </div>
             @endif
 
+            @if($businessLicense->isCustomerIssued() && ($businessLicense->usage_limit || $businessLicense->service_start_date))
+            <!-- License Details -->
+            <div class="content-card" style="margin-block-end: 20px;">
+                <h4 style="margin-block-end: 15px; color: #333;">📋 License Details</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    @if($businessLicense->usage_limit)
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Usage Limit</label>
+                        <div style="font-weight: 500;">{{ $businessLicense->usage_limit }}</div>
+                    </div>
+                    @endif
+                    @if($businessLicense->service_start_date)
+                    <div>
+                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Service Start Date</label>
+                        <div style="font-weight: 500;">{{ $businessLicense->service_start_date->format('M d, Y') }}</div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            @if($businessLicense->isCompanyHeld() && $businessLicense->business_impact)
             <!-- Business Impact -->
-            @if($businessLicense->business_impact)
             <div class="content-card" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">🏢 Business Impact</h4>
                 <div style="background: #fff3e0; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #ff9800;">
@@ -121,18 +232,20 @@
             </div>
             @endif
 
-            <!-- License Conditions -->
-            @if($businessLicense->license_conditions)
+            <!-- License Conditions / Terms -->
+            @if($businessLicense->license_conditions || $businessLicense->license_terms)
             <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">📋 License Conditions</h4>
+                <h4 style="margin-block-end: 15px; color: #333;">
+                    📋 {{ $businessLicense->isCompanyHeld() ? 'License Conditions' : 'License Terms' }}
+                </h4>
                 <div style="background: #e3f2fd; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
-                    {{ $businessLicense->license_conditions }}
+                    {{ $businessLicense->isCompanyHeld() ? $businessLicense->license_conditions : $businessLicense->license_terms }}
                 </div>
             </div>
             @endif
 
+            @if($businessLicense->isCompanyHeld() && $businessLicense->compliance_notes)
             <!-- Compliance Notes -->
-            @if($businessLicense->compliance_notes)
             <div class="content-card">
                 <h4 style="margin-block-end: 15px; color: #333;">✅ Compliance Notes</h4>
                 <div style="background: #e8f5e8; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #4caf50;">
@@ -144,6 +257,7 @@
 
         <!-- Sidebar -->
         <div>
+            @if($businessLicense->isCompanyHeld())
             <!-- Assignment Information -->
             <div class="content-card" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">👥 Assignment</h4>
@@ -207,12 +321,38 @@
                 </div>
                 @endif
             </div>
+            @else
+            <!-- Customer License Settings -->
+            <div class="content-card" style="margin-block-end: 20px;">
+                <h4 style="margin-block-end: 15px; color: #333;">⚙️ License Settings</h4>
+                
+                <div style="margin-block-end: 15px;">
+                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Support Level</label>
+                    <div style="font-weight: 500;">{{ $businessLicense->support_level_name }}</div>
+                </div>
+
+                <div style="margin-block-end: 15px;">
+                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Auto Renewal</label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 16px;">{{ $businessLicense->auto_renewal_customer ? '✅' : '❌' }}</span>
+                        <span style="font-weight: 500;">{{ $businessLicense->auto_renewal_customer ? 'Enabled' : 'Disabled' }}</span>
+                    </div>
+                </div>
+
+                @if($businessLicense->renewal_date)
+                <div>
+                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Last Renewed</label>
+                    <div style="font-weight: 500;">{{ $businessLicense->renewal_date->format('M d, Y') }}</div>
+                </div>
+                @endif
+            </div>
+            @endif
 
             <!-- Additional Information -->
             <div class="content-card" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">ℹ️ Additional Info</h4>
                 
-                @if($businessLicense->regulatory_body)
+                @if($businessLicense->isCompanyHeld() && $businessLicense->regulatory_body)
                 <div style="margin-block-end: 15px;">
                     <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Regulatory Body</label>
                     <div style="font-weight: 500;">{{ $businessLicense->regulatory_body }}</div>
@@ -255,6 +395,12 @@
                     @if($businessLicense->document_path)
                     <a href="{{ route('business-licenses.download', $businessLicense) }}" class="btn" style="background: #2196f3; color: white; border-color: #2196f3; text-align: center;">
                         📄 Download Document
+                    </a>
+                    @endif
+                    
+                    @if($businessLicense->isCustomerIssued() && $businessLicense->customer_email)
+                    <a href="mailto:{{ $businessLicense->customer_email }}?subject=Regarding License {{ $businessLicense->license_number }}" class="btn" style="background: #4caf50; color: white; border-color: #4caf50; text-align: center;">
+                        ✉️ Email Customer
                     </a>
                     @endif
                     

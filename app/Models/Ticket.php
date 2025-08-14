@@ -11,12 +11,15 @@ class Ticket extends Model
 
     protected $fillable = [
         'ticket_id',
+        'mobile_created',
+        'offline_sync_id',
         'technician_id',
         'pos_terminal_id',
         'client_id',
         'visit_id',
         'issue_type',
         'priority',
+        'estimated_resolution_time',
         'title',
         'description',
         'status',
@@ -28,9 +31,12 @@ class Ticket extends Model
 
     protected $casts = [
         'attachments' => 'array',
-        'resolved_at' => 'datetime'
+        'resolved_at' => 'datetime',
+        'mobile_created' => 'boolean',
+        'estimated_resolution_time' => 'integer'
     ];
 
+    // Relationships
     public function technician()
     {
         return $this->belongsTo(Employee::class, 'technician_id');
@@ -56,10 +62,46 @@ class Ticket extends Model
         return $this->belongsTo(Employee::class, 'assigned_to');
     }
 
+    // Scopes for easy filtering
+    public function scopeByStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    public function scopeByPriority($query, $priority)
+    {
+        return $query->where('priority', $priority);
+    }
+
+    public function scopeByIssueType($query, $issueType)
+    {
+        return $query->where('issue_type', $issueType);
+    }
+
+    public function scopeCritical($query)
+    {
+        return $query->where('priority', 'critical');
+    }
+
+    public function scopeOpen($query)
+    {
+        return $query->where('status', 'open');
+    }
+
+    public function scopeInProgress($query)
+    {
+        return $query->where('status', 'in_progress');
+    }
+
+    public function scopeResolved($query)
+    {
+        return $query->where('status', 'resolved');
+    }
+
     // Generate unique ticket ID
     public static function generateTicketId()
     {
-        $prefix = 'TKT-' . date('Ymd') . '-';
+        $prefix = 'TKT-' . date('Y') . '-';
         $lastTicket = self::where('ticket_id', 'like', $prefix . '%')
             ->orderBy('ticket_id', 'desc')
             ->first();
@@ -72,5 +114,53 @@ class Ticket extends Model
         }
         
         return $prefix . $newNumber;
+    }
+
+    // Auto-generate ticket_id when creating
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($ticket) {
+            if (empty($ticket->ticket_id)) {
+                $ticket->ticket_id = self::generateTicketId();
+            }
+        });
+    }
+
+    // Helper methods
+    public function getStatusBadgeClassAttribute()
+    {
+        return 'status-' . str_replace('_', '-', $this->status);
+    }
+
+    public function getPriorityBadgeClassAttribute()
+    {
+        return 'priority-' . $this->priority;
+    }
+
+    public function getIssueTypeBadgeClassAttribute()
+    {
+        return 'issue-' . $this->issue_type;
+    }
+
+    public function getFormattedIssueTypeAttribute()
+    {
+        return ucwords(str_replace('_', ' ', $this->issue_type));
+    }
+
+    public function getFormattedStatusAttribute()
+    {
+        return ucwords(str_replace('_', ' ', $this->status));
+    }
+
+    public function isOverdue()
+    {
+        if (!$this->estimated_resolution_time || $this->status === 'resolved' || $this->status === 'closed') {
+            return false;
+        }
+
+        $estimatedCompletion = $this->created_at->addMinutes($this->estimated_resolution_time);
+        return now()->gt($estimatedCompletion);
     }
 }
