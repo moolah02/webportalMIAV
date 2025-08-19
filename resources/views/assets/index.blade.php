@@ -15,7 +15,7 @@
         </div>
         <div style="display: flex; gap: 10px;">
             @if($activeTab === 'assets')
-                <a href="{{ route('assets.export') }}" class="btn" style="background: #4caf50; color: white; border-color: #4caf50;">
+                <a href="{{ route('assets.export') }}" class="btn" style="background: #111827; color: white; border-color: #111827;">
                     📊 Export CSV
                 </a>
                 <a href="{{ route('assets.create') }}" class="btn btn-primary">+ Add New Asset</a>
@@ -25,14 +25,14 @@
 
     <!-- Success/Error Messages -->
     @if(session('success'))
-        <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 6px; margin-block-end: 20px; border: 1px solid #c3e6cb;">
-            {{ session('success') }}
+        <div class="alert alert-success" style="background: #f0f9f0; color: #166534; padding: 15px; border-radius: 6px; margin-block-end: 20px; border: 1px solid #d4d4d8;">
+            ✅ {{ session('success') }}
         </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 6px; margin-block-end: 20px; border: 1px solid #f5c6cb;">
-            {{ session('error') }}
+        <div class="alert alert-danger" style="background: #fef2f2; color: #dc2626; padding: 15px; border-radius: 6px; margin-block-end: 20px; border: 1px solid #d4d4d8;">
+            ❌ {{ session('error') }}
         </div>
     @endif
 
@@ -41,11 +41,11 @@
         <div style="display: flex; border-bottom: 2px solid #e0e0e0; margin-block-end: 20px;">
             <a href="{{ route('assets.index', ['tab' => 'assets']) }}" 
                class="tab-link {{ $activeTab === 'assets' ? 'active' : '' }}"
-               style="padding: 15px 25px; text-decoration: none; color: {{ $activeTab === 'assets' ? '#2196f3' : '#666' }}; border-bottom: 3px solid {{ $activeTab === 'assets' ? '#2196f3' : 'transparent' }}; font-weight: 500; transition: all 0.3s ease;">
+               style="padding: 15px 25px; text-decoration: none; color: {{ $activeTab === 'assets' ? '#111827' : '#666' }}; border-bottom: 3px solid {{ $activeTab === 'assets' ? '#111827' : 'transparent' }}; font-weight: 500; transition: all 0.3s ease;">
                 <span style="font-size: 18px; margin-right: 8px;">📦</span>
                 All Assets
                 @if(isset($stats))
-                    <span style="background: {{ $activeTab === 'assets' ? '#2196f3' : '#ddd' }}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px;">
+                    <span style="background: {{ $activeTab === 'assets' ? '#111827' : '#ddd' }}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px;">
                         {{ $stats['total_assets'] }}
                     </span>
                 @endif
@@ -53,11 +53,11 @@
             
             <a href="{{ route('assets.index', ['tab' => 'assignments']) }}" 
                class="tab-link {{ $activeTab === 'assignments' ? 'active' : '' }}"
-               style="padding: 15px 25px; text-decoration: none; color: {{ $activeTab === 'assignments' ? '#2196f3' : '#666' }}; border-bottom: 3px solid {{ $activeTab === 'assignments' ? '#2196f3' : 'transparent' }}; font-weight: 500; transition: all 0.3s ease;">
+               style="padding: 15px 25px; text-decoration: none; color: {{ $activeTab === 'assignments' ? '#111827' : '#666' }}; border-bottom: 3px solid {{ $activeTab === 'assignments' ? '#111827' : 'transparent' }}; font-weight: 500; transition: all 0.3s ease;">
                 <span style="font-size: 18px; margin-right: 8px;">👥</span>
                 Current Assignments
                 @if(isset($assignmentStats))
-                    <span style="background: {{ $activeTab === 'assignments' ? '#2196f3' : '#ddd' }}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px;">
+                    <span style="background: {{ $activeTab === 'assignments' ? '#111827' : '#ddd' }}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px;">
                         {{ $assignmentStats['active_assignments'] }}
                     </span>
                 @endif
@@ -65,14 +65,14 @@
             
             <a href="{{ route('assets.index', ['tab' => 'history']) }}" 
                class="tab-link {{ $activeTab === 'history' ? 'active' : '' }}"
-               style="padding: 15px 25px; text-decoration: none; color: {{ $activeTab === 'history' ? '#2196f3' : '#666' }}; border-bottom: 3px solid {{ $activeTab === 'history' ? '#2196f3' : 'transparent' }}; font-weight: 500; transition: all 0.3s ease;">
+               style="padding: 15px 25px; text-decoration: none; color: {{ $activeTab === 'history' ? '#111827' : '#666' }}; border-bottom: 3px solid {{ $activeTab === 'history' ? '#111827' : 'transparent' }}; font-weight: 500; transition: all 0.3s ease;">
                 <span style="font-size: 18px; margin-right: 8px;">📋</span>
                 Assignment History
             </a>
             
             <a href="{{ route('assets.index', ['tab' => 'assign']) }}" 
                class="tab-link {{ $activeTab === 'assign' ? 'active' : '' }}"
-               style="padding: 15px 25px; text-decoration: none; color: {{ $activeTab === 'assign' ? '#2196f3' : '#666' }}; border-bottom: 3px solid {{ $activeTab === 'assign' ? '#2196f3' : 'transparent' }}; font-weight: 500; transition: all 0.3s ease;">
+               style="padding: 15px 25px; text-decoration: none; color: {{ $activeTab === 'assign' ? '#111827' : '#666' }}; border-bottom: 3px solid {{ $activeTab === 'assign' ? '#111827' : 'transparent' }}; font-weight: 500; transition: all 0.3s ease;">
                 <span style="font-size: 18px; margin-right: 8px;">🎯</span>
                 Assign Assets
             </a>
@@ -82,7 +82,247 @@
     <!-- Tab Content -->
     <div class="tab-content">
         @if($activeTab === 'assets')
-            @include('assets.partials.assets-tab')
+            <!-- Assets Table Section -->
+            <div class="assets-table-section">
+                <!-- Table Header with Search/Filters -->
+                <div style="background: white; border-radius: 12px 12px 0 0; padding: 20px 24px; border-bottom: 1px solid #f0f0f0; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: #1f2937;">Asset Inventory</h3>
+                            <span style="color: #6b7280; font-size: 14px;">{{ isset($assets) ? ($assets->count() ?? 0) : 0 }} items total</span>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af;">🔍</span>
+                                <input type="text" id="assetSearch" placeholder="Search assets..." 
+                                       style="padding: 10px 12px 10px 36px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; width: 240px; transition: all 0.2s ease;">
+                            </div>
+                            <select id="categoryFilter" style="padding: 10px 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: white;">
+                                <option value="">All Categories</option>
+                                <option value="laptop">Laptops</option>
+                                <option value="phone">Phones</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="furniture">Furniture</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Assets Table -->
+                <div style="background: white; border-radius: 0 0 12px 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <div style="overflow-x: auto;">
+                        <table class="assets-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                                    <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: #374151; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Asset Details
+                                    </th>
+                                    <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: #374151; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Category
+                                    </th>
+                                    <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: #374151; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Status
+                                    </th>
+                                    <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: #374151; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Stock
+                                    </th>
+                                    <th style="padding: 16px 20px; text-align: center; font-weight: 600; color: #374151; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if(isset($assets) && $assets->count() > 0)
+                                    @foreach($assets as $asset)
+                                        <tr class="asset-row" style="border-bottom: 1px solid #f3f4f6; transition: all 0.2s ease;">
+                                            <!-- Asset Details -->
+                                            <td style="padding: 20px;">
+                                                <div style="display: flex; align-items: center; gap: 12px;">
+                                                    <div style="width: 48px; height: 48px; border-radius: 10px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                                                        @if(strtolower($asset->category ?? '') === 'laptop')
+                                                            💻
+                                                        @elseif(strtolower($asset->category ?? '') === 'phone')
+                                                            📱
+                                                        @elseif(strtolower($asset->category ?? '') === 'equipment')
+                                                            🔧
+                                                        @elseif(strtolower($asset->category ?? '') === 'furniture')
+                                                            🪑
+                                                        @else
+                                                            📦
+                                                        @endif
+                                                    </div>
+                                                    <div>
+                                                        <div style="font-weight: 600; color: #1f2937; font-size: 15px; margin-bottom: 2px;">
+                                                            {{ $asset->name }}
+                                                        </div>
+                                                        <div style="font-size: 12px; color: #6b7280;">
+                                                            ID: #{{ $asset->id ?? 'N/A' }}
+                                                            @if($asset->sku ?? false)
+                                                                • SKU: {{ $asset->sku }}
+                                                            @endif
+                                                        </div>
+                                                        @if($asset->description ?? false)
+                                                            <div style="font-size: 12px; color: #9ca3af; margin-top: 2px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                                {{ $asset->description }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            
+                                            <!-- Category -->
+                                            <td style="padding: 20px;">
+                                                <span style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+                                                    @if(strtolower($asset->category ?? '') === 'laptop') background: #dbeafe; color: #1d4ed8;
+                                                    @elseif(strtolower($asset->category ?? '') === 'phone') background: #dcfce7; color: #166534;
+                                                    @elseif(strtolower($asset->category ?? '') === 'equipment') background: #fef3c7; color: #92400e;
+                                                    @elseif(strtolower($asset->category ?? '') === 'furniture') background: #fce7f3; color: #be185d;
+                                                    @else background: #f3f4f6; color: #6b7280; @endif">
+                                                    {{ ucfirst($asset->category ?? 'Unknown') }}
+                                                </span>
+                                            </td>
+                                            
+                                            <!-- Status -->
+                                            <td style="padding: 20px;">
+                                                <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: capitalize;
+                                                    @if(strtolower($asset->status ?? '') === 'active') background: #dcfce7; color: #166534;
+                                                    @elseif(strtolower($asset->status ?? '') === 'inactive') background: #f3f4f6; color: #6b7280;
+                                                    @elseif(strtolower($asset->status ?? '') === 'maintenance') background: #fef3c7; color: #92400e;
+                                                    @elseif(strtolower($asset->status ?? '') === 'discontinued') background: #fecaca; color: #dc2626;
+                                                    @else background: #f3f4f6; color: #6b7280; @endif">
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%;
+                                                        @if(strtolower($asset->status ?? '') === 'active') background: #22c55e;
+                                                        @elseif(strtolower($asset->status ?? '') === 'inactive') background: #9ca3af;
+                                                        @elseif(strtolower($asset->status ?? '') === 'maintenance') background: #f59e0b;
+                                                        @elseif(strtolower($asset->status ?? '') === 'discontinued') background: #ef4444;
+                                                        @else background: #9ca3af; @endif">
+                                                    </span>
+                                                    {{ ucfirst($asset->status ?? 'Unknown') }}
+                                                </span>
+                                            </td>
+                                            
+                                            <!-- Stock -->
+                                            <td style="padding: 20px;">
+                                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                                    <div style="font-weight: 600; color: #1f2937; font-size: 14px;">
+                                                        {{ $asset->stock_quantity ?? 0 }} units
+                                                    </div>
+                                                    <span style="display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; width: fit-content;
+                                                        @php
+                                                            $stock = $asset->stock_quantity ?? 0;
+                                                            if($stock > 10) {
+                                                                echo 'background: #dcfce7; color: #166534;';
+                                                            } elseif($stock > 0) {
+                                                                echo 'background: #fef3c7; color: #92400e;';
+                                                            } else {
+                                                                echo 'background: #fecaca; color: #dc2626;';
+                                                            }
+                                                        @endphp">
+                                                        @php
+                                                            $stock = $asset->stock_quantity ?? 0;
+                                                            if($stock > 10) echo 'In Stock';
+                                                            elseif($stock > 0) echo 'Low Stock';
+                                                            else echo 'Out of Stock';
+                                                        @endphp
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            
+                                            <!-- Actions -->
+                                            <td style="padding: 20px; text-align: center;">
+                                                <div style="display: flex; gap: 6px; justify-content: center;">
+                                                    <a href="{{ route('assets.show', $asset->id ?? 1) }}" 
+                                                       style="padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; color: #6b7280; cursor: pointer; transition: all 0.2s ease; text-decoration: none; font-size: 12px; font-weight: 500;"
+                                                       title="View Details">
+                                                        View
+                                                    </a>
+                                                    <a href="{{ route('assets.edit', $asset->id ?? 1) }}" 
+                                                       style="padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; color: #6b7280; cursor: pointer; transition: all 0.2s ease; text-decoration: none; font-size: 12px; font-weight: 500;"
+                                                       title="Edit Asset">
+                                                        Edit
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="5" style="padding: 60px 20px; text-align: center;">
+                                            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                                                <div style="font-size: 48px; opacity: 0.5;">📦</div>
+                                                <div>
+                                                    <h4 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #374151;">No Assets Found</h4>
+                                                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Start by adding your first asset to the inventory</p>
+                                                </div>
+                                                <a href="{{ route('assets.create') }}" 
+                                                   style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #111827; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s ease;">
+                                                    <span>+</span>
+                                                    Add First Asset
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Custom Pagination -->
+                    @if(isset($assets) && method_exists($assets, 'hasPages') && $assets->hasPages())
+                        <div style="padding: 20px; border-top: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="color: #6b7280; font-size: 14px;">
+                                Showing {{ $assets->firstItem() ?? 0 }} to {{ $assets->lastItem() ?? 0 }} of {{ $assets->total() }} assets
+                            </div>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <!-- Previous button -->
+                                @if ($assets->onFirstPage())
+                                    <span style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #9ca3af; background: #f9fafb;">Previous</span>
+                                @else
+                                    <a href="{{ $assets->previousPageUrl() }}" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; background: white; text-decoration: none; transition: all 0.2s ease;">Previous</a>
+                                @endif
+
+                                <!-- Page numbers -->
+                                @php
+                                    $currentPage = $assets->currentPage();
+                                    $lastPage = $assets->lastPage();
+                                    $start = max($currentPage - 2, 1);
+                                    $end = min($currentPage + 2, $lastPage);
+                                @endphp
+
+                                @if($start > 1)
+                                    <a href="{{ $assets->url(1) }}" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; background: white; text-decoration: none; transition: all 0.2s ease;">1</a>
+                                    @if($start > 2)
+                                        <span style="padding: 8px 4px; color: #9ca3af;">...</span>
+                                    @endif
+                                @endif
+
+                                @for ($i = $start; $i <= $end; $i++)
+                                    @if ($i == $currentPage)
+                                        <span style="padding: 8px 12px; border: 1px solid #111827; border-radius: 6px; color: white; background: #111827; font-weight: 600;">{{ $i }}</span>
+                                    @else
+                                        <a href="{{ $assets->url($i) }}" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; background: white; text-decoration: none; transition: all 0.2s ease;">{{ $i }}</a>
+                                    @endif
+                                @endfor
+
+                                @if($end < $lastPage)
+                                    @if($end < $lastPage - 1)
+                                        <span style="padding: 8px 4px; color: #9ca3af;">...</span>
+                                    @endif
+                                    <a href="{{ $assets->url($lastPage) }}" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; background: white; text-decoration: none; transition: all 0.2s ease;">{{ $lastPage }}</a>
+                                @endif
+
+                                <!-- Next button -->
+                                @if ($assets->hasMorePages())
+                                    <a href="{{ $assets->nextPageUrl() }}" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #374151; background: white; text-decoration: none; transition: all 0.2s ease;">Next</a>
+                                @else
+                                    <span style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; color: #9ca3af; background: #f9fafb;">Next</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
         @elseif($activeTab === 'assignments')
             @include('assets.partials.assignments-tab')
         @elseif($activeTab === 'history')
@@ -97,7 +337,7 @@
 <div id="returnAssetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1003; justify-content: center; align-items: center;">
     <div style="background: white; border-radius: 12px; padding: 0; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
         <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
+        <div style="background: #111827; color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
                 <span>↩️</span>
                 <span>Return Asset</span>
@@ -205,7 +445,7 @@
                 
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; background: #111827; border-color: #111827; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
                         <span style="font-size: 16px; margin-right: 8px;">↩️</span>
                         Process Return
                     </button>
@@ -222,7 +462,7 @@
 <div id="transferAssetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1004; justify-content: center; align-items: center;">
     <div style="background: white; border-radius: 12px; padding: 0; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
         <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
+        <div style="background: #ff9800; color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
                 <span>🔄</span>
                 <span>Transfer Asset</span>
@@ -330,7 +570,7 @@
 <div id="assignmentDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
     <div style="background: white; border-radius: 12px; padding: 0; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
         <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
+        <div style="background: #111827; color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
                 <span>📋</span>
                 <span id="detailsModalTitle">Assignment Details</span>
@@ -346,6 +586,49 @@
 </div>
 
 <style>
+/* Table Hover Effects */
+.asset-row:hover {
+    background: #fafbfc !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.asset-row:hover td:first-child div:first-child {
+    background: #f0f9ff;
+    transform: scale(1.05);
+}
+
+.asset-row:hover button,
+.asset-row:hover a {
+    border-color: #111827 !important;
+    color: #111827 !important;
+    background: #f9fafb !important;
+}
+
+.asset-row:hover button:hover,
+.asset-row:hover a:hover {
+    background: #111827 !important;
+    color: white !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(17, 24, 39, 0.3);
+}
+
+/* Search and Filter Styles */
+#assetSearch:focus,
+#categoryFilter:focus {
+    outline: none;
+    border-color: #111827;
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
+}
+
+/* Pagination Styles */
+.pagination-container a:hover {
+    border-color: #111827 !important;
+    color: #111827 !important;
+    background: #f9fafb !important;
+}
+
+/* Existing Styles */
 .metric-card {
     padding: 20px;
     border-radius: 12px;
@@ -378,7 +661,7 @@
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
-    border-left: 4px solid #2196f3;
+    border-left: 4px solid #111827;
 }
 
 .assignment-card:hover {
@@ -428,20 +711,20 @@
 }
 
 .btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
+    border-color: #111827;
+    color: #111827;
     text-decoration: none;
 }
 
 .btn-primary {
-    background: #2196f3;
+    background: #111827;
     color: white;
-    border-color: #2196f3;
+    border-color: #111827;
 }
 
 .btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
+    background: #374151;
+    border-color: #374151;
     color: white;
 }
 
@@ -487,8 +770,8 @@
 }
 
 .tab-link:hover {
-    color: #2196f3 !important;
-    border-bottom-color: #2196f3 !important;
+    color: #111827 !important;
+    border-bottom-color: #111827 !important;
 }
 
 .modal-action-btn {
@@ -516,15 +799,15 @@
 }
 
 .alert-success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: #f0f9f0;
+    color: #166534;
+    border: 1px solid #d4d4d8;
 }
 
 .alert-danger {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #d4d4d8;
 }
 
 /* Table styles for assignment tabs */
@@ -566,7 +849,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #111827;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -585,7 +868,7 @@
     width: 40px;
     height: 40px;
     border-radius: 8px;
-    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+    background: #111827;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -599,74 +882,80 @@
 window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 // Global variables for modal management
-let currentAssetId = null;
 let currentAssignmentForReturn = null;
 let currentAssignmentForDetails = null;
 let currentAssignmentForTransfer = null;
 
-// Asset Quick Actions Functions (existing functionality)
-function assetQuickActions(assetId, assetName) {
-    currentAssetId = assetId;
-    if (document.getElementById('modalAssetName')) {
-        document.getElementById('modalAssetName').textContent = `Actions for ${assetName}`;
-        document.getElementById('assetQuickActionsModal').style.display = 'flex';
+// Search and Filter Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('assetSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const assetRows = document.querySelectorAll('.asset-row');
+    
+    // Search functionality
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterAssets();
+        });
     }
-}
-
-function closeAssetActions() {
-    if (document.getElementById('assetQuickActionsModal')) {
-        document.getElementById('assetQuickActionsModal').style.display = 'none';
+    
+    // Category filter functionality
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', function() {
+            filterAssets();
+        });
     }
-}
-
-function viewAsset() {
-    closeAssetActions();
-    window.location.href = `{{ url('/assets') }}/${currentAssetId}`;
-}
-
-function editAsset() {
-    closeAssetActions();
-    window.location.href = `{{ url('/assets') }}/${currentAssetId}/edit`;
-}
-
-function updateStock() {
-    closeAssetActions();
-    if (document.getElementById('stockUpdateModal')) {
-        document.getElementById('stockUpdateModal').style.display = 'flex';
-    }
-}
-
-function closeStockModal() {
-    if (document.getElementById('stockUpdateModal')) {
-        document.getElementById('stockUpdateModal').style.display = 'none';
-    }
-}
-
-function deleteAsset() {
-    closeAssetActions();
-    if (confirm('Are you sure you want to delete this asset? This action cannot be undone.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `{{ url('/assets') }}/${currentAssetId}`;
+    
+    function filterAssets() {
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const selectedCategory = categoryFilter ? categoryFilter.value.toLowerCase() : '';
         
-        const methodInput = document.createElement('input');
-        methodInput.type = 'hidden';
-        methodInput.name = '_method';
-        methodInput.value = 'DELETE';
-        
-        const tokenInput = document.createElement('input');
-        tokenInput.type = 'hidden';
-        tokenInput.name = '_token';
-        tokenInput.value = '{{ csrf_token() }}';
-        
-        form.appendChild(methodInput);
-        form.appendChild(tokenInput);
-        document.body.appendChild(form);
-        form.submit();
+        assetRows.forEach(row => {
+            const assetName = row.querySelector('td:first-child').textContent.toLowerCase();
+            const category = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            
+            const matchesSearch = !searchTerm || assetName.includes(searchTerm);
+            const matchesCategory = !selectedCategory || category.includes(selectedCategory);
+            
+            row.style.display = (matchesSearch && matchesCategory) ? '' : 'none';
+        });
     }
-}
+});
 
-// Return Asset Modal Functions
+// Close modals when clicking outside or pressing Escape
+document.addEventListener('click', function(event) {
+    const returnModal = document.getElementById('returnAssetModal');
+    const detailsModal = document.getElementById('assignmentDetailsModal');
+    const transferModal = document.getElementById('transferAssetModal');
+    
+    if (event.target === returnModal) {
+        closeReturnModal();
+    }
+    
+    if (event.target === detailsModal) {
+        closeDetailsModal();
+    }
+    
+    if (event.target === transferModal) {
+        closeTransferModal();
+    }
+});
+
+// Close modals with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        if (document.getElementById('returnAssetModal').style.display === 'flex') {
+            closeReturnModal();
+        }
+        if (document.getElementById('assignmentDetailsModal').style.display === 'flex') {
+            closeDetailsModal();
+        }
+        if (document.getElementById('transferAssetModal').style.display === 'flex') {
+            closeTransferModal();
+        }
+    }
+});
 function openReturnModal(assignmentId) {
     currentAssignmentForReturn = assignmentId;
     
@@ -824,44 +1113,6 @@ function requestAsset(assetId) {
 
 // Document Ready Functions
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle stock update form submission
-    const stockForm = document.getElementById('stockUpdateForm');
-    if (stockForm) {
-        stockForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const newStock = document.getElementById('newStockQuantity').value;
-            if (!newStock || newStock < 0) {
-                alert('Please enter a valid stock quantity.');
-                return;
-            }
-            
-            fetch(`{{ url('/assets') }}/${currentAssetId}/update-stock`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': window.csrfToken
-                },
-                body: JSON.stringify({
-                    stock_quantity: parseInt(newStock)
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    closeStockModal();
-                    location.reload();
-                } else {
-                    alert(data.message || 'Failed to update stock.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while updating stock.');
-            });
-        });
-    }
-
     // Handle return form submission
     const returnForm = document.getElementById('returnAssetForm');
     if (returnForm) {
@@ -961,15 +1212,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Close modals when clicking outside or pressing Escape
 document.addEventListener('click', function(event) {
-    const quickActionsModal = document.getElementById('assetQuickActionsModal');
     const stockModal = document.getElementById('stockUpdateModal');
     const returnModal = document.getElementById('returnAssetModal');
     const detailsModal = document.getElementById('assignmentDetailsModal');
     const transferModal = document.getElementById('transferAssetModal');
-    
-    if (quickActionsModal && event.target === quickActionsModal) {
-        closeAssetActions();
-    }
     
     if (stockModal && event.target === stockModal) {
         closeStockModal();
@@ -991,7 +1237,6 @@ document.addEventListener('click', function(event) {
 // Close modals with Escape key
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
-        closeAssetActions();
         closeStockModal();
         
         if (document.getElementById('returnAssetModal').style.display === 'flex') {

@@ -14,8 +14,6 @@
         "laravel/ui": "^4.6",
         "maatwebsite/excel": "^1.1",
         "phpoffice/phpspreadsheet": "^4.5"
- 
-
     },
     
     "require-dev": {

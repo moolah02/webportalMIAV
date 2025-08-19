@@ -1,157 +1,274 @@
 <?php
-use App\Http\Controllers\Api\MobileApiController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\JobAssignmentController;
-use App\Http\Controllers\Api\TerminalApiController;
-use App\Http\Controllers\DeploymentPlanningController;
+
 use Illuminate\Http\Request;
-use App\Models\PosTerminal;
-use App\Http\Controllers\TicketController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\JobAssignmentController;
+use App\Http\Controllers\Api\PosTerminalController;
+use App\Http\Controllers\Api\AssetController;
+use App\Http\Controllers\Api\TicketController;
+use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\TechnicianController;
+use App\Http\Controllers\Api\ReportsController;
 
-Route::prefix('v1')->group(function () {
-    
-    // Authentication routes
+
+// Add this RIGHT after the "use" statements, before any other routes
+Route::get('/test', function () {
+    return response()->json([
+        'message' => 'API route works!',
+        'timestamp' => now(),
+        'sanctum_installed' => class_exists('Laravel\Sanctum\PersonalAccessToken')
+    ]);
+});
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+*/
+
+// ==============================================
+// AUTHENTICATION ROUTES (PUBLIC)
+// ==============================================
+
+Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/register-device', [AuthController::class, 'registerDevice']);
-    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-    Route::get('/user', [AuthController::class, 'user'])->middleware('auth:sanctum');
+    Route::post('/register', [AuthController::class, 'register']); // if needed
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    
+    // Protected auth routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/user', [AuthController::class, 'user']);
+        Route::post('/refresh', [AuthController::class, 'refresh']);
+    });
+});
 
-    // Protected mobile API routes
-    Route::middleware(['auth:sanctum'])->group(function () {
+// ==============================================
+// PROTECTED API ROUTES
+// ==============================================
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    
+    // ==============================================
+    // USER & DASHBOARD
+    // ==============================================
+    
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
+    Route::get('/profile', [AuthController::class, 'profile']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
+    
+    // ==============================================
+    // JOB ASSIGNMENTS (Core for technician mobile app)
+    // ==============================================
+    
+    Route::prefix('jobs')->group(function () {
+        // Get assignments for current user
+        Route::get('/', [JobAssignmentController::class, 'index']);
+        Route::get('/my-assignments', [JobAssignmentController::class, 'myAssignments']);
+        Route::get('/{assignment}', [JobAssignmentController::class, 'show']);
         
-        // Dashboard
-        Route::get('/dashboard', [MobileApiController::class, 'getDashboard']);
+        // Update assignment status
+        Route::patch('/{assignment}/status', [JobAssignmentController::class, 'updateStatus']);
+        Route::post('/{assignment}/start', [JobAssignmentController::class, 'startJob']);
+        Route::post('/{assignment}/complete', [JobAssignmentController::class, 'completeJob']);
+        Route::post('/{assignment}/pause', [JobAssignmentController::class, 'pauseJob']);
         
-        // Sites and Terminals - ENHANCED
-        Route::get('/sites/assigned', [MobileApiController::class, 'getAssignedSites']);
-        Route::get('/sites/search', [MobileApiController::class, 'searchSites']);
-        Route::get('/terminals/{terminal}', [TerminalApiController::class, 'getTerminal']);
-        Route::patch('/terminals/{terminal}/status', [TerminalApiController::class, 'updateStatus']);
-        Route::post('/terminals/{terminal}/visit', [TerminalApiController::class, 'recordVisit']);
+        // Add notes/photos to assignments
+        Route::post('/{assignment}/notes', [JobAssignmentController::class, 'addNote']);
+        Route::post('/{assignment}/photos', [JobAssignmentController::class, 'uploadPhoto']);
+        Route::get('/{assignment}/photos', [JobAssignmentController::class, 'getPhotos']);
         
-        // Job Assignments
-        Route::get('/assignments', [JobAssignmentController::class, 'getMyAssignments']);
-        Route::get('/assignments/{assignment}', [JobAssignmentController::class, 'getAssignmentDetails']);
-        Route::patch('/assignments/{assignment}/status', [JobAssignmentController::class, 'updateStatus']);
-        Route::get('/regions/{regionId}/terminals', [JobAssignmentController::class, 'getRegionTerminals']);
+        // Location tracking
+        Route::post('/{assignment}/location', [JobAssignmentController::class, 'updateLocation']);
+        Route::post('/{assignment}/checkin', [JobAssignmentController::class, 'checkIn']);
+        Route::post('/{assignment}/checkout', [JobAssignmentController::class, 'checkOut']);
+    });
+    
+    // ==============================================
+    // POS TERMINALS (Enhanced with Chart Data)
+    // ==============================================
+    
+    Route::prefix('pos-terminals')->group(function () {
+        Route::get('/', [PosTerminalController::class, 'index']);
+        Route::get('/{terminal}', [PosTerminalController::class, 'show']);
+        Route::patch('/{terminal}/status', [PosTerminalController::class, 'updateStatus']);
+        Route::post('/{terminal}/service-report', [PosTerminalController::class, 'createServiceReport']);
+        Route::get('/{terminal}/history', [PosTerminalController::class, 'getHistory']);
         
-        // Visit Management - ENHANCED
-        Route::post('/visits', [MobileApiController::class, 'submitVisit']);
-        Route::get('/visits/history', [MobileApiController::class, 'getVisitHistory']);
-        Route::get('/visits/{visit}', [MobileApiController::class, 'getVisitDetails']);
-        Route::patch('/visits/{visit}', [MobileApiController::class, 'updateVisit']);
-        Route::delete('/visits/{visit}', [MobileApiController::class, 'deleteVisit']);
+        // NEW: Chart Data & Enhanced Statistics
+        Route::get('/chart-data', [PosTerminalController::class, 'getChartData']);
+        Route::get('/statistics/comprehensive', [PosTerminalController::class, 'getComprehensiveStats']);
+        Route::get('/statistics/service-timeline', [PosTerminalController::class, 'getServiceTimelineData']);
+        Route::get('/statistics/distributions', [PosTerminalController::class, 'getDistributionData']);
         
-        // NEW: Bulk Terminal Updates (for when technicians visit multiple terminals)
-        Route::post('/visits/bulk', [MobileApiController::class, 'submitBulkVisits']);
-        Route::post('/terminals/bulk-update', [TerminalApiController::class, 'bulkUpdateTerminals']);
+        // Search and filters
+        Route::get('/search/{query}', [PosTerminalController::class, 'search']);
+        Route::get('/by-region/{region}', [PosTerminalController::class, 'getByRegion']);
+        Route::get('/by-client/{client}', [PosTerminalController::class, 'getByClient']);
         
-        // Ticket Management - ENHANCED
-        Route::post('/tickets', [MobileApiController::class, 'createTicket']);
-        Route::get('/tickets', [MobileApiController::class, 'getTickets']);
-        Route::get('/tickets/{ticket}', [MobileApiController::class, 'getTicketDetails']);
-        Route::patch('/tickets/{ticket}/status', [MobileApiController::class, 'updateTicketStatus']);
-        Route::post('/tickets/{ticket}/comments', [MobileApiController::class, 'addTicketComment']);
-        
-        // Asset Requests
-        Route::post('/asset-requests', [MobileApiController::class, 'submitAssetRequest']);
-        Route::get('/asset-requests', [MobileApiController::class, 'getAssetRequests']);
-        Route::get('/asset-requests/{request}', [MobileApiController::class, 'getAssetRequestDetails']);
-        
-        // Analytics
-        Route::get('/analytics', [MobileApiController::class, 'getAnalytics']);
-        Route::get('/analytics/performance', [MobileApiController::class, 'getPerformanceMetrics']);
-        
-        // Profile
-        Route::get('/profile', [MobileApiController::class, 'getProfile']);
-        Route::put('/profile', [MobileApiController::class, 'updateProfile']);
-        
-        // NEW: File Upload Support (for photos, signatures, documents)
-        Route::post('/upload/photo', [MobileApiController::class, 'uploadPhoto']);
-        Route::post('/upload/signature', [MobileApiController::class, 'uploadSignature']);
-        Route::post('/upload/document', [MobileApiController::class, 'uploadDocument']);
-        
-        // Sync and Offline Support - ENHANCED
-        Route::post('/sync/visits', [MobileApiController::class, 'syncVisits']);
-        Route::post('/sync/tickets', [MobileApiController::class, 'syncTickets']);
-        Route::post('/sync/terminals', [MobileApiController::class, 'syncTerminals']);
-        Route::get('/sync/data', [MobileApiController::class, 'getSyncData']);
-        Route::get('/sync/status', [MobileApiController::class, 'getSyncStatus']);
-        Route::post('/sync/force', [MobileApiController::class, 'forceSyncData']);
-        
-        // NEW: Offline Data Management
-        Route::get('/offline/assignments', [MobileApiController::class, 'getOfflineAssignments']);
-        Route::get('/offline/terminals', [MobileApiController::class, 'getOfflineTerminals']);
-        Route::post('/offline/queue', [MobileApiController::class, 'queueOfflineAction']);
-        
-        // NEW: Real-time Features
-        Route::get('/notifications', [MobileApiController::class, 'getNotifications']);
-        Route::patch('/notifications/{notification}/read', [MobileApiController::class, 'markNotificationRead']);
-        Route::post('/location/update', [MobileApiController::class, 'updateLocation']);
-        
-        // NEW: Reporting and Export
-        Route::get('/reports/daily', [MobileApiController::class, 'getDailyReport']);
-        Route::get('/reports/weekly', [MobileApiController::class, 'getWeeklyReport']);
-        Route::post('/reports/export', [MobileApiController::class, 'exportReport']);
-        
-        // NEW: Configuration and Settings
-        Route::get('/config/app', [MobileApiController::class, 'getAppConfig']);
-        Route::get('/config/categories', [MobileApiController::class, 'getCategories']);
-        Route::get('/config/regions', [MobileApiController::class, 'getRegions']);
+        // NEW: Enhanced filtering with statistics
+        Route::post('/filtered-stats', [PosTerminalController::class, 'getFilteredStatistics']);
     });
 
-    // Public routes (no authentication required)
-    Route::get('/app/version', [MobileApiController::class, 'getAppVersion']);
-    Route::get('/app/config/public', [MobileApiController::class, 'getPublicConfig']);
+    // ==============================================
+    // REPORTS & ANALYTICS (Enhanced)
+    // ==============================================
     
-    // Emergency routes (for urgent situations)
-    Route::post('/emergency/alert', [MobileApiController::class, 'sendEmergencyAlert']);
-});
-
-// Additional API endpoints for web dashboard integration
-Route::prefix('v1/admin')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
-    Route::get('/mobile-activity', [MobileApiController::class, 'getMobileActivity']);
-    Route::get('/sync-logs', [MobileApiController::class, 'getSyncLogs']);
-    Route::get('/device-registrations', [MobileApiController::class, 'getDeviceRegistrations']);
-    Route::patch('/devices/{device}/status', [MobileApiController::class, 'updateDeviceStatus']);
-});
-
-Route::get('deployment/regions/{region}/terminals', 
-    [c::class,'getRegionTerminals']
-);
-
-Route::get('deployment/options', function(Request $req){
-    $col = match($req->group_by) {
-        'region'  => 'region_id',
-        'city'    => 'city',
-        default   => 'physical_address',
-    };
-
-    $list = PosTerminal::where('client_id', $req->client)
-        ->whereNotNull($col)
-        ->distinct()
-        ->pluck($col)
-        ->map(fn($v) => ['id'=>$v, 'label'=>ucfirst($v)])
-        ->values();
-
-    return response()->json(['options'=>$list]);
-});
-
-Route::prefix('api')->name('api.')->middleware(['auth'])->group(function () {
-    // ... your existing API routes ...
+    Route::prefix('reports')->group(function () {
+        Route::get('/dashboard', [ReportsController::class, 'dashboardStats']);
+        Route::get('/assignments', [ReportsController::class, 'assignmentReports']);
+        Route::get('/terminals', [ReportsController::class, 'terminalReports']);
+        Route::get('/technician-performance', [ReportsController::class, 'technicianPerformance']);
+        Route::get('/my-performance', [ReportsController::class, 'myPerformance']);
+        
+        // NEW: Enhanced Analytics Endpoints
+        Route::get('/terminal-analytics', [ReportsController::class, 'getTerminalAnalytics']);
+        Route::get('/service-analytics', [ReportsController::class, 'getServiceAnalytics']);
+        Route::get('/performance-metrics', [ReportsController::class, 'getPerformanceMetrics']);
+        Route::get('/trends-analysis', [ReportsController::class, 'getTrendsAnalysis']);
+    });
     
-    // ADD these for JavaScript compatibility:
-    Route::get('/clients/{client}/cities', [DeploymentPlanningController::class, 'getCitiesByClient']);
-    Route::get('/clients/{client}/addresses', [DeploymentPlanningController::class, 'getAddressesByClient']);
-    Route::get('/terminals', [DeploymentPlanningController::class, 'getFilteredTerminals']);
+    // ==============================================
+    // CLIENTS
+    // ==============================================
+    
+    Route::prefix('clients')->group(function () {
+        Route::get('/', [ClientController::class, 'index']);
+        Route::get('/{client}', [ClientController::class, 'show']);
+        Route::get('/{client}/terminals', [ClientController::class, 'getTerminals']);
+        Route::get('/{client}/projects', [ClientController::class, 'getProjects']);
+    });
+    
+    // ==============================================
+    // ASSETS
+    // ==============================================
+    
+    Route::prefix('assets')->group(function () {
+        Route::get('/', [AssetController::class, 'index']);
+        Route::get('/{asset}', [AssetController::class, 'show']);
+        Route::post('/{asset}/request', [AssetController::class, 'requestAsset']);
+        Route::get('/my-assignments', [AssetController::class, 'myAssignments']);
+        Route::post('/assignments/{assignment}/return', [AssetController::class, 'returnAsset']);
+        
+        // Asset requests
+        Route::get('/requests', [AssetController::class, 'getRequests']);
+        Route::post('/requests', [AssetController::class, 'createRequest']);
+        Route::patch('/requests/{request}/status', [AssetController::class, 'updateRequestStatus']);
+    });
+    
+    // ==============================================
+    // TICKETS
+    // ==============================================
+    
+    Route::prefix('tickets')->group(function () {
+        Route::get('/', [TicketController::class, 'index']);
+        Route::post('/', [TicketController::class, 'store']);
+        Route::get('/{ticket}', [TicketController::class, 'show']);
+        Route::patch('/{ticket}/status', [TicketController::class, 'updateStatus']);
+        Route::post('/{ticket}/comments', [TicketController::class, 'addComment']);
+        Route::get('/my-tickets', [TicketController::class, 'myTickets']);
+    });
+    
+    // ==============================================
+    // TECHNICIANS (for managers)
+    // ==============================================
+    
+    Route::prefix('technicians')->group(function () {
+        Route::get('/', [TechnicianController::class, 'index']);
+        Route::get('/{technician}', [TechnicianController::class, 'show']);
+        Route::get('/{technician}/assignments', [TechnicianController::class, 'getAssignments']);
+        Route::get('/{technician}/location', [TechnicianController::class, 'getCurrentLocation']);
+        Route::patch('/{technician}/availability', [TechnicianController::class, 'updateAvailability']);
+    });
+    
+   
+    
+    // ==============================================
+    // SYNC & OFFLINE SUPPORT
+    // ==============================================
+    
+    Route::prefix('sync')->group(function () {
+        Route::get('/assignments', [JobAssignmentController::class, 'syncAssignments']);
+        Route::get('/terminals', [PosTerminalController::class, 'syncTerminals']);
+        Route::post('/bulk-update', [JobAssignmentController::class, 'bulkUpdate']);
+        Route::get('/timestamp', function() {
+            return response()->json(['timestamp' => now()->toISOString()]);
+        });
+    });
+    
+    // ==============================================
+    // NOTIFICATIONS
+    // ==============================================
+    
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', function(Request $request) {
+            return $request->user()->notifications()->paginate();
+        });
+        Route::post('/{notification}/read', function($notificationId, Request $request) {
+            $request->user()->notifications()->where('id', $notificationId)->markAsRead();
+            return response()->json(['success' => true]);
+        });
+        Route::post('/mark-all-read', function(Request $request) {
+            $request->user()->unreadNotifications->markAsRead();
+            return response()->json(['success' => true]);
+        });
+    });
+    
+    // ==============================================
+    // FILE UPLOADS
+    // ==============================================
+    
+    Route::post('/upload/photo', function(Request $request) {
+        $request->validate(['photo' => 'required|image|max:2048']);
+        
+        $path = $request->file('photo')->store('uploads/photos', 'public');
+        
+        return response()->json([
+            'success' => true,
+            'path' => $path,
+            'url' => asset('storage/' . $path)
+        ]);
+    });
+    
+    Route::post('/upload/document', function(Request $request) {
+        $request->validate(['document' => 'required|file|max:5120']); // 5MB max
+        
+        $path = $request->file('document')->store('uploads/documents', 'public');
+        
+        return response()->json([
+            'success' => true,
+            'path' => $path,
+            'url' => asset('storage/' . $path)
+        ]);
+    });
+    
 });
-Route::get('/api/clients/{id}/cities', 'TerminalController@getCitiesByClient');
-Route::get('/api/clients/{id}/addresses', 'TerminalController@getAddressesByClient');
-Route::get('/api/terminals', 'TerminalController@getFilteredTerminals');
 
-// API Routes for Mobile App (add to routes/api.php if you have mobile app)
-Route::middleware(['auth:sanctum'])->prefix('api/v1')->group(function () {
-    Route::get('tickets', [TicketController::class, 'mobileIndex']);
-    Route::post('tickets', [TicketController::class, 'mobileStore']);
-    Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
+// ==============================================
+// PUBLIC API ROUTES (no authentication required)
+// ==============================================
+
+Route::prefix('public')->group(function () {
+    Route::get('/app-version', function() {
+        return response()->json([
+            'version' => '1.0.0',
+            'min_version' => '1.0.0',
+            'update_required' => false
+        ]);
+    });
+    
+    Route::get('/maintenance', function() {
+        return response()->json([
+            'maintenance_mode' => false,
+            'message' => null
+        ]);
+    });
 });

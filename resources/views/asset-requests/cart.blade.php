@@ -6,10 +6,10 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333;">🛒 Shopping Cart</h2>
+            <h2 style="margin: 0; color: #333;">🛒 Request Cart</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Review your selected assets before requesting</p>
         </div>
-        <a href="{{ route('asset-requests.catalog') }}" class="btn">← Continue Shopping</a>
+        <a href="{{ route('asset-requests.catalog') }}" class="btn">← Continue Request</a>
     </div>
 
     @if(count($cartItems) > 0)
@@ -106,7 +106,7 @@
             
             <a href="{{ route('asset-requests.catalog') }}" class="btn" 
                style="inline-size: 100%; text-align: center;">
-                Continue Shopping
+                Continue Reqest
             </a>
         </div>
     </div>
@@ -117,7 +117,7 @@
         <h3>Your cart is empty</h3>
         <p style="color: #666; margin-block-end: 30px;">Browse our asset catalog and add items to your cart.</p>
         <a href="{{ route('asset-requests.catalog') }}" class="btn btn-primary">
-            Start Shopping
+            Start Request
         </a>
     </div>
     @endif

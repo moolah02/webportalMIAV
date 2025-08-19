@@ -204,154 +204,6 @@ class PosTerminalController extends Controller
         return redirect()->route('pos-terminals.index')
                         ->with('success', 'POS Terminal deleted successfully.');
     }
-
-    /**
-     * Parse date value with multiple format support
-     */
-    private function parseDate($dateValue)
-    {
-        if (empty($dateValue)) {
-            return null;
-        }
-
-        try {
-            // Handle various date formats
-            $formats = [
-                'Y-m-d',
-                'd/m/Y', 
-                'm/d/Y', 
-                'd-m-Y', 
-                'm-d-Y', 
-                'd-M-y',
-                'M-d',
-                'd-M'
-            ];
-            
-            foreach ($formats as $format) {
-                $date = \DateTime::createFromFormat($format, $dateValue);
-                if ($date !== false) {
-                    return $date->format('Y-m-d');
-                }
-            }
-            
-            // Try strtotime as last resort
-            $timestamp = strtotime($dateValue);
-            if ($timestamp !== false) {
-                return date('Y-m-d', $timestamp);
-            }
-            
-            return null;
-            
-        } catch (\Exception $e) {
-            Log::warning("Could not parse date: {$dateValue}");
-            return null;
-        }
-    }
-
-    /**
-     * Map status values to valid statuses
-     */
-    private function mapStatus($status)
-    {
-        if (empty($status)) {
-            return 'active';
-        }
-
-        $status = strtolower(trim((string)$status));
-        
-        $statusMappings = [
-            'active' => 'active',
-            'working' => 'active',
-            'online' => 'active',
-            'ok' => 'active',
-            'good' => 'active',
-            'operational' => 'active',
-            
-            'offline' => 'offline',
-            'down' => 'offline',
-            'not working' => 'offline',
-            'not seen' => 'offline',
-            
-            'faulty' => 'faulty',
-            'broken' => 'faulty',
-            'defective' => 'faulty',
-            'error' => 'faulty',
-            
-            'maintenance' => 'maintenance',
-            'repair' => 'maintenance',
-            'service' => 'maintenance',
-            'servicing' => 'maintenance',
-        ];
-
-        return $statusMappings[$status] ?? 'active';
-    }
-
-    /**
-     * Download CSV template
-     */
-    public function downloadTemplate()
-    {
-        $headers = [
-            'merchant ID',
-            'Terminal ID', 
-            'Type(from bank)',
-            'Legal name',
-            'Client Full Name',
-            'Address',
-            'City',
-            'Province',
-            'Phone Number(from Bank)',
-            'REGION',
-            'Date',
-            'Teams',
-            'Device Type',
-            'Serial Number',
-            'Status',
-            'Condition',
-            'Issue Raised',
-            'Comments',
-            'Corrective Action',
-            'Contact Person',
-            'Contact Number'
-        ];
-
-        $filename = 'pos_terminals_import_template.csv';
-        
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        
-        $handle = fopen('php://output', 'w');
-        fputcsv($handle, $headers);
-        
-        // Add sample row matching your actual data structure
-        fputcsv($handle, [
-            '40103242444343',           // merchant ID
-            '77202134',                 // Terminal ID
-            'Verifone',                 // Type(from bank)
-            'SAMPLE BUSINESS LEGAL',    // Legal name
-            'SAMPLE BUSINESS',          // Client Full Name
-            '123 SAMPLE STREET',        // Address
-            'HARARE',                   // City
-            'Harare',                   // Province
-            '26377403397',              // Phone Number(from Bank)
-            'MT PLEASANT',              // REGION
-            '19-Apr',                   // Date
-            'Sample Team',              // Teams
-            'VX-520',                   // Device Type
-            '34323433',                 // Serial Number
-            'active',                   // Status
-            'Good',                     // Condition
-            '',                         // Issue Raised
-            'Sample comments',          // Comments
-            '',                         // Corrective Action
-            'John Doe',                 // Contact Person
-            '263778654664'              // Contact Number
-        ]);
-        
-        fclose($handle);
-        exit;
-    }
-
     /**
      * Delete a column mapping
      */
@@ -399,90 +251,7 @@ class PosTerminalController extends Controller
         }
     }
 
-    /**
-     * Preview import data using selected mapping
-     */
-    public function previewImport(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:10240',
-            'mapping_id' => 'nullable|exists:import_mappings,id',
-            'preview_rows' => 'nullable|integer|min:1|max:10'
-        ]);
-
-        try {
-            $file = $request->file('file');
-            $mappingId = $request->mapping_id;
-            $previewRows = $request->get('preview_rows', 5);
-
-            // Get column mapping if specified
-            $columnMapping = null;
-            if ($mappingId && class_exists('App\Models\ImportMapping')) {
-                $columnMapping = ImportMapping::find($mappingId);
-            }
-
-            // Read and parse first few rows
-            $fileContent = file_get_contents($file->getPathname());
-            
-            $encoding = mb_detect_encoding($fileContent, ['UTF-8', 'UTF-16', 'Windows-1252', 'ISO-8859-1'], true);
-            if ($encoding && $encoding !== 'UTF-8') {
-                $fileContent = mb_convert_encoding($fileContent, 'UTF-8', $encoding);
-            }
-
-            $lines = str_getcsv($fileContent, "\n");
-            $headers = null;
-            $previewData = [];
-            $rowCount = 0;
-
-            foreach ($lines as $lineIndex => $line) {
-                if ($lineIndex === 0) {
-                    $headers = str_getcsv($line, ",");
-                    continue;
-                }
-                
-                if ($rowCount >= $previewRows) {
-                    break;
-                }
-
-                $row = str_getcsv($line, ",");
-                
-                if (empty(array_filter($row))) {
-                    continue;
-                }
-
-                // Map the data using the selected mapping or default
-                if ($columnMapping) {
-                    $mappedData = $this->mapRowDataDynamic($row, 1, $columnMapping, $lineIndex + 1);
-                } else {
-                    $mappedData = $this->mapRowData($row, 1, $lineIndex + 1);
-                }
-
-                $previewData[] = [
-                    'row_number' => $lineIndex + 1,
-                    'raw_data' => array_slice($row, 0, 10), // First 10 columns for display
-                    'mapped_data' => $mappedData
-                ];
-
-                $rowCount++;
-            }
-
-            return response()->json([
-                'success' => true,
-                'headers' => $headers,
-                'preview_data' => $previewData,
-                'mapping_name' => $columnMapping ? $columnMapping->mapping_name : 'Default Mapping',
-                'total_rows_in_file' => count($lines) - 1 // Exclude header
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Preview import error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error previewing import: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
+    
     /**
      * Export terminals to CSV
      */
@@ -650,161 +419,6 @@ class PosTerminalController extends Controller
             return redirect()->back()->with('error', 'Error saving column mapping: ' . $e->getMessage());
         }
     }
-
-    /**
-     * Enhanced import method with dynamic column mapping
-     */
-    public function import(Request $request)
-    {
-        Log::info('Import method called with dynamic mapping');
-        
-        try {
-            // Validate the request
-            $request->validate([
-                'file' => 'required|file|mimes:csv,txt|max:10240',
-                'client_id' => 'required|exists:clients,id',
-                'mapping_id' => 'nullable|exists:import_mappings,id', // Optional mapping
-                'options' => 'nullable|array'
-            ]);
-
-            if (!$request->hasFile('file')) {
-                return back()->with('error', 'No file was uploaded.');
-            }
-
-            $file = $request->file('file');
-            $clientId = $request->client_id;
-            $mappingId = $request->mapping_id;
-            $options = $request->options ?? [];
-
-            // Get column mapping if specified
-            $columnMapping = null;
-            if ($mappingId && class_exists('App\Models\ImportMapping')) {
-                $columnMapping = ImportMapping::find($mappingId);
-            }
-
-            Log::info('Processing file with mapping: ' . ($columnMapping ? $columnMapping->mapping_name : 'Default'));
-
-            // Process the import with dynamic mapping
-            $results = $this->processCSVImportWithMapping($file->getPathname(), $clientId, $options, $columnMapping);
-
-            $message = "Import completed! Created: {$results['created']}, Updated: {$results['updated']}, Skipped: {$results['skipped']}, Errors: " . count($results['errors']);
-
-            if (!empty($results['errors'])) {
-                return back()
-                    ->with('success', $message)
-                    ->with('import_errors', array_slice($results['errors'], 0, 10));
-            }
-
-            return back()->with('success', $message);
-
-        } catch (\Exception $e) {
-            Log::error('Import Error: ' . $e->getMessage());
-            return back()->with('error', 'Import failed: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Process CSV import with proper encoding and validation - FIXED
-     */
-    private function processCSVImport($filePath, int $clientId, array $options)
-    {
-        $results = [
-            'created' => 0,
-            'updated' => 0,
-            'skipped' => 0,
-            'errors' => []
-        ];
-
-        $skipDuplicates = in_array('skip_duplicates', $options);
-        $updateExisting = in_array('update_existing', $options);
-
-        // Read file with proper encoding detection
-        $fileContent = file_get_contents($filePath);
-        
-        // Detect and convert encoding if needed
-        $encoding = mb_detect_encoding($fileContent, ['UTF-8', 'UTF-16', 'Windows-1252', 'ISO-8859-1'], true);
-        if ($encoding && $encoding !== 'UTF-8') {
-            $fileContent = mb_convert_encoding($fileContent, 'UTF-8', $encoding);
-            Log::info("Converted file from {$encoding} to UTF-8");
-        }
-
-        // Parse CSV from content
-        $lines = str_getcsv($fileContent, "\n");
-        $rowNumber = 0;
-        $headers = null;
-
-        foreach ($lines as $line) {
-            $rowNumber++;
-            
-            // Parse each line
-            $row = str_getcsv($line, ",");
-            
-            // Skip header row
-            if ($rowNumber === 1) {
-                $headers = $row;
-                Log::info('Headers: ' . json_encode($headers));
-                continue;
-            }
-
-            // Skip empty rows
-            if (empty(array_filter($row)) || count($row) < 2) {
-                Log::info("Skipping empty row {$rowNumber}");
-                continue;
-            }
-
-            try {
-                // Map the row data with debugging
-                $terminalData = $this->mapRowData($row, $clientId, $rowNumber);
-                
-                Log::info("Row {$rowNumber} mapped data: " . json_encode($terminalData));
-
-                // Validate required fields
-                if (empty($terminalData['terminal_id'])) {
-                    $columnB = isset($row[1]) ? $row[1] : 'N/A';
-                    $results['errors'][] = "Row {$rowNumber}: Terminal ID is empty (Column B: '{$columnB}')";
-                    continue;
-                }
-
-                if (empty($terminalData['merchant_name'])) {
-                    $columnE = isset($row[4]) ? $row[4] : 'N/A';
-                    $results['errors'][] = "Row {$rowNumber}: Merchant name is empty (Column E: '{$columnE}')";
-                    continue;
-                }
-
-                // Check if terminal exists
-                $existingTerminal = PosTerminal::where('terminal_id', $terminalData['terminal_id'])->first();
-
-                if ($existingTerminal) {
-                    if ($skipDuplicates && !$updateExisting) {
-                        $results['skipped']++;
-                        Log::info("Skipped duplicate: {$terminalData['terminal_id']}");
-                        continue;
-                    }
-
-                    if ($updateExisting) {
-                        $existingTerminal->update($terminalData);
-                        $results['updated']++;
-                        Log::info("Updated terminal: {$terminalData['terminal_id']}");
-                    } else {
-                        $results['errors'][] = "Row {$rowNumber}: Terminal ID '{$terminalData['terminal_id']}' already exists";
-                    }
-                } else {
-                    // Create new terminal
-                    $terminal = PosTerminal::create($terminalData);
-                    $results['created']++;
-                    Log::info("Created terminal: {$terminalData['terminal_id']} (ID: {$terminal->id})");
-                }
-
-            } catch (\Exception $e) {
-                $error = "Row {$rowNumber}: " . $e->getMessage();
-                $results['errors'][] = $error;
-                Log::error($error);
-            }
-        }
-
-        return $results;
-    }
-
     /**
      * Process CSV with dynamic column mapping
      */
@@ -1061,66 +675,50 @@ class PosTerminalController extends Controller
         return !empty($details) ? implode("\n", $details) : null;
     }
 
-    private function cleanValue($value)
-    {
-        if (is_null($value) || $value === '') {
-            return null;
-        }
-        
-        $cleaned = trim((string)$value);
-        return $cleaned === '' ? null : $cleaned;
-    }
-
-    /**
-     * Clean phone number
-     */
-    private function cleanPhoneNumber($phone)
-    {
-        if (empty($phone)) {
-            return null;
-        }
-        
-        // Convert to string and remove any non-digit characters except +
-        $cleaned = preg_replace('/[^0-9+]/', '', (string)$phone);
-        
-        return strlen($cleaned) > 5 ? $cleaned : null;
-    }
-
-
 public function index(Request $request)
 {
-    $query = PosTerminal::with(['client', 'regionModel']);
+    $query = PosTerminal::with(['client']);
 
-    // Apply filters
+    // Apply filters with proper column qualification
     if ($request->filled('search')) {
         $search = $request->search;
         $query->where(function($q) use ($search) {
-            $q->where('terminal_id', 'like', "%{$search}%")
-              ->orWhere('merchant_name', 'like', "%{$search}%")
-              ->orWhere('merchant_contact_person', 'like', "%{$search}%");
+            $q->where('pos_terminals.terminal_id', 'like', "%{$search}%")
+              ->orWhere('pos_terminals.merchant_name', 'like', "%{$search}%")
+              ->orWhere('pos_terminals.merchant_contact_person', 'like', "%{$search}%");
         });
     }
 
     if ($request->filled('client')) {
-        $query->where('client_id', $request->client);
+        $query->where('pos_terminals.client_id', $request->client);
     }
 
     if ($request->filled('status')) {
-        $query->where('status', $request->status);
+        // ENSURE we only accept valid status values
+        $validStatuses = ['active', 'offline', 'faulty', 'maintenance'];
+        $status = $request->status;
+        
+        if (in_array($status, $validStatuses)) {
+            $query->where('pos_terminals.status', $status);
+        }
     }
 
     if ($request->filled('region')) {
-        $query->where('region', $request->region);
+        $query->where('pos_terminals.region', $request->region);
     }
 
     if ($request->filled('city')) {
-        $query->where('city', $request->city);
+        $query->where('pos_terminals.city', $request->city);
     }
 
     if ($request->filled('province')) {
-        $query->where('province', $request->province);
+        $query->where('pos_terminals.province', $request->province);
     }
 
+    // FIXED: Calculate filtered statistics BEFORE pagination
+    $stats = $this->calculateFilteredStats(clone $query);
+
+    // Then paginate
     $terminals = $query->paginate(20);
 
     // Get filter options
@@ -1129,15 +727,13 @@ public function index(Request $request)
     $cities = PosTerminal::distinct()->pluck('city')->filter()->sort();
     $provinces = PosTerminal::distinct()->pluck('province')->filter()->sort();
 
-    // Get status options
-    $statusOptions = collect(['active', 'offline', 'faulty', 'maintenance']);
-    try {
-        if (class_exists('App\Models\Category')) {
-            $statusOptions = Category::getSelectOptions(Category::TYPE_TERMINAL_STATUS);
-        }
-    } catch (\Exception $e) {
-        Log::warning('Category model not available: ' . $e->getMessage());
-    }
+    // FIXED: Proper status options format
+    $statusOptions = [
+        'active' => 'Active',
+        'offline' => 'Offline', 
+        'faulty' => 'Faulty',
+        'maintenance' => 'Maintenance'
+    ];
 
     // Get mappings for import tab
     $mappings = collect();
@@ -1149,12 +745,9 @@ public function index(Request $request)
         Log::warning('ImportMapping model not available: ' . $e->getMessage());
     }
 
-    // Calculate filtered statistics
-    $stats = $this->calculateFilteredStats($query);
-
     // Handle AJAX requests
     if ($request->ajax() || $request->has('ajax')) {
-        return $this->handleAjaxRequest($request, $query, $stats);
+        return $this->handleAjaxRequest($request, clone $query, $stats);
     }
 
     return view('pos-terminals.index', compact(
@@ -1169,29 +762,6 @@ public function index(Request $request)
     ));
 }
 
-/**
- * Calculate statistics for filtered results
- */
-private function calculateFilteredStats($query)
-{
-    // Clone the query to avoid modifying the original
-    $statsQuery = clone $query;
-
-    // Get total count
-    $totalTerminals = $statsQuery->count();
-
-    // Calculate status-based statistics
-    $activeTerminals = (clone $query)->where('status', 'active')->count();
-    $offlineTerminals = (clone $query)->where('status', 'offline')->count();
-    $faultyTerminals = (clone $query)->whereIn('status', ['faulty', 'maintenance'])->count();
-
-    return [
-        'total_terminals' => $totalTerminals,
-        'active_terminals' => $activeTerminals,
-        'offline_terminals' => $offlineTerminals,
-        'faulty_terminals' => $faultyTerminals,
-    ];
-}
 
 /**
  * Handle AJAX requests for filtered data
@@ -1392,6 +962,826 @@ public function getStatistics(PosTerminal $posTerminal)
             : null
     ]);
 }
+/**
+ * Calculate comprehensive statistics for all chart types
+ */
+/**
+ * Calculate comprehensive statistics - FIXED for column ambiguity
+ */
+/**
+ * Calculate statistics for filtered results - COMPLETE FIX
+ */
+private function calculateFilteredStats($baseQuery)
+{
+    // Basic status counts - FIX: Qualify ALL column names
+    $totalTerminals = $baseQuery->count();
+    $activeTerminals = (clone $baseQuery)->where('pos_terminals.status', 'active')->count();
+    $offlineTerminals = (clone $baseQuery)->where('pos_terminals.status', 'offline')->count();
+    $faultyTerminals = (clone $baseQuery)->whereIn('pos_terminals.status', ['faulty', 'maintenance'])->count();
 
+    // Service-related statistics
+    $recentlyServiced = (clone $baseQuery)
+        ->whereNotNull('pos_terminals.last_service_date')
+        ->where('pos_terminals.last_service_date', '>=', now()->subDays(30))
+        ->count();
 
+    $serviceDue = (clone $baseQuery)
+        ->where(function($query) {
+            $query->whereNull('pos_terminals.last_service_date')
+                  ->orWhere('pos_terminals.last_service_date', '<=', now()->subDays(60));
+        })
+        ->count();
+
+    // More granular service data
+    $overdueService = (clone $baseQuery)
+        ->where(function($query) {
+            $query->whereNull('pos_terminals.last_service_date')
+                  ->orWhere('pos_terminals.last_service_date', '<=', now()->subDays(90));
+        })
+        ->count();
+
+    $neverServiced = (clone $baseQuery)
+        ->whereNull('pos_terminals.last_service_date')
+        ->count();
+
+    // Installation statistics
+    $recentInstallations = (clone $baseQuery)
+        ->whereNotNull('pos_terminals.installation_date')
+        ->where('pos_terminals.installation_date', '>=', now()->subDays(30))
+        ->count();
+
+    // Model distribution for alternative chart - FIX: Column qualification
+    $modelDistribution = (clone $baseQuery)
+        ->selectRaw('COALESCE(pos_terminals.terminal_model, "Unknown") as model, COUNT(*) as count')
+        ->groupBy('pos_terminals.terminal_model')
+        ->orderByDesc('count')
+        ->limit(6)
+        ->pluck('count', 'model')
+        ->toArray();
+
+    // Client distribution for alternative chart - FIX: No ambiguous columns
+    $clientDistribution = [];
+    try {
+        $clientDistribution = (clone $baseQuery)
+            ->join('clients', 'pos_terminals.client_id', '=', 'clients.id')
+            ->selectRaw('clients.company_name, COUNT(pos_terminals.id) as count')
+            ->groupBy('clients.id', 'clients.company_name')
+            ->orderByDesc('count')
+            ->limit(7)
+            ->pluck('count', 'company_name')
+            ->toArray();
+    } catch (\Exception $e) {
+        Log::warning('Error calculating client distribution: ' . $e->getMessage());
+        // Fallback to simple client count
+        $clientDistribution = ['Client Data' => $totalTerminals];
+    }
+
+    return [
+        // Basic stats (for the 4 cards)
+        'total_terminals' => $totalTerminals,
+        'active_terminals' => $activeTerminals,
+        'offline_terminals' => $offlineTerminals,
+        'faulty_terminals' => $faultyTerminals,
+        
+        // Service timeline stats (for the new chart)
+        'recently_serviced' => $recentlyServiced,
+        'service_due' => $serviceDue,
+        'overdue_service' => $overdueService,
+        'never_serviced' => $neverServiced,
+        
+        // Additional useful stats
+        'recent_installations' => $recentInstallations,
+        'uptime_percentage' => $totalTerminals > 0 ? round(($activeTerminals / $totalTerminals) * 100, 1) : 0,
+        
+        // Chart data arrays
+        'model_distribution' => $modelDistribution,
+        'client_distribution' => $clientDistribution,
+    ];
+}
+/**
+ * Get chart data for AJAX requests
+ */
+/**
+ * Get chart data for AJAX requests
+ */
+public function getChartData(Request $request)
+{
+    try {
+        $query = PosTerminal::query();
+
+        // Apply same filters as index method with column qualification
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('pos_terminals.terminal_id', 'like', "%{$search}%")
+                  ->orWhere('pos_terminals.merchant_name', 'like', "%{$search}%")
+                  ->orWhere('pos_terminals.merchant_contact_person', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('client')) {
+            $query->where('pos_terminals.client_id', $request->client);
+        }
+
+        if ($request->filled('status')) {
+            $validStatuses = ['active', 'offline', 'faulty', 'maintenance'];
+            if (in_array($request->status, $validStatuses)) {
+                $query->where('pos_terminals.status', $request->status);
+            }
+        }
+
+        if ($request->filled('region')) {
+            $query->where('pos_terminals.region', $request->region);
+        }
+
+        if ($request->filled('city')) {
+            $query->where('pos_terminals.city', $request->city);
+        }
+
+        if ($request->filled('province')) {
+            $query->where('pos_terminals.province', $request->province);
+        }
+
+        $stats = $this->calculateFilteredStats(clone $query);
+
+        return response()->json([
+            'success' => true,
+            'stats' => $stats,
+            'chartData' => [
+                'stats' => $stats,
+                'serviceDue' => [
+                    'recentlyServiced' => $stats['recently_serviced'],
+                    'serviceDueSoon' => max(0, $stats['service_due'] - $stats['overdue_service']),
+                    'overdueService' => $stats['overdue_service'],
+                    'neverServiced' => $stats['never_serviced']
+                ],
+                'clientDistribution' => $stats['client_distribution'],
+                'modelDistribution' => $stats['model_distribution']
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Chart data error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading chart data: ' . $e->getMessage()
+        ], 500);
+    }
+}
+private function parseCSVContent($filePath)
+{
+    try {
+        // Read file content
+        $fileContent = file_get_contents($filePath);
+        
+        if ($fileContent === false) {
+            throw new \Exception('Unable to read file content');
+        }
+
+        // Handle encoding
+        $encoding = mb_detect_encoding($fileContent, ['UTF-8', 'UTF-16', 'Windows-1252', 'ISO-8859-1'], true);
+        if ($encoding && $encoding !== 'UTF-8') {
+            $fileContent = mb_convert_encoding($fileContent, 'UTF-8', $encoding);
+        }
+
+        // Split into lines properly handling different line endings
+        $lines = preg_split('/\r\n|\r|\n/', $fileContent);
+        
+        $csvData = [];
+        foreach ($lines as $lineIndex => $line) {
+            // Skip empty lines
+            if (trim($line) === '') {
+                continue;
+            }
+            
+            // Parse CSV line
+            $row = str_getcsv($line, ",");
+            
+            // Clean each value
+            $row = array_map(function($value) {
+                $cleaned = trim($value);
+                return $cleaned === '' ? null : $cleaned;
+            }, $row);
+            
+            $csvData[] = $row;
+        }
+        
+        if (empty($csvData)) {
+            throw new \Exception('No data found in CSV file');
+        }
+        
+        Log::info("Parsed CSV: " . count($csvData) . " rows (including headers)");
+        
+        return $csvData;
+        
+    } catch (\Exception $e) {
+        Log::error('Error parsing CSV content: ' . $e->getMessage());
+        throw $e;
+    }
+}
+public function import(Request $request)
+{
+    try {
+        // Validate the request
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:10240',
+            'client_id' => 'required|exists:clients,id',
+            'mapping_id' => 'nullable|exists:import_mappings,id',
+            'options' => 'nullable|array'
+        ]);
+
+        $file = $request->file('file');
+        $clientId = $request->client_id;
+        $mappingId = $request->mapping_id;
+        $options = $request->options ?? [];
+
+        Log::info('Starting import process', [
+            'client_id' => $clientId,
+            'mapping_id' => $mappingId,
+            'options' => $options,
+            'file_name' => $file->getClientOriginalName(),
+            'file_size' => $file->getSize()
+        ]);
+
+        // Get column mapping if specified
+        $mapping = null;
+        if ($mappingId && class_exists('App\Models\ImportMapping')) {
+            $mapping = ImportMapping::find($mappingId);
+        }
+
+        // Process the CSV file
+        $results = $this->processCSVImportEnhanced($file->getPathname(), $clientId, $options, $mapping);
+
+        // Log results
+        Log::info('Import completed', $results);
+
+        // Prepare success message
+        return redirect()->route('pos-terminals.index')
+                         ->with('success', 'Import completed successfully! ' . json_encode($results));
+    } catch (\Exception $e) {
+        Log::error('Import failed: ' . $e->getMessage());
+        return back()->with('error', 'Import failed: ' . $e->getMessage())->withInput();
+    }
+}
+
+private function processCSVImportEnhanced($filePath, int $clientId, array $options, ?ImportMapping $mapping = null)
+{
+    $results = [
+        'created' => 0,
+        'updated' => 0,
+        'skipped' => 0,
+        'errors' => []
+    ];
+
+    try {
+        // Read and parse CSV file
+        $fileContent = file_get_contents($filePath);
+        
+        // Handle encoding
+        $encoding = mb_detect_encoding($fileContent, ['UTF-8', 'UTF-16', 'Windows-1252', 'ISO-8859-1'], true);
+        if ($encoding && $encoding !== 'UTF-8') {
+            $fileContent = mb_convert_encoding($fileContent, 'UTF-8', $encoding);
+            Log::info("Converted file from {$encoding} to UTF-8");
+        }
+
+        // Split into lines and parse
+        $lines = preg_split('/\r\n|\r|\n/', $fileContent);
+        $rowNumber = 0;
+        $headers = null;
+
+        foreach ($lines as $line) {
+            $rowNumber++;
+            
+            // Skip empty lines
+            if (trim($line) === '') {
+                continue;
+            }
+
+            $row = str_getcsv($line, ",");
+            
+            // Handle headers
+            if ($headers === null) {
+                $headers = $row;
+                Log::info('CSV Headers detected: ' . json_encode($headers));
+                continue;
+            }
+
+            // Skip empty rows
+            if (empty(array_filter($row))) {
+                Log::info("Skipping empty row {$rowNumber}");
+                continue;
+            }
+
+            try {
+                // Map the row data based on mapping or default
+                $terminalData = $mapping 
+                    ? $this->mapRowDataDynamic($row, $clientId, $mapping, $rowNumber)
+                    : $this->mapRowDataFixed($row, $clientId, $rowNumber);
+                
+                Log::info("Row {$rowNumber} mapped data: " . json_encode($terminalData));
+
+                // Check for existing terminal
+                $existingTerminal = PosTerminal::where('terminal_id', $terminalData['terminal_id'])->first();
+
+                if ($existingTerminal) {
+                    if (in_array('skip_duplicates', $options)) {
+                        $results['skipped']++;
+                        Log::info("Skipped duplicate: {$terminalData['terminal_id']}");
+                    } else {
+                        $existingTerminal->update($terminalData);
+                        $results['updated']++;
+                        Log::info("Updated terminal: {$terminalData['terminal_id']}");
+                    }
+                } else {
+                    PosTerminal::create($terminalData);
+                    $results['created']++;
+                    Log::info("Created terminal: {$terminalData['terminal_id']}");
+                }
+
+            } catch (\Exception $e) {
+                $results['errors'][] = "Row {$rowNumber}: " . $e->getMessage();
+                Log::error("Row {$rowNumber} error: " . $e->getMessage());
+            }
+        }
+
+        Log::info("Import processing completed", $results);
+
+    } catch (\Exception $e) {
+        Log::error('CSV file processing error: ' . $e->getMessage());
+        $results['errors'][] = 'File processing error: ' . $e->getMessage();
+    }
+
+    return $results;
+}
+
+private function mapRowDataFixed(array $row, int $clientId, int $rowNumber = 0)
+{
+    // Ensure we have enough columns
+    $row = array_pad($row, 21, null);
+    
+    Log::info("Row {$rowNumber} raw data (first 10): " . json_encode(array_slice($row, 0, 10)));
+    
+    $terminalData = [
+        'client_id' => $clientId,
+        
+        // Core required fields
+        'terminal_id' => $this->cleanValue($row[1]), // Column B
+        'merchant_name' => $this->cleanValue($row[4]), // Column E: Client Full Name
+        
+        // Business information
+        'business_type' => $this->cleanValue($row[2]), // Column C: Type(from bank)
+        'physical_address' => $this->cleanValue($row[5]), // Column F: Address
+        'city' => $this->cleanValue($row[6]), // Column G: City
+        'province' => $this->cleanValue($row[7]), // Column H: Province
+        'region' => $this->cleanValue($row[9]), // Column J: REGION
+        
+        // Contact information
+        'merchant_phone' => $this->cleanPhoneNumber($row[8]), // Column I: Phone Number
+        'merchant_contact_person' => $this->cleanValue($row[19]), // Column T: Contact Person
+        
+        // Technical details
+        'terminal_model' => $this->cleanValue($row[12]), // Column M: Device Type
+        'serial_number' => $this->cleanValue($row[13]), // Column N: Serial Number
+        
+        // Dates
+        'installation_date' => $this->parseDate($row[10]), // Column K: Date
+        
+        // Status
+        'status' => $this->mapStatus($row[14]) ?: 'active', // Column O: Status
+        'current_status' => $this->mapStatus($row[14]) ?: 'active',
+        
+        // Contract details from multiple columns
+        'contract_details' => $this->buildContractDetailsFixed($row),
+    ];
+
+    // Remove empty values to use database defaults
+    return array_filter($terminalData, function($value) {
+        return $value !== null && $value !== '';
+    });
+}
+
+/**
+ * Enhanced terminal data validation
+ */
+private function validateTerminalData(array $terminalData, int $rowNumber)
+{
+    // Check required fields
+    if (empty($terminalData['terminal_id'])) {
+        return [
+            'valid' => false,
+            'error' => "Row {$rowNumber}: Terminal ID is required and cannot be empty"
+        ];
+    }
+
+    if (empty($terminalData['merchant_name'])) {
+        return [
+            'valid' => false,
+            'error' => "Row {$rowNumber}: Merchant name is required and cannot be empty"
+        ];
+    }
+
+    // Validate terminal ID format (basic check)
+    if (strlen($terminalData['terminal_id']) < 3) {
+        return [
+            'valid' => false,
+            'error' => "Row {$rowNumber}: Terminal ID '{$terminalData['terminal_id']}' is too short"
+        ];
+    }
+
+    // Validate email if provided
+    if (!empty($terminalData['merchant_email']) && !filter_var($terminalData['merchant_email'], FILTER_VALIDATE_EMAIL)) {
+        return [
+            'valid' => false,
+            'error' => "Row {$rowNumber}: Invalid email format '{$terminalData['merchant_email']}'"
+        ];
+    }
+
+    return ['valid' => true];
+}
+
+/**
+ * Fixed contract details builder
+ */
+private function buildContractDetailsFixed(array $row): ?string
+{
+    $details = [];
+    
+    // Map according to your template structure
+    $fields = [
+        15 => 'Condition',        // Column P
+        16 => 'Issues',           // Column Q
+        17 => 'Comments',         // Column R
+        18 => 'Corrective Action', // Column S
+        20 => 'Site Phone'        // Column U: Contact Number
+    ];
+    
+    foreach ($fields as $index => $label) {
+        $value = $this->cleanValue($row[$index] ?? null);
+        if (!empty($value)) {
+            $details[] = "{$label}: {$value}";
+        }
+    }
+    
+    return !empty($details) ? implode("\n", $details) : null;
+}
+
+/**
+ * Enhanced value cleaning with null handling
+ */
+private function cleanValue($value)
+{
+    if (is_null($value)) {
+        return null;
+    }
+    
+    $cleaned = trim((string)$value);
+    
+    // Handle various null representations
+    $nullValues = ['null', 'n/a', 'na', '', '-', 'nil', 'none', 'empty'];
+    if (in_array(strtolower($cleaned), $nullValues)) {
+        return null;
+    }
+    
+    return $cleaned === '' ? null : $cleaned;
+}
+
+/**
+ * Enhanced date parsing with more formats
+ */
+private function parseDate($dateValue)
+{
+    if (empty($dateValue) || is_null($dateValue)) {
+        return null;
+    }
+
+    $dateValue = trim((string)$dateValue);
+    
+    // Handle null representations
+    if (in_array(strtolower($dateValue), ['null', 'n/a', 'na', '', '-'])) {
+        return null;
+    }
+
+    try {
+        $formats = [
+            'Y-m-d',        // 2024-01-15
+            'd/m/Y',        // 15/01/2024
+            'm/d/Y',        // 01/15/2024
+            'd-m-Y',        // 15-01-2024
+            'm-d-Y',        // 01-15-2024
+            'd-M-Y',        // 15-Jan-2024
+            'd-M-y',        // 15-Jan-24
+            'd-M',          // 19-Apr
+            'j-M',          // 19-Apr (single digit day)
+            'M-d',          // Apr-19
+            'Y/m/d',        // 2024/01/15
+            'd.m.Y',        // 15.01.2024
+        ];
+        
+        foreach ($formats as $format) {
+            $date = \DateTime::createFromFormat($format, $dateValue);
+            if ($date !== false) {
+                // For formats without year, assume current year
+                if (strpos($format, 'Y') === false && strpos($format, 'y') === false) {
+                    $date->setDate(date('Y'), $date->format('n'), $date->format('j'));
+                }
+                return $date->format('Y-m-d');
+            }
+        }
+        
+        // Try Carbon/strtotime as fallback
+        $timestamp = strtotime($dateValue);
+        if ($timestamp !== false) {
+            return date('Y-m-d', $timestamp);
+        }
+        
+        Log::warning("Could not parse date: {$dateValue}");
+        return null;
+        
+    } catch (\Exception $e) {
+        Log::warning("Date parsing error for '{$dateValue}': " . $e->getMessage());
+        return null;
+    }
+}
+
+/**
+ * Enhanced phone number cleaning
+ */
+private function cleanPhoneNumber($phone)
+{
+    if (empty($phone) || is_null($phone)) {
+        return null;
+    }
+    
+    $phone = trim((string)$phone);
+    
+    // Handle null representations
+    if (in_array(strtolower($phone), ['null', 'n/a', 'na', '', '-'])) {
+        return null;
+    }
+    
+    // Remove non-digit characters except +
+    $cleaned = preg_replace('/[^0-9+]/', '', $phone);
+    
+    // Basic validation - must be at least 6 digits
+    if (strlen(str_replace('+', '', $cleaned)) < 6) {
+        return null;
+    }
+    
+    return $cleaned;
+}
+
+/**
+ * Enhanced status mapping
+ */
+private function mapStatus($status)
+{
+    if (empty($status) || is_null($status)) {
+        return 'active';
+    }
+
+    $status = strtolower(trim((string)$status));
+    
+    // Handle null representations
+    if (in_array($status, ['null', 'n/a', 'na', '', '-'])) {
+        return 'active';
+    }
+    
+    $statusMappings = [
+        // Active variations
+        'active' => 'active',
+        'working' => 'active',
+        'online' => 'active',
+        'ok' => 'active',
+        'good' => 'active',
+        'operational' => 'active',
+        'up' => 'active',
+        'running' => 'active',
+        
+        // Offline variations
+        'offline' => 'offline',
+        'down' => 'offline',
+        'not working' => 'offline',
+        'not seen' => 'offline',
+        'inactive' => 'offline',
+        'disconnected' => 'offline',
+        
+        // Faulty variations
+        'faulty' => 'faulty',
+        'broken' => 'faulty',
+        'defective' => 'faulty',
+        'error' => 'faulty',
+        'damaged' => 'faulty',
+        'failed' => 'faulty',
+        
+        // Maintenance variations
+        'maintenance' => 'maintenance',
+        'repair' => 'maintenance',
+        'service' => 'maintenance',
+        'servicing' => 'maintenance',
+        'under repair' => 'maintenance',
+        'in service' => 'maintenance',
+    ];
+
+    return $statusMappings[$status] ?? 'active';
+}
+
+/**
+ * Enhanced preview with better error handling
+ */
+public function previewImport(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:csv,txt|max:10240',
+        'mapping_id' => 'nullable|exists:import_mappings,id',
+        'preview_rows' => 'nullable|integer|min:1|max:10'
+    ]);
+
+    try {
+        $file = $request->file('file');
+        $mappingId = $request->mapping_id;
+        $previewRows = $request->get('preview_rows', 5);
+
+        // Get column mapping
+        $columnMapping = null;
+        if ($mappingId && class_exists('App\Models\ImportMapping')) {
+            $columnMapping = ImportMapping::find($mappingId);
+        }
+
+        // Parse CSV with enhanced method
+        $csvData = $this->parseCSVContent($file->getPathname());
+        
+        if (empty($csvData)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'CSV file is empty or could not be parsed'
+            ], 400);
+        }
+
+        $headers = array_shift($csvData);
+        $previewData = [];
+        $rowCount = 0;
+
+        foreach ($csvData as $rowIndex => $row) {
+            if ($rowCount >= $previewRows) break;
+            
+            $rowNumber = $rowIndex + 2;
+            
+            // Skip empty rows
+            if (empty(array_filter($row, function($val) { return $val !== null && $val !== ''; }))) {
+                continue;
+            }
+
+            try {
+                // Map data with error handling
+                $mappedData = $columnMapping 
+                    ? $this->mapRowDataDynamic($row, 1, $columnMapping, $rowNumber)
+                    : $this->mapRowDataFixed($row, 1, $rowNumber);
+
+                // Validate the mapped data
+                $validation = $this->validateTerminalData($mappedData, $rowNumber);
+                
+                $previewData[] = [
+                    'row_number' => $rowNumber,
+                    'raw_data' => array_slice($row, 0, 8), // Show first 8 columns
+                    'mapped_data' => $mappedData,
+                    'validation_status' => $validation['valid'] ? 'valid' : 'error',
+                    'validation_message' => $validation['valid'] ? 'OK' : $validation['error']
+                ];
+
+                $rowCount++;
+                
+            } catch (\Exception $e) {
+                $previewData[] = [
+                    'row_number' => $rowNumber,
+                    'raw_data' => array_slice($row, 0, 8),
+                    'mapped_data' => [],
+                    'validation_status' => 'error',
+                    'validation_message' => 'Mapping error: ' . $e->getMessage()
+                ];
+                $rowCount++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'headers' => $headers,
+            'preview_data' => $previewData,
+            'mapping_name' => $columnMapping ? $columnMapping->mapping_name : 'Default Mapping',
+            'total_rows_in_file' => count($csvData)
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Preview import error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error previewing import: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Enhanced template download with proper headers
+ */
+public function downloadTemplate()
+{
+    $headers = [
+        'Merchant ID',
+        'Terminal ID', 
+        'Type (from bank)',
+        'Legal Name',
+        'Client Full Name',
+        'Address',
+        'City',
+        'Province',
+        'Phone Number (from Bank)',
+        'REGION',
+        'Date',
+        'Teams',
+        'Device Type',
+        'Serial Number',
+        'Status',
+        'Condition',
+        'Issue Raised',
+        'Comments',
+        'Corrective Action',
+        'Contact Person',
+        'Contact Number'
+    ];
+
+    $filename = 'pos_terminals_import_template_' . date('Y-m-d') . '.csv';
+    
+    $response = response()->streamDownload(function() use ($headers) {
+        $handle = fopen('php://output', 'w');
+        
+        // Write UTF-8 BOM for Excel compatibility
+        fwrite($handle, "\xEF\xBB\xBF");
+        
+        // Write headers
+        fputcsv($handle, $headers);
+        
+        // Write sample data rows
+        $sampleRows = [
+            [
+                '40103242444343',           // Merchant ID
+                '77202134',                 // Terminal ID
+                'Verifone',                 // Type(from bank)
+                'SAMPLE BUSINESS LEGAL',    // Legal name
+                'SAMPLE BUSINESS',          // Client Full Name
+                '123 SAMPLE STREET',        // Address
+                'HARARE',                   // City
+                'Harare',                   // Province
+                '263774033970',             // Phone Number(from Bank)
+                'MT PLEASANT',              // REGION
+                '19-Apr-2024',              // Date
+                'Sample Team',              // Teams
+                'VX-520',                   // Device Type
+                'SN34323433',               // Serial Number
+                'active',                   // Status
+                'Good',                     // Condition
+                '',                         // Issue Raised (empty)
+                'Sample comments',          // Comments
+                '',                         // Corrective Action (empty)
+                'John Doe',                 // Contact Person
+                '263778654664'              // Contact Number
+            ],
+            [
+                '40103242444344',           
+                '77202135',                 
+                'Ingenico',                 
+                'ANOTHER BUSINESS LEGAL',   
+                'ANOTHER BUSINESS',         
+                '456 ANOTHER STREET',       
+                'BULAWAYO',                 
+                'Bulawayo',                 
+                '263712345678',             
+                'HILLSIDE',                 
+                '15-Mar-2024',              
+                'Tech Team B',              
+                'iWL220',                   
+                'SN98765432',               
+                'offline',                  
+                'Needs attention',          
+                'Card reader not working',  
+                'Requires technician visit',
+                'Replace card reader',      
+                'Jane Smith',               
+                '263777123456'              
+            ]
+        ];
+        
+        foreach ($sampleRows as $sampleRow) {
+            fputcsv($handle, $sampleRow);
+        }
+        
+        fclose($handle);
+    }, $filename, [
+        'Content-Type' => 'text/csv; charset=UTF-8',
+        'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Pragma' => 'no-cache',
+        'Expires' => '0'
+    ]);
+
+    return $response;
+}
 }

@@ -99,94 +99,116 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
 
     
     // ==============================================
-    // POS TERMINAL ROUTES - FIXED AND CONSOLIDATED
-    // ==============================================
+// POS TERMINAL ROUTES - FIXED AND CONSOLIDATED
+// ==============================================
+
+Route::prefix('pos-terminals')->name('pos-terminals.')->group(function () {
+    // SPECIFIC ROUTES FIRST (must come before dynamic routes)
     
-    Route::prefix('pos-terminals')->name('pos-terminals.')->group(function () {
-        // SPECIFIC ROUTES FIRST (must come before dynamic routes)
+    // Chart Data Route (NEW - for AJAX chart updates)
+    Route::get('/chart-data', [PosTerminalController::class, 'getChartData'])
+        ->middleware('permission:view_terminals,manage_team,all')
+        ->name('chart-data');
+    
+    // Column Mapping Routes
+    Route::get('/column-mapping', [PosTerminalController::class, 'showColumnMapping'])
+        ->middleware('permission:manage_team,all')
+        ->name('column-mapping');
         
-        // Column Mapping Routes
-        Route::get('/column-mapping', [PosTerminalController::class, 'showColumnMapping'])
-            ->middleware('permission:manage_team,all')
-            ->name('column-mapping');
-            
-        Route::post('/column-mapping', [PosTerminalController::class, 'storeColumnMapping'])
-            ->middleware('permission:manage_team,all')
-            ->name('store-mapping');
-            
-        Route::delete('/column-mapping/{mapping}', [PosTerminalController::class, 'deleteColumnMapping'])
-            ->middleware('permission:manage_team,all')
-            ->name('delete-mapping');
-            
-        Route::patch('/column-mapping/{mapping}/toggle', [PosTerminalController::class, 'toggleColumnMapping'])
-            ->middleware('permission:manage_team,all')
-            ->name('toggle-mapping');
+    Route::post('/column-mapping', [PosTerminalController::class, 'storeColumnMapping'])
+        ->middleware('permission:manage_team,all')
+        ->name('store-mapping');
         
-        // Import/Export Routes
-        Route::get('/import', [PosTerminalController::class, 'showImport'])
-            ->middleware('permission:manage_team,all')
-            ->name('import.form');
-            
-        Route::post('/import', [PosTerminalController::class, 'import'])
-            ->middleware('permission:manage_team,all')
-            ->name('import');
-            
-        Route::post('/preview-import', [PosTerminalController::class, 'previewImport'])
-            ->middleware('permission:manage_team,all')
-            ->name('preview-import');
-            
-        Route::get('/download-template', [PosTerminalController::class, 'downloadTemplate'])
-            ->middleware('permission:manage_team,all')
-            ->name('download-template');
-            
-        Route::get('/export', [PosTerminalController::class, 'export'])
-            ->middleware('permission:view_terminals,manage_team,all')
-            ->name('export');
+    Route::delete('/column-mapping/{mapping}', [PosTerminalController::class, 'deleteColumnMapping'])
+        ->middleware('permission:manage_team,all')
+        ->name('delete-mapping');
         
-        // CRUD Routes (dynamic routes come LAST)
-        Route::get('/', [PosTerminalController::class, 'index'])
-            ->middleware('permission:view_terminals,manage_team,all')
-            ->name('index');
-            
-        Route::get('/create', [PosTerminalController::class, 'create'])
-            ->middleware('permission:update_terminals,manage_team,all')
-            ->name('create');
-            
-        Route::post('/', [PosTerminalController::class, 'store'])
-            ->middleware('permission:update_terminals,manage_team,all')
-            ->name('store');
-            
-        // Individual terminal routes (MUST be last due to {posTerminal} parameter)
-        Route::get('/{posTerminal}', [PosTerminalController::class, 'show'])
-            ->middleware('permission:view_terminals,manage_team,all')
-            ->name('show');
-            
-        Route::get('/{posTerminal}/edit', [PosTerminalController::class, 'edit'])
-            ->middleware('permission:update_terminals,manage_team,all')
-            ->name('edit');
-            
-        Route::put('/{posTerminal}', [PosTerminalController::class, 'update'])
-            ->middleware('permission:update_terminals,manage_team,all')
-            ->name('update');
-            
-        Route::delete('/{posTerminal}', [PosTerminalController::class, 'destroy'])
-            ->middleware('permission:all')
-            ->name('destroy');
-            
-        Route::patch('/{posTerminal}/status', [PosTerminalController::class, 'updateStatus'])
-            ->middleware('permission:update_terminals,manage_team,all')
-            ->name('update-status');
+    Route::patch('/column-mapping/{mapping}/toggle', [PosTerminalController::class, 'toggleColumnMapping'])
+        ->middleware('permission:manage_team,all')
+        ->name('toggle-mapping');
+    
+    // Import/Export Routes
+    Route::get('/import', [PosTerminalController::class, 'showImport'])
+        ->middleware('permission:manage_team,all')
+        ->name('import.form');
+        
+    Route::post('/import', [PosTerminalController::class, 'import'])
+        ->middleware('permission:manage_team,all')
+        ->name('import');
+        
+    Route::post('/preview-import-enhanced', [PosTerminalController::class, 'previewImportEnhanced'])
+        ->middleware('permission:manage_team,all')
+        ->name('preview-import-enhanced');
+        
+    Route::get('/download-template', [PosTerminalController::class, 'downloadTemplate'])
+        ->middleware('permission:manage_team,all')
+        ->name('download-template');
+        
+    Route::get('/export', [PosTerminalController::class, 'export'])
+        ->middleware('permission:view_terminals,manage_team,all')
+        ->name('export');
+    
+    // CRUD Routes (dynamic routes come LAST)
+    Route::get('/', [PosTerminalController::class, 'index'])
+        ->middleware('permission:view_terminals,manage_team,all')
+        ->name('index');
+        
+    Route::get('/create', [PosTerminalController::class, 'create'])
+        ->middleware('permission:update_terminals,manage_team,all')
+        ->name('create');
+        
+    Route::post('/', [PosTerminalController::class, 'store'])
+        ->middleware('permission:update_terminals,manage_team,all')
+        ->name('store');
+        
+    // Individual terminal routes (MUST be last due to {posTerminal} parameter)
+    Route::get('/{posTerminal}', [PosTerminalController::class, 'show'])
+        ->middleware('permission:view_terminals,manage_team,all')
+        ->name('show');
+        
+    Route::get('/{posTerminal}/edit', [PosTerminalController::class, 'edit'])
+        ->middleware('permission:update_terminals,manage_team,all')
+        ->name('edit');
+        
+    Route::put('/{posTerminal}', [PosTerminalController::class, 'update'])
+        ->middleware('permission:update_terminals,manage_team,all')
+        ->name('update');
+        
+    Route::delete('/{posTerminal}', [PosTerminalController::class, 'destroy'])
+        ->middleware('permission:all')
+        ->name('destroy');
+        
+    Route::patch('/{posTerminal}/status', [PosTerminalController::class, 'updateStatus'])
+        ->middleware('permission:update_terminals,manage_team,all')
+        ->name('update-status');
 
-            // POS Terminal additional routes
-Route::prefix('pos-terminals/{posTerminal}')->group(function () {
-    Route::post('/tickets', 'PosTerminalController@createTicket')->name('pos-terminals.tickets.create');
-    Route::post('/services', 'PosTerminalController@scheduleService')->name('pos-terminals.services.create');
-    Route::post('/notes', 'PosTerminalController@addNote')->name('pos-terminals.notes.create');
-    Route::get('/reports/{type}', 'PosTerminalController@generateReport')->name('pos-terminals.reports.generate');
-    Route::get('/statistics', 'PosTerminalController@getStatistics')->name('pos-terminals.statistics');
+    // Terminal-specific action routes (tickets, services, etc.)
+    Route::prefix('/{posTerminal}')->group(function () {
+        Route::post('/tickets', [PosTerminalController::class, 'createTicket'])
+            ->middleware('permission:update_terminals,manage_team,all')
+            ->name('tickets.create');
+            
+        Route::post('/services', [PosTerminalController::class, 'scheduleService'])
+            ->middleware('permission:update_terminals,manage_team,all')
+            ->name('services.create');
+            
+        Route::post('/notes', [PosTerminalController::class, 'addNote'])
+            ->middleware('permission:update_terminals,manage_team,all')
+            ->name('notes.create');
+            
+        Route::get('/reports/{type}', [PosTerminalController::class, 'generateReport'])
+            ->middleware('permission:view_terminals,manage_team,all')
+            ->name('reports.generate');
+            
+        Route::get('/statistics', [PosTerminalController::class, 'getStatistics'])
+            ->middleware('permission:view_terminals,manage_team,all')
+            ->name('statistics');
+
+Route::post('/pos-terminals/import', [PosTerminalController::class, 'import'])->name('pos-terminals.import');
+Route::post('/pos-terminals/preview-import', [PosTerminalController::class, 'previewImport'])->name('pos-terminals.preview-import');
 });
-    });
 
+});
 
 
 // ==============================================
@@ -291,6 +313,7 @@ Route::prefix('assets')->name('assets.')->group(function () {
     Route::post('/asset-approvals/{id}/reject', [AssetApprovalController::class, 'reject'])->name('asset-approvals.reject');
     Route::post('/asset-approvals/bulk-action', [AssetApprovalController::class, 'bulkAction'])->name('asset-approvals.bulk-action');
     
+    
     // Optional additional routes
     Route::get('/asset-approvals/stats/data', [AssetApprovalController::class, 'getStats'])->name('asset-approvals.stats');
     Route::get('/asset-approvals/export/report', [AssetApprovalController::class, 'exportReport'])->name('asset-approvals.export');
@@ -326,7 +349,9 @@ Route::middleware(['auth'])->group(function () {
     // Return asset (for Return button)  
     Route::patch('/asset-assignments/{assignment}/return', [AssetController::class, 'returnAsset'])
         ->name('asset-assignments.return');
-    
+   
+        Route::get('/asset-assignments/{assignment}/data', [AssetController::class, 'getAssignmentData'])->name('assignments.data');
+        
    
     // Asset assignment data (for Details button)
     Route::get('/asset-assignments/{assignment}/data', [AssetController::class, 'getAssignmentData'])
@@ -544,8 +569,7 @@ Route::middleware(['auth'])->group(function () {
 
         
     // Import & Export
-    Route::post('preview-import', [PosTerminalController::class, 'previewImport'])
-        ->name('preview-import');
+    Route::post('/pos-terminals/preview-import-enhanced', [PosTerminalController::class, 'previewImportEnhanced'])->name('pos-terminals.preview-import-enhanced');;
     Route::get('download-template', [PosTerminalController::class, 'downloadTemplate'])
         ->name('download-template');
     Route::get('export', [PosTerminalController::class, 'export'])

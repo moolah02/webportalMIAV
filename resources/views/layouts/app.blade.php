@@ -24,107 +24,133 @@
   <style>
     /* Reset & Base */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: #f8f9fa; 
+      color: #2d3748; 
+      line-height: 1.5; 
+      font-size: 14px;
+    }
 
-    /* Sidebar */
+    /* Sidebar - Solid White */
     .sidebar { 
       position: fixed; 
       top: 0; 
       left: 0; 
-      inline-size: 280px; 
+      width: 260px; 
       height: 100vh; 
-      background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%); 
-      color: #fff; 
+      background: #ffffff;
+      border-right: 1px solid #ffffff;
       overflow-y: auto; 
-      box-shadow: 2px 0 20px rgba(0,0,0,0.15);
-      border-right: 1px solid rgba(255,255,255,0.1);
+      box-shadow: none; /* Completely remove shadows */
     }
     
     .sidebar-header { 
-      padding: 25px 20px; 
-      font-size: 20px; 
+      padding: 20px 16px; 
+      font-size: 18px; 
       font-weight: 700; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-      border-block-end: 2px solid rgba(255,255,255,0.1);
-      text-align: center;
-      letter-spacing: 0.5px;
+      background: #ffffff;
+      border-bottom: 1px solid #ffffff;
+      color: #1a202c;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    /* Nav items */
+    .sidebar-header::before {
+      content: '🏢';
+      font-size: 20px;
+    }
+
+    /* Navigation */
     .nav-item { 
       display: flex; 
       align-items: center; 
-      gap: 15px; 
-      padding: 16px 20px; 
-      color: rgba(255,255,255,0.85); 
+      gap: 12px; 
+      padding: 12px 16px; 
+      color: #4a5568; 
       text-decoration: none; 
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      transition: all 0.15s ease; 
       font-weight: 500;
-      position: relative;
+      font-size: 14px;
+      border-left: 3px solid transparent;
+      background: #ffffff; /* Solid white background */
     }
     
     .nav-item:hover { 
-      background: rgba(255,255,255,0.12); 
-      color: #fff; 
-      padding-left: 25px;
+      background: #f7fafc; 
+      color: #2d3748;
     }
     
     .nav-item.active { 
-      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%); 
-      color: #fff; 
+      background: #ebf8ff; 
+      color: #2b6cb0;
+      border-left-color: #4299e1;
       font-weight: 600;
-      border-inline-start: 4px solid #00d4ff;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
     }
 
-    /* Section headers - improved design */
+    /* Menu Icons */
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: inherit;
+    }
+
+    /* Section headers - Solid White */
     .nav-section { 
-      padding: 18px 20px; 
-      font-size: 13px; 
+      padding: 16px 16px 8px 16px; 
+      font-size: 11px; 
       font-weight: 600; 
       text-transform: uppercase; 
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       cursor: pointer; 
-      transition: all 0.3s ease; 
+      transition: all 0.15s ease; 
       position: relative;
-      background: rgba(0,0,0,0.15);
-      border-block-start: 1px solid rgba(255,255,255,0.05);
-      border-block-end: 1px solid rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.9);
+      color: #718096;
+      background: #ffffff; /* Changed to solid white */
+      border-top: 1px solid #e2e8f0;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .nav-section:first-child {
+      margin-top: 0;
+      border-top: none;
     }
     
     .nav-section:hover { 
-      background: rgba(255,255,255,0.08);
-      color: #fff;
+      color: #4a5568;
+      background: #f7fafc;
     }
     
-    /* Modern chevron indicator */
+    /* Simple chevron arrows to match reference */
     .nav-section::after { 
-      content: '';
+      content: '›';
       position: absolute; 
-      right: 20px;
+      right: 16px;
       top: 50%;
       transform: translateY(-50%);
-      inline-size: 8px;
-      height: 8px;
-      border-right: 2px solid rgba(255,255,255,0.7);
-      border-block-end: 2px solid rgba(255,255,255,0.7);
-      transform: translateY(-50%) rotate(-45deg);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 14px;
+      color: #a0aec0;
+      transition: all 0.2s ease;
+      font-weight: bold;
     }
     
     .nav-section.open::after { 
-      transform: translateY(-50%) rotate(45deg);
-      border-color: rgba(255,255,255,0.9);
+      transform: translateY(-50%) rotate(90deg);
     }
 
-    /* Submenus - enhanced styling */
+    /* Submenus - Solid White */
     .submenu { 
       max-height: 0;
       overflow: hidden;
-      background: rgba(0,0,0,0.2);
-      border-block-end: 1px solid rgba(255,255,255,0.05);
-      transition: max-height 0.3s ease-out;
+      background: #ffffff; /* Solid white background */
+      transition: max-height 0.2s ease;
     }
     
     .submenu.show { 
@@ -134,188 +160,202 @@
     .nav-sub { 
       display: flex;
       align-items: center;
-      padding: 14px 20px 14px 45px; 
+      padding: 10px 16px 10px 32px; 
       font-size: 14px; 
-      color: rgba(255,255,255,0.75); 
+      color: #718096; 
       text-decoration: none;
-      transition: all 0.3s ease; 
+      transition: all 0.15s ease; 
       position: relative;
       font-weight: 500;
+      border-left: 3px solid transparent;
+      background: #ffffff; /* Solid white background */
+      gap: 8px;
     }
-    
-    /* Connector line for nested items */
-    .nav-sub::before {
-      content: '';
-      position: absolute;
-      left: 30px;
-      top: 50%;
-      inline-size: 8px;
-      height: 1px;
-      background: rgba(255,255,255,0.3);
-      transform: translateY(-50%);
-    }
-    
+
     .nav-sub:hover { 
-      background: rgba(255,255,255,0.08); 
-      color: rgba(255,255,255,0.95); 
-      padding-left: 50px;
+      background: #f7fafc; 
+      color: #4a5568;
     }
     
     .nav-sub.active { 
-      color: #fff; 
+      color: #2b6cb0; 
       font-weight: 600;
-      background: rgba(255,255,255,0.1);
-      border-inline-start: 3px solid #00d4ff;
-    }
-    
-    .nav-sub.active::before {
-      background: #00d4ff;
-      inline-size: 12px;
+      background: #ebf8ff;
+      border-left-color: #4299e1;
     }
 
     /* Main content */
     .main-content { 
-      margin-left: 280px; 
+      margin-left: 260px; 
       min-height: 100vh; 
-      background: #f5f5f5; 
+      background: #f8f9fa; 
     }
     
     .content-header { 
-      background: #fff; 
-      padding: 25px 35px; 
-      border-block-end: 1px solid #eee; 
+      background: #ffffff; 
+      padding: 20px 24px; 
+      border-bottom: 1px solid #e2e8f0; 
       display: flex; 
       justify-content: space-between; 
       align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      box-shadow: none; /* Remove any shadows */
     }
     
     .page-title { 
-      font-size: 28px; 
+      font-size: 24px; 
       font-weight: 700; 
-      color: #2c3e50;
+      color: #1a202c;
       margin: 0;
     }
     
     .user-info { 
       display: flex; 
       align-items: center; 
-      gap: 15px; 
-      color: #666;
+      gap: 12px; 
+      color: #4a5568;
       font-weight: 500;
+      font-size: 14px;
     }
     
     .user-badge { 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-      color: #fff; 
-      padding: 6px 14px; 
-      border-radius: 20px; 
+      background: #edf2f7; 
+      color: #4a5568; 
+      padding: 4px 12px; 
+      border-radius: 16px; 
       font-size: 12px; 
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      border: 1px solid #e2e8f0;
+      box-shadow: none; /* Remove shadows */
     }
     
     .content-body { 
-      padding: 35px; 
+      padding: 24px; 
     }
 
-    /* Dashboard cards */
+    /* Dashboard cards - Completely Flat */
     .dashboard-grid { 
       display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); 
-      gap: 25px; 
-      margin-block-end: 35px; 
+      grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); 
+      gap: 16px; 
+      margin-bottom: 24px; 
     }
     
     .metric-card { 
-      background: #fff; 
-      border-radius: 12px; 
-      padding: 30px; 
+      background: #ffffff; 
+      border-radius: 6px; 
+      padding: 20px; 
       text-align: center; 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
-      border: 1px solid rgba(0,0,0,0.05); 
-      transition: all 0.3s ease; 
+      border: 1px solid #e2e8f0; 
+      box-shadow: none; /* Explicitly remove all shadows */
     }
     
     .metric-card:hover { 
-      box-shadow: 0 8px 30px rgba(0,0,0,0.12); 
-      transform: translateY(-3px); 
+      border-color: #cbd5e0; 
     }
     
     .metric-number { 
-      font-size: 42px; 
-      font-weight: 800; 
-      color: #2196f3; 
-      margin-block-end: 12px; 
+      font-size: 32px; 
+      font-weight: 700; 
+      color: #2d3748; 
+      margin-bottom: 8px; 
     }
     
     .metric-label { 
-      color: #666; 
-      font-size: 14px; 
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      color: #718096; 
+      font-size: 13px; 
+      font-weight: 500;
     }
 
-    /* Logout styling */
+    /* Logout styling - Solid White */
     .logout-form { 
       border: none; 
-      margin-block-start: 20px;
-      border-top: 2px solid rgba(255,255,255,0.1);
+      margin-top: 16px;
+      border-top: 1px solid #e2e8f0;
+      background: #ffffff; /* Changed to solid white */
     }
     
     .logout-btn { 
-      inline-size: 100%; 
-      text-align: start; 
-      padding: 18px 20px; 
+      width: 100%; 
+      text-align: left; 
+      padding: 12px 16px; 
       display: flex; 
       align-items: center; 
-      gap: 15px; 
-      background: none; 
+      gap: 12px; 
+      background: #ffffff; /* Solid white background */
       border: none; 
-      color: rgba(255,255,255,0.8); 
+      color: #e53e3e; 
       cursor: pointer; 
       font-weight: 500;
-      transition: all 0.3s ease;
+      font-size: 14px;
+      transition: all 0.15s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .logout-btn .nav-icon {
+      color: #e53e3e;
+      font-weight: bold;
     }
     
     .logout-btn:hover { 
-      color: #ff6b6b;
-      background: rgba(255,107,107,0.1);
-      padding-left: 25px;
+      background: #fed7d7;
+      border-left-color: #e53e3e;
     }
 
     /* Responsive */
-    @media(max-inline-size:768px){
-      .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; inline-size: 280px; }
-      .sidebar.open { transform: translateX(0); }
-      .main-content { margin-left: 0; }
-      .content-header { padding: 20px; }
-      .content-body { padding: 20px; }
+    @media(max-width: 768px){
+      .sidebar { 
+        transform: translateX(-100%); 
+        transition: transform 0.3s ease; 
+        width: 260px; 
+        z-index: 1000;
+      }
+      .sidebar.open { 
+        transform: translateX(0); 
+      }
+      .main-content { 
+        margin-left: 0; 
+      }
+      .content-header { 
+        padding: 16px 20px; 
+      }
+      .content-body { 
+        padding: 20px; 
+      }
     }
 
-    /* Custom scrollbar for sidebar */
+    /* Custom scrollbar - Flat */
     .sidebar::-webkit-scrollbar {
-      inline-size: 6px;
+      width: 4px;
     }
     
     .sidebar::-webkit-scrollbar-track {
-      background: rgba(255,255,255,0.1);
+      background: #ffffff; /* White scrollbar track */
     }
     
     .sidebar::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.3);
-      border-radius: 3px;
+      background: #cbd5e0;
+      border-radius: 2px;
     }
     
     .sidebar::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.5);
+      background: #a0aec0;
+    }
+
+    /* Focus states for accessibility */
+    .nav-item:focus,
+    .nav-sub:focus,
+    .nav-section:focus {
+      outline: 2px solid #4299e1;
+      outline-offset: -2px;
+    }
+
+    /* Remove any remaining shadow effects */
+    * {
+      box-shadow: none !important;
     }
 
   </style>
   
-  <!-- ADD THIS LINE: Support for pushed styles from individual pages -->
   @stack('styles')
   
 </head>
@@ -323,110 +363,142 @@
   <div class="app-container">
     <!-- Sidebar -->
     <div class="sidebar">
-      <div class="sidebar-header">🚀 Revival Technologies</div>
+      <div class="sidebar-header">Revival Technologies</div>
       <nav>
         <!-- Dashboard -->
-        <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">📊 Dashboard</a>
-        <a href="{{ route('employee.dashboard') }}" class="nav-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">📊 My Dashboard</a>
+        <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="{{ route('employee.dashboard') }}" class="nav-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
+          <span class="nav-icon">📈</span> My Dashboard
+        </a>
         
 
         <!-- Assets -->
-        <div class="nav-section" onclick="toggleMenu(this)">📦 Assets</div>
+        <div class="nav-section" onclick="toggleMenu(this)">
+          <span class="nav-icon">💼</span> Assets Management
+        </div>
         <div class="submenu {{ request()->routeIs('assets.*','asset-requests.*','asset-approvals.*','pos-terminals.*','business-licenses.*') ? 'show' : '' }}">
-          <a href="{{ route('assets.index') }}" class="nav-sub {{ request()->routeIs('assets.*') ? 'active' : '' }}">📦 Internal Assets</a>
-          <a href="{{ route('pos-terminals.index') }}" class="nav-sub {{ request()->routeIs('pos-terminals.*') ? 'active' : '' }}">🖥️ POS Terminals</a>
-          <a href="{{ route('asset-requests.catalog') }}" class="nav-sub {{ request()->routeIs('asset-requests.catalog') ? 'active' : '' }}">🛒 Request Assets</a>
-          <a href="{{ route('asset-requests.index') }}" class="nav-sub {{ request()->routeIs('asset-requests.index') ? 'active' : '' }}">📝 My Requests</a>
-          <a href="{{ route('asset-approvals.index') }}" class="nav-sub {{ request()->routeIs('asset-approvals.*') ? 'active' : '' }}">⚖️ Asset Approvals</a>
-          <a href="{{ route('business-licenses.index') }}" class="nav-sub {{ request()->routeIs('business-licenses.*') ? 'active' : '' }}">📋 Business Licenses</a>
+          <a href="{{ route('assets.index') }}" class="nav-sub {{ request()->routeIs('assets.*') ? 'active' : '' }}">
+            <span class="nav-icon">🏢</span> Internal Assets
+          </a>
+          <a href="{{ route('pos-terminals.index') }}" class="nav-sub {{ request()->routeIs('pos-terminals.*') ? 'active' : '' }}">
+            <span class="nav-icon">💳</span> POS Terminals
+          </a>
+          <a href="{{ route('asset-requests.catalog') }}" class="nav-sub {{ request()->routeIs('asset-requests.catalog') ? 'active' : '' }}">
+            <span class="nav-icon">🛒</span> Request Assets
+          </a>
+          <a href="{{ route('asset-requests.index') }}" class="nav-sub {{ request()->routeIs('asset-requests.index') ? 'active' : '' }}">
+            <span class="nav-icon">📋</span> My Requests
+          </a>
+          <a href="{{ route('asset-approvals.index') }}" class="nav-sub {{ request()->routeIs('asset-approvals.*') ? 'active' : '' }}">
+            <span class="nav-icon">✅</span> Asset Approvals
+          </a>
+          <a href="{{ route('business-licenses.index') }}" class="nav-sub {{ request()->routeIs('business-licenses.*') ? 'active' : '' }}">
+            <span class="nav-icon">📄</span> Business Licenses
+          </a>
         </div>
 
-      <!-- Field Operations -->
-<div class="nav-section" onclick="toggleMenu(this)">🗺️ Field Operations</div>
-<div class="submenu {{ request()->routeIs('deployment.*','jobs.*','reports.technician-visits*') ? 'show' : '' }}">
-  
-  <!-- REPLACE the old deployment planning with the new hierarchical system -->
-  <a href="{{ route('deployment.hierarchical') }}"
-     class="nav-sub {{ request()->routeIs('deployment.hierarchical') ? 'active' : '' }}">
-    🗺️ Terminal Deployment
-  </a>
-  
-  <!-- Keep Job Assignment separate -->
-  <a href="{{ route('jobs.assignment') }}"
-     class="nav-sub {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
-    📋 Job Assignment
-  </a>
-
-  <!-- Optional: Add Technician Visits if you have this -->
-  <!-- 
-  <a href="{{ route('reports.technician-visits') }}"
-     class="nav-sub {{ request()->routeIs('reports.technician-visits*') ? 'active' : '' }}">
-    📊 Technician Reports
-  </a>
-  -->
-
-
-  <a href="{{ route('reports.technician-visits') }}"
-     class="nav-sub {{ request()->routeIs('reports.technician-visits*') ? 'active' : '' }}">
-    📄 Technician Reports
-  </a>
-  <a href="{{ route('tickets.index') }}"
-   class="nav-sub {{ request()->routeIs('tickets.*') ? 'active' : '' }}">🎫 Support Tickets</a>
-</div>
-
+        <!-- Field Operations -->
+        <div class="nav-section" onclick="toggleMenu(this)">
+          <span class="nav-icon">🔧</span> Field Operations
+        </div>
+        <div class="submenu {{ request()->routeIs('deployment.*','jobs.*','reports.technician-visits*','tickets.*') ? 'show' : '' }}">
+          <a href="{{ route('deployment.hierarchical') }}" class="nav-sub {{ request()->routeIs('deployment.hierarchical') ? 'active' : '' }}">
+            <span class="nav-icon">🚀</span> Terminal Deployment
+          </a>
+          <a href="{{ route('jobs.assignment') }}" class="nav-sub {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
+            <span class="nav-icon">📋</span> Job Assignment
+          </a>
+          <a href="{{ route('reports.technician-visits') }}" class="nav-sub {{ request()->routeIs('reports.technician-visits*') ? 'active' : '' }}">
+            <span class="nav-icon">📊</span> Technician Reports
+          </a>
+          <a href="{{ route('tickets.index') }}" class="nav-sub {{ request()->routeIs('tickets.*') ? 'active' : '' }}">
+            <span class="nav-icon">🎫</span> Support Tickets
+          </a>
+        </div>
 
         <!-- Client Management -->
-        <div class="nav-section" onclick="toggleMenu(this)">🏢 Client Management</div>
+        <div class="nav-section" onclick="toggleMenu(this)">
+          <span class="nav-icon">👥</span> Client Management
+        </div>
         <div class="submenu {{ request()->routeIs('clients.*') ? 'show' : '' }}">
-          <a href="{{ route('clients.index') }}" class="nav-sub {{ request()->routeIs('clients.*') ? 'active' : '' }}">Clients</a>
+          <a href="{{ route('clients.index') }}" class="nav-sub {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+            <span class="nav-icon">🏢</span> Clients
+          </a>
         </div>
 
         <!-- Employee Management -->
-        <div class="nav-section" onclick="toggleMenu(this)">👥 Employee Management</div>
+        <div class="nav-section" onclick="toggleMenu(this)">
+          <span class="nav-icon">👤</span> Employee Management
+        </div>
         <div class="submenu {{ request()->routeIs('employees.*','roles.*','technicians.*') ? 'show' : '' }}">
-          <a href="{{ route('employees.index') }}" class="nav-sub {{ request()->routeIs('employees.*') ? 'active' : '' }}">Employees</a>
-          <a href="{{ route('roles.index') }}" class="nav-sub {{ request()->routeIs('roles.*') ? 'active' : '' }}">Role Management</a>
+          <a href="{{ route('employees.index') }}" class="nav-sub {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+            <span class="nav-icon">👥</span> Employees
+          </a>
+          <a href="{{ route('roles.index') }}" class="nav-sub {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+            <span class="nav-icon">🔐</span> Role Management
+          </a>
         </div>
 
         <!-- Technician -->
-        <div class="nav-section" onclick="toggleMenu(this)">🔧 Technician</div>
+        <div class="nav-section" onclick="toggleMenu(this)">
+          <span class="nav-icon">🔧</span> Technician Portal
+        </div>
         <div class="submenu {{ request()->routeIs('technician.jobs','technician.reports','technician.schedule') ? 'show' : '' }}">
-          <a href="{{ route('technician.jobs') }}" class="nav-sub {{ request()->routeIs('technician.jobs') ? 'active' : '' }}">🔧 My Jobs</a>
-          <a href="{{ route('technician.reports') }}" class="nav-sub {{ request()->routeIs('technician.reports') ? 'active' : '' }}">📋 Service Reports</a>
-          <a href="{{ route('technician.schedule') }}" class="nav-sub {{ request()->routeIs('technician.schedule') ? 'active' : '' }}">📅 My Schedule</a>
+          <a href="{{ route('technician.jobs') }}" class="nav-sub {{ request()->routeIs('technician.jobs') ? 'active' : '' }}">
+            <span class="nav-icon">🔨</span> My Jobs
+          </a>
+          <a href="{{ route('technician.reports') }}" class="nav-sub {{ request()->routeIs('technician.reports') ? 'active' : '' }}">
+            <span class="nav-icon">📝</span> Service Reports
+          </a>
+          <a href="{{ route('technician.schedule') }}" class="nav-sub {{ request()->routeIs('technician.schedule') ? 'active' : '' }}">
+            <span class="nav-icon">📅</span> My Schedule
+          </a>
         </div>
 
-      
         <!-- Administration -->
-        <div class="nav-section" onclick="toggleMenu(this)">🏛️ Administration</div>
-        <div class="submenu {{ request()->routeIs('admin.*') ? 'show' : '' }}">
-          
-          <a href="{{ route('settings.index') }}" class="nav-sub {{ request()->routeIs('settings.*') ? 'active' : '' }}">⚙️ System Settings</a>
-          <a href="{{ route('tickets.index') }}" class="nav-sub {{ request()->routeIs('tickets.*') ? 'active' : '' }}">🎫 Support Tickets</a>
-          <a href="{{ route('documents.index') }}" class="nav-sub {{ request()->routeIs('documents.*') ? 'active' : '' }}">📁 Documents</a>
-        
+        <div class="nav-section" onclick="toggleMenu(this)">
+          <span class="nav-icon">⚙️</span> Administration
         </div>
-
-
-
+        <div class="submenu {{ request()->routeIs('admin.*','settings.*','documents.*') ? 'show' : '' }}">
+          <a href="{{ route('settings.index') }}" class="nav-sub {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+            <span class="nav-icon">🔧</span> System Settings
+          </a>
+          <a href="{{ route('documents.index') }}" class="nav-sub {{ request()->routeIs('documents.*') ? 'active' : '' }}">
+            <span class="nav-icon">📁</span> Documents
+          </a>
+        </div>
 
         <!-- Reports & Analytics -->
-        <div class="nav-section" onclick="toggleMenu(this)">📊 Reports & Analytics</div>
+        <div class="nav-section" onclick="toggleMenu(this)">
+          <span class="nav-icon">📊</span> Reports & Analytics
+        </div>
         <div class="submenu {{ request()->routeIs('reports.*') ? 'show' : '' }}">
-          <a href="{{ route('reports.index') }}" class="nav-sub {{ request()->routeIs('reports.index') ? 'active' : '' }}">📊 Reports Dashboard</a>
-          <a href="{{ route('reports.builder') }}" class="nav-sub {{ request()->routeIs('reports.builder') ? 'active' : '' }}">🔨 Report Builder</a>
+          <a href="{{ route('reports.index') }}" class="nav-sub {{ request()->routeIs('reports.index') ? 'active' : '' }}">
+            <span class="nav-icon">📈</span> Reports Dashboard
+          </a>
+          <a href="{{ route('reports.builder') }}" class="nav-sub {{ request()->routeIs('reports.builder') ? 'active' : '' }}">
+            <span class="nav-icon">🏗️</span> Report Builder
+          </a>
         </div>
 
         <!-- My Account -->
-<div class="nav-section" onclick="toggleMenu(this)">👤 My Account</div>
-<div class="submenu {{ request()->routeIs('employee.profile*') ? 'show' : '' }}">
-  <a href="{{ route('employee.profile') }}" class="nav-sub {{ request()->routeIs('employee.profile*') ? 'active' : '' }}">👤 My Profile</a>
-</div>
+        <div class="nav-section" onclick="toggleMenu(this)">
+          <span class="nav-icon">👤</span> My Account
+        </div>
+        <div class="submenu {{ request()->routeIs('employee.profile*') ? 'show' : '' }}">
+          <a href="{{ route('employee.profile') }}" class="nav-sub {{ request()->routeIs('employee.profile*') ? 'active' : '' }}">
+            <span class="nav-icon">👤</span> My Profile
+          </a>
+        </div>
 
         <!-- Logout -->
         <form method="POST" action="{{ route('logout') }}" class="logout-form">
           @csrf
-          <button type="submit" class="logout-btn">🚪 Logout</button>
+          <button type="submit" class="logout-btn">
+            <span class="nav-icon">🚪</span> Sign Out
+          </button>
         </form>
       </nav>
     </div>
@@ -436,7 +508,7 @@
       <div class="content-header">
         <h1 class="page-title">{{ $title ?? 'Dashboard' }}</h1>
         <div class="user-info">
-          Welcome, {{ auth()->user()->full_name }}
+          {{ auth()->user()->full_name }}
           <span class="user-badge">{{ auth()->user()->role->name ?? 'Employee' }}</span>
         </div>
       </div>
@@ -446,7 +518,6 @@
     </div>
   </div>
 
-  <!-- ADD THIS LINE: Support for pushed scripts from individual pages -->
   @stack('scripts')
 
   <script>
@@ -465,11 +536,9 @@
       
       // Toggle the clicked menu
       if (isCurrentlyOpen) {
-        // Close this menu
         submenu.classList.remove('show');
         header.classList.remove('open');
       } else {
-        // Open this menu
         submenu.classList.add('show');
         header.classList.add('open');
       }
