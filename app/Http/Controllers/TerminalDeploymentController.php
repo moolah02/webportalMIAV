@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
+
+
 
 class TerminalDeploymentController extends Controller
 {
@@ -165,7 +168,7 @@ class TerminalDeploymentController extends Controller
                 'client_id' => $terminal->client_id,
                 'pos_terminals' => [$terminal->id],
                 'scheduled_date' => $scheduledDate,
-                'service_type' => 'general_service',
+                'service_type' => $request->service_type ?? 'general_service',
                 'priority' => $request->priority ?? 'normal',
                 'status' => 'assigned',
                 'notes' => 'Quick assignment via drag & drop',
@@ -281,8 +284,9 @@ class TerminalDeploymentController extends Controller
 
                     $assignmentsCreated++;
                     
-                    // Update technician workload for next iteration
-                    $bestTechnician->increment('current_workload', $chunk->count());
+                    $workload = $workload ?? [];
+$workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk->count();
+
                 }
             }
 
@@ -352,81 +356,26 @@ class TerminalDeploymentController extends Controller
      * Bulk assign multiple selections
      */
     public function bulkAssign(Request $request)
-    {
-        $request->validate([
-            'technician_id' => 'required|exists:employees,id',
-            'terminal_ids' => 'required|array|min:1',
-            'terminal_ids.*' => 'exists:pos_terminals,id',
-            'assignment_type' => 'required|in:individual,team',
-            'scheduled_date' => 'required|date|after_or_equal:today',
-            'service_type' => 'required|string',
-            'priority' => 'required|in:low,normal,high,emergency'
-        ]);
+{
+    $request->validate([
+        'technician_id' => 'required|exists:employees,id',
+        'terminal_ids'  => 'required|array|min:1',
+        'terminal_ids.*'=> 'exists:pos_terminals,id',
+        'scheduled_date'=> 'required|date|after_or_equal:today',
+        'service_type' => 'required|string|in:routine_maintenance,emergency_repair,software_update,hardware_replacement,network_configuration,installation,decommission',
+        'priority'      => 'required|in:low,normal,high,emergency',
+        'project_id'    => 'nullable|exists:projects,id',
+        'notes'         => 'nullable|string|max:1000',
+    ]);
 
-        DB::beginTransaction();
-        try {
-            $assignmentsCreated = [];
-            
-            if ($request->assignment_type === 'team') {
-                // Single assignment for all terminals
-                $firstTerminal = PosTerminal::find($request->terminal_ids[0]);
-                
-                $assignment = JobAssignment::create([
-                    'assignment_id' => JobAssignment::generateAssignmentId(),
-                    'technician_id' => $request->technician_id,
-                    'region_id' => $firstTerminal->region_id,
-                    'client_id' => $firstTerminal->client_id,
-                    'pos_terminals' => $request->terminal_ids,
-                    'scheduled_date' => $request->scheduled_date,
-                    'service_type' => $request->service_type,
-                    'priority' => $request->priority,
-                    'status' => 'assigned',
-                    'notes' => 'Bulk assignment - team approach',
-                    'created_by' => auth()->id()
-                ]);
-                
-                $assignmentsCreated[] = $assignment;
-                
-            } else {
-                // Individual assignments for each terminal
-                foreach ($request->terminal_ids as $terminalId) {
-                    $terminal = PosTerminal::find($terminalId);
-                    
-                    $assignment = JobAssignment::create([
-                        'assignment_id' => JobAssignment::generateAssignmentId(),
-                        'technician_id' => $request->technician_id,
-                        'region_id' => $terminal->region_id,
-                        'client_id' => $terminal->client_id,
-                        'pos_terminals' => [$terminalId],
-                        'scheduled_date' => $request->scheduled_date,
-                        'service_type' => $request->service_type,
-                        'priority' => $request->priority,
-                        'status' => 'assigned',
-                        'notes' => 'Bulk assignment - individual approach',
-                        'created_by' => auth()->id()
-                    ]);
-                    
-                    $assignmentsCreated[] = $assignment;
-                }
-            }
+    // Just forward to createAssignment with normalized keys
+    $request->merge([
+        'selected_terminals' => $request->terminal_ids,
+    ]);
 
-            DB::commit();
+    return $this->createAssignment($request);
+}
 
-            return response()->json([
-                'success' => true,
-                'message' => count($assignmentsCreated) . ' assignment(s) created successfully!',
-                'assignments' => $assignmentsCreated->map->assignment_id
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Bulk assign error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Bulk assignment failed: ' . $e->getMessage()
-            ], 500);
-        }
-    }
 
 
     private function generateNodeId($type, $name)
@@ -748,7 +697,7 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
         // Initialize hierarchy levels
         if (!isset($hierarchy[$province])) {
             $hierarchy[$province] = [
-                'id' => 'province-' . \Str::slug($province),
+                'id' => 'province-' .  Str::slug($province),
                 'name' => strtoupper($province),
                 'type' => 'province',
                 'terminal_count' => 0,
@@ -1040,90 +989,79 @@ private function getOrCreateRegionId($terminal)
     
     return $region->id;
 }
+// app/Http/Controllers/TerminalDeploymentController.php
+
 public function createAssignment(Request $request)
-{ $request->validate([
-        'technician_id' => 'required|exists:employees,id',
-        'project_id' => 'nullable|exists:projects,id',
+{
+    $request->validate([
+        'technician_id'      => 'required|exists:employees,id',
+        'project_id'         => 'nullable|exists:projects,id',
         'selected_terminals' => 'required|array|min:1',
         'selected_terminals.*' => 'integer|exists:pos_terminals,id',
-        'scheduled_date' => 'required|date|after_or_equal:today',
-        'service_type' => 'required|string|in:general,install,maintain,repair,upgrade', // Updated values
-        'priority' => 'required|in:low,normal,high,emergency',
-        'assignment_type' => 'required|in:individual,team',
-        'notes' => 'nullable|string|max:1000'
+        'scheduled_date'     => 'required|date|after_or_equal:today',
+        'service_type' => 'required|string|in:routine_maintenance,emergency_repair,software_update,hardware_replacement,network_configuration,installation,decommission',
+        'priority'           => 'required|in:low,normal,high,emergency',
+        'notes'              => 'nullable|string|max:1000',
     ]);
 
     DB::beginTransaction();
+
     try {
-        // Verify technician is field technician
-        $technician = Employee::active()
-            ->fieldTechnicians()
-            ->findOrFail($request->technician_id);
-        
-        // Get first terminal for client context
-        $firstTerminal = PosTerminal::with('client')->findOrFail($request->selected_terminals[0]);
-        
-        if ($request->assignment_type === 'individual') {
-            // Create individual assignments
-            $assignments = [];
-            foreach ($request->selected_terminals as $terminalId) {
-                $terminal = PosTerminal::with('client')->find($terminalId);
-                
-                $assignment = JobAssignment::create([
-                    'assignment_id' => JobAssignment::generateAssignmentId(),
-                    'technician_id' => $request->technician_id,
-                    'region_id' => $terminal->region_id ?: null, // Simple: just use what exists or null
-                    'client_id' => $terminal->client_id,
-                    'project_id' => $request->project_id,
-                    'pos_terminals' => [$terminalId],
-                    'scheduled_date' => $request->scheduled_date,
-                    'service_type' => $request->service_type,
-                    'priority' => $request->priority,
-                    'status' => 'assigned',
-                    'notes' => ($request->notes ?: '') . ' (Individual assignment)',
-                    'created_by' => auth()->id()
-                ]);
-                
-                $assignments[] = $assignment;
-            }
-        } else {
-            // Create single team assignment
-            $assignment = JobAssignment::create([
-                'assignment_id' => JobAssignment::generateAssignmentId(),
-                'technician_id' => $request->technician_id,
-                'region_id' => $firstTerminal->region_id ?: null, // Simple: just use what exists or null
-                'client_id' => $firstTerminal->client_id,
-                'project_id' => $request->project_id,
-                'pos_terminals' => $request->selected_terminals,
-                'scheduled_date' => $request->scheduled_date,
-                'service_type' => $request->service_type,
-                'priority' => $request->priority,
-                'status' => 'assigned',
-                'notes' => ($request->notes ?: '') . ' (Team assignment)',
-                'created_by' => auth()->id()
-            ]);
-            
-            $assignments = [$assignment];
+        // ensure unique ids
+        $terminalIds = array_values(array_unique($request->selected_terminals));
+
+        // optional: block terminals already assigned on active jobs
+        $alreadyAssigned = JobAssignment::where('status', '!=', 'cancelled')
+            ->get()
+            ->pluck('pos_terminals')
+            ->flatten()
+            ->intersect($terminalIds)
+            ->values();
+
+        if ($alreadyAssigned->isNotEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Some terminals are already assigned.',
+                'conflicts' => $alreadyAssigned->all(),
+            ], 422);
         }
+
+        // use the first terminal for region/client context
+        $first = PosTerminal::with('client')->findOrFail($terminalIds[0]);
+
+        $assignment = JobAssignment::create([
+            'assignment_id'  => JobAssignment::generateAssignmentId(),
+            'technician_id'  => (int)$request->technician_id,
+            'region_id'      => $first->region_id ?: null,
+            'client_id'      => $first->client_id,
+            'project_id'     => $request->project_id,
+            'pos_terminals'  => $terminalIds, // <- batch of terminals
+            'scheduled_date' => $request->scheduled_date,
+            'service_type'   => $request->service_type,
+            'priority'       => $request->priority,
+            'status'         => 'assigned',
+            'notes'          => trim(($request->notes ?? 'Batch assignment')),
+            'created_by'     => auth()->id(),
+        ]);
 
         DB::commit();
 
         return response()->json([
-            'success' => true,
-            'message' => count($assignments) . ' assignment(s) created successfully!',
-            'assignments' => collect($assignments)->map->assignment_id
+            'success'      => true,
+            'message'      => 'Assignment created.',
+            'assignmentId' => $assignment->assignment_id,
         ]);
 
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         DB::rollBack();
-        Log::error('Error creating assignment: ' . $e->getMessage());
-
+        \Log::error('Error creating batch assignment', ['e' => $e, 'req' => $request->all()]);
         return response()->json([
             'success' => false,
-            'message' => $e->getMessage()
+            'message' => 'Error creating assignment: '.$e->getMessage(),
         ], 500);
     }
 }
+
 /**
  * Get list of assigned terminal IDs
  */
@@ -1155,4 +1093,5 @@ public function getAssignedTerminals()
         ], 500);
     }
 }
+
 }

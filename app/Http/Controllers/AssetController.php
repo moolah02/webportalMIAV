@@ -790,7 +790,7 @@ class AssetController extends Controller
         ]);
     }
 
-    // NEW: Assignment management methods
+    // Assignment management methods
     public function assignAsset(Request $request)
     {
         $request->validate([
@@ -842,7 +842,7 @@ class AssetController extends Controller
         }
     }
 
-    // NEW: Get available employees for AJAX
+    // Get available employees for AJAX
     public function getAvailableEmployees(Request $request)
     {
         $employees = Employee::where('status', 'active')
@@ -872,166 +872,166 @@ class AssetController extends Controller
         }));
     }
 
-   
     // Return asset method
-public function returnAsset(Request $request, AssetAssignment $assignment)
-{
-    $request->validate([
-        'return_date' => 'required|date',
-        'condition_when_returned' => 'required|in:new,good,fair,poor',
-        'return_notes' => 'nullable|string|max:1000',
-        'update_asset_status' => 'required|in:available,maintenance,damaged,retired',
-    ]);
-
-    if ($assignment->status !== 'assigned') {
-        return response()->json([
-            'success' => false,
-            'message' => 'This asset cannot be returned.'
-        ], 422);
-    }
-
-    try {
-        DB::beginTransaction();
-
-        $assignment->update([
-            'status' => 'returned',
-            'actual_return_date' => $request->return_date,
-            'condition_when_returned' => $request->condition_when_returned,
-            'return_notes' => $request->return_notes,
-            'returned_to' => auth()->id() ?? 1,
+    public function returnAsset(Request $request, AssetAssignment $assignment)
+    {
+        $request->validate([
+            'return_date' => 'required|date',
+            'condition_when_returned' => 'required|in:new,good,fair,poor',
+            'return_notes' => 'nullable|string|max:1000',
+            'update_asset_status' => 'required|in:available,maintenance,damaged,retired',
         ]);
 
-        // Update asset assigned quantity
-        $assignment->asset->decrement('assigned_quantity', $assignment->quantity_assigned);
-
-        // Update asset status if needed
-        if ($request->update_asset_status !== 'available') {
-            $assignment->asset->update(['status' => 'asset-' . $request->update_asset_status]);
+        if ($assignment->status !== 'assigned') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This asset cannot be returned.'
+            ], 422);
         }
 
-        DB::commit();
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Asset returned successfully!'
-        ]);
+            $assignment->update([
+                'status' => 'returned',
+                'actual_return_date' => $request->return_date,
+                'condition_when_returned' => $request->condition_when_returned,
+                'return_notes' => $request->return_notes,
+                'returned_to' => auth()->id() ?? 1,
+            ]);
 
-    } catch (\Exception $e) {
-        DB::rollback();
-        \Log::error('Asset return failed: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to return asset: ' . $e->getMessage()
-        ], 500);
-    }
-}
+            // Update asset assigned quantity
+            $assignment->asset->decrement('assigned_quantity', $assignment->quantity_assigned);
 
-// Add these methods to your AssetController.php
+            // Update asset status if needed
+            if ($request->update_asset_status !== 'available') {
+                $assignment->asset->update(['status' => 'asset-' . $request->update_asset_status]);
+            }
 
-/**
- * Get assignment data for AJAX calls (for Details button)
- */
-public function getAssignmentData(AssetAssignment $assignment)
-{
-    try {
-        $assignment->load([
-            'asset:id,name,category,brand,model,sku',
-            'employee:id,first_name,last_name,employee_number,department_id',
-            'employee.department:id,name',
-            'assignedBy:id,first_name,last_name'
-        ]);
-        
-        // Add computed properties
-        $assignment->days_assigned = $assignment->assignment_date ? 
-            $assignment->assignment_date->diffInDays(now()) : 0;
-        
-        $assignment->is_overdue = $assignment->expected_return_date && 
-            $assignment->expected_return_date->isPast() && 
-            $assignment->status === 'assigned';
-        
-        if ($assignment->is_overdue) {
-            $assignment->days_overdue = $assignment->expected_return_date->diffInDays(now());
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Asset returned successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Asset return failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to return asset: ' . $e->getMessage()
+            ], 500);
         }
-        
-        return response()->json([
-            'success' => true,
-            'assignment' => $assignment
-        ]);
-        
-    } catch (\Exception $e) {
-        \Log::error('Error loading assignment data: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to load assignment details'
-        ], 500);
-    }
-}
-
-/**
- * Transfer asset (for Transfer button)
- */
-public function transferAsset(Request $request, AssetAssignment $assignment)
-{
-    $request->validate([
-        'new_employee_id' => 'required|exists:employees,id',
-        'transfer_date' => 'required|date',
-        'transfer_reason' => 'required|string',
-        'transfer_notes' => 'nullable|string|max:1000',
-    ]);
-
-    if ($assignment->status !== 'assigned') {
-        return response()->json([
-            'success' => false,
-            'message' => 'This asset cannot be transferred.'
-        ], 422);
     }
 
-    if ($assignment->employee_id == $request->new_employee_id) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Cannot transfer to the same employee.'
-        ], 422);
+    /**
+     * Get assignment data for AJAX calls (for Details button)
+     */
+    public function getAssignmentData(AssetAssignment $assignment)
+    {
+        try {
+            $assignment->load([
+                'asset:id,name,category,brand,model,sku',
+                'employee:id,first_name,last_name,employee_number,department_id',
+                'employee.department:id,name',
+                'assignedBy:id,first_name,last_name'
+            ]);
+            
+            // Add computed properties
+            $assignment->days_assigned = $assignment->assignment_date ? 
+                $assignment->assignment_date->diffInDays(now()) : 0;
+            
+            $assignment->is_overdue = $assignment->expected_return_date && 
+                $assignment->expected_return_date->isPast() && 
+                $assignment->status === 'assigned';
+            
+            if ($assignment->is_overdue) {
+                $assignment->days_overdue = $assignment->expected_return_date->diffInDays(now());
+            }
+            
+            return response()->json([
+                'success' => true,
+                'assignment' => $assignment,
+                'days_assigned' => $assignment->days_assigned,
+                'is_overdue' => $assignment->is_overdue,
+                'days_overdue' => $assignment->days_overdue ?? null
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error loading assignment data: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load assignment details'
+            ], 500);
+        }
     }
 
-    try {
-        $newEmployee = Employee::findOrFail($request->new_employee_id);
-
-        DB::beginTransaction();
-
-        // Mark current assignment as transferred
-        $assignment->update([
-            'status' => 'transferred',
-            'actual_return_date' => $request->transfer_date,
-            'return_notes' => 'Transferred to ' . $newEmployee->first_name . ' ' . $newEmployee->last_name . '. ' . ($request->transfer_notes ?? ''),
-            'returned_to' => auth()->id() ?? 1,
+    /**
+     * Transfer asset (for Transfer button)
+     */
+    public function transferAsset(Request $request, AssetAssignment $assignment)
+    {
+        $request->validate([
+            'new_employee_id' => 'required|exists:employees,id',
+            'transfer_date' => 'required|date',
+            'transfer_reason' => 'required|string',
+            'transfer_notes' => 'nullable|string|max:1000',
         ]);
 
-        // Create new assignment for the new employee
-        AssetAssignment::create([
-            'asset_id' => $assignment->asset_id,
-            'employee_id' => $request->new_employee_id,
-            'quantity_assigned' => $assignment->quantity_assigned,
-            'assignment_date' => $request->transfer_date,
-            'condition_when_assigned' => $assignment->condition_when_assigned,
-            'assigned_by' => auth()->id() ?? 1,
-            'assignment_notes' => 'Transferred from ' . $assignment->employee->first_name . ' ' . $assignment->employee->last_name . '. ' . ($request->transfer_notes ?? ''),
-            'status' => 'assigned',
-        ]);
+        if ($assignment->status !== 'assigned') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This asset cannot be transferred.'
+            ], 422);
+        }
 
-        DB::commit();
+        if ($assignment->employee_id == $request->new_employee_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot transfer to the same employee.'
+            ], 422);
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Asset transferred successfully!'
-        ]);
+        try {
+            $newEmployee = Employee::findOrFail($request->new_employee_id);
 
-    } catch (\Exception $e) {
-        DB::rollback();
-        \Log::error('Asset transfer failed: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to transfer asset: ' . $e->getMessage()
-        ], 500);
+            DB::beginTransaction();
+
+            // Mark current assignment as transferred
+            $assignment->update([
+                'status' => 'transferred',
+                'actual_return_date' => $request->transfer_date,
+                'return_notes' => 'Transferred to ' . $newEmployee->first_name . ' ' . $newEmployee->last_name . '. ' . ($request->transfer_notes ?? ''),
+                'returned_to' => auth()->id() ?? 1,
+            ]);
+
+            // Create new assignment for the new employee
+            AssetAssignment::create([
+                'asset_id' => $assignment->asset_id,
+                'employee_id' => $request->new_employee_id,
+                'quantity_assigned' => $assignment->quantity_assigned,
+                'assignment_date' => $request->transfer_date,
+                'condition_when_assigned' => $assignment->condition_when_assigned,
+                'assigned_by' => auth()->id() ?? 1,
+                'assignment_notes' => 'Transferred from ' . $assignment->employee->first_name . ' ' . $assignment->employee->last_name . '. ' . ($request->transfer_notes ?? ''),
+                'status' => 'assigned',
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Asset transferred successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Asset transfer failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to transfer asset: ' . $e->getMessage()
+            ], 500);
+        }
     }
-}
 }

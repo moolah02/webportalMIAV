@@ -55,21 +55,7 @@ class DashboardController extends Controller
         return view('technician.dashboard', compact('stats'));
     }
 
-    public function employee()
-    {
-        $employee = auth()->user();
-        
-        // Employee-specific stats from real data
-        $stats = [
-            'my_requests' => AssetRequest::where('employee_id', $employee->id)->count(),
-            'pending_approvals' => AssetRequest::where('employee_id', $employee->id)
-                ->where('status', 'pending')
-                ->count(),
-            'recent_activity' => $this->getEmployeeRecentActivity($employee->id),
-        ];
-        
-        return view('employee.dashboard', compact('stats'));
-    }
+    
 
     private function getDashboardStats()
     {
@@ -659,4 +645,55 @@ class DashboardController extends Controller
         
         return $activities->sortByDesc('date')->take(5);
     }
+    public function employee()
+{
+    $me = auth()->user();
+
+    // --- Job assignment metrics for this employee ---
+    $jobStats = [
+        'assigned'     => JobAssignment::where('technician_id', $me->id)->where('status', 'assigned')->count(),
+        'in_progress'  => JobAssignment::where('technician_id', $me->id)->where('status', 'in_progress')->count(),
+        'completed'    => JobAssignment::where('technician_id', $me->id)->where('status', 'completed')->count(),
+        'today'        => JobAssignment::where('technician_id', $me->id)
+                                ->whereDate('scheduled_date', today())
+                                ->whereIn('status', ['assigned','in_progress'])
+                                ->count(),
+    ];
+
+    // Upcoming assignments (next few), lightweight eager-loads
+    $upcomingAssignments = JobAssignment::with([
+            'client:id,company_name',
+            'project:id,project_name',
+            'region:id,name',
+        ])
+        ->where('technician_id', $me->id)
+        ->whereIn('status', ['assigned','in_progress'])
+        ->orderBy('scheduled_date', 'asc')
+        ->limit(6)
+        ->get()
+        ->map(function ($a) {
+            // Handy display helpers without touching the model:
+            $a->terminal_count = is_array($a->pos_terminals) ? count($a->pos_terminals) : 0;
+            $a->list_title = implode(' • ', array_filter([
+                optional($a->project)->project_name,
+                optional($a->client)->company_name,
+                optional($a->region)->name,
+            ]));
+            return $a;
+        });
+
+    // You already had these — keeping them intact
+    $stats = [
+        'my_requests'       => AssetRequest::where('employee_id', $me->id)->count(),
+        'pending_approvals' => AssetRequest::where('employee_id', $me->id)->where('status', 'pending')->count(),
+        'recent_activity'   => $this->getEmployeeRecentActivity($me->id),
+        'jobs'              => $jobStats, // <= add the job block into your existing stats bag
+    ];
+
+    return view('employee.dashboard', [
+        'stats' => $stats,
+        'upcomingAssignments' => $upcomingAssignments,
+        'me' => $me,
+    ]);
+}
 }

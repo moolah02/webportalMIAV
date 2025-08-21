@@ -45,22 +45,61 @@
       box-shadow: none; /* Completely remove shadows */
     }
     
+    /* Updated Sidebar Header with Logo Support - Vertical Layout */
     .sidebar-header { 
-      padding: 20px 16px; 
-      font-size: 18px; 
-      font-weight: 700; 
+      padding: 24px 16px; 
       background: #ffffff;
-      border-bottom: 1px solid #ffffff;
+      border-bottom: 1px solid #e2e8f0;
       color: #1a202c;
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column; /* Stack logo and text vertically */
+      align-items: center; /* Center horizontally */
+      gap: 12px;
+      text-align: center;
     }
 
+    /* Remove the emoji pseudo-element */
     .sidebar-header::before {
-      content: '🏢';
-      font-size: 20px;
+      display: none;
     }
+
+    /* Logo Styling - Larger Size */
+    .sidebar-logo {
+      height: 64px; /* Increased from 32px to 64px */
+      width: auto;
+      max-width: 120px; /* Increased max width */
+      object-fit: contain;
+      flex-shrink: 0; /* Prevent logo from shrinking */
+      border-radius: 8px; /* Optional: rounded corners */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
+    }
+
+    /* Company Name Styling - Below Logo */
+    .company-name {
+      font-size: 16px; /* Slightly smaller since logo is now prominent */
+      font-weight: 700; 
+      color: #1a202c;
+      white-space: nowrap; /* Prevent text wrapping */
+      margin-top: 4px;
+      letter-spacing: 0.5px; /* Better spacing */
+    }
+
+    /* Alternative: Logo-only header (uncomment if you want logo without text) */
+    /*
+    .sidebar-header {
+      justify-content: center;
+      padding: 20px 16px;
+    }
+    
+    .sidebar-logo {
+      height: 40px;
+      max-width: 180px;
+    }
+    
+    .company-name {
+      display: none;
+    }
+    */
 
     /* Navigation */
     .nav-item { 
@@ -321,6 +360,21 @@
       .content-body { 
         padding: 20px; 
       }
+      
+      /* Responsive logo adjustments */
+      .sidebar-header {
+        padding: 20px 16px; /* Reduce padding on mobile */
+        gap: 8px;
+      }
+      
+      .sidebar-logo {
+        height: 48px; /* Smaller on mobile but still prominent */
+        max-width: 100px;
+      }
+      
+      .company-name {
+        font-size: 14px;
+      }
     }
 
     /* Custom scrollbar - Flat */
@@ -363,14 +417,19 @@
   <div class="app-container">
     <!-- Sidebar -->
     <div class="sidebar">
-      <div class="sidebar-header">Revival Technologies</div>
+      <!-- Updated Header with Logo -->
+      <div class="sidebar-header">
+        <img src="{{ asset('logo/revival logo.jpeg') }}" alt="Revival Technologies Logo" class="sidebar-logo">
+        <span class="company-name">Revival Technologies</span>
+      </div>
+      
       <nav>
         <!-- Dashboard -->
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-          <span class="nav-icon">📊</span> Dashboard
+          <span class="nav-icon">📊</span> Company Dashboard
         </a>
         <a href="{{ route('employee.dashboard') }}" class="nav-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
-          <span class="nav-icon">📈</span> My Dashboard
+          <span class="nav-icon">📈</span> Employee Dashboard
         </a>
         
 
@@ -407,9 +466,10 @@
           <a href="{{ route('deployment.hierarchical') }}" class="nav-sub {{ request()->routeIs('deployment.hierarchical') ? 'active' : '' }}">
             <span class="nav-icon">🚀</span> Terminal Deployment
           </a>
-          <a href="{{ route('jobs.assignment') }}" class="nav-sub {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
-            <span class="nav-icon">📋</span> Job Assignment
+          <a href="{{ route('jobs.index') }}" class="nav-sub {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
+            <span class="nav-icon">📋</span> All Job Assignment
           </a>
+          
           <a href="{{ route('reports.technician-visits') }}" class="nav-sub {{ request()->routeIs('reports.technician-visits*') ? 'active' : '' }}">
             <span class="nav-icon">📊</span> Technician Reports
           </a>
@@ -446,8 +506,8 @@
           <span class="nav-icon">🔧</span> Technician Portal
         </div>
         <div class="submenu {{ request()->routeIs('technician.jobs','technician.reports','technician.schedule') ? 'show' : '' }}">
-          <a href="{{ route('technician.jobs') }}" class="nav-sub {{ request()->routeIs('technician.jobs') ? 'active' : '' }}">
-            <span class="nav-icon">🔨</span> My Jobs
+          <a href="{{ route('jobs.mine') }}" class="nav-sub {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
+            <span class="nav-icon">📋</span> MyJob Assignment
           </a>
           <a href="{{ route('technician.reports') }}" class="nav-sub {{ request()->routeIs('technician.reports') ? 'active' : '' }}">
             <span class="nav-icon">📝</span> Service Reports

@@ -5,7 +5,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\DB;
 class JobAssignment extends Model
 {
     use HasFactory;
@@ -102,24 +102,28 @@ class JobAssignment extends Model
         return $query;
     }
 
-public static function generateAssignmentId()
+
+
+public static function generateAssignmentId(): string
 {
     $prefix = 'ASN';
-    $date = date('Ymd');
-    
-    $lastAssignment = self::where('assignment_id', 'like', "{$prefix}-{$date}-%")
-        ->orderBy('assignment_id', 'desc')
-        ->first();
-    
-    if ($lastAssignment) {
-        $lastNumber = intval(substr($lastAssignment->assignment_id, -3));
-        $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
-    } else {
-        $newNumber = '001';
-    }
-    
-    return "{$prefix}-{$date}-{$newNumber}";
+    $date   = now()->format('Ymd');
+
+    // Lock rows for "today" so two requests can't generate the same suffix.
+    // IMPORTANT: call this method INSIDE an open DB transaction.
+    $maxSeq = static::where('assignment_id', 'like', "{$prefix}-{$date}-%")
+        ->lockForUpdate()
+        ->max(
+            DB::raw(
+                "CAST(SUBSTRING_INDEX(assignment_id, '-', -1) AS UNSIGNED)"
+            )
+        );
+
+    $next = (int) $maxSeq + 1;
+
+    return sprintf('%s-%s-%03d', $prefix, $date, $next);
 }
+
 
 
 public function getTerminalModels()
@@ -167,10 +171,31 @@ public function getIsOverdueAttribute()
     return $this->scheduled_date < now()->toDateString() && 
            in_array($this->status, ['assigned', 'in_progress']);
 }
+public function getListTitleAttribute()
+{
+    $parts = [];
 
+    if ($this->project)   { $parts[] = $this->project->project_name; }
+    if ($this->client)    { $parts[] = $this->client->company_name; }
+    if ($this->region)    { $parts[] = $this->region->name; }
+
+    // e.g. "Johnson PLC Servicing • XYZ Bank • Harare Region"
+    return implode(' • ', array_filter($parts));
+}
+// app/Models/JobAssignment.php
+public function getTerminalMerchantPreviewAttribute()
+{
+    $names = $this->getTerminalModels()
+        ->pluck('merchant_name')
+        ->filter()
+        ->take(3);
+
+    return $names->implode(', ');
+}
 
 public function getTerminalCountAttribute()
 {
     return is_array($this->pos_terminals) ? count($this->pos_terminals) : 0;
 }
+
 }

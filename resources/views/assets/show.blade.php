@@ -340,9 +340,7 @@
                         </button>
                     @endif
                     
-                    <button onclick="updateStock()" class="btn" style="background: #17a2b8; color: white; border-color: #17a2b8;">
-                        📊 Update Stock
-                    </button>
+                    
                 </div>
             </div>
 
@@ -474,13 +472,7 @@ function requestAsset(assetId) {
     }
 }
 
-function updateStock() {
-    const newStock = prompt('Enter new stock quantity:', '{{ $asset->stock_quantity }}');
-    if (newStock !== null && !isNaN(newStock)) {
-        // Implement stock update functionality
-        alert('Stock update functionality - to be implemented');
-    }
-}
+
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {

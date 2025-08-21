@@ -1238,7 +1238,7 @@ function updateButtonStates(hasClients, hasProjects, hasHierarchy, hasTechnician
     // Load Hierarchy Button
     const loadBtn = document.getElementById('loadHierarchyBtn');
     loadBtn.disabled = !(hasClients && hasProjects);
-    loadBtn.textContent = hasClients && hasProjects ? '🗺️ Load Terminal Hierarchy' : '🔒 Select Clients & Projects First';
+    loadBtn.textContent = hasClients && hasProjects ? '🗺️ Load Client Terminals' : '🔒 Select Clients & Projects First';
     
     // Assignment Buttons
     document.getElementById('assignSelectedBtn').disabled = !(hasSelections && hasTechnicians);

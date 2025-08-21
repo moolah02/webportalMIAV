@@ -563,4 +563,124 @@ public function generateReport($assignmentId)
         
         return response()->stream($callback, 200, $headers);
     }
+ /**
+     * ===== LIST ALL (manager/dispatch) =====
+     * Paginated table for all assignments with filters
+     */
+    public function listAll(Request $request)
+    {
+        $assignments = JobAssignment::with(['technician','client','project','region'])
+            ->when($request->filled('status'), fn($q) => $q->where('status', $request->status))
+            ->when($request->filled('priority'), fn($q) => $q->where('priority', $request->priority))
+            ->when($request->filled('technician_id'), fn($q) => $q->where('technician_id', $request->technician_id))
+            ->when($request->filled('client_id'), fn($q) => $q->where('client_id', $request->client_id))
+            ->when($request->filled('date_from'), fn($q) => $q->whereDate('scheduled_date', '>=', $request->date_from))
+            ->when($request->filled('date_to'), fn($q) => $q->whereDate('scheduled_date', '<=', $request->date_to))
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $q->where(function ($sub) use ($request) {
+                    $sub->where('assignment_id', 'like', '%'.$request->q.'%')
+                        ->orWhere('notes', 'like', '%'.$request->q.'%');
+                });
+            })
+            ->orderByDesc('scheduled_date')
+            ->paginate(25)
+            ->withQueryString();
+
+        
+        // dropdowns
+        $technicians = Employee::active()->fieldTechnicians()
+            ->orderBy('first_name')->get(['id','first_name','last_name']);
+        $clients = Client::orderBy('company_name')->get(['id','company_name']);
+
+        return view('jobs.index', [
+            'scope'       => 'all',
+            'assignments' => $assignments,
+            'technicians' => $technicians,
+            'clients'     => $clients,
+            'filters'     => $request->only(['status','priority','technician_id','client_id','date_from','date_to','q']),
+        ]);
+    }
+
+    /**
+     * ===== LIST MINE (technician) =====
+     * Paginated table of assignments for the logged-in tech
+     */
+    public function mine(Request $request)
+    {
+        $me = auth()->user(); // if your auth model is Employee, this is the employee id
+
+        $assignments = JobAssignment::with(['client','project','region'])
+            ->where('technician_id', (int)$me->id)
+            ->when($request->filled('status'), fn($q) => $q->where('status', $request->status))
+            ->when($request->filled('priority'), fn($q) => $q->where('priority', $request->priority))
+            ->when($request->filled('date_from'), fn($q) => $q->whereDate('scheduled_date', '>=', $request->date_from))
+            ->when($request->filled('date_to'), fn($q) => $q->whereDate('scheduled_date', '<=', $request->date_to))
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $q->where(function ($sub) use ($request) {
+                    $sub->where('assignment_id', 'like', '%'.$request->q.'%')
+                        ->orWhere('notes', 'like', '%'.$request->q.'%');
+                });
+            })
+            ->orderByDesc('scheduled_date')
+            ->paginate(25)
+            ->withQueryString();
+
+        return view('jobs.index', [
+            'scope'       => 'mine',
+            'assignments' => $assignments,
+            'technicians' => collect(), // not used on “mine”
+            'clients'     => collect(), // not used on “mine”
+            'filters'     => $request->only(['status','priority','date_from','date_to','q']),
+        ]);
+    }
+
+    /**
+     * Helper to decorate each assignment with terminal merchant names
+     */
+    private function hydrateTerminalSummaries($paginatorOrCollection)
+    {
+        foreach ($paginatorOrCollection as $a) {
+            $rows = $a->getTerminalModels()->map(function ($t) {
+                return [
+                    'id'            => $t->id,
+                    'terminal_id'   => $t->terminal_id,
+                    'merchant_name' => $t->merchant_name,
+                    'city'          => $t->city,
+                    'province'      => $t->province,
+                    'status'        => $t->current_status ?? $t->status,
+                ];
+            });
+
+            // for list view chips + tooltip
+            $a->terminal_rows          = $rows;
+            $a->terminal_preview       = $rows->pluck('merchant_name')->take(3)->toArray();
+            $a->terminal_preview_more  = max(0, $rows->count() - 3);
+            $a->terminal_count         = $rows->count();
+        }
+    }
+
+
+public function showPage($assignmentId)
+{
+    $assignment = JobAssignment::with([
+        'technician:id,first_name,last_name,phone,role_id',
+        'technician.role:id,name',
+        'client:id,company_name',
+        'project:id,project_name',
+        'region:id,name',
+    ])->findOrFail($assignmentId);
+
+    // Ensure we have an array of terminal IDs
+    $terminalIds = is_array($assignment->pos_terminals)
+        ? $assignment->pos_terminals
+        : (empty($assignment->pos_terminals) ? [] : (array) $assignment->pos_terminals);
+
+    $terminals = PosTerminal::whereIn('id', $terminalIds)
+        ->orderBy('merchant_name')
+        ->get();
+
+    return view('jobs.show', compact('assignment', 'terminals'));
+}
+
+
 }

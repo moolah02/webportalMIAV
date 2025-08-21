@@ -3,7 +3,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DeploymentTemplate;
+//use App\Models\DeploymentTemplate;
 use App\Models\PosTerminal;
 use App\Models\Region;
 use App\Models\Employee;
@@ -21,65 +21,68 @@ class DeploymentPlanningController extends Controller
      * Display deployment planning page
      */
    public function index()
-    {
-        // Get regions with terminal counts
-        $regions = Region::where('is_active', true)
-            ->withCount(['posTerminals as active_terminals_count' => function($query) {
-                $query->where('current_status', 'active');
-            }])
-            ->withCount(['posTerminals as total_terminals_count'])
-            ->orderBy('name')
-            ->get();
+{
+    // Get regions with terminal counts
+    $regions = Region::where('is_active', true)
+        ->withCount(['posTerminals as active_terminals_count' => function($q) {
+            $q->where('current_status', 'active');
+        }])
+        ->withCount(['posTerminals as total_terminals_count'])
+        ->orderBy('name')
+        ->get();
 
-        // Get deployment templates
-        $templates = DeploymentTemplate::with(['region', 'creator'])
-            ->where('is_active', true)
-            ->orderBy('created_at', 'desc')
-            ->get();
+    // Get service types from categories
+    $serviceTypes = Category::where('type', 'service_type')
+        ->where('is_active', true)
+        ->orderBy('sort_order')
+        ->get();
 
-        // Get service types from categories - FIXED
-        $serviceTypes = Category::where('type', 'service_type')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
-        
-        // Get technicians - FIXED
-        $technicians = Employee::where('status', 'active')
-            ->whereHas('role', function($query) {
-                $query->whereIn('name', ['Technician', 'Field Technician', 'Maintenance']);
-            })
-            ->select('id', 'first_name', 'last_name', 'phone', 'role_id')
-            ->with('role:id,name')
-            ->orderBy('first_name')
-            ->get()
-            ->map(function($technician) {
-                $technician->name = $technician->first_name . ' ' . $technician->last_name;
-                $technician->specialization = $technician->role->name ?? 'General';
-                return $technician;
-            });
+    // Get technicians
+    $technicians = Employee::where('status', 'active')
+        ->whereHas('role', function($q) {
+            $q->whereIn('name', ['Technician', 'Field Technician', 'Maintenance']);
+        })
+        ->select('id', 'first_name', 'last_name', 'phone', 'role_id')
+        ->with('role:id,name')
+        ->orderBy('first_name')
+        ->get()
+        ->map(function ($t) {
+            $t->name = $t->first_name.' '.$t->last_name;
+            $t->specialization = $t->role->name ?? 'General';
+            // optionally add placeholders for UI fields
+            $t->availability_status = $t->availability_status ?? 'available';
+            $t->current_workload = $t->current_workload ?? 0;
+            return $t;
+        });
 
-        // Get clients
-        $clients = Client::where('status', 'active')->orderBy('company_name')->get();
+    // Get clients
+    $clients = Client::where('status', 'active')
+        ->orderBy('company_name')
+        ->get()
+        ->map(function ($c) {
+            // Blade expects name & terminal_count in your dropdown
+            $c->name = $c->company_name;
+            $c->terminal_count = $c->posTerminals()->count() ?? 0;
+            return $c;
+        });
 
-        // Calculate stats
-        $stats = [
-            'total_templates' => $templates->count(),
-            'active_templates' => $templates->where('is_active', true)->count(),
-            'total_regions' => $regions->count(),
-            'regions_with_templates' => $templates->pluck('region_id')->unique()->count(),
-            'total_terminals' => PosTerminal::count(),
-            'deployed_terminals' => PosTerminal::where('deployment_status', 'deployed')->count()
-        ];
+    // Stats WITHOUT templates
+    $stats = [
+        'total_regions'      => $regions->count(),
+        'total_terminals'    => PosTerminal::count(),
+        'deployed_terminals' => PosTerminal::where('deployment_status', 'deployed')->count(),
+        // you can add more non-template stats here
+    ];
 
-        return view('deployment.planning', compact(
-            'regions', 
-            'templates', 
-            'serviceTypes', 
-            'technicians', 
-            'clients',
-            'stats'
-        ));
-    }
+    return view('deployment.planning', compact(
+        'regions',
+        'serviceTypes',
+        'technicians',
+        'clients',
+        'stats'
+    ));
+}
+
 
     /**
      * Get terminals for region with grouping by city
@@ -141,7 +144,7 @@ class DeploymentPlanningController extends Controller
 
     
 // In your store method, update the validation and creation
- public function store(Request $request)
+/* public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'template_name'            => 'required|string|max:255|unique:deployment_templates,template_name',
@@ -316,7 +319,7 @@ public function getClientLocations($clientId, $locationType)
     /**
      * Deploy template as job assignment
      */
-    public function deploy(Request $request, $templateId)
+    /*public function deploy(Request $request, $templateId)
     {
         $validator = Validator::make($request->all(), [
             'technician_id' => 'required|exists:employees,id',
@@ -375,12 +378,12 @@ public function getClientLocations($clientId, $locationType)
                 'message' => 'Error deploying template: ' . $e->getMessage()
             ], 500);
         }
-    }
+    }*/
 
     /**
      * Update template
      */
-    public function update(Request $request, $templateId)
+   /* public function update(Request $request, $templateId)
     {
         $template = DeploymentTemplate::findOrFail($templateId);
 
@@ -430,12 +433,12 @@ public function getClientLocations($clientId, $locationType)
                 'message' => 'Error updating template: ' . $e->getMessage()
             ], 500);
         }
-    }
+    }*/
 
     /**
      * Delete template
      */
-    public function destroy($templateId)
+    /*public function destroy($templateId)
     {
         try {
             $template = DeploymentTemplate::findOrFail($templateId);
@@ -463,12 +466,12 @@ public function getClientLocations($clientId, $locationType)
                 'message' => 'Error deleting template: ' . $e->getMessage()
             ], 500);
         }
-    }
+    }*/
 
     /**
      * Export templates
      */
-    public function export(Request $request)
+    /*public function export(Request $request)
     {
         $query = DeploymentTemplate::with(['region', 'creator']);
         
@@ -517,12 +520,12 @@ public function getClientLocations($clientId, $locationType)
         };
         
         return response()->stream($callback, 200, $headers);
-    }
+    }*/
 
     /**
      * Get deployment analytics
      */
-    public function analytics(Request $request)
+    /*public function analytics(Request $request)
     {
         try {
             $period = $request->get('period', '30'); // days
@@ -578,7 +581,7 @@ public function getClientLocations($clientId, $locationType)
                 'message' => 'Error loading analytics: ' . $e->getMessage()
             ], 500);
         }
-    }
+    }*/
 
 /**
  * Get cities for a specific client
@@ -764,4 +767,110 @@ public function getFilteredTerminals(Request $request)
         ], 500);
     }
 }
+// app/Http/Controllers/DeploymentPlanningController.php
+
+public function assign(Request $request)
+{
+    $v = Validator::make($request->all(), [
+        'technician_id'        => 'required|exists:employees,id',
+        'selected_terminals'   => 'required|array|min:1',
+        'selected_terminals.*' => 'integer|exists:pos_terminals,id',
+        'scheduled_date'       => 'required|date|after_or_equal:today',
+        'priority'             => 'nullable|in:low,normal,high,emergency',
+        'service_type'         => 'nullable|string|max:100',
+        'assignment_type'      => 'nullable|in:individual,team',
+        'project_id'           => 'nullable|integer',
+        'notes'                => 'nullable|string|max:500',
+    ]);
+
+    if ($v->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors'  => $v->errors(),
+        ], 422);
+    }
+
+    DB::beginTransaction();
+
+    try {
+        $techId  = (int) $request->technician_id;
+        $date    = Carbon::parse($request->scheduled_date)->toDateString();
+        $termIds = array_values(array_unique($request->selected_terminals));
+
+        // Infer client/region if all selected terminals share the same
+        $terms = PosTerminal::whereIn('id', $termIds)->get(['id','client_id','region_id']);
+        if ($terms->count() !== count($termIds)) {
+            throw new \Exception('Some terminals were not found.');
+        }
+        $clientId = $terms->pluck('client_id')->unique()->count() === 1 ? $terms->first()->client_id : null;
+        $regionId = $terms->pluck('region_id')->unique()->count() === 1 ? $terms->first()->region_id : null;
+
+        // Optional: block double-assigning the SAME terminal on the SAME date
+        $conflict = JobAssignment::whereDate('scheduled_date', $date)
+            ->whereIn('status', ['assigned','in_progress'])
+            ->where(function($q) use ($termIds) {
+                foreach ($termIds as $id) {
+                    $q->orWhereJsonContains('pos_terminals', $id);
+                }
+            })
+            ->exists();
+
+        if ($conflict) {
+            return response()->json([
+                'success' => false,
+                'message' => 'One or more terminals are already assigned for this date.',
+            ], 409);
+        }
+
+        $assignment = JobAssignment::create([
+            'assignment_id'            => JobAssignment::generateAssignmentId(),
+            'technician_id'            => $techId,
+            'region_id'                => $regionId,
+            'client_id'                => $clientId,
+            'project_id'               => $request->project_id,
+            'scheduled_date'           => $date,
+            'service_type'             => $request->service_type ?? 'routine_maintenance',
+            'priority'                 => $request->priority ?? 'normal',
+            'status'                   => 'assigned',
+            'notes'                    => $request->notes,
+            'estimated_duration_hours' => null,
+            'pos_terminals'            => $termIds, // JSON array
+            'created_by'               => auth()->id() ?? 1,
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Assignment created successfully',
+            'id' => $assignment->id,
+            'assignment_id' => $assignment->assignment_id,
+            'assigned_terminal_ids' => $termIds,
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Error creating assignment', ['error' => $e->getMessage(), 'payload' => $request->all()]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Error creating assignment: '.$e->getMessage(),
+        ], 500);
+    }
+}
+
+public function assignedTerminals(Request $request)
+{
+    // Terminals present in any "assigned" or "in_progress" jobs
+    $ids = JobAssignment::whereIn('status', ['assigned','in_progress'])
+        ->pluck('pos_terminals')
+        ->flatten()
+        ->unique()
+        ->values();
+
+    return response()->json([
+        'success' => true,
+        'assigned_terminal_ids' => $ids,
+    ]);
+}
+
 }
