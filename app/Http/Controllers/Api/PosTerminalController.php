@@ -8,9 +8,194 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\PosTerminal;
 use App\Models\Client;
 use App\Models\Ticket;
+use Illuminate\Validation\Rule;
+
 
 class PosTerminalController extends Controller
 {
+
+
+    /**
+ * Authorization helper shared by update endpoints.
+ */
+protected function canUpdate($user): bool
+{
+    return $user && (
+        $user->hasPermission('update_terminals') ||
+        $user->hasPermission('manage_team') ||
+        $user->hasPermission('all')
+    );
+}
+
+/**
+ * Common validation rules for PUT/PATCH updates.
+ * $requireAll = true => strict PUT (everything must be present)
+ */
+protected function updateRules(bool $requireAll = false): array
+{
+    $sometimes = $requireAll ? [] : ['sometimes'];
+    $nullable  = $requireAll ? [] : ['nullable'];
+
+    return [
+        'merchant_id'             => array_merge($sometimes, $nullable, ['string','max:191']),
+        'terminal_id'             => array_merge($sometimes, $nullable, ['string','max:191']),
+        'client_id'               => array_merge($sometimes, $nullable, ['integer']),
+        'merchant_name'           => array_merge($sometimes, $nullable, ['string','max:255']),
+        'legal_name'              => array_merge($sometimes, $nullable, ['string','max:255']),
+        'merchant_contact_person' => array_merge($sometimes, $nullable, ['string','max:255']),
+        'merchant_phone'          => array_merge($sometimes, $nullable, ['string','max:50']),
+        'merchant_email'          => array_merge($sometimes, $nullable, ['email','max:255']),
+        'physical_address'        => array_merge($sometimes, $nullable, ['string','max:500']),
+        'city'                    => array_merge($sometimes, $nullable, ['string','max:191']),
+        'province'                => array_merge($sometimes, $nullable, ['string','max:191']),
+        'area'                    => array_merge($sometimes, $nullable, ['string','max:191']),
+        'business_type'           => array_merge($sometimes, $nullable, ['string','max:191']),
+        'installation_date'       => array_merge($sometimes, $nullable, ['date']),
+        'terminal_model'          => array_merge($sometimes, $nullable, ['string','max:191']),
+        'serial_number'           => array_merge($sometimes, $nullable, ['string','max:191']),
+        'contract_details'        => array_merge($sometimes, $nullable, ['string']),
+        'status'                  => array_merge($sometimes, $nullable, ['string','max:100']),
+        'last_service_date'       => array_merge($sometimes, $nullable, ['date']),
+        'next_service_due'        => array_merge($sometimes, $nullable, ['date']),
+        'region_id'               => array_merge($sometimes, $nullable, ['integer']),
+        'region'                  => array_merge($sometimes, $nullable, ['string','max:191']),
+        'current_status'          => array_merge($sometimes, $nullable, ['string','max:100']),
+        'deployment_status'       => array_merge($sometimes, $nullable, ['string','max:100']),
+        'condition_status'        => array_merge($sometimes, $nullable, ['string','max:100']),
+        'issues_raised'           => array_merge($sometimes, $nullable, ['string']),
+        'corrective_action'       => array_merge($sometimes, $nullable, ['string']),
+        'site_contact_person'     => array_merge($sometimes, $nullable, ['string','max:255']),
+        'site_contact_number'     => array_merge($sometimes, $nullable, ['string','max:50']),
+        'last_updated_by'         => array_merge($sometimes, $nullable, ['string','max:191']),
+        'last_visit_date'         => array_merge($sometimes, $nullable, ['date']),
+        'extra_fields'            => array_merge($sometimes, $nullable, ['array']),
+
+        // JSON blobs
+        'status_info' => ['sometimes','array'],
+        'coordinates' => ['sometimes','array'],
+
+        // nested props
+        'status_info.is_active'     => ['sometimes','boolean'],
+        'status_info.is_faulty'     => ['sometimes','boolean'],
+        'status_info.needs_service' => ['sometimes','boolean'],
+
+        'coordinates.latitude'  => ['sometimes','nullable','numeric','between:-90,90'],
+        'coordinates.longitude' => ['sometimes','nullable','numeric','between:-180,180'],
+    ];
+}
+
+/**
+ * PUT/PATCH /api/pos-terminals/id/{id}
+ * Update by numeric DB id.
+ */
+public function updateById(Request $request, int $id)
+{
+    $user = $request->user();
+    if (!$this->canUpdate($user)) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+    }
+
+    $terminal = PosTerminal::query()->whereKey($id)->firstOrFail();
+    $data = $request->validate($this->updateRules(false)); // PATCH-friendly
+
+    $terminal->fill($data);
+
+    if (!$request->filled('last_updated_by')) {
+        $terminal->last_updated_by = $user->id ?? null;
+    }
+
+    $terminal->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Terminal updated successfully.',
+        'data'    => $terminal->fresh(),
+    ]);
+}
+
+/**
+ * PUT/PATCH /api/pos-terminals/{terminalId}
+ * Update by business key terminal_id (string).
+ */
+public function updateByTerminalId(Request $request, string $terminalId)
+{
+    $user = $request->user();
+    if (!$this->canUpdate($user)) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+    }
+
+    $terminal = PosTerminal::query()
+        ->where('terminal_id', $terminalId)
+        ->firstOrFail();
+
+    $data = $request->validate($this->updateRules(false));
+
+    $terminal->fill($data);
+
+    if (!$request->filled('last_updated_by')) {
+        $terminal->last_updated_by = $user->id ?? null;
+    }
+
+    $terminal->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Terminal updated successfully.',
+        'data'    => $terminal->fresh(),
+    ]);
+}
+
+/**
+ * PATCH /api/pos-terminals/bulk
+ * Body: [{ "terminal_id": "TERM-001", <fields...> }, ...]
+ */
+public function bulkUpdateByTerminalId(Request $request)
+{
+    $user = $request->user();
+    if (!$this->canUpdate($user)) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+    }
+
+    $rows = $request->all();
+    if (!is_array($rows)) {
+        return response()->json(['success' => false, 'message' => 'Invalid payload'], 422);
+    }
+
+    $rules = $this->updateRules(false);
+    $updated = [];
+
+    foreach ($rows as $i => $row) {
+        // Validate each row
+        $validator = validator($row, array_merge(['terminal_id' => ['required','string','max:191']], $rules));
+        $validator->validate();
+
+        $t = PosTerminal::query()->where('terminal_id', $row['terminal_id'])->first();
+        if (!$t) {
+            // Skip missing terminals; you can collect “not found” too if you prefer
+            continue;
+        }
+
+        $data = $row;
+        unset($data['terminal_id']); // avoid changing the key during bulk unless you intend to
+
+        $t->fill($data);
+
+        if (empty($row['last_updated_by'])) {
+            $t->last_updated_by = $user->id ?? null;
+        }
+
+        $t->save();
+        $updated[] = $t->fresh();
+    }
+
+    return response()->json([
+        'success' => true,
+        'count'   => count($updated),
+        'data'    => $updated,
+    ]);
+}
+
+
     /**
      * Get paginated list of POS terminals with filtering
      */
@@ -204,21 +389,19 @@ class PosTerminalController extends Controller
                 'email' => $terminal->client->email,
                 'address' => $terminal->client->address,
             ] : null,
-            'status_info' => [
-                'is_active' => $terminal->isActive(),
-                'is_faulty' => $terminal->isFaulty(),
-                'needs_service' => $terminal->needsService(),
+            'status_info' => $terminal->status_info ?? [
+                'is_active'=>null,'is_faulty'=>null,
+                'needs_service'=>null
             ],
-            'coordinates' => [
-                'latitude' => $terminal->latitude ?? null,
-                'longitude' => $terminal->longitude ?? null,
+            'coordinates' => $terminal->coordinates ?? [
+                'latitude'=>null,
+                'longitude'=>null
             ],
             'recent_tickets' => $recentTickets,
             'recent_jobs' => $recentJobs,
             'created_at' => $terminal->created_at,
             'updated_at' => $terminal->updated_at,
         ];
-
         return response()->json([
             'success' => true,
             'data' => [
@@ -252,8 +435,8 @@ class PosTerminalController extends Controller
         $user = $request->user();
 
         // Check permissions
-        if (!$user->hasPermission('update_terminals') && 
-            !$user->hasPermission('manage_team') && 
+        if (!$user->hasPermission('update_terminals') &&
+            !$user->hasPermission('manage_team') &&
             !$user->hasPermission('all')) {
             return response()->json([
                 'success' => false,
@@ -411,7 +594,7 @@ class PosTerminalController extends Controller
                         'title' => "Job Assignment: {$job->assignment_id}",
                         'description' => $job->service_type ?? 'Service',
                         'status' => $job->status,
-                        'technician' => $job->technician ? 
+                        'technician' => $job->technician ?
                             $job->technician->first_name . ' ' . $job->technician->last_name : null,
                         'date' => $job->scheduled_date,
                         'completed_at' => $job->actual_end_time,
@@ -438,7 +621,7 @@ class PosTerminalController extends Controller
                     'description' => $ticket->title,
                     'status' => $ticket->status,
                     'priority' => $ticket->priority,
-                    'technician' => $ticket->technician ? 
+                    'technician' => $ticket->technician ?
                         $ticket->technician->first_name . ' ' . $ticket->technician->last_name : null,
                     'date' => $ticket->created_at,
                     'resolved_at' => $ticket->resolved_at,
@@ -545,7 +728,7 @@ class PosTerminalController extends Controller
     public function getByClient($clientId)
     {
         $client = Client::findOrFail($clientId);
-        
+
         $terminals = PosTerminal::where('client_id', $clientId)
                                ->orderBy('merchant_name')
                                ->get();
@@ -588,14 +771,14 @@ class PosTerminalController extends Controller
     public function syncTerminals(Request $request)
     {
         $user = $request->user();
-        
+
         // Get terminals relevant to the user
         $query = PosTerminal::with('client:id,company_name');
-        
+
         // If user is a technician, get only terminals assigned to them or in their regions
         if ($user->isFieldTechnician()) {
             $assignedTerminalIds = collect();
-            
+
             try {
                 // Get terminals from their job assignments
                 $assignedTerminalIds = \App\Models\JobAssignment::where('technician_id', $user->id)
@@ -607,7 +790,7 @@ class PosTerminalController extends Controller
             } catch (\Exception $e) {
                 \Log::warning('Could not load assigned terminals: ' . $e->getMessage());
             }
-            
+
             if ($assignedTerminalIds->isNotEmpty()) {
                 $query->whereIn('id', $assignedTerminalIds);
             } else {
@@ -616,7 +799,7 @@ class PosTerminalController extends Controller
                                                    ->distinct()
                                                    ->pluck('region')
                                                    ->filter();
-                                                   
+
                 if ($regions->isNotEmpty()) {
                     $query->whereIn('region', $regions);
                 }
@@ -650,7 +833,7 @@ class PosTerminalController extends Controller
             ]
         ]);
     }
-    
+
 /**
  * Get chart data for AJAX requests
  */
@@ -727,7 +910,7 @@ public function getComprehensiveStats(Request $request)
     try {
         $query = PosTerminal::query();
         $this->applyFilters($query, $request);
-        
+
         $stats = $this->calculateComprehensiveStats(clone $query);
 
         return response()->json([
@@ -757,21 +940,21 @@ public function getServiceTimelineData(Request $request)
                 ->whereNotNull('last_service_date')
                 ->where('last_service_date', '>=', now()->subDays(30))
                 ->count(),
-            
+
             'service_due_soon' => (clone $query)
                 ->where(function($q) {
                     $q->whereNull('last_service_date')
                       ->orWhereBetween('last_service_date', [now()->subDays(90), now()->subDays(60)]);
                 })
                 ->count(),
-                
+
             'overdue_service' => (clone $query)
                 ->where(function($q) {
                     $q->whereNull('last_service_date')
                       ->orWhere('last_service_date', '<=', now()->subDays(90));
                 })
                 ->count(),
-                
+
             'never_serviced' => (clone $query)
                 ->whereNull('last_service_date')
                 ->count()
@@ -807,21 +990,21 @@ public function getDistributionData(Request $request)
                 ->orderByDesc('count')
                 ->limit(10)
                 ->pluck('count', 'company_name'),
-                
+
             'regions' => (clone $query)
                 ->selectRaw('COALESCE(region, "Unknown") as region, COUNT(*) as count')
                 ->groupBy('region')
                 ->orderByDesc('count')
                 ->limit(10)
                 ->pluck('count', 'region'),
-                
+
             'models' => (clone $query)
                 ->selectRaw('COALESCE(terminal_model, "Unknown") as model, COUNT(*) as count')
                 ->groupBy('terminal_model')
                 ->orderByDesc('count')
                 ->limit(10)
                 ->pluck('count', 'model'),
-                
+
             'business_types' => (clone $query)
                 ->selectRaw('COALESCE(business_type, "Unknown") as type, COUNT(*) as count')
                 ->groupBy('business_type')
@@ -850,34 +1033,34 @@ public function getFilteredStatistics(Request $request)
 {
     try {
         $query = PosTerminal::query();
-        
+
         // Apply filters from request body
         if ($request->has('filters')) {
             $filters = $request->input('filters');
-            
+
             if (isset($filters['client_id'])) {
                 $query->where('client_id', $filters['client_id']);
             }
-            
+
             if (isset($filters['status'])) {
                 $query->where('status', $filters['status']);
             }
-            
+
             if (isset($filters['region'])) {
                 $query->where('region', $filters['region']);
             }
-            
+
             if (isset($filters['city'])) {
                 $query->where('city', $filters['city']);
             }
-            
+
             if (isset($filters['date_range'])) {
                 $range = $filters['date_range'];
                 if (isset($range['start']) && isset($range['end'])) {
                     $query->whereBetween('created_at', [$range['start'], $range['end']]);
                 }
             }
-            
+
             if (isset($filters['search'])) {
                 $search = $filters['search'];
                 $query->where(function($q) use ($search) {
@@ -1007,17 +1190,17 @@ private function calculateFilteredStats($baseQuery)
         'active_terminals' => $activeTerminals,
         'offline_terminals' => $offlineTerminals,
         'faulty_terminals' => $faultyTerminals,
-        
+
         // Service timeline stats (for the new chart)
         'recently_serviced' => $recentlyServiced,
         'service_due' => $serviceDue,
         'overdue_service' => $overdueService,
         'never_serviced' => $neverServiced,
-        
+
         // Additional useful stats
         'recent_installations' => $recentInstallations,
         'uptime_percentage' => $totalTerminals > 0 ? round(($activeTerminals / $totalTerminals) * 100, 1) : 0,
-        
+
         // Chart data arrays
         'model_distribution' => $modelDistribution,
         'client_distribution' => $clientDistribution,
@@ -1111,18 +1294,18 @@ private function calculateComprehensiveStats($baseQuery)
     // Monthly installation trends (last 6 months)
     $installationTrends = [];
     $serviceTrends = [];
-    
+
     for ($i = 5; $i >= 0; $i--) {
         $startOfMonth = now()->subMonths($i)->startOfMonth();
         $endOfMonth = now()->subMonths($i)->endOfMonth();
-        
+
         $monthName = $startOfMonth->format('M');
-        
+
         $installationTrends[$monthName] = (clone $baseQuery)
             ->whereNotNull('installation_date')
             ->whereBetween('installation_date', [$startOfMonth, $endOfMonth])
             ->count();
-            
+
         $serviceTrends[$monthName] = (clone $baseQuery)
             ->whereNotNull('last_service_date')
             ->whereBetween('last_service_date', [$startOfMonth, $endOfMonth])
@@ -1132,11 +1315,11 @@ private function calculateComprehensiveStats($baseQuery)
     // Performance metrics
     $uptimePercentage = $totalTerminals > 0 ? round(($activeTerminals / $totalTerminals) * 100, 1) : 0;
     $serviceComplianceRate = $totalTerminals > 0 ? round(($recentlyServiced / $totalTerminals) * 100, 1) : 0;
-    
+
     // Coverage metrics by region
     $coverageMetrics = (clone $baseQuery)
         ->selectRaw('
-            region, 
+            region,
             COUNT(*) as total,
             SUM(CASE WHEN status = "active" THEN 1 ELSE 0 END) as active,
             SUM(CASE WHEN last_service_date >= ? THEN 1 ELSE 0 END) as recently_serviced
@@ -1160,40 +1343,40 @@ private function calculateComprehensiveStats($baseQuery)
         'active_terminals' => $activeTerminals,
         'offline_terminals' => $offlineTerminals,
         'faulty_terminals' => $faultyTerminals,
-        
+
         // Service timeline stats
         'recently_serviced' => $recentlyServiced,
         'service_due' => $serviceDue,
         'overdue_service' => $overdueService,
         'never_serviced' => $neverServiced,
-        
+
         // Installation & trends
         'recent_installations' => $recentInstallations,
         'installation_trends' => $installationTrends,
         'service_trends' => $serviceTrends,
-        
+
         // Distribution data for charts
         'model_distribution' => $modelDistribution,
         'client_distribution' => $clientDistribution,
         'regional_distribution' => $regionalDistribution,
         'city_distribution' => $cityDistribution,
         'business_type_distribution' => $businessTypeDistribution,
-        
+
         // Performance metrics
         'uptime_percentage' => $uptimePercentage,
         'service_compliance_rate' => $serviceComplianceRate,
         'coverage_metrics' => $coverageMetrics,
-        
+
         // Additional useful metrics
         'avg_terminals_per_region' => count($regionalDistribution) > 0 ? round($totalTerminals / count($regionalDistribution), 1) : 0,
         'most_common_model' => !empty($modelDistribution) ? array_keys($modelDistribution)[0] : 'N/A',
         'largest_client' => !empty($clientDistribution) ? array_keys($clientDistribution)[0] : 'N/A',
-        
+
         // Chart-specific calculated data
         'chart_data' => [
             'status_colors' => [
                 'active' => '#28a745',
-                'offline' => '#ffc107', 
+                'offline' => '#ffc107',
                 'faulty' => '#dc3545',
                 'maintenance' => '#17a2b8'
             ],

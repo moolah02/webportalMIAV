@@ -150,7 +150,7 @@ class AssetRequestController extends Controller
     public function checkout()
     {
         $cart = session('asset_cart', []);
-        
+
         if (empty($cart)) {
             return redirect()->route('asset-requests.catalog')
                 ->with('error', 'Your cart is empty.');
@@ -177,14 +177,14 @@ class AssetRequestController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'business_justification' => 'required|string|min:20',
-            'needed_by_date' => 'nullable|date|after:today',
-            'delivery_instructions' => 'nullable|string',
-            'priority' => 'required|in:low,normal,high,urgent',
+            'business_justification' => 'required|string',
+    'needed_by_date' => 'nullable|date|after:today',
+    'delivery_instructions' => 'nullable|string',
+    'priority' => 'required|in:low,normal,high,urgent',
         ]);
 
         $cart = session('asset_cart', []);
-        
+
         if (empty($cart)) {
             return back()->with('error', 'Your cart is empty.');
         }
@@ -213,7 +213,7 @@ class AssetRequestController extends Controller
             // Create request items from cart
             foreach ($cart as $item) {
                 $asset = Asset::find($item['asset_id']);
-                
+
                 if ($asset && $asset->canBeRequested($item['quantity'])) {
                     AssetRequestItem::create([
                         'asset_request_id' => $assetRequest->id,
@@ -237,7 +237,7 @@ class AssetRequestController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             \Log::error('Asset request submission failed: ' . $e->getMessage());
-            
+
             return back()
                 ->with('error', 'Failed to submit request. Please try again.')
                 ->withInput();
@@ -264,8 +264,8 @@ class AssetRequestController extends Controller
     public function show(AssetRequest $assetRequest)
     {
         // Check if user can view this request
-        if ($assetRequest->employee_id !== auth()->id() && 
-            !auth()->user()->hasPermission('manage_assets') && 
+        if ($assetRequest->employee_id !== auth()->id() &&
+            !auth()->user()->hasPermission('manage_assets') &&
             !auth()->user()->hasPermission('all')) {
             abort(403);
         }
@@ -296,7 +296,7 @@ class AssetRequestController extends Controller
     {
         $cart = session('asset_cart', []);
         $count = array_sum(array_column($cart, 'quantity'));
-        
+
         return response()->json(['count' => $count]);
     }
 }

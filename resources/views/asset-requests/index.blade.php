@@ -25,10 +25,12 @@
                 <label>Status</label>
                 <select name="status" class="filter-select">
                     <option value="">All Status</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>⏳ Pending</option>
-                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>✅ Approved</option>
-                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>❌ Rejected</option>
+                    <option value="pending"   {{ request('status') == 'pending'   ? 'selected' : '' }}>⏳ Pending</option>
+                    <option value="approved"  {{ request('status') == 'approved'  ? 'selected' : '' }}>✅ Approved</option>
+                    <option value="rejected"  {{ request('status') == 'rejected'  ? 'selected' : '' }}>❌ Rejected</option>
                     <option value="fulfilled" {{ request('status') == 'fulfilled' ? 'selected' : '' }}>📦 Fulfilled</option>
+                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>🛑 Cancelled</option>
+                    <option value="draft"     {{ request('status') == 'draft'     ? 'selected' : '' }}>📝 Draft</option>
                 </select>
             </div>
             <div class="filter-actions">
@@ -61,17 +63,25 @@
                     <span class="status-badge status-{{ $request->status }}">
                         @switch($request->status)
                             @case('pending')
-                                <span>⏳</span> Pending
+                                ⏳ Pending
                                 @break
                             @case('approved')
-                                <span>✅</span> Approved
+                                ✅ Approved
                                 @break
                             @case('rejected')
-                                <span>❌</span> Rejected
+                                ❌ Rejected
                                 @break
                             @case('fulfilled')
-                                <span>📦</span> Fulfilled
+                                📦 Fulfilled
                                 @break
+                            @case('cancelled')
+                                🛑 Cancelled
+                                @break
+                            @case('draft')
+                                📝 Draft
+                                @break
+                            @default
+                                {{ ucfirst($request->status) }}
                         @endswitch
                     </span>
                 </td>
@@ -82,7 +92,7 @@
                 <td>
                     <a href="{{ route('asset-requests.show', $request) }}" class="btn btn-primary"> View Details</a>
                     @if(in_array($request->status, ['pending', 'draft']))
-                    <form action="{{ route('asset-requests.cancel', $request) }}" method="POST" 
+                    <form action="{{ route('asset-requests.cancel', $request) }}" method="POST"
                           onsubmit="return confirm('Are you sure you want to cancel this request?')" style="display: inline;">
                         @csrf
                         @method('PATCH')
@@ -121,111 +131,48 @@
     align-items: center;
     margin-bottom: 30px;
 }
-
-.title {
-    margin: 0;
-    color: #333;
-    font-size: 32px;
-    font-weight: 700;
-}
-
-.subtitle {
-    color: #666;
-    margin: 8px 0 0 0;
-    font-size: 16px;
-}
-
-.actions {
-    display: flex;
-    gap: 12px;
-}
+.title { margin: 0; color: #333; font-size: 32px; font-weight: 700; }
+.subtitle { color: #666; margin: 8px 0 0 0; font-size: 16px; }
+.actions { display: flex; gap: 12px; }
 
 .filter-card {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    margin-bottom: 30px;
+    background: white; padding: 20px; border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 30px;
 }
-
-.filter-form {
-    display: flex;
-    gap: 15px;
-}
-
-.filter-select {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-}
+.filter-form { display: flex; gap: 15px; }
+.filter-select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
 
 .table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
+    width: 100%; border-collapse: collapse; background: white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
-
-.table th, .table td {
-    padding: 12px;
-    border: 1px solid #dee2e6;
-    text-align: left;
-}
-
-.table th {
-    background-color: #f8f9fa;
-}
+.table th, .table td { padding: 12px; border: 1px solid #dee2e6; text-align: left; }
+.table th { background-color: #f8f9fa; }
 
 .status-badge {
-    padding: 5px 10px;
-    border-radius: 12px;
-    font-weight: 600;
+    padding: 5px 10px; border-radius: 12px; font-weight: 600; display: inline-block;
 }
+/* Colors for each status */
+.status-pending   { background:#fff3cd; color:#856404; }   /* amber */
+.status-approved  { background:#e8f5e9; color:#2e7d32; }   /* green */
+.status-rejected  { background:#ffebee; color:#c62828; }   /* red */
+.status-fulfilled { background:#e3f2fd; color:#1565c0; }   /* blue */
+.status-cancelled { background:#eceff1; color:#455a64; }   /* grey */
+.status-draft     { background:#f3e5f5; color:#6a1b9a; }   /* purple */
 
-.pagination-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 30px;
-}
+.pagination-wrapper { display: flex; justify-content: center; margin-top: 30px; }
 
 /* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 40px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-
-.empty-icon {
-    font-size: 64px;
-    margin-bottom: 20px;
-}
-
-.empty-title {
-    font-size: 24px;
-    color: #333;
-}
-
-.empty-description {
-    color: #666;
-    margin-bottom: 20px;
-}
-
-.empty-action {
-    padding: 10px 20px;
-}
+.empty-state { text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.empty-icon { font-size: 64px; margin-bottom: 20px; }
+.empty-title { font-size: 24px; color: #333; }
+.empty-description { color: #666; margin-bottom: 20px; }
+.empty-action { padding: 10px 20px; }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .request-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .request-badges {
-        justify-content: flex-start;
-    }
+    .request-header { flex-direction: column; align-items: flex-start; }
+    .request-badges { justify-content: flex-start; }
 }
 </style>
 @endsection

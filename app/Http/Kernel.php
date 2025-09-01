@@ -63,13 +63,17 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        
+
         // Your existing permission middleware
         'permission' => \App\Http\Middleware\CheckPermission::class,
         'active.employee' => \App\Http\Middleware\ActiveEmployeeMiddleware::class, // if you have this
-        
+
         // API-specific middleware
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'api.auth' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
     ];
+    protected $middlewareAliases = [
+    // ... other middleware
+    'report.builder' => \App\Http\Middleware\ReportBuilderMiddleware::class,
+];
 }

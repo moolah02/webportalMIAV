@@ -5,13 +5,13 @@
 <div>
     <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <h3>Technician Dashboard</h3>
-        <p>Welcome to your technician dashboard, {{ $employee->full_name }}!</p>
-        
+        <p>Welcome to your technician dashboard, {{ auth()->user()->full_name ?? auth()->user()->name ?? 'Technician' }}!</p>
+
         <div style="margin-block-start: 20px;">
             <h4>Today's Jobs</h4>
             <p style="color: #666;">No jobs assigned for today.</p>
         </div>
-        
+
         <div style="margin-block-start: 20px;">
             <h4>Recent Service Reports</h4>
             <p style="color: #666;">No recent reports.</p>

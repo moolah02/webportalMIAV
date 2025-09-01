@@ -18,7 +18,7 @@ class BusinessLicenseController extends Controller
     public function index(Request $request)
     {
         $direction = $request->get('direction', 'company_held');
-        
+
         $query = BusinessLicense::where('license_direction', $direction)
             ->with(['department', 'responsibleEmployee']);
 
@@ -62,7 +62,7 @@ class BusinessLicenseController extends Controller
                 $q->where('license_name', 'LIKE', "%{$search}%")
                   ->orWhere('license_number', 'LIKE', "%{$search}%")
                   ->orWhere('issuing_authority', 'LIKE', "%{$search}%");
-                
+
                 // Add customer-specific search for customer-issued licenses
                 if ($direction === 'customer_issued') {
                     $q->orWhere('customer_name', 'LIKE', "%{$search}%")
@@ -82,7 +82,7 @@ class BusinessLicenseController extends Controller
             if ($request->filled('billing_cycle')) {
                 $query->where('billing_cycle', $request->billing_cycle);
             }
-            
+
             if ($request->filled('support_level')) {
                 $query->where('support_level', $request->support_level);
             }
@@ -104,7 +104,7 @@ class BusinessLicenseController extends Controller
             'total_licenses' => BusinessLicense::companyHeld()->count(),
             'active_licenses' => BusinessLicense::companyHeld()->where('status', 'active')->count(),
             'expired_licenses' => BusinessLicense::companyHeld()->expired()->count(),
-            'expiring_soon' => BusinessLicense::companyHeld()->expiringSoon(30)->count(),
+            'expiring_soon' => BusinessLicense::companyHeld()->expiringSoon(15)->count(),
             'critical_licenses' => BusinessLicense::companyHeld()->where('priority_level', 'critical')->count(),
             'total_annual_cost' => BusinessLicense::companyHeld()->where('status', 'active')->sum('renewal_cost') ?? 0,
         ];
@@ -113,12 +113,12 @@ class BusinessLicenseController extends Controller
     private function getCustomerLicenseStats()
     {
         $customerLicenses = BusinessLicense::customerIssued();
-        
+
         return [
             'total_licenses' => $customerLicenses->count(),
             'active_licenses' => $customerLicenses->where('status', 'active')->count(),
             'expired_licenses' => $customerLicenses->expired()->count(),
-            'expiring_soon' => $customerLicenses->expiringSoon(30)->count(),
+            'expiring_soon' => $customerLicenses->expiringSoon(15)->count(),
             'unique_customers' => $customerLicenses->whereNotNull('customer_email')->distinct('customer_email')->count(),
             'total_revenue' => $customerLicenses->where('status', 'active')->get()->sum('annual_revenue') ?? 0,
         ];
@@ -127,7 +127,7 @@ class BusinessLicenseController extends Controller
     public function show(BusinessLicense $businessLicense)
     {
         $businessLicense->load(['department', 'responsibleEmployee', 'creator', 'updater']);
-        
+
         return view('business-licenses.show', compact('businessLicense'));
     }
 
@@ -136,14 +136,14 @@ class BusinessLicenseController extends Controller
         $direction = $request->get('direction', 'company_held');
         $departments = Department::all();
         $employees = Employee::active()->get();
-        
+
         return view('business-licenses.create', compact('departments', 'employees', 'direction'));
     }
 
     public function store(Request $request)
     {
         $direction = $request->get('license_direction', 'company_held');
-        
+
         // Base validation rules
         $rules = [
             'license_direction' => 'required|in:company_held,customer_issued',
@@ -152,7 +152,7 @@ class BusinessLicenseController extends Controller
             'license_type' => 'required|string',
             'issuing_authority' => 'required|string|max:255',
             'issue_date' => 'required|date',
-            'expiry_date' => 'required|date|after:issue_date',
+            'expiry_date' => 'nullable|date|after:issue_date',
             'status' => 'required|string',
             'description' => 'nullable|string',
             'document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
@@ -214,14 +214,14 @@ class BusinessLicenseController extends Controller
     {
         $departments = Department::all();
         $employees = Employee::active()->get();
-        
+
         return view('business-licenses.edit', compact('businessLicense', 'departments', 'employees'));
     }
 
     public function update(Request $request, BusinessLicense $businessLicense)
     {
         $direction = $businessLicense->license_direction;
-        
+
         // Base validation rules
         $rules = [
             'license_name' => 'required|string|max:255',
@@ -229,7 +229,7 @@ class BusinessLicenseController extends Controller
             'license_type' => 'required|string',
             'issuing_authority' => 'required|string|max:255',
             'issue_date' => 'required|date',
-            'expiry_date' => 'required|date|after:issue_date',
+            'expiry_date' => 'nullable|date|after:issue_date',
             'status' => 'required|string',
             'description' => 'nullable|string',
             'document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
@@ -352,8 +352,8 @@ class BusinessLicenseController extends Controller
     public function expiring(Request $request)
     {
         $direction = $request->get('direction', 'company_held');
-        $days = $request->get('days', 30);
-        
+        (int)$days = $request->get('days', 30);
+
         $licenses = BusinessLicense::where('license_direction', $direction)
             ->expiringSoon($days)
             ->with(['department', 'responsibleEmployee'])
@@ -366,14 +366,14 @@ class BusinessLicenseController extends Controller
     public function compliance(Request $request)
     {
         $direction = $request->get('direction', 'company_held');
-        
+
         $baseQuery = BusinessLicense::where('license_direction', $direction);
-        
+
         $compliant = $baseQuery->clone()->active()
             ->where('expiry_date', '>', now()->addDays(30))
             ->count();
 
-        $warning = $baseQuery->clone()->expiringSoon(30)->count();
+        $warning = $baseQuery->clone()->expiringSoon(15)->count();
         $nonCompliant = $baseQuery->clone()->expired()->count();
 
         $licenses = $baseQuery->clone()
@@ -394,16 +394,16 @@ class BusinessLicenseController extends Controller
 public function getFilteredStats(Request $request)
 {
     $direction = $request->get('direction', 'company_held');
-    
+
     // Start with base query for the direction
     $query = BusinessLicense::where('license_direction', $direction);
-    
+
     // Apply the same filters as in the main index
     $this->applyFilters($query, $request, $direction);
-    
+
     // Get the filtered licenses
     $filteredLicenses = $query->get();
-    
+
     // Calculate stats based on filtered results
     if ($direction === 'company_held') {
         $stats = [
@@ -434,7 +434,7 @@ public function getFilteredStats(Request $request)
             }) ?? 0,
         ];
     }
-    
+
     return response()->json([
         'success' => true,
         'stats' => $stats,

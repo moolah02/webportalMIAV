@@ -6,15 +6,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Traits\HasRoles;
 
 class Employee extends Authenticatable
+
+
 {
     use HasFactory, Notifiable;
-use HasApiTokens, HasFactory, Notifiable;
+use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
     protected $fillable = [
         'employee_number',
         'first_name',
-        'last_name', 
+        'last_name',
         'email',
         'password',
         'phone',
@@ -202,8 +207,8 @@ use HasApiTokens, HasFactory, Notifiable;
         ]);
     }
 
-    
-   
+
+
 public function assetAssignments()
 {
     return $this->hasMany(AssetAssignment::class, 'employee_id');
@@ -294,7 +299,7 @@ public function canReceiveAssetAssignment(): bool
 
     // Add any role-based or department-based limits here
     // For example, temporary employees might have limits
-    
+
     return true;
 }
 
@@ -303,9 +308,9 @@ public function canReceiveAssetAssignment(): bool
  */
 public function canAssignAssets(): bool
 {
-    return $this->hasPermission('manage_assets') || 
+    return $this->hasPermission('manage_assets') ||
            $this->hasPermission('all') ||
-           $this->isManager() || 
+           $this->isManager() ||
            $this->isAdmin();
 }
 
@@ -328,5 +333,8 @@ public function scopeWithOverdueReturns($query)
               ->whereNull('actual_return_date');
         });
     }
-   
+    /*public function can($abilities, $arguments = [])
+    {
+        return Gate::forUser($this)->check($abilities, $arguments);
+    }*/
 }

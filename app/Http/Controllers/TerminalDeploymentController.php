@@ -23,33 +23,28 @@ class TerminalDeploymentController extends Controller
      * Display the hierarchical terminal deployment page
      */
     public function index()
-    {
-        // Dashboard summary data
-        $stats = [
-            'total_terminals' => PosTerminal::count(),
-            'active_clients' => Client::where('status', 'active')->count(),
-            'available_technicians' => Employee::active()->fieldTechnicians()->count(),
-            'terminals_by_status' => [
-                'active' => PosTerminal::where('current_status', 'active')->count(),
-                'offline' => PosTerminal::where('current_status', 'offline')->count(),
-                'maintenance' => PosTerminal::where('current_status', 'maintenance')->count(),
-                'faulty' => PosTerminal::where('current_status', 'faulty')->count(),
-            ],
-            'overdue_service' => PosTerminal::where('next_service_due', '<', now())->count(),
-            'assigned_terminals' => JobAssignment::where('status', '!=', 'cancelled')
-                ->whereJsonLength('pos_terminals', '>', 0)
-                ->get()
-                ->pluck('pos_terminals')
-                ->flatten()
-                ->unique()
-                ->count(),
-        ];
+{
+    try {
+        // Debug step by step
+        \Log::info('=== DEPLOYMENT CONTROLLER DEBUG START ===');
 
-        // Calculate unassigned terminals
-        $stats['unassigned_terminals'] = $stats['total_terminals'] - $stats['assigned_terminals'];
+        // Test basic database connection
+        $totalClients = Client::count();
+        \Log::info('Total clients in database: ' . $totalClients);
 
-        // Get active clients for the filter dropdown
-        $clients = Client::where('status', 'active')
+        // Test active clients query
+        $activeClients = Client::where('status', 'active')->get();
+        \Log::info('Active clients found: ' . $activeClients->count());
+        \Log::info('Active clients data: ', $activeClients->toArray());
+
+        // Test relationship
+        $clientsWithCount = Client::where('status', 'active')
+            ->withCount('posTerminals')
+            ->get();
+        \Log::info('Clients with terminal count: ', $clientsWithCount->toArray());
+
+        // Your original mapping
+       $clients = Client::withCount('posTerminals')
             ->withCount('posTerminals')
             ->orderBy('company_name')
             ->get()
@@ -61,26 +56,40 @@ class TerminalDeploymentController extends Controller
                 ];
             });
 
-        // Get available technicians for assignment
+        \Log::info('Final clients array: ', $clients->toArray());
+
+        // Test technicians
         $technicians = Employee::active()
             ->fieldTechnicians()
             ->with('role')
-            ->get()
-            ->map(function($technician) {
-                return [
-                    'id' => $technician->id,
-                    'name' => $technician->full_name,
-                    'specialization' => $technician->getSpecialization(),
-                    'phone' => $technician->phone,
-                    'current_workload' => $technician->jobAssignments()
-                        ->whereIn('status', ['assigned', 'in_progress'])
-                        ->count(),
-                    'availability_status' => $this->getTechnicianAvailability($technician)
-                ];
-            });
+            ->get();
+
+        \Log::info('Technicians found: ' . $technicians->count());
+
+        // Simple stats for now
+        $stats = [
+            'total_terminals' => PosTerminal::count(),
+            'active_clients' => Client::where('status', 'active')->count(),
+        ];
+
+        \Log::info('Stats: ', $stats);
+        \Log::info('=== DEPLOYMENT CONTROLLER DEBUG END ===');
 
         return view('deployment.hierarchical', compact('stats', 'clients', 'technicians'));
+
+    } catch (\Exception $e) {
+        \Log::error('Error in deployment controller: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+
+        // Return a simple debug view
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
     }
+}
 
     private function convertHierarchyToArray($hierarchy)
     {
@@ -224,7 +233,7 @@ class TerminalDeploymentController extends Controller
                 ->toArray();
 
             $query = PosTerminal::whereNotIn('id', $assignedTerminalIds);
-            
+
             if (!empty($clientIds)) {
                 $query->whereIn('client_id', $clientIds);
             }
@@ -254,19 +263,19 @@ class TerminalDeploymentController extends Controller
             foreach ($terminalGroups as $location => $terminals) {
                 // Find best technician for this location (simple round-robin for now)
                 $bestTechnician = $availableTechnicians->sortBy('current_workload')->first();
-                
+
                 if (!$bestTechnician) {
                     break;
                 }
 
                 // Create assignments in chunks
                 $terminalChunks = $terminals->chunk($terminalsPerAssignment);
-                
+
                 foreach ($terminalChunks as $chunk) {
                     if ($chunk->isEmpty()) continue;
 
                     $firstTerminal = $chunk->first();
-                    
+
                     $assignment = JobAssignment::create([
                         'assignment_id' => JobAssignment::generateAssignmentId(),
                         'technician_id' => $bestTechnician->id,
@@ -283,7 +292,7 @@ class TerminalDeploymentController extends Controller
                     ]);
 
                     $assignmentsCreated++;
-                    
+
                     $workload = $workload ?? [];
 $workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk->count();
 
@@ -389,14 +398,14 @@ $workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk-
     private function getTerminalProjects($terminal, $projectIds, $projects)
     {
         $terminalProjects = [];
-        
+
         if (!empty($projectIds)) {
             // Get assignments for this terminal with these projects
             $assignments = JobAssignment::where('pos_terminals', 'like', '%"' . $terminal->id . '"%')
                 ->whereIn('project_id', $projectIds)
                 ->with('project')
                 ->get();
-            
+
             foreach ($assignments as $assignment) {
                 if ($assignment->project) {
                     $terminalProjects[] = [
@@ -407,13 +416,13 @@ $workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk-
                     ];
                 }
             }
-            
+
             // If no specific assignments, check if terminal's client has these projects
             if (empty($terminalProjects)) {
                 $clientProjects = $terminal->client->projects()
                     ->whereIn('id', $projectIds)
                     ->get();
-                    
+
                 foreach ($clientProjects as $project) {
                     $terminalProjects[] = [
                         'id' => $project->id,
@@ -435,7 +444,7 @@ $workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk-
     {
         $badges = [
             'discovery' => 'project-discovery',
-            'servicing' => 'project-servicing', 
+            'servicing' => 'project-servicing',
             'support' => 'project-support',
             'maintenance' => 'project-maintenance'
         ];
@@ -621,14 +630,14 @@ $workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk-
         ]);
     }
 
-    
+
 
 public function getHierarchicalTerminals(Request $request)
 {
     $request->validate([
         'client_ids' => 'array',
         'client_ids.*' => 'exists:clients,id',
-        'project_ids' => 'array', 
+        'project_ids' => 'array',
         'project_ids.*' => 'exists:projects,id',
         'start_date' => 'nullable|date',
         'status_filter' => 'nullable|in:active,offline,maintenance,faulty'
@@ -679,7 +688,7 @@ public function getHierarchicalTerminals(Request $request)
 private function buildTerminalHierarchy($terminals, $projectIds = [])
 {
     $hierarchy = [];
-    
+
     // Get assigned terminal IDs for status checking
     $assignedTerminalIds = JobAssignment::where('status', '!=', 'cancelled')
         ->get()
@@ -759,7 +768,7 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
         $hierarchy[$province]['terminal_count']++;
         $hierarchy[$province]['children'][$city]['terminal_count']++;
         $hierarchy[$province]['children'][$city]['children'][$region]['terminal_count']++;
-        
+
         if ($isAssigned) {
             $hierarchy[$province]['assigned_count']++;
             $hierarchy[$province]['children'][$city]['assigned_count']++;
@@ -774,14 +783,14 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
 private function getTerminalProjectsSimple($terminal, $projectIds, $projects)
 {
     $terminalProjects = [];
-    
+
     // If specific projects selected, only show those
     if (!empty($projectIds)) {
         // Check if terminal's client has these projects
         $clientProjects = $terminal->client->projects()
             ->whereIn('id', $projectIds)
             ->get();
-            
+
         foreach ($clientProjects as $project) {
             $terminalProjects[] = [
                 'id' => $project->id,
@@ -800,7 +809,7 @@ private function getProjectColorClass($projectType)
 {
     $colors = [
         'discovery' => 'project-discovery',    // Blue
-        'servicing' => 'project-servicing',   // Green  
+        'servicing' => 'project-servicing',   // Green
         'support' => 'project-support',       // Orange
         'maintenance' => 'project-maintenance', // Purple
         'installation' => 'project-installation' // Primary
@@ -847,7 +856,7 @@ public function getInitialData()
 
     } catch (\Exception $e) {
         Log::error('Error loading initial data: ' . $e->getMessage());
-        
+
         return response()->json([
             'success' => false,
             'message' => 'Error loading initial data: ' . $e->getMessage()
@@ -866,7 +875,7 @@ public function getProjectsByClients(Request $request)
         ]);
 
         $clientIds = $request->get('client_ids', []);
-        
+
         if (empty($clientIds)) {
             return response()->json([
                 'success' => false,
@@ -902,7 +911,7 @@ public function getProjectsByClients(Request $request)
 
     } catch (\Exception $e) {
         Log::error('Error loading projects: ' . $e->getMessage());
-        
+
         return response()->json([
             'success' => false,
             'message' => 'Error loading projects: ' . $e->getMessage(),
@@ -925,7 +934,7 @@ public function createProject(Request $request)
     try {
         // Generate a unique project code
         $projectCode = 'PROJ-' . strtoupper(substr($request->type, 0, 3)) . '-' . date('Ymd') . '-' . rand(100, 999);
-        
+
         $project = Project::create([
             'project_name' => $request->name,
             'project_code' => $projectCode, // Add this line
@@ -967,13 +976,13 @@ private function getOrCreateRegionId($terminal)
     if ($terminal->region_id) {
         return $terminal->region_id;
     }
-    
+
     // If no region_id, try to find or create based on area/location
     $regionName = $terminal->area ?: $terminal->city ?: 'Unknown Region';
-    
+
     // Try to find existing region
     $region = Region::where('name', $regionName)->first();
-    
+
     if (!$region) {
         // Create a new region
         $region = Region::create([
@@ -983,10 +992,10 @@ private function getOrCreateRegionId($terminal)
             'created_by' => auth()->id()
         ]);
     }
-    
+
     // Update the terminal with the region_id for future use
     $terminal->update(['region_id' => $region->id]);
-    
+
     return $region->id;
 }
 // app/Http/Controllers/TerminalDeploymentController.php
@@ -1010,54 +1019,89 @@ public function createAssignment(Request $request)
         // ensure unique ids
         $terminalIds = array_values(array_unique($request->selected_terminals));
 
-        // optional: block terminals already assigned on active jobs
-        $alreadyAssigned = JobAssignment::where('status', '!=', 'cancelled')
+        // Check for existing assignments and track history
+        $existingAssignments = JobAssignment::where('status', '!=', 'cancelled')
             ->get()
-            ->pluck('pos_terminals')
-            ->flatten()
-            ->intersect($terminalIds)
-            ->values();
+            ->filter(function($assignment) use ($terminalIds) {
+                return collect($assignment->pos_terminals)->intersect($terminalIds)->isNotEmpty();
+            });
 
-        if ($alreadyAssigned->isNotEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Some terminals are already assigned.',
-                'conflicts' => $alreadyAssigned->all(),
-            ], 422);
+        $assignmentHistory = [];
+        foreach ($existingAssignments as $existing) {
+            $conflictingTerminals = collect($existing->pos_terminals)->intersect($terminalIds);
+
+            foreach ($conflictingTerminals as $terminalId) {
+                $assignmentHistory[] = [
+                    'terminal_id' => $terminalId,
+                    'previous_assignment_id' => $existing->assignment_id,
+                    'previous_technician' => $existing->technician->full_name ?? 'Unknown',
+                    'previous_date' => $existing->scheduled_date,
+                    'previous_service_type' => $existing->service_type,
+                    'previous_status' => $existing->status,
+                    'reassignment_date' => now()
+                ];
+            }
         }
 
         // use the first terminal for region/client context
         $first = PosTerminal::with('client')->findOrFail($terminalIds[0]);
 
+        // Create new assignment (allowing reassignment)
         $assignment = JobAssignment::create([
             'assignment_id'  => JobAssignment::generateAssignmentId(),
             'technician_id'  => (int)$request->technician_id,
             'region_id'      => $first->region_id ?: null,
             'client_id'      => $first->client_id,
             'project_id'     => $request->project_id,
-            'pos_terminals'  => $terminalIds, // <- batch of terminals
+            'pos_terminals'  => $terminalIds,
             'scheduled_date' => $request->scheduled_date,
             'service_type'   => $request->service_type,
             'priority'       => $request->priority,
             'status'         => 'assigned',
-            'notes'          => trim(($request->notes ?? 'Batch assignment')),
+            'notes'          => trim(($request->notes ?? 'Assignment with possible reassignments')),
             'created_by'     => auth()->id(),
+            // Store assignment history as JSON
+            'assignment_history' => $assignmentHistory
         ]);
+
+        // Optionally update previous assignments status to 'reassigned' instead of cancelling
+        foreach ($existingAssignments as $existing) {
+            $conflictingTerminals = collect($existing->pos_terminals)->intersect($terminalIds);
+            if ($conflictingTerminals->isNotEmpty()) {
+                // Update status to show it was reassigned
+                $existing->update([
+                    'status' => 'reassigned',
+                    'notes' => $existing->notes . "\n[REASSIGNED] Terminals reassigned to assignment: " . $assignment->assignment_id . " on " . now()->format('Y-m-d H:i')
+                ]);
+            }
+        }
 
         DB::commit();
 
+        $message = 'Assignment created successfully.';
+        if (!empty($assignmentHistory)) {
+            $reassignedCount = count($assignmentHistory);
+            $message .= " Note: {$reassignedCount} terminal(s) were reassigned from previous assignments.";
+        }
+
         return response()->json([
-            'success'      => true,
-            'message'      => 'Assignment created.',
-            'assignmentId' => $assignment->assignment_id,
+            'success'           => true,
+            'message'          => $message,
+            'assignmentId'     => $assignment->assignment_id,
+            'reassigned_count' => count($assignmentHistory),
+            'assignment_history' => $assignmentHistory
         ]);
 
     } catch (\Throwable $e) {
         DB::rollBack();
-        \Log::error('Error creating batch assignment', ['e' => $e, 'req' => $request->all()]);
+        \Log::error('Error creating assignment with history tracking', [
+            'error' => $e->getMessage(),
+            'request' => $request->all()
+        ]);
+
         return response()->json([
             'success' => false,
-            'message' => 'Error creating assignment: '.$e->getMessage(),
+            'message' => 'Error creating assignment: ' . $e->getMessage(),
         ], 500);
     }
 }
@@ -1085,13 +1129,30 @@ public function getAssignedTerminals()
 
     } catch (\Exception $e) {
         Log::error('Error getting assigned terminals: ' . $e->getMessage());
-        
+
         return response()->json([
             'success' => false,
             'message' => 'Error loading assigned terminals',
             'assigned_terminal_ids' => []
         ], 500);
     }
+}
+// SiteVisitController.php
+public function editTerminal($assignmentId, $terminalId)
+{
+    $assignment = JobAssignment::with(['technician','client','project'])
+        ->findOrFail($assignmentId);
+
+    $terminal   = PosTerminal::with('client')->findOrFail($terminalId);
+
+    // If there’s an open/in_progress visit for this assignment+terminal, load it, else null
+    $visit = \App\Models\TechnicianVisit::where('job_assignment_id', $assignment->id)
+        ->where('pos_terminal_id', $terminal->id)
+        ->latest('started_at')
+        ->first();
+
+    // This view contains the long form with your fields:
+    return view('site_visits.edit', compact('assignment','terminal','visit'));
 }
 
 }

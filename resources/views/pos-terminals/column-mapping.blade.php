@@ -15,6 +15,19 @@
         </div>
     </div>
 
+    <!-- Flash Messages -->
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-error">{{ session('error') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-error">
+            <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+        </div>
+    @endif
+
     <!-- Create New Mapping Card -->
     <div class="main-card">
         <h3 class="section-title">📝 Create New Column Mapping</h3>
@@ -22,16 +35,16 @@
 
         <form action="{{ route('pos-terminals.store-mapping') }}" method="POST" class="mapping-form">
             @csrf
-            
+
             <!-- Basic Information -->
             <div class="form-row">
                 <div class="form-group">
                     <label for="mapping_name" class="form-label">Mapping Name *</label>
-                    <input type="text" 
-                           name="mapping_name" 
-                           id="mapping_name" 
+                    <input type="text"
+                           name="mapping_name"
+                           id="mapping_name"
                            placeholder="e.g., Standard Bank Format, CBZ CSV Layout"
-                           required 
+                           required
                            class="form-input">
                     @error('mapping_name')
                         <div class="form-error">{{ $message }}</div>
@@ -51,10 +64,10 @@
 
             <div class="form-group">
                 <label for="description" class="form-label">Description</label>
-                <textarea name="description" 
-                          id="description" 
+                <textarea name="description"
+                          id="description"
                           placeholder="Describe when to use this mapping..."
-                          rows="2" 
+                          rows="2"
                           class="form-textarea"></textarea>
             </div>
 
@@ -70,50 +83,50 @@
                         <div class="field-mappings">
                             <div class="field-mapping">
                                 <label class="field-label">Terminal ID *</label>
-                                <input type="number" 
-                                       name="column_mappings[terminal_id]" 
+                                <input type="number"
+                                       name="column_mappings[terminal_id]"
                                        placeholder="Column index (e.g., 1)"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Required field - CSV column containing terminal IDs</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Terminal Model</label>
-                                <input type="number" 
-                                       name="column_mappings[terminal_model]" 
+                                <input type="number"
+                                       name="column_mappings[terminal_model]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Device type/model (e.g., VX-520)</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Serial Number</label>
-                                <input type="number" 
-                                       name="column_mappings[serial_number]" 
+                                <input type="number"
+                                       name="column_mappings[serial_number]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Device serial number</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Status</label>
-                                <input type="number" 
-                                       name="column_mappings[status]" 
+                                <input type="number"
+                                       name="column_mappings[status]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Terminal status (active, offline, etc.)</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Installation Date</label>
-                                <input type="number" 
-                                       name="column_mappings[installation_date]" 
+                                <input type="number"
+                                       name="column_mappings[installation_date]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">When terminal was installed</small>
                             </div>
@@ -126,40 +139,40 @@
                         <div class="field-mappings">
                             <div class="field-mapping">
                                 <label class="field-label">Merchant Name *</label>
-                                <input type="number" 
-                                       name="column_mappings[merchant_name]" 
+                                <input type="number"
+                                       name="column_mappings[merchant_name]"
                                        placeholder="Column index (e.g., 4)"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Required field - Business/merchant name</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Contact Person</label>
-                                <input type="number" 
-                                       name="column_mappings[merchant_contact_person]" 
+                                <input type="number"
+                                       name="column_mappings[merchant_contact_person]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Primary contact person</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Phone Number</label>
-                                <input type="number" 
-                                       name="column_mappings[merchant_phone]" 
+                                <input type="number"
+                                       name="column_mappings[merchant_phone]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Merchant phone number</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Business Type</label>
-                                <input type="number" 
-                                       name="column_mappings[business_type]" 
+                                <input type="number"
+                                       name="column_mappings[business_type]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Type of business (retail, restaurant, etc.)</small>
                             </div>
@@ -172,40 +185,40 @@
                         <div class="field-mappings">
                             <div class="field-mapping">
                                 <label class="field-label">Physical Address</label>
-                                <input type="number" 
-                                       name="column_mappings[physical_address]" 
+                                <input type="number"
+                                       name="column_mappings[physical_address]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Street address</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">City</label>
-                                <input type="number" 
-                                       name="column_mappings[city]" 
+                                <input type="number"
+                                       name="column_mappings[city]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">City or town</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Province</label>
-                                <input type="number" 
-                                       name="column_mappings[province]" 
+                                <input type="number"
+                                       name="column_mappings[province]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Province or state</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Region</label>
-                                <input type="number" 
-                                       name="column_mappings[region]" 
+                                <input type="number"
+                                       name="column_mappings[region]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Service region</small>
                             </div>
@@ -218,64 +231,76 @@
                         <div class="field-mappings">
                             <div class="field-mapping">
                                 <label class="field-label">Condition</label>
-                                <input type="number" 
-                                       name="column_mappings[condition]" 
+                                <input type="number"
+                                       name="column_mappings[condition]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Terminal condition notes</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Issues</label>
-                                <input type="number" 
-                                       name="column_mappings[issues]" 
+                                <input type="number"
+                                       name="column_mappings[issues]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Known issues or problems</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Comments</label>
-                                <input type="number" 
-                                       name="column_mappings[comments]" 
+                                <input type="number"
+                                       name="column_mappings[comments]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">General comments</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Corrective Action</label>
-                                <input type="number" 
-                                       name="column_mappings[corrective_action]" 
+                                <input type="number"
+                                       name="column_mappings[corrective_action]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">Actions taken or needed</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Site Contact</label>
-                                <input type="number" 
-                                       name="column_mappings[site_contact]" 
+                                <input type="number"
+                                       name="column_mappings[site_contact]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">On-site contact person</small>
                             </div>
 
                             <div class="field-mapping">
                                 <label class="field-label">Site Phone</label>
-                                <input type="number" 
-                                       name="column_mappings[site_phone]" 
+                                <input type="number"
+                                       name="column_mappings[site_phone]"
                                        placeholder="Column index"
-                                       min="0" max="50" 
+                                       min="0" max="50"
                                        class="column-input">
                                 <small class="field-help">On-site contact phone</small>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- NEW: Custom Fields Section -->
+                    <div class="mapping-section">
+                        <h5 class="section-header">🔧 Custom Fields</h5>
+                        <p class="section-description">Add mappings for additional columns in your CSV that aren't covered above</p>
+                        <div class="field-mappings" id="customFieldsContainer">
+                            <!-- Dynamic custom field inputs will be added here -->
+                        </div>
+                        <button type="button" class="btn btn-outline btn-small" onclick="addCustomField()">
+                            + Add Custom Field
+                        </button>
                     </div>
                 </div>
             </div>
@@ -367,6 +392,7 @@
                     <li><strong>Column Index:</strong> Enter the column number (starting from 0) where each field is located in your CSV</li>
                     <li><strong>Required Fields:</strong> Terminal ID and Merchant Name are required for successful imports</li>
                     <li><strong>Optional Fields:</strong> Leave blank if your CSV doesn't have that information</li>
+                    <li><strong>Custom Fields:</strong> Use the "Add Custom Field" button for columns not covered in standard fields</li>
                     <li><strong>Multiple Mappings:</strong> Create different mappings for different bank CSV formats</li>
                 </ul>
             </div>
@@ -387,6 +413,7 @@
                     <li>Use descriptive names like "Standard Bank Format" or "CBZ Monthly Export"</li>
                     <li>Test mappings with preview before processing large imports</li>
                     <li>Keep mappings updated when CSV formats change</li>
+                    <li>Use custom fields for any extra columns your CSV might have</li>
                 </ul>
             </div>
         </div>
@@ -394,7 +421,7 @@
 </div>
 
 <style>
-/* Page Layout */
+/* Existing styles... */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -420,7 +447,6 @@
     flex-shrink: 0;
 }
 
-/* Main Card */
 .main-card {
     background: white;
     border: 1px solid #dee2e6;
@@ -442,7 +468,6 @@
     font-size: 14px;
 }
 
-/* Form Styles */
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -486,7 +511,6 @@
     margin-top: 4px;
 }
 
-/* Mapping Configuration */
 .mapping-config {
     margin-top: 40px;
     padding-top: 30px;
@@ -564,7 +588,39 @@
     font-style: italic;
 }
 
-/* Buttons */
+/* NEW: Custom field styles */
+.custom-field-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+}
+
+.custom-field-name {
+    padding: 6px 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.btn-remove {
+    padding: 4px 8px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.btn-remove:hover {
+    background: #c82333;
+}
+
 .btn {
     display: inline-block;
     padding: 10px 20px;
@@ -601,6 +657,12 @@
     border-color: #007bff;
 }
 
+.btn-small {
+    padding: 8px 16px;
+    font-size: 12px;
+    min-width: auto;
+}
+
 .btn-action {
     padding: 6px 12px;
     background: white;
@@ -635,7 +697,31 @@
     border-top: 1px solid #dee2e6;
 }
 
-/* Table Styles */
+/* Alert styles */
+.alert {
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.alert ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+/* Table styles and other existing styles remain the same... */
 .mappings-table-container {
     overflow-x: auto;
     border: 1px solid #dee2e6;
@@ -668,31 +754,6 @@
     background: #f8f9fa;
 }
 
-.mapping-name {
-    font-weight: 500;
-    color: #333;
-}
-
-.client-name {
-    color: #666;
-    font-size: 13px;
-}
-
-.mapping-description {
-    color: #666;
-    font-size: 13px;
-}
-
-.fields-count {
-    color: #333;
-    font-size: 13px;
-}
-
-.created-date {
-    color: #666;
-    font-size: 13px;
-}
-
 .status-badge {
     display: inline-block;
     padding: 4px 8px;
@@ -718,7 +779,6 @@
     flex-wrap: wrap;
 }
 
-/* Guide Styles */
 .guide-content {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -771,35 +831,78 @@
     margin-top: 8px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .page-header {
         flex-direction: column;
         gap: 20px;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .mapping-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .form-actions {
         flex-direction: column;
     }
-    
+
     .action-buttons {
         flex-direction: column;
+    }
+
+    .custom-field-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
     }
 }
 </style>
 
 <script>
+let customFieldCount = 0;
+
+// Add a custom field mapping
+function addCustomField() {
+    customFieldCount++;
+    const container = document.getElementById('customFieldsContainer');
+    const fieldHtml = `
+        <div class="custom-field-row" id="customField_${customFieldCount}">
+            <input type="text"
+                   placeholder="Field name (e.g., Bank Reference, Special Notes)"
+                   class="custom-field-name"
+                   onchange="updateCustomFieldName(${customFieldCount}, this.value)">
+            <input type="number"
+                   name="column_mappings[custom_field_${customFieldCount}]"
+                   placeholder="Column index"
+                   min="0" max="50"
+                   class="column-input">
+            <button type="button" onclick="removeCustomField(${customFieldCount})" class="btn-remove">Remove</button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', fieldHtml);
+}
+
+// Update the name attribute when field name changes
+function updateCustomFieldName(id, name) {
+    const input = document.querySelector(`#customField_${id} input[type="number"]`);
+    if (input && name.trim()) {
+        const fieldName = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+        input.name = `column_mappings[${fieldName}]`;
+    }
+}
+
+// Remove a custom field
+function removeCustomField(id) {
+    const element = document.getElementById(`customField_${id}`);
+    if (element) {
+        element.remove();
+    }
+}
+
 // Load default mapping values
 function loadDefaultMapping() {
-    // Default column indices based on your CSV structure
     const defaultMappings = {
         'terminal_id': 1,
         'business_type': 2,
@@ -821,18 +924,17 @@ function loadDefaultMapping() {
         'site_contact': 19,
         'site_phone': 20
     };
-    
+
     Object.keys(defaultMappings).forEach(field => {
         const input = document.querySelector(`input[name="column_mappings[${field}]"]`);
         if (input) {
             input.value = defaultMappings[field];
         }
     });
-    
-    // Set default name and description
+
     document.getElementById('mapping_name').value = 'Default Bank CSV Format';
     document.getElementById('description').value = 'Standard mapping for bank CSV exports with terminal information';
-    
+
     alert('Default mapping values loaded! You can modify them as needed.');
 }
 
@@ -840,27 +942,44 @@ function loadDefaultMapping() {
 function resetMappingForm() {
     if (confirm('Are you sure you want to reset the form?')) {
         document.querySelector('.mapping-form').reset();
+        // Clear custom fields
+        document.getElementById('customFieldsContainer').innerHTML = '';
+        customFieldCount = 0;
     }
 }
 
-// Edit mapping (placeholder)
+// Placeholder functions for table actions
 function editMapping(mappingId) {
     alert(`Edit mapping functionality for ID ${mappingId} - Coming soon!`);
 }
 
-// Toggle mapping status
 function toggleMapping(mappingId) {
     if (confirm('Are you sure you want to toggle this mapping status?')) {
-        // This would send an AJAX request to toggle the mapping
-        alert(`Toggle mapping ${mappingId} - Feature to be implemented`);
+        window.location.href = `/pos-terminals/column-mapping/${mappingId}/toggle`;
     }
 }
 
-// Delete mapping
 function deleteMapping(mappingId) {
     if (confirm('Are you sure you want to delete this mapping? This action cannot be undone.')) {
-        // This would send a delete request
-        alert(`Delete mapping ${mappingId} - Feature to be implemented`);
+        // Create a form and submit delete request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/pos-terminals/column-mapping/${mappingId}`;
+
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = '_token';
+        tokenInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+        form.appendChild(methodInput);
+        form.appendChild(tokenInput);
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
@@ -872,13 +991,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const mappingName = document.getElementById('mapping_name').value.trim();
             const terminalIdColumn = document.querySelector('input[name="column_mappings[terminal_id]"]').value;
             const merchantNameColumn = document.querySelector('input[name="column_mappings[merchant_name]"]').value;
-            
+
             if (!mappingName) {
                 alert('Please enter a mapping name.');
                 e.preventDefault();
                 return;
             }
-            
+
             if (!terminalIdColumn || !merchantNameColumn) {
                 alert('Terminal ID and Merchant Name column mappings are required.');
                 e.preventDefault();

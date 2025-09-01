@@ -21,7 +21,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-card-body">
                 <div class="stat-icon stat-icon-pending">
@@ -33,7 +33,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-card-body">
                 <div class="stat-icon stat-icon-success">
@@ -45,7 +45,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-card-body">
                 <div class="stat-icon stat-icon-progress">
@@ -66,11 +66,11 @@
         </div>
         <div class="card-body">
             <div class="nav-buttons">
-                <a href="{{ route('jobs.mine') }}" 
+                <a href="{{ route('jobs.mine') }}"
                    class="btn {{ ($scope ?? 'all') === 'mine' ? 'btn-primary' : 'btn-secondary' }}">
                     My Assignments
                 </a>
-                <a href="{{ route('jobs.index') }}" 
+                <a href="{{ route('jobs.index') }}"
                    class="btn {{ ($scope ?? 'all') === 'all' ? 'btn-primary' : 'btn-secondary' }}">
                     All Assignments
                 </a>
@@ -98,13 +98,13 @@
                             @endforeach
                         </select>
                     </div>
-                    
+
                     {{-- Date Filters --}}
                     <div class="form-group">
                         <label class="form-label">From Date</label>
                         <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}" class="form-control">
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">To Date</label>
                         <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}" class="form-control">
@@ -156,7 +156,7 @@
                 <div class="search-actions">
                     <div class="form-group search-input">
                         <label class="form-label">Search</label>
-                        <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" 
+                        <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
                                class="form-control" placeholder="Assignment ID or notes...">
                     </div>
 
@@ -164,7 +164,7 @@
                         <label class="form-label">&nbsp;</label>
                         <div class="button-group">
                             <button type="submit" class="btn btn-primary">Apply Filters</button>
-                            <a href="{{ (($scope ?? 'all') === 'all') ? route('jobs.index') : route('jobs.mine') }}" 
+                            <a href="{{ (($scope ?? 'all') === 'all') ? route('jobs.index') : route('jobs.mine') }}"
                                class="btn btn-secondary">Reset</a>
                         </div>
                     </div>
@@ -179,7 +179,7 @@
             <h6 class="card-title">Assignments</h6>
             <span class="badge">{{ $assignments->count() }}</span>
         </div>
-        
+
         @if($assignments->count() > 0)
             <div class="table-responsive">
                 <table class="assignments-table">
@@ -250,10 +250,14 @@
                             </td>
 
                             <td class="text-end">
-                                <a href="{{ route('jobs.show', $a->id) }}" class="btn btn-outline">
-                                    View
-                                </a>
-                            </td>
+    <a href="{{ route('jobs.show', $a->id) }}" class="btn btn-outline">
+        View
+    </a>
+    <a href="{{ route('site_visits.index', ['assignment_id' => $a->id]) }}" class="btn btn-secondary" style="margin-left:6px;">
+        Site Visits
+    </a>
+</td>
+
                         </tr>
                     @endforeach
                     </tbody>
@@ -608,31 +612,31 @@
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .filters-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .search-actions {
         grid-template-columns: 1fr;
     }
-    
+
     .nav-buttons {
         flex-direction: column;
     }
-    
+
     .button-group {
         flex-direction: column;
     }
-    
+
     .card-body {
         padding: 1rem;
     }
-    
+
     .assignments-table {
         font-size: 0.8125rem;
     }
-    
+
     .assignments-table th,
     .assignments-table td {
         padding: 0.5rem;
@@ -643,7 +647,7 @@
     .stat-card-body {
         padding: 1rem;
     }
-    
+
     .stat-number {
         font-size: 1.5rem;
     }

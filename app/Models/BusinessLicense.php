@@ -35,7 +35,7 @@ class BusinessLicense extends Model
         'license_conditions',
         'created_by',
         'updated_by',
-        
+
         // New fields for direction and customer licenses
         'license_direction',
         'customer_id',
@@ -170,7 +170,7 @@ class BusinessLicense extends Model
         return $query->where('expiry_date', '<', now());
     }
 
-    public function scopeExpiringSoon($query, $days = 30)
+    public function scopeExpiringSoon($query, $days = 15)
     {
         return $query->where('expiry_date', '<=', now()->addDays($days))
                     ->where('expiry_date', '>', now());
@@ -262,7 +262,7 @@ class BusinessLicense extends Model
         return self::PRIORITY_LEVELS[$this->priority_level] ?? ucfirst(str_replace('_', ' ', $this->priority_level));
     }
 
-    public function getDaysUntilExpiryAttribute()
+    public function getDaysUntilExpiryAttribute(): ?int
     {
         if (!$this->expiry_date) {
             return null;
@@ -275,14 +275,14 @@ class BusinessLicense extends Model
         return $this->expiry_date && $this->expiry_date->isPast();
     }
 
-    public function getIsExpiringSoonAttribute()
-    {
-        if (!$this->expiry_date) {
-            return false;
-        }
-        $reminderDays = $this->renewal_reminder_days ?: 30;
-        return $this->expiry_date->diffInDays(now()) <= $reminderDays;
-    }
+   public function getIsExpiringSoonAttribute(): bool
+{
+    if (!$this->expiry_date) return false;
+    $threshold = 15; // fixed threshold since renewal_reminder_days was removed
+    return now()->startOfDay()->diffInDays($this->expiry_date->startOfDay(), false) <= $threshold
+        && !$this->is_expired;
+}
+
 
     public function getComplianceStatusAttribute()
     {
@@ -337,7 +337,7 @@ class BusinessLicense extends Model
             'cancelled' => 'background: #f3e5f5; color: #9c27b0;',
             'under_review' => 'background: #e3f2fd; color: #2196f3;'
         ];
-        
+
         return $colors[$this->status] ?? 'background: #f5f5f5; color: #666;';
     }
 
@@ -349,7 +349,7 @@ class BusinessLicense extends Model
             'medium' => 'background: #e3f2fd; color: #2196f3;',
             'low' => 'background: #f3e5f5; color: #9c27b0;'
         ];
-        
+
         return $colors[$this->priority_level] ?? 'background: #f5f5f5; color: #666;';
     }
 }

@@ -32,7 +32,8 @@ class TechnicianReportsController extends Controller
             'technician:id,first_name,last_name,phone',
             'posTerminal:id,terminal_id,merchant_name,physical_address,region_id,client_id',
             'posTerminal.region:id,name',
-            'posTerminal.client:id,name'
+            'posTerminal.client:id,company_name'
+
         ]);
 
         // Apply date range filter
@@ -81,16 +82,15 @@ class TechnicianReportsController extends Controller
             return $visit;
         });
 
-        // Get filter options with proper column names
-        $technicians = Employee::where('is_field_technician', true)
-            ->select('id', 'first_name', 'last_name')
-            ->orderBy('first_name')
-            ->get()
-            ->map(function($technician) {
-                $technician->name = $technician->first_name . ' ' . $technician->last_name;
-                return $technician;
-            });
-            
+       $technicians = Employee::select('id', 'first_name', 'last_name')
+    ->orderBy('first_name')
+    ->get()
+    ->map(function($technician) {
+        $technician->name = $technician->first_name . ' ' . $technician->last_name;
+        return $technician;
+    });
+
+
         $regions = Region::where('is_active', true)->orderBy('name')->get();
         // This will work with your current database structure
 $clients = Client::orderBy('company_name', 'asc')->get();
@@ -120,7 +120,8 @@ $clients = Client::orderBy('company_name', 'asc')->get();
             'technician:id,first_name,last_name,phone',
             'posTerminal:id,terminal_id,merchant_name,physical_address,region_id,client_id',
             'posTerminal.region:id,name',
-            'posTerminal.client:id,name'
+            'posTerminal.client:id,company_name'
+
         ]);
 
         $this->applyDateRangeFilter($query, $dateRange, $request);
@@ -149,7 +150,7 @@ $clients = Client::orderBy('company_name', 'asc')->get();
         }
 
         $visits = $query->orderBy('visit_date', 'desc')->get();
-        
+
         // Add computed names
         $visits->transform(function ($visit) {
             if ($visit->technician) {
@@ -157,7 +158,7 @@ $clients = Client::orderBy('company_name', 'asc')->get();
             }
             return $visit;
         });
-        
+
         $stats = $this->calculateStats($dateRange, $request);
 
         return response()->json([
@@ -175,7 +176,8 @@ $clients = Client::orderBy('company_name', 'asc')->get();
         $visit = TechnicianVisit::with([
             'technician:id,first_name,last_name,phone,specialization',
             'posTerminal.region:id,name',
-            'posTerminal.client:id,name'
+            'posTerminal.client:id,company_name'
+
         ])->findOrFail($visitId);
 
         // Add computed name
@@ -197,7 +199,7 @@ $clients = Client::orderBy('company_name', 'asc')->get();
     public function getPhotos($visitId)
     {
         $visit = TechnicianVisit::findOrFail($visitId);
-        
+
         $photos = [];
         if ($visit->photos) {
             $photoData = json_decode($visit->photos, true);
@@ -231,7 +233,8 @@ $clients = Client::orderBy('company_name', 'asc')->get();
             'technician:id,first_name,last_name,phone',
             'posTerminal:id,terminal_id,merchant_name,physical_address,region_id,client_id',
             'posTerminal.region:id,name',
-            'posTerminal.client:id,name'
+            'posTerminal.client:id,company_name'
+
         ]);
 
         $this->applyDateRangeFilter($query, $dateRange, $request);
@@ -270,10 +273,10 @@ $clients = Client::orderBy('company_name', 'asc')->get();
 
         $callback = function() use ($visits) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV headers
             fputcsv($file, [
-                'Visit ID', 'Date', 'Time', 'Technician', 'Terminal ID', 
+                'Visit ID', 'Date', 'Time', 'Technician', 'Terminal ID',
                 'Merchant Name', 'Region', 'Client', 'Status', 'Duration (minutes)',
                 'Issues Found', 'Feedback', 'Comments'
             ]);
@@ -283,7 +286,7 @@ $clients = Client::orderBy('company_name', 'asc')->get();
                 if ($visit->technician) {
                     $technicianName = $visit->technician->first_name . ' ' . $visit->technician->last_name;
                 }
-                
+
                 fputcsv($file, [
                     $visit->visit_id,
                     date('Y-m-d', strtotime($visit->visit_date)),
@@ -313,7 +316,7 @@ $clients = Client::orderBy('company_name', 'asc')->get();
     private function applyDateRangeFilter($query, $dateRange, $request)
     {
         $now = Carbon::now();
-        
+
         switch ($dateRange) {
             case 'today':
                 $query->whereDate('visit_date', $now->toDateString());
@@ -351,7 +354,7 @@ $clients = Client::orderBy('company_name', 'asc')->get();
         $this->applyDateRangeFilter($baseQuery, $dateRange, $request);
 
         $todayVisits = TechnicianVisit::whereDate('visit_date', Carbon::today())->count();
-        
+
         $workingTerminals = (clone $baseQuery)->where('terminal_status', 'seen_working')->count();
         $issuesFound = (clone $baseQuery)->where('terminal_status', 'seen_issues')->count();
         $notSeen = (clone $baseQuery)->where('terminal_status', 'not_seen')->count();

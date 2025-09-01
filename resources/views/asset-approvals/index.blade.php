@@ -2,6 +2,9 @@
 @extends('layouts.app')
 
 @section('content')
+    {{-- Ensure BASE is available for JS to build correct form actions --}}
+    <meta name="app-base-url" content="{{ url('/') }}">
+
 <div class="container">
     <!-- Header -->
     <div class="header">
@@ -52,9 +55,9 @@
             <div class="filter-group">
                 <select name="status" class="filter-select">
                     <option value="">All Status</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                    <option value="pending"   {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="approved"  {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="rejected"  {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
                     <option value="fulfilled" {{ request('status') == 'fulfilled' ? 'selected' : '' }}>Fulfilled</option>
                 </select>
             </div>
@@ -62,9 +65,9 @@
                 <select name="priority" class="filter-select">
                     <option value="">All Priority</option>
                     <option value="urgent" {{ request('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
-                    <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>High</option>
+                    <option value="high"   {{ request('priority') == 'high'   ? 'selected' : '' }}>High</option>
                     <option value="normal" {{ request('priority') == 'normal' ? 'selected' : '' }}>Normal</option>
-                    <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Low</option>
+                    <option value="low"    {{ request('priority') == 'low'    ? 'selected' : '' }}>Low</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -79,28 +82,6 @@
             @endif
         </form>
     </div>
-
-    <!-- Bulk Actions -->
-    @if($requests->where('status', 'pending')->count() > 0)
-    <div class="bulk-actions">
-        <form action="{{ route('asset-approvals.bulk-action') }}" method="POST" class="bulk-action-form">
-            @csrf
-            <div class="bulk-select">
-                <input type="checkbox" id="select-all" style="transform: scale(1.2);">
-                <label for="select-all">Select All Pending</label>
-            </div>
-            
-            <select name="action" required class="bulk-action-select">
-                <option value="">Choose Action</option>
-                <option value="approve">Bulk Approve</option>
-                <option value="reject">Bulk Reject</option>
-            </select>
-            
-            <input type="text" name="bulk_notes" placeholder="Optional notes..." class="bulk-notes">
-            <button type="submit" class="btn btn-primary">Apply</button>
-        </form>
-    </div>
-    @endif
 
     <!-- Requests Table -->
     <table class="table">
@@ -121,7 +102,7 @@
             <tr class="{{ $request->priority }}">
                 <td>
                     @if($request->status === 'pending')
-                    <input type="checkbox" name="request_ids[]" value="{{ $request->id }}" class="request-checkbox">
+                        <input type="checkbox" name="request_ids[]" value="{{ $request->id }}" class="request-checkbox">
                     @endif
                 </td>
                 <td>{{ $request->request_number }}</td>
@@ -137,8 +118,8 @@
                 <td>
                     <a href="{{ route('asset-approvals.show', $request) }}" class="btn btn-small">Review</a>
                     @if($request->status === 'pending')
-                    <button onclick="showQuickApprove({{ $request->id }})" class="btn btn-small">✅</button>
-                    <button onclick="showQuickReject({{ $request->id }})" class="btn btn-small">❌</button>
+                        <button onclick="showQuickApprove({{ $request->id }})" class="btn btn-small">✅</button>
+                        <button onclick="showQuickReject({{ $request->id }})" class="btn btn-small">❌</button>
                     @endif
                 </td>
             </tr>
@@ -164,6 +145,7 @@
         <h3>✅ Quick Approve Request</h3>
         <form id="quickApproveForm" method="POST">
             @csrf
+            <input type="hidden" name="request_id" id="approveRequestId">
             <div>
                 <label>Approval Notes (Optional)</label>
                 <textarea name="approval_notes" rows="3" placeholder="Any notes for the requester..." class="modal-textarea"></textarea>
@@ -181,6 +163,7 @@
         <h3>❌ Reject Request</h3>
         <form id="quickRejectForm" method="POST">
             @csrf
+            <input type="hidden" name="request_id" id="rejectRequestId">
             <div>
                 <label>Rejection Reason *</label>
                 <textarea name="rejection_reason" rows="4" required placeholder="Please explain why this request is being rejected..." class="modal-textarea"></textarea>
@@ -195,311 +178,87 @@
 </div>
 
 <style>
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
+.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
+.title { font-size:32px; font-weight:700; }
+.subtitle { color:#666; margin-top:5px; }
+.stats-container { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:20px; margin-bottom:30px; }
+.metric-card { background:white; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.1); display:flex; align-items:center; }
+.metric-icon { font-size:32px; margin-right:15px; }
+.metric-content { flex:1; }
+.metric-number { font-size:28px; font-weight:bold; }
+.metric-label { font-size:14px; color:#666; }
 
-.title {
-    font-size: 32px;
-    font-weight: 700;
-}
+.filter-card { background:white; padding:20px; border-radius:12px; margin-bottom:20px; }
+.filter-form { display:flex; gap:15px; flex-wrap:wrap; }
+.filter-group { flex:1; }
+.filter-select, .bulk-action-select, .bulk-notes { padding:8px; border:2px solid #ddd; border-radius:4px; width:100%; }
 
-.subtitle {
-    color: #666;
-    margin-top: 5px;
-}
+.table { width:100%; border-collapse:collapse; margin-bottom:20px; background:white; }
+.table th, .table td { padding:12px; border:1px solid #ddd; text-align:left; }
+.table th { background:#f8f9fa; font-weight:bold; }
 
-.stats-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
+.status-badge { padding:4px 12px; border-radius:12px; font-size:12px; font-weight:500; }
+.status-pending { background:#fff3e0; color:#f57c00; }
+.status-approved { background:#e8f5e8; color:#2e7d32; }
+.status-rejected { background:#ffebee; color:#d32f2f; }
+.status-fulfilled { background:#e3f2fd; color:#1976d2; }
 
-.metric-card {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-}
+.priority-badge { padding:4px 8px; border-radius:8px; font-size:11px; font-weight:500; }
+.priority-low { background:#e8f5e8; color:#2e7d32; }
+.priority-normal { background:#e3f2fd; color:#1976d2; }
+.priority-high { background:#fff3e0; color:#f57c00; }
+.priority-urgent { background:#ffebee; color:#d32f2f; }
 
-.metric-icon {
-    font-size: 32px;
-    margin-right: 15px;
-}
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; }
+.modal-content { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:8px; width:90%; max-width:500px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.modal-textarea { width:100%; padding:8px; border:2px solid #ddd; border-radius:4px; }
+.note { font-size:12px; color:#666; margin-top:5px; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; }
 
-.metric-content {
-    flex: 1;
-}
-
-.metric-number {
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.metric-label {
-    font-size: 14px;
-    color: #666;
-}
-
-.filter-card {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-
-.filter-form {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.filter-group {
-    flex: 1;
-}
-
-.filter-select,
-.bulk-action-select,
-.bulk-notes {
-    padding: 8px;
-    border: 2px solid #ddd;
-    border-radius: 4px;
-    width: 100%;
-}
-
-.bulk-actions {
-    background: #fff3e0;
-    border-left: 4px solid #ff9800;
-    padding: 15px;
-    margin-bottom: 20px;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-.table th,
-.table td {
-    padding: 12px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.table th {
-    background: #f8f9fa;
-    font-weight: bold;
-}
-
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.status-pending { background: #fff3e0; color: #f57c00; }
-.status-approved { background: #e8f5e8; color: #2e7d32; }
-.status-rejected { background: #ffebee; color: #d32f2f; }
-.status-fulfilled { background: #e3f2fd; color: #1976d2; }
-
-.priority-badge {
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.priority-low { background: #e8f5e8; color: #2e7d32; }
-.priority-normal { background: #e3f2fd; color: #1976d2; }
-.priority-high { background: #fff3e0; color: #f57c00; }
-.priority-urgent { background: #ffebee; color: #d32f2f; }
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-
-.modal-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.modal-textarea {
-    width: 100%;
-    padding: 8px;
-    border: 2px solid #ddd;
-    border-radius: 4px;
-}
-
-.note {
-    font-size: 12px;
-    color: #666;
-    margin-top: 5px;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-danger {
-    background: #f44336;
-    color: white;
-    border-color: #f44336;
-}
-
-.btn-small {
-    padding: 6px 12px;
-    font-size: 14px;
-}
+.btn { padding:8px 16px; border:2px solid #ddd; border-radius:6px; background:white; color:#333; text-decoration:none; cursor:pointer; font-weight:500; transition:all .2s; }
+.btn:hover { border-color:#2196f3; color:#2196f3; }
+.btn-primary { background:#2196f3; color:white; border-color:#2196f3; }
+.btn-danger { background:#f44336; color:white; border-color:#f44336; }
+.btn-small { padding:6px 12px; font-size:14px; }
+.pagination-wrapper { display:flex; justify-content:center; margin-top:20px; }
+.empty-state { text-align:center; padding:20px; }
 </style>
 
 <script>
-// Bulk selection
-document.getElementById('select-all').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('.request-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-    });
-});
+const BASE = (document.querySelector('meta[name="app-base-url"]')?.content || '').replace(/\/$/, '');
 
-// Quick approve/reject
+// Quick approve/reject with base-aware actions
 function showQuickApprove(requestId) {
-    document.getElementById('quickApproveForm').action = `/asset-approvals/${requestId}/approve`;
+    document.getElementById('approveRequestId').value = requestId;
+    document.getElementById('quickApproveForm').action = `${BASE}/asset-approvals/${requestId}/approve`;
     document.getElementById('quickApproveModal').style.display = 'block';
 }
 
 function showQuickReject(requestId) {
-    document.getElementById('quickRejectForm').action = `/asset-approvals/${requestId}/reject`;
+    document.getElementById('rejectRequestId').value = requestId;
+    document.getElementById('quickRejectForm').action = `${BASE}/asset-approvals/${requestId}/reject`;
     document.getElementById('quickRejectModal').style.display = 'block';
 }
 
+// Close modal + reset
 function closeModal() {
     document.getElementById('quickApproveModal').style.display = 'none';
     document.getElementById('quickRejectModal').style.display = 'none';
-    
-    // Clear form data
     document.getElementById('quickApproveForm').reset();
     document.getElementById('quickRejectForm').reset();
 }
 
-// Close modal on backdrop click
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal')) {
-        closeModal();
-    }
-});
+// Backdrop & ESC close
+document.addEventListener('click', e => { if (e.target.classList.contains('modal')) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-// Close modal on Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeModal();
-    }
-});
-
-// Add confirmation for quick actions
-document.getElementById('quickApproveForm').addEventListener('submit', function(e) {
-    if (!confirm('Are you sure you want to approve this request? All items will be approved with their requested quantities.')) {
-        e.preventDefault();
-    }
-});
-
-document.getElementById('quickRejectForm').addEventListener('submit', function(e) {
-    const reason = this.querySelector('textarea[name="rejection_reason"]').value.trim();
-    if (reason.length < 10) {
-        e.preventDefault();
-        alert('Please provide a detailed rejection reason (at least 10 characters).');
-        return;
-    }
-    
-    if (!confirm('Are you sure you want to reject this request? This action cannot be undone.')) {
-        e.preventDefault();
-    }
-});
-
-// Update bulk action form with selected requests
-document.querySelector('form[action*="bulk-action"]').addEventListener('submit', function(e) {
-    const selectedRequests = document.querySelectorAll('.request-checkbox:checked');
-    
-    if (selectedRequests.length === 0) {
-        e.preventDefault();
-        alert('Please select at least one request.');
-        return;
-    }
-    
-    const actionSelect = this.querySelector('select[name="action"]');
-    if (!actionSelect.value) {
-        e.preventDefault();
-        alert('Please select an action.');
-        return;
-    }
-    
-    // Confirmation message
-    const action = actionSelect.value;
-    const actionText = action === 'approve' ? 'approve' : 'reject';
-    if (!confirm(`Are you sure you want to ${actionText} ${selectedRequests.length} request(s)?`)) {
-        e.preventDefault();
-        return;
-    }
-    
-    // Clear existing hidden inputs
-    this.querySelectorAll('input[name="request_ids[]"]').forEach(input => input.remove());
-    
-    // Add selected request IDs as hidden inputs
-    selectedRequests.forEach(checkbox => {
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'request_ids[]';
-        hiddenInput.value = checkbox.value;
-        this.appendChild(hiddenInput);
+// Optional: prevent double submit
+['quickApproveForm','quickRejectForm'].forEach(id => {
+    const form = document.getElementById(id);
+    form?.addEventListener('submit', () => {
+        const btn = form.querySelector('button[type="submit"]');
+        btn && (btn.disabled = true);
     });
 });
 </script>
-
 @endsection

@@ -2,457 +2,267 @@
 @extends('layouts.app')
 
 @section('content')
-<div>
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
-        <div>
-            <h2 style="margin: 0; color: #333;">Review Request {{ $assetRequest->request_number }}</h2>
-            <p style="color: #666; margin: 5px 0 0 0;">Submitted by {{ $assetRequest->employee->full_name }}</p>
+<div class="container">
+
+  {{-- Flash messages (so you can see errors from reject, etc.) --}}
+  @if(session('success'))
+    <div class="pill pill-success" style="margin-bottom:12px">{{ session('success') }}</div>
+  @endif
+  @if(session('error'))
+    <div class="pill pill-danger" style="margin-bottom:12px">{{ session('error') }}</div>
+  @endif
+  @if ($errors->any())
+    <div class="pill pill-danger" style="margin-bottom:12px">
+      {{ $errors->first() }}
+    </div>
+  @endif
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h2 class="title">Review Request {{ $assetRequest->request_number }}</h2>
+      <p class="subtitle">Submitted by {{ $assetRequest->employee->full_name }}</p>
+    </div>
+    <a href="{{ route('asset-approvals.index') }}" class="btn">← Back to Approvals</a>
+  </div>
+
+  <div class="grid">
+    <!-- Main -->
+    <div class="main">
+      <!-- Overview -->
+      <div class="card">
+        <div class="row between center mb-16">
+          <h4 class="h4">📊 Request Overview</h4>
+          <div class="row gap-8">
+            <span class="status-badge status-{{ $assetRequest->status }}">{{ ucfirst($assetRequest->status) }}</span>
+            <span class="priority-badge priority-{{ $assetRequest->priority }}">{{ ucfirst($assetRequest->priority) }} Priority</span>
+          </div>
         </div>
-        <a href="{{ route('asset-approvals.index') }}" class="btn">← Back to Approvals</a>
+
+        <div class="grid4 mb-16">
+          <div>
+            <label class="muted">Submitted</label>
+            <div class="strong">{{ $assetRequest->created_at->format('M d, Y \a\t g:i A') }}</div>
+          </div>
+          <div>
+            <label class="muted">Needed By</label>
+            <div class="strong {{ $assetRequest->needed_by_date && $assetRequest->needed_by_date->isPast() ? 'danger' : '' }}">
+              {{ $assetRequest->needed_by_date ? $assetRequest->needed_by_date->format('M d, Y') : 'ASAP' }}
+              @if($assetRequest->needed_by_date && $assetRequest->needed_by_date->isPast())
+                <span class="muted">• Overdue</span>
+              @endif
+            </div>
+          </div>
+          <div>
+            <label class="muted">Total Items</label>
+            <div class="strong">{{ $assetRequest->items->sum('quantity_requested') }}</div>
+          </div>
+          <div>
+            <label class="muted">Estimated Cost</label>
+            <div class="strong primary">${{ number_format($assetRequest->total_estimated_cost, 2) }}</div>
+          </div>
+        </div>
+
+        <div>
+          <label class="muted">Business Justification</label>
+          <div class="note">{{ $assetRequest->business_justification }}</div>
+        </div>
+
+        @if($assetRequest->delivery_instructions)
+        <div class="mt-12">
+          <label class="muted">Delivery Instructions</label>
+          <div class="small">{{ $assetRequest->delivery_instructions }}</div>
+        </div>
+        @endif
+      </div>
+
+      <!-- Items -->
+      <div class="card">
+        <div class="row between center mb-12">
+          <h4 class="h4">📦 Request Items</h4>
+
+          @if($assetRequest->status === 'pending')
+          <div class="row gap-8">
+            <button class="btn btn-primary" onclick="openApprove()">✅ Approve</button>
+            <button class="btn btn-danger" onclick="openReject()">❌ Reject</button>
+          </div>
+          @endif
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th class="t-center">Requested</th>
+                <th class="t-right">Unit Price</th>
+                <th class="t-right">Subtotal</th>
+                <th class="t-center">Item Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach($assetRequest->items as $item)
+              <tr>
+                <td>
+                  <div class="strong">{{ $item->asset->name }}</div>
+                  <div class="small muted">{{ $item->asset->brand }} {{ $item->asset->model }}</div>
+                </td>
+                <td class="t-center">{{ $item->quantity_requested }}</td>
+                <td class="t-right">${{ number_format($item->unit_price_at_request, 2) }}</td>
+                <td class="t-right">${{ number_format($item->total_price, 2) }}</td>
+                <td class="t-center">
+                  <span class="status-badge status-{{ $item->item_status }}">{{ ucfirst(str_replace('_',' ',$item->item_status)) }}</span>
+                </td>
+              </tr>
+              @endforeach
+              <tr class="tfoot">
+                <td colspan="3" class="t-right strong">Grand Total:</td>
+                <td class="t-right strong primary">${{ number_format($assetRequest->total_estimated_cost, 2) }}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      @if($assetRequest->status !== 'pending')
+      <!-- Decision summary -->
+      <div class="card">
+        <h4 class="h4 mb-12">{{ in_array($assetRequest->status,['approved','fulfilled']) ? '✅ Approval Details' : '❌ Rejection Details' }}</h4>
+        <div class="mb-8 strong">{{ $assetRequest->approver->full_name ?? 'System' }}</div>
+        <div class="small muted">{{ $assetRequest->approved_at ? $assetRequest->approved_at->format('M d, Y \a\t g:i A') : 'Unknown' }}</div>
+        @if($assetRequest->approval_notes || $assetRequest->rejection_reason)
+          <div class="pill mt-12 {{ $assetRequest->status === 'rejected' ? 'pill-danger' : 'pill-success' }}">
+            {{ $assetRequest->approval_notes ?? $assetRequest->rejection_reason }}
+          </div>
+        @endif
+      </div>
+      @endif
     </div>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-        <!-- Main Content -->
-        <div>
-            <!-- Request Overview -->
-            <div class="content-card" style="margin-block-end: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 15px;">
-                    <h4 style="margin: 0; color: #333;">📊 Request Overview</h4>
-                    <div style="display: flex; gap: 10px;">
-                        <span class="status-badge status-{{ $assetRequest->status }}">
-                            {{ ucfirst($assetRequest->status) }}
-                        </span>
-                        <span class="priority-badge priority-{{ $assetRequest->priority }}">
-                            {{ ucfirst($assetRequest->priority) }} Priority
-                        </span>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-block-end: 20px;">
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase;">Submitted</label>
-                        <div style="font-weight: 500;">{{ $assetRequest->created_at->format('M d, Y \a\t g:i A') }}</div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase;">Needed By</label>
-                        <div style="font-weight: 500; {{ $assetRequest->needed_by_date && $assetRequest->needed_by_date->isPast() ? 'color: #f44336;' : '' }}">
-                            {{ $assetRequest->needed_by_date ? $assetRequest->needed_by_date->format('M d, Y') : 'ASAP' }}
-                            @if($assetRequest->needed_by_date && $assetRequest->needed_by_date->isPast())
-                                <span style="font-size: 12px;">⚠️ Overdue</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase;">Total Items</label>
-                        <div style="font-weight: 500;">{{ $assetRequest->items->sum('quantity_requested') }}</div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase;">Estimated Cost</label>
-                        <div style="font-weight: 500; color: #2196f3;">${{ number_format($assetRequest->total_estimated_cost, 2) }}</div>
-                    </div>
-                </div>
-
-                <!-- Business Justification -->
-                <div>
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Business Justification</label>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
-                        {{ $assetRequest->business_justification }}
-                    </div>
-                </div>
-
-                @if($assetRequest->delivery_instructions)
-                <div style="margin-block-start: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase;">Delivery Instructions</label>
-                    <div style="color: #666; margin-block-start: 5px;">{{ $assetRequest->delivery_instructions }}</div>
-                </div>
-                @endif
-            </div>
-
-            <!-- Items for Approval -->
-            @if($assetRequest->status === 'pending')
-            <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 20px; color: #333;">📦 Items for Approval</h4>
-                
-                <form action="{{ route('asset-approvals.approve', $assetRequest) }}" method="POST" id="approvalForm">
-                    @csrf
-                    
-                    <div style="overflow-x: auto; margin-block-end: 20px;">
-                        <table style="inline-size: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f8f9fa;">
-                                    <th style="padding: 12px; text-align: start; border-block-end: 2px solid #eee;">Asset</th>
-                                    <th style="padding: 12px; text-align: center; border-block-end: 2px solid #eee;">Requested</th>
-                                    <th style="padding: 12px; text-align: center; border-block-end: 2px solid #eee;">Available</th>
-                                    <th style="padding: 12px; text-align: center; border-block-end: 2px solid #eee;">Approve Qty</th>
-                                    <th style="padding: 12px; text-align: right; border-block-end: 2px solid #eee;">Unit Price</th>
-                                    <th style="padding: 12px; text-align: right; border-block-end: 2px solid #eee;">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($assetRequest->items as $item)
-                                <tr>
-                                    <td style="padding: 12px; border-block-end: 1px solid #eee;">
-                                        <div style="font-weight: 500;">{{ $item->asset->name }}</div>
-                                        <div style="font-size: 12px; color: #666;">{{ $item->asset->brand }} {{ $item->asset->model }}</div>
-                                        <div style="font-size: 12px; color: #666;">SKU: {{ $item->asset->sku }}</div>
-                                    </td>
-                                    <td style="padding: 12px; text-align: center; border-block-end: 1px solid #eee;">
-                                        <span style="font-weight: 500; font-size: 16px;">{{ $item->quantity_requested }}</span>
-                                    </td>
-                                    <td style="padding: 12px; text-align: center; border-block-end: 1px solid #eee;">
-                                        <span style="color: {{ $item->asset->stock_quantity >= $item->quantity_requested ? '#4caf50' : '#f44336' }};">
-                                            {{ $item->asset->stock_quantity }}
-                                        </span>
-                                        @if($item->asset->stock_quantity < $item->quantity_requested)
-                                        <div style="font-size: 11px; color: #f44336;">Insufficient Stock</div>
-                                        @endif
-                                    </td>
-                                    <td style="padding: 12px; text-align: center; border-block-end: 1px solid #eee;">
-                                        <input type="number" 
-                                               name="item_approvals[{{ $item->id }}][quantity_approved]" 
-                                               value="{{ min($item->quantity_requested, $item->asset->stock_quantity) }}" 
-                                               min="0" 
-                                               max="{{ $item->quantity_requested }}"
-                                               style="inline-size: 80px; padding: 5px; border: 2px solid #ddd; border-radius: 4px; text-align: center;"
-                                               onchange="updateTotal({{ $item->id }}, {{ $item->unit_price_at_request }})">
-                                    </td>
-                                    <td style="padding: 12px; text-align: right; border-block-end: 1px solid #eee;">
-                                        ${{ number_format($item->unit_price_at_request, 2) }}
-                                    </td>
-                                    <td style="padding: 12px; text-align: right; border-block-end: 1px solid #eee;">
-                                        <span id="total-{{ $item->id }}" style="font-weight: 500;">
-                                            ${{ number_format($item->quantity_requested * $item->unit_price_at_request, 2) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                                <tr style="background: #f8f9fa; font-weight: bold;">
-                                    <td colspan="5" style="padding: 12px; text-align: right;">Grand Total:</td>
-                                    <td style="padding: 12px; text-align: right;">
-                                        <span id="grand-total" style="font-size: 18px; color: #2196f3;">
-                                            ${{ number_format($assetRequest->total_estimated_cost, 2) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-block-end: 20px;">
-                        <label style="display: block; margin-block-end: 8px; font-weight: 500;">Approval Notes (Optional)</label>
-                        <textarea name="approval_notes" rows="3" placeholder="Any notes or conditions for this approval..."
-                                  style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;"></textarea>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                        <button type="button" onclick="approveAll()" class="btn" style="background: #4caf50; color: white; border-color: #4caf50;">
-                            ✅ Approve All Items
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            ✅ Approve Selected Quantities
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Reject Form -->
-                <div style="margin-block-start: 30px; padding-top: 20px; border-top: 2px solid #eee;">
-                    <h5 style="color: #f44336; margin-block-end: 15px;">❌ Reject This Request</h5>
-                    <form action="{{ route('asset-approvals.reject', $assetRequest) }}" method="POST">
-                        @csrf
-                        <div style="background: #ffebee; padding: 15px; border-radius: 6px; margin-block-end: 15px; border: 1px solid #f44336;">
-                            <label style="display: block; margin-block-end: 8px; font-weight: 500; color: #f44336;">Rejection Reason *</label>
-                            <textarea name="rejection_reason" rows="4" required placeholder="Please provide a detailed explanation for rejecting this request. This will be visible to the employee."
-                                      style="inline-size: 100%; padding: 8px; border: 2px solid #f44336; border-radius: 4px;"></textarea>
-                            <div style="font-size: 12px; color: #666; margin-block-start: 5px;">
-                                💡 Be specific about why the request cannot be approved (budget constraints, policy violations, etc.)
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button type="submit" class="btn" style="background: #f44336; color: white; border-color: #f44336;" 
-                                    onclick="return confirm('Are you sure you want to reject this entire request? This action cannot be undone.')">
-                                ❌ Reject Entire Request
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            @else
-            <!-- Read-only items view for processed requests -->
-            <div class="content-card">
-                <h4 style="margin-block-end: 20px; color: #333;">📦 Request Items</h4>
-                <div style="overflow-x: auto;">
-                    <table style="inline-size: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background: #f8f9fa;">
-                                <th style="padding: 12px; text-align: start; border-block-end: 2px solid #eee;">Asset</th>
-                                <th style="padding: 12px; text-align: center; border-block-end: 2px solid #eee;">Requested</th>
-                                <th style="padding: 12px; text-align: center; border-block-end: 2px solid #eee;">Approved</th>
-                                <th style="padding: 12px; text-align: center; border-block-end: 2px solid #eee;">Fulfilled</th>
-                                <th style="padding: 12px; text-align: right; border-block-end: 2px solid #eee;">Unit Price</th>
-                                <th style="padding: 12px; text-align: center; border-block-end: 2px solid #eee;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($assetRequest->items as $item)
-                            <tr>
-                                <td style="padding: 12px; border-block-end: 1px solid #eee;">
-                                    <div style="font-weight: 500;">{{ $item->asset->name }}</div>
-                                    <div style="font-size: 12px; color: #666;">{{ $item->asset->brand }} {{ $item->asset->model }}</div>
-                                </td>
-                                <td style="padding: 12px; text-align: center; border-block-end: 1px solid #eee;">
-                                    {{ $item->quantity_requested }}
-                                </td>
-                                <td style="padding: 12px; text-align: center; border-block-end: 1px solid #eee;">
-                                    <span style="font-weight: 500; color: {{ $item->quantity_approved > 0 ? '#4caf50' : '#f44336' }};">
-                                        {{ $item->quantity_approved ?: '0' }}
-                                    </span>
-                                </td>
-                                <td style="padding: 12px; text-align: center; border-block-end: 1px solid #eee;">
-                                    {{ $item->quantity_fulfilled ?: '0' }}
-                                </td>
-                                <td style="padding: 12px; text-align: right; border-block-end: 1px solid #eee;">
-                                    ${{ number_format($item->unit_price_at_request, 2) }}
-                                </td>
-                                <td style="padding: 12px; text-align: center; border-block-end: 1px solid #eee;">
-                                    <span class="status-badge status-{{ $item->item_status }}">
-                                        {{ ucfirst(str_replace('_', ' ', $item->item_status)) }}
-                                    </span>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            @endif
+    <!-- Sidebar -->
+    <aside class="side">
+      <div class="card">
+        <h4 class="h4 mb-12">👤 Requester</h4>
+        <div class="avatar">{{ substr($assetRequest->employee->full_name, 0, 1) }}</div>
+        <div class="t-center strong">{{ $assetRequest->employee->full_name }}</div>
+        <div class="t-center small muted">{{ $assetRequest->employee->role->name ?? 'Employee' }}</div>
+        <div class="t-center small muted">{{ $assetRequest->employee->department->name ?? 'No Department' }}</div>
+        @if($assetRequest->employee->email)
+        <div class="t-center small mt-6">📧
+          <a href="mailto:{{ $assetRequest->employee->email }}" class="link">{{ $assetRequest->employee->email }}</a>
         </div>
+        @endif
+      </div>
+    </aside>
+  </div>
+</div>
 
-        <!-- Sidebar -->
-        <div>
-            <!-- Requester Info -->
-            <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">👤 Requester Details</h4>
-                <div style="text-align: center; margin-block-end: 15px;">
-                    <div style="inline-size: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin: 0 auto 10px;">
-                        {{ substr($assetRequest->employee->full_name, 0, 1) }}
-                    </div>
-                    <div style="font-weight: 500; font-size: 16px;">{{ $assetRequest->employee->full_name }}</div>
-                    <div style="font-size: 14px; color: #666;">{{ $assetRequest->employee->role->name ?? 'Employee' }}</div>
-                    <div style="font-size: 14px; color: #666;">{{ $assetRequest->employee->department->name ?? 'No Department' }}</div>
-                </div>
-                @if($assetRequest->employee->email)
-                <div style="font-size: 14px; margin-block-end: 5px; text-align: center;">
-                    📧 <a href="mailto:{{ $assetRequest->employee->email }}" style="color: #2196f3;">{{ $assetRequest->employee->email }}</a>
-                </div>
-                @endif
-                <div style="font-size: 14px; color: #666; text-align: center;">
-                    Employee since {{ $assetRequest->employee->created_at->format('M Y') }}
-                </div>
-            </div>
+{{-- Approve Modal --}}
+<div id="approveModal" class="modal">
+  <div class="modal-content">
+    <h3>✅ Approve Request</h3>
+    <form method="POST" action="{{ route('asset-approvals.approve', $assetRequest) }}">
+      @csrf
+      {{-- add @method('PATCH') too if your route uses PATCH --}}
+      <label class="muted">Approval Notes (optional)</label>
+      <textarea name="approval_notes" rows="3" class="textarea" placeholder="Any notes for the requester..."></textarea>
+      <div class="modal-actions">
+        <button type="button" class="btn" onclick="closeModals()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Approve</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-            <!-- Request History -->
-            <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">📈 Employee's Request History</h4>
-                @php
-                    $employeeStats = [
-                        'total_requests' => $assetRequest->employee->assetRequests()->count(),
-                        'approved_requests' => $assetRequest->employee->assetRequests()->where('status', 'approved')->count(),
-                        'rejected_requests' => $assetRequest->employee->assetRequests()->where('status', 'rejected')->count(),
-                        'recent_requests' => $assetRequest->employee->assetRequests()->latest()->limit(3)->get()
-                    ];
-                    $approvalRate = $employeeStats['total_requests'] > 0 ? 
-                        round(($employeeStats['approved_requests'] / $employeeStats['total_requests']) * 100) : 0;
-                @endphp
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-block-end: 15px;">
-                    <div style="text-align: center; background: #f8f9fa; padding: 10px; border-radius: 6px;">
-                        <div style="font-size: 18px; font-weight: bold; color: #2196f3;">{{ $employeeStats['total_requests'] }}</div>
-                        <div style="font-size: 12px; color: #666;">Total Requests</div>
-                    </div>
-                    <div style="text-align: center; background: #f8f9fa; padding: 10px; border-radius: 6px;">
-                        <div style="font-size: 18px; font-weight: bold; color: #4caf50;">{{ $approvalRate }}%</div>
-                        <div style="font-size: 12px; color: #666;">Approval Rate</div>
-                    </div>
-                </div>
-
-                @if($employeeStats['recent_requests']->count() > 1)
-                <div style="font-size: 14px; color: #666; margin-block-end: 10px;">Recent Requests:</div>
-                @foreach($employeeStats['recent_requests']->where('id', '!=', $assetRequest->id)->take(2) as $recent)
-                <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; margin-block-end: 5px; font-size: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="font-weight: 500;">{{ $recent->request_number }}</div>
-                        <span class="status-badge status-{{ $recent->status }}" style="font-size: 10px; padding: 2px 6px;">
-                            {{ ucfirst($recent->status) }}
-                        </span>
-                    </div>
-                    <div style="color: #666; margin-block-start: 2px;">{{ $recent->created_at->format('M d, Y') }}</div>
-                </div>
-                @endforeach
-                @endif
-            </div>
-
-            <!-- Decision History -->
-            @if($assetRequest->status !== 'pending')
-            <div class="content-card">
-                <h4 style="margin-block-end: 15px; color: #333;">
-                    @if($assetRequest->status === 'approved' || $assetRequest->status === 'fulfilled')
-                        ✅ Approval Details
-                    @else
-                        ❌ Rejection Details
-                    @endif
-                </h4>
-                <div style="margin-block-end: 10px;">
-                    <div style="font-weight: 500;">{{ $assetRequest->approver->full_name ?? 'System' }}</div>
-                    <div style="font-size: 14px; color: #666;">{{ $assetRequest->approved_at ? $assetRequest->approved_at->format('M d, Y \a\t g:i A') : 'Unknown' }}</div>
-                </div>
-                @if($assetRequest->approval_notes || $assetRequest->rejection_reason)
-                <div style="background: {{ $assetRequest->status === 'rejected' ? '#ffebee' : '#e8f5e8' }}; padding: 10px; border-radius: 6px; margin-block-start: 10px;">
-                    <div style="color: {{ $assetRequest->status === 'rejected' ? '#f44336' : '#2e7d32' }}; font-size: 14px;">
-                        {{ $assetRequest->approval_notes ?? $assetRequest->rejection_reason }}
-                    </div>
-                </div>
-                @endif
-            </div>
-            @endif
-        </div>
-    </div>
+{{-- Reject Modal --}}
+<div id="rejectModal" class="modal">
+  <div class="modal-content">
+    <h3>❌ Reject Request</h3>
+    <form method="POST" action="{{ route('asset-approvals.reject', $assetRequest) }}">
+  @csrf
+      <label class="muted">Rejection Reason *</label>
+      <textarea name="rejection_reason" rows="4" class="textarea" required placeholder="Explain why this request is being rejected..."></textarea>
+      <div class="modal-actions">
+        <button type="button" class="btn" onclick="closeModals()">Cancel</button>
+        <button type="submit" class="btn btn-danger">Reject</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <style>
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+/* (unchanged styles trimmed to save space) */
+/* layout */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.title{margin:0;color:#333;font-size:28px;font-weight:700}
+.subtitle{color:#666;margin-top:6px}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:24px}
+.main,.side{min-width:0}
+.card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:20px}
+.row{display:flex;align-items:center}
+.between{justify-content:space-between}.center{align-items:center}.end{justify-content:flex-end}
+.gap-8{gap:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-6{margin-top:6px}.ml-8{margin-left:8px}
+.h4{margin:0;color:#333}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.muted{font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.02em}
+.small{font-size:13px;color:#666}
+.strong{font-weight:600}.primary{color:#2196f3}.danger{color:#d3aaa7}
+.note{background:#f8f9fa;padding:12px;border-radius:6px;border-left:4px solid #a3c5e1}
+.pill{padding:10px;border-radius:8px}.pill-success{background:#e8f5e8;color:#a3d9a6}.pill-danger{background:#ffebee;color:#d32f2f}
 
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
+/* table */
+.table-wrap{overflow-x:auto}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:12px;border:1px solid #e6e6e6;text-align:left}
+.table th{background:#f8f9fa}
+.t-center{text-align:center}.t-right{text-align:right}
+.tfoot td{background:#f8f9fa}
 
-.status-pending { background: #fff3e0; color: #f57c00; }
-.status-approved { background: #e8f5e8; color: #2e7d32; }
-.status-rejected { background: #ffebee; color: #d32f2f; }
-.status-fulfilled { background: #e3f2fd; color: #1976d2; }
-.status-partially_approved { background: #fff3e0; color: #f57c00; }
+/* badges & buttons */
+.status-badge{padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600}
+.status-pending{background:#fff3e0;color:#f57c00}
+.status-approved{background:#e8f5e8;color:#2e7d32}
+.status-rejected{background:#ffebee;color:#d32f2f}
+.status-fulfilled{background:#e3f2fd;color:#1976d2}
+.priority-badge{padding:4px 8px;border-radius:8px;font-size:11px;font-weight:600}
+.priority-low{background:#e8f5e8;color:#2e7d32}
+.priority-normal{background:#e3f2fd;color:#1976d2}
+.priority-high{background:#fff3e0;color:#f57c00}
+.priority-urgent{background:#ffebee;color:#d32f2f}
 
-.priority-badge {
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 500;
-}
+.btn{padding:8px 14px;border:2px solid #ddd;border-radius:6px;background:#fff;color:#333;cursor:pointer;font-weight:600;transition:.2s}
+.btn:hover{border-color:#2196f3;color:#2196f3}
+.btn-primary{background:#2196f3;border-color:#2196f3;color:#fff}
+.btn-primary:hover{background:#1976d2;border-color:#1976d2;color:#fff}
+.btn-danger{background:#f44336;border-color:#f44336;color:#fff}
 
-.priority-low { background: #e8f5e8; color: #2e7d32; }
-.priority-normal { background: #e3f2fd; color: #1976d2; }
-.priority-high { background: #fff3e0; color: #f57c00; }
-.priority-urgent { background: #ffebee; color: #d32f2f; }
+/* avatar */
+.avatar{width:64px;height:64px;margin:0 auto 8px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:26px}
 
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
+/* modals */
+.modal{display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.5)}
+.modal-content{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:20px;width:90%;max-width:520px}
+.textarea{width:100%;padding:10px;border:2px solid #ddd;border-radius:6px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
 
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
+@media (max-width: 860px){
+  .grid{grid-template-columns:1fr}
 }
 </style>
 
 <script>
-function updateTotal(itemId, unitPrice) {
-    const quantityInput = document.querySelector(`input[name="item_approvals[${itemId}][quantity_approved]"]`);
-    const totalSpan = document.getElementById(`total-${itemId}`);
-    const quantity = parseInt(quantityInput.value) || 0;
-    const total = quantity * unitPrice;
-    totalSpan.textContent = `${total.toFixed(2)}`;
-    
-    // Update grand total
-    updateGrandTotal();
+function openApprove(){ document.getElementById('approveModal').style.display='block'; }
+function openReject(){ document.getElementById('rejectModal').style.display='block'; }
+function closeModals(){
+  document.getElementById('approveModal').style.display='none';
+  document.getElementById('rejectModal').style.display='none';
 }
-
-function updateGrandTotal() {
-    let grandTotal = 0;
-    document.querySelectorAll('input[name*="quantity_approved"]').forEach(input => {
-        const quantity = parseInt(input.value) || 0;
-        const row = input.closest('tr');
-        const unitPriceText = row.cells[4].textContent.replace(', '').replace(',', '');
-        const unitPrice = parseFloat(unitPriceText);
-        grandTotal += quantity * unitPrice;
-    });
-    
-    const grandTotalSpan = document.getElementById('grand-total');
-    if (grandTotalSpan) {
-        grandTotalSpan.textContent = `${grandTotal.toFixed(2)}`;
-    }
-}
-
-function approveAll() {
-    // Set all quantities to their requested amounts (or available stock if less)
-    document.querySelectorAll('input[name*="quantity_approved"]').forEach(input => {
-        const max = parseInt(input.getAttribute('max'));
-        input.value = max;
-        
-        // Update the total display
-        const itemId = input.name.match(/\[(\d+)\]/)[1];
-        const row = input.closest('tr');
-        const unitPriceText = row.cells[4].textContent.replace(', '').replace(',', '');
-        const unitPrice = parseFloat(unitPriceText);
-        updateTotal(itemId, unitPrice);
-    });
-}
-
-// Initialize totals on page load
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('input[name*="quantity_approved"]').forEach(input => {
-        const itemId = input.name.match(/\[(\d+)\]/)[1];
-        const row = input.closest('tr');
-        const unitPriceText = row.cells[4].textContent.replace(', '').replace(',', '');
-        const unitPrice = parseFloat(unitPriceText);
-        updateTotal(itemId, unitPrice);
-    });
-    
-    // Add form validation
-    document.getElementById('approvalForm').addEventListener('submit', function(e) {
-        const inputs = document.querySelectorAll('input[name*="quantity_approved"]');
-        let hasValues = false;
-        
-        inputs.forEach(input => {
-            if (parseInt(input.value) > 0) {
-                hasValues = true;
-            }
-        });
-        
-        if (!hasValues) {
-            if (!confirm('No quantities approved. This will effectively reject the request. Continue?')) {
-                e.preventDefault();
-            }
-        }
-    });
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal')) closeModals();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModals();
 });
 </script>
 @endsection

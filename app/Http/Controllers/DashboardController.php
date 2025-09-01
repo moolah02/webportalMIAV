@@ -21,17 +21,17 @@ class DashboardController extends Controller
     {
         // Update user's last login when they access dashboard
         auth()->user()->updateLastLogin();
-        
+
         // Get comprehensive dashboard statistics (enhanced with licenses)
         $stats = $this->getDashboardStats();
-        
+
         return view('dashboard', compact('stats'));
     }
 
     public function technician()
     {
         $employee = auth()->user();
-        
+
         // Technician-specific stats from real data
         $stats = [
             'assigned_jobs' => JobAssignment::where('technician_id', $employee->id)
@@ -51,34 +51,32 @@ class DashboardController extends Controller
                 ->get(),
             'territories' => $this->getTechnicianTerritories($employee->id),
         ];
-        
+
         return view('technician.dashboard', compact('stats'));
     }
-
-    
 
     private function getDashboardStats()
     {
         // Basic counts from real data
         $totalTerminals = PosTerminal::count();
         $totalClients = Client::where('status', 'active')->count();
-        
+
         // Terminal status breakdown using real data
         $terminalStats = PosTerminal::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
-        
+
         $activeTerminals = $terminalStats['active'] ?? 0;
         $offlineTerminals = $terminalStats['offline'] ?? 0;
         $maintenanceTerminals = $terminalStats['maintenance'] ?? 0;
         $faultyTerminals = $terminalStats['faulty'] ?? 0;
         $decommissionedTerminals = $terminalStats['decommissioned'] ?? 0;
-        
+
         // Calculate metrics
         $needAttention = $offlineTerminals + $faultyTerminals + $maintenanceTerminals;
         $urgentIssues = $faultyTerminals;
-        
+
         // Real monthly growth
         $newTerminalsThisMonth = PosTerminal::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
@@ -86,38 +84,38 @@ class DashboardController extends Controller
         $newClientsThisMonth = Client::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
-        
+
         // Real regional distribution
         $regionalData = $this->getRegionalData();
-        
+
         // Recent activity from real data (enhanced with licenses)
         $recentActivity = $this->getRecentActivity();
-        
+
         // Top clients by terminal count (real data)
         $topClients = $this->getTopClients();
-        
+
         // System health metrics
         $networkUptime = $totalTerminals > 0 ? round(($activeTerminals / $totalTerminals) * 100, 1) : 100;
-        
+
         // Service metrics from real data
         $avgResponseTime = $this->getAverageResponseTime();
         $serviceLevel = $this->getServiceLevel();
-        
+
         // Real alerts (enhanced with license alerts)
         $alerts = $this->getSystemAlerts();
-        
+
         // Monthly trends (enhanced with licenses)
         $monthlyTrends = $this->getMonthlyTrends();
-        
+
         // Client contract status
         $contractStats = $this->getContractStats();
-        
+
         // Employee/Technician stats
         $employeeStats = $this->getEmployeeStats();
 
         // NEW: License statistics
         $licenseStats = $this->getLicenseStats();
-        
+
         // NEW: Upcoming license renewals
         $upcomingRenewals = $this->getUpcomingRenewals();
 
@@ -132,31 +130,31 @@ class DashboardController extends Controller
             'need_attention' => $needAttention,
             'urgent_issues' => $urgentIssues,
             'total_clients' => $totalClients,
-            
+
             // Growth metrics
             'new_terminals_this_month' => $newTerminalsThisMonth,
             'new_clients_this_month' => $newClientsThisMonth,
-            
+
             // Regional data
             'regional_data' => $regionalData,
-            
+
             // Activity and clients
             'recent_activity' => $recentActivity,
             'top_clients' => $topClients,
-            
+
             // System health
             'network_uptime' => $networkUptime,
             'service_level' => $serviceLevel,
             'avg_response_time' => $avgResponseTime,
-            
+
             // Alerts
             'alerts' => $alerts,
-            
+
             // Trends and analytics
             'monthly_trends' => $monthlyTrends,
             'contract_stats' => $contractStats,
             'employee_stats' => $employeeStats,
-            
+
             // NEW: License data
             'license_stats' => $licenseStats,
             'upcoming_renewals' => $upcomingRenewals,
@@ -169,19 +167,19 @@ class DashboardController extends Controller
         $totalLicenses = BusinessLicense::count();
         $activeLicenses = BusinessLicense::where('status', 'active')->count();
         $expiredLicenses = BusinessLicense::expired()->count();
-        $expiringSoon = BusinessLicense::expiringSoon(30)->count();
+        $expiringSoon = BusinessLicense::expiringSoon(15)->count();
         $criticalLicenses = BusinessLicense::where('priority_level', 'critical')->count();
         $criticalExpired = BusinessLicense::where('priority_level', 'critical')
             ->expired()->count();
         $suspendedLicenses = BusinessLicense::where('status', 'suspended')->count();
         $cancelledLicenses = BusinessLicense::where('status', 'cancelled')->count();
-        
+
         // Calculate compliance rate
         $compliantLicenses = BusinessLicense::where('status', 'active')
             ->where('expiry_date', '>', now()->addDays(30))
             ->count();
         $complianceRate = $totalLicenses > 0 ? round(($compliantLicenses / $totalLicenses) * 100) : 100;
-        
+
         // Calculate annual cost
         $annualCost = BusinessLicense::where('status', 'active')
             ->sum('renewal_cost') ?: BusinessLicense::where('status', 'active')->sum('cost');
@@ -225,7 +223,7 @@ class DashboardController extends Controller
                 $total = $regionTerminals->sum('count');
                 $active = $regionTerminals->where('status', 'active')->sum('count');
                 $issues = $regionTerminals->whereIn('status', ['offline', 'faulty', 'maintenance'])->sum('count');
-                
+
                 return [
                     'total' => $total,
                     'active' => $active,
@@ -236,7 +234,7 @@ class DashboardController extends Controller
 
         // Add regions with no terminals
         $allRegions = ['North Region', 'South Region', 'East Region', 'West Region', 'Central Region', 'HATFIELD', 'EPWORTH', 'CBD', 'MT PLEASANT'];
-        
+
         foreach ($allRegions as $region) {
             if (!$regionalData->has($region)) {
                 $regionalData[$region] = [
@@ -254,13 +252,13 @@ class DashboardController extends Controller
     private function getRecentActivity()
     {
         $activities = collect();
-        
+
         // Recent terminals added (last 10)
         $recentTerminals = PosTerminal::with('client')
             ->latest()
             ->limit(5)
             ->get();
-            
+
         foreach ($recentTerminals as $terminal) {
             $activities->push([
                 'icon' => '🖥️',
@@ -274,10 +272,10 @@ class DashboardController extends Controller
                 ]
             ]);
         }
-        
+
         // Recent clients added
         $recentClients = Client::latest()->limit(3)->get();
-        
+
         foreach ($recentClients as $client) {
             $activities->push([
                 'icon' => '🏢',
@@ -291,7 +289,7 @@ class DashboardController extends Controller
                 ]
             ]);
         }
-        
+
         // NEW: Recent license activities
         $recentLicenses = BusinessLicense::with(['creator', 'department'])
             ->latest()
@@ -351,13 +349,13 @@ class DashboardController extends Controller
                 ]
             ]);
         }
-        
+
         // Recent job assignments
         $recentJobs = JobAssignment::with('technician')
             ->latest()
             ->limit(3)
             ->get();
-            
+
         foreach ($recentJobs as $job) {
             $activities->push([
                 'icon' => '📋',
@@ -367,13 +365,13 @@ class DashboardController extends Controller
                 'time' => $job->created_at->diffForHumans(),
             ]);
         }
-        
+
         // Recent technician visits
         $recentVisits = TechnicianVisit::with(['technician', 'posTerminal'])
             ->latest('visit_date')
             ->limit(2)
             ->get();
-            
+
         foreach ($recentVisits as $visit) {
             $activities->push([
                 'icon' => '🔧',
@@ -407,7 +405,7 @@ class DashboardController extends Controller
     private function getSystemAlerts()
     {
         $alerts = collect();
-        
+
         // NEW: License alerts (highest priority)
         $expiredLicenses = BusinessLicense::expired()->count();
         if ($expiredLicenses > 0) {
@@ -418,7 +416,7 @@ class DashboardController extends Controller
             ]);
         }
 
-        $expiringSoon = BusinessLicense::expiringSoon(30)->count();
+        $expiringSoon = BusinessLicense::expiringSoon(15)->count();
         if ($expiringSoon > 0) {
             $alerts->push([
                 'type' => 'warning',
@@ -438,10 +436,10 @@ class DashboardController extends Controller
         }
 
         // High-cost renewals
-        $highCostRenewals = BusinessLicense::expiringSoon(30)
+        $highCostRenewals = BusinessLicense::expiringSoon(15)
             ->where('renewal_cost', '>', 5000)
             ->count();
-        
+
         if ($highCostRenewals > 0) {
             $alerts->push([
                 'type' => 'info',
@@ -457,7 +455,7 @@ class DashboardController extends Controller
                 ->where('expiry_date', '>', now()->addDays(30))
                 ->count();
             $complianceRate = round(($compliantLicenses / $totalLicenses) * 100);
-            
+
             if ($complianceRate < 80) {
                 $alerts->push([
                     'type' => 'warning',
@@ -466,7 +464,7 @@ class DashboardController extends Controller
                 ]);
             }
         }
-        
+
         // Critical: Faulty terminals
         $faultyCount = PosTerminal::where('status', 'faulty')->count();
         if ($faultyCount > 0) {
@@ -476,7 +474,7 @@ class DashboardController extends Controller
                 'message' => "{$faultyCount} terminals are faulty and need immediate attention"
             ]);
         }
-        
+
         // High: Offline terminals
         $offlineCount = PosTerminal::where('status', 'offline')->count();
         if ($offlineCount > 5) {
@@ -486,12 +484,12 @@ class DashboardController extends Controller
                 'message' => "{$offlineCount} terminals are offline"
             ]);
         }
-        
+
         // Contracts expiring soon
         $expiringContracts = Client::where('contract_end_date', '<=', now()->addDays(30))
             ->where('contract_end_date', '>', now())
             ->count();
-            
+
         if ($expiringContracts > 0) {
             $alerts->push([
                 'type' => 'warning',
@@ -499,7 +497,7 @@ class DashboardController extends Controller
                 'message' => "{$expiringContracts} client contracts expiring within 30 days"
             ]);
         }
-        
+
         // Pending asset requests
         $pendingRequests = AssetRequest::where('status', 'pending')->count();
         if ($pendingRequests > 10) {
@@ -509,12 +507,12 @@ class DashboardController extends Controller
                 'message' => "{$pendingRequests} asset requests pending approval"
             ]);
         }
-        
+
         // Unassigned job assignments
         $unassignedJobs = JobAssignment::where('status', 'assigned')
             ->where('scheduled_date', '<', now())
             ->count();
-            
+
         if ($unassignedJobs > 0) {
             $alerts->push([
                 'type' => 'warning',
@@ -522,7 +520,7 @@ class DashboardController extends Controller
                 'message' => "{$unassignedJobs} overdue job assignments"
             ]);
         }
-        
+
         return $alerts;
     }
 
@@ -532,27 +530,27 @@ class DashboardController extends Controller
         $terminals = [];
         $clients = [];
         $licenses = []; // NEW: License trends
-        
+
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $months[] = $date->format('M Y');
-            
+
             // Terminals added each month
             $terminals[] = PosTerminal::whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
-                
+
             // Clients added each month
             $clients[] = Client::whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
-                
+
             // NEW: Licenses added each month
             $licenses[] = BusinessLicense::whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
         }
-        
+
         return [
             'months' => $months,
             'terminals' => $terminals,
@@ -572,7 +570,7 @@ class DashboardController extends Controller
             ->count();
         $expired = Client::where('contract_end_date', '<', now())->count();
         $expiringSoon = Client::whereBetween('contract_end_date', [now(), now()->addDays(30)])->count();
-        
+
         return [
             'total' => $total,
             'active' => $active,
@@ -586,7 +584,7 @@ class DashboardController extends Controller
         $totalEmployees = Employee::where('status', 'active')->count();
         $technicians = Employee::fieldTechnicians()->active()->count();
         $managers = Employee::managers()->active()->count();
-        
+
         return [
             'total' => $totalEmployees,
             'technicians' => $technicians,
@@ -600,7 +598,7 @@ class DashboardController extends Controller
         $avgHours = JobAssignment::whereNotNull('actual_start_time')
             ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, created_at, actual_start_time)) as avg_hours')
             ->value('avg_hours');
-            
+
         return round($avgHours ?: 24, 1); // Default to 24 hours if no data
     }
 
@@ -609,7 +607,7 @@ class DashboardController extends Controller
         // Calculate service level based on completed vs assigned jobs
         $totalJobs = JobAssignment::count();
         $completedJobs = JobAssignment::where('status', 'completed')->count();
-        
+
         return $totalJobs > 0 ? round(($completedJobs / $totalJobs) * 100, 1) : 100;
     }
 
@@ -627,13 +625,13 @@ class DashboardController extends Controller
     private function getEmployeeRecentActivity($employeeId)
     {
         $activities = collect();
-        
+
         // Recent asset requests
         $recentRequests = AssetRequest::where('employee_id', $employeeId)
             ->latest()
             ->limit(5)
             ->get();
-            
+
         foreach ($recentRequests as $request) {
             $activities->push([
                 'type' => 'asset_request',
@@ -642,7 +640,7 @@ class DashboardController extends Controller
                 'date' => $request->created_at,
             ]);
         }
-        
+
         return $activities->sortByDesc('date')->take(5);
     }
     public function employee()

@@ -1,6 +1,10 @@
+
 <!-- Complete Assignments Tab Section -->
 <!-- Add this at the very top of your blade file or ensure it's in your layout -->
 <meta name="csrf-token" content="{{ csrf_token() }}">
+
+<meta name="app-base-url" content="{{ url('/') }}">
+
 
 <!-- Assignment Statistics Cards -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-block-end: 30px;">
@@ -49,21 +53,21 @@
 <div class="content-card" style="margin-block-end: 20px;">
     <form method="GET" style="display: grid; grid-template-columns: 2fr 2fr 1fr auto auto auto; gap: 15px; align-items: end;">
         <input type="hidden" name="tab" value="assignments">
-        
+
         <div>
             <label style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Search Employee</label>
-            <input type="text" name="employee_search" value="{{ request('employee_search') }}" 
-                   placeholder="Search by employee name or number..." 
+            <input type="text" name="employee_search" value="{{ request('employee_search') }}"
+                   placeholder="Search by employee name or number..."
                    style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
         </div>
-        
+
         <div>
             <label style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Search Asset</label>
-            <input type="text" name="asset_search" value="{{ request('asset_search') }}" 
-                   placeholder="Search by asset name or SKU..." 
+            <input type="text" name="asset_search" value="{{ request('asset_search') }}"
+                   placeholder="Search by asset name or SKU..."
                    style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
         </div>
-        
+
         <div>
             <label style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Department</label>
             <select name="department" style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
@@ -75,15 +79,15 @@
                 @endforeach
             </select>
         </div>
-        
+
         <div style="display: flex; align-items: center; gap: 8px; padding: 10px 0;">
-            <input type="checkbox" name="overdue_only" value="1" {{ request('overdue_only') ? 'checked' : '' }} 
+            <input type="checkbox" name="overdue_only" value="1" {{ request('overdue_only') ? 'checked' : '' }}
                    id="overdue_filter" style="transform: scale(1.2);">
             <label for="overdue_filter" style="font-weight: 500; color: #f44336;">Overdue Only</label>
         </div>
-        
+
         <button type="submit" class="btn btn-primary">Filter</button>
-        
+
         @if(request()->hasAny(['employee_search', 'asset_search', 'department', 'overdue_only']))
         <a href="{{ route('assets.index', ['tab' => 'assignments']) }}" class="btn">Clear</a>
         @endif
@@ -158,7 +162,7 @@
                             @endif
                         </td>
                         <td>
-                            <span style="font-weight: 600; color: #666;">{{ $assignment->days_assigned }} days</span>
+                            <span style="font-weight: 600; color: #666;">{{ (int)$assignment->days_assigned }} days</span>
                         </td>
                         <td>
                             <span class="status-badge" style="background: {{ $assignment->condition_when_assigned == 'new' ? '#e8f5e8' : ($assignment->condition_when_assigned == 'good' ? '#e3f2fd' : ($assignment->condition_when_assigned == 'fair' ? '#fff3e0' : '#ffebee')) }}; color: {{ $assignment->condition_when_assigned == 'new' ? '#2e7d32' : ($assignment->condition_when_assigned == 'good' ? '#1976d2' : ($assignment->condition_when_assigned == 'fair' ? '#f57c00' : '#d32f2f')) }};">
@@ -167,15 +171,15 @@
                         </td>
                         <td>
                             <div style="display: flex; gap: 5px;">
-                                <button onclick="openReturnModal({{ $assignment->id }})" 
+                                <button onclick="openReturnModal({{ $assignment->id }})"
                                         class="btn-small btn-success" title="Return Asset">
                                     ↩️ Return
                                 </button>
-                                <button onclick="openTransferModal({{ $assignment->id }})" 
+                                <button onclick="openTransferModal({{ $assignment->id }})"
                                         class="btn-small btn-warning" title="Transfer Asset">
                                     🔄 Transfer
                                 </button>
-                                <button onclick="viewAssignmentDetails({{ $assignment->id }})" 
+                                <button onclick="viewAssignmentDetails({{ $assignment->id }})"
                                         class="btn-small btn-info" title="View Details">
                                     👁️ Details
                                 </button>
@@ -186,7 +190,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Pagination -->
         @if($assignments->hasPages())
         <div style="margin-top: 20px; display: flex; justify-content: center;">
@@ -218,13 +222,13 @@
             </h3>
             <button onclick="closeReturnModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
         </div>
-        
+
         <!-- Modal Body -->
         <div style="padding: 20px;">
             <!-- Assignment Info Display -->
             <div id="returnAssignmentInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-block-end: 20px;">
                 <h4 style="margin: 0 0 15px 0; color: #333;">Assignment Details</h4>
-                
+
                 <div style="display: grid; gap: 12px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
@@ -236,7 +240,7 @@
                             <div style="font-weight: bold; color: #333;" id="return_employee_name">Loading...</div>
                         </div>
                     </div>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                         <div>
                             <label style="font-size: 12px; color: #666; text-transform: uppercase;">Assigned Date</label>
@@ -252,16 +256,16 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Overdue Warning -->
                 <div id="overdue_warning" style="display: none; margin-top: 15px; padding: 10px; background: #ffebee; color: #c62828; border-radius: 6px; font-weight: 500;"></div>
             </div>
-            
+
             <form id="returnAssetForm" method="POST">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" id="return_assignment_id" name="assignment_id">
-                
+
                 <div style="display: grid; gap: 20px;">
                     <!-- Return Details -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -269,15 +273,15 @@
                             <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
                                 Return Date <span style="color: #f44336;">*</span>
                             </label>
-                            <input type="date" name="return_date" id="return_date" value="{{ now()->format('Y-m-d') }}" required 
+                            <input type="date" name="return_date" id="return_date" value="{{ now()->format('Y-m-d') }}" required
                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
                                 Condition When Returned <span style="color: #f44336;">*</span>
                             </label>
-                            <select name="condition_when_returned" id="return_condition" required 
+                            <select name="condition_when_returned" id="return_condition" required
                                     style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                                 <option value="">Select condition...</option>
                                 <option value="new">New - Like brand new</option>
@@ -287,17 +291,17 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <!-- Return Notes -->
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
                             Return Notes
                         </label>
-                        <textarea name="return_notes" rows="3" 
-                                  placeholder="Optional notes about the return (e.g., reason for return, any issues)..." 
+                        <textarea name="return_notes" rows="3"
+                                  placeholder="Optional notes about the return (e.g., reason for return, any issues)..."
                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
                     </div>
-                    
+
                     <!-- Asset Status Update -->
                     <div>
                         <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
@@ -323,7 +327,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
                     <button type="submit" class="btn btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
@@ -350,13 +354,13 @@
             </h3>
             <button onclick="closeTransferModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
         </div>
-        
+
         <!-- Modal Body -->
         <div style="padding: 20px;">
             <!-- Current Assignment Info -->
             <div id="transferAssignmentInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-block-end: 20px;">
                 <h4 style="margin: 0 0 15px 0; color: #333;">Current Assignment</h4>
-                
+
                 <div style="display: grid; gap: 12px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
@@ -368,7 +372,7 @@
                             <div style="font-weight: bold; color: #333;" id="transfer_current_employee">Loading...</div>
                         </div>
                     </div>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                         <div>
                             <label style="font-size: 12px; color: #666; text-transform: uppercase;">Assigned Since</label>
@@ -385,39 +389,39 @@
                     </div>
                 </div>
             </div>
-            
+
             <form id="transferAssetForm" method="POST">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" id="transfer_assignment_id" name="assignment_id">
-                
+
                 <div style="display: grid; gap: 20px;">
                     <!-- New Employee Selection -->
                     <div>
                         <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
                             Transfer To <span style="color: #f44336;">*</span>
                         </label>
-                        <select name="new_employee_id" id="transfer_new_employee_id" required 
+                        <select name="new_employee_id" id="transfer_new_employee_id" required
                                 style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                             <option value="">Loading employees...</option>
                         </select>
                     </div>
-                    
+
                     <!-- Transfer Details -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
                                 Transfer Date <span style="color: #f44336;">*</span>
                             </label>
-                            <input type="date" name="transfer_date" id="transfer_date" value="{{ now()->format('Y-m-d') }}" required 
+                            <input type="date" name="transfer_date" id="transfer_date" value="{{ now()->format('Y-m-d') }}" required
                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
                                 Transfer Reason <span style="color: #f44336;">*</span>
                             </label>
-                            <select name="transfer_reason" id="transfer_reason" required 
+                            <select name="transfer_reason" id="transfer_reason" required
                                     style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                                 <option value="">Select reason...</option>
                                 <option value="Employee departure">Employee Departure</option>
@@ -428,18 +432,18 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <!-- Transfer Notes -->
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
                             Transfer Notes
                         </label>
-                        <textarea name="transfer_notes" rows="3" 
-                                  placeholder="Additional notes about this transfer..." 
+                        <textarea name="transfer_notes" rows="3"
+                                  placeholder="Additional notes about this transfer..."
                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
                     </div>
                 </div>
-                
+
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
                     <button type="submit" class="btn btn-warning" style="flex: 1; background: #ff9800; border-color: #ff9800; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
@@ -466,7 +470,7 @@
             </h3>
             <button onclick="closeDetailsModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
         </div>
-        
+
         <!-- Modal Body -->
         <div id="detailsModalBody" style="padding: 20px;">
             <!-- Content will be loaded here -->
@@ -602,6 +606,10 @@ label:has(input[type="radio"]):hover {
 
 <!-- JAVASCRIPT -->
 <script>
+
+    const BASE = document.querySelector('meta[name="app-base-url"]').content.replace(/\/$/, '');
+const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+
 // Global variables
 let currentAssignmentForReturn = null;
 let currentAssignmentForTransfer = null;
@@ -610,22 +618,22 @@ let currentAssignmentForDetails = null;
 // Return Asset Modal Functions
 function openReturnModal(assignmentId) {
     currentAssignmentForReturn = assignmentId;
-    
+
     // Reset form
     document.getElementById('returnAssetForm').reset();
-    
+
     // Show loading state
     document.getElementById('return_asset_name').textContent = 'Loading...';
     document.getElementById('return_employee_name').textContent = 'Loading...';
     document.getElementById('return_assigned_date').textContent = 'Loading...';
     document.getElementById('return_days_assigned').textContent = 'Loading...';
     document.getElementById('return_quantity').textContent = 'Loading...';
-    
+
     // Show modal
     document.getElementById('returnAssetModal').style.display = 'flex';
-    
+
     // Fetch assignment details
-    fetch(`/asset-assignments/${assignmentId}/data`, {
+   fetch(`${BASE}/asset-assignments/${assignmentId}/data`, {
         headers: {
             'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -635,17 +643,17 @@ function openReturnModal(assignmentId) {
     .then(data => {
         if (data.success) {
             const assignment = data.assignment;
-            
+
             // Populate assignment info
             document.getElementById('return_assignment_id').value = assignment.id;
             document.getElementById('return_asset_name').textContent = assignment.asset.name;
-            document.getElementById('return_employee_name').textContent = 
+            document.getElementById('return_employee_name').textContent =
                 `${assignment.employee.first_name} ${assignment.employee.last_name}`;
-            document.getElementById('return_assigned_date').textContent = 
+            document.getElementById('return_assigned_date').textContent =
                 new Date(assignment.assignment_date).toLocaleDateString();
             document.getElementById('return_days_assigned').textContent = `${data.days_assigned || 0} days`;
             document.getElementById('return_quantity').textContent = assignment.quantity_assigned;
-            
+
             // Show overdue warning if applicable
             const overdueWarning = document.getElementById('overdue_warning');
             if (data.is_overdue) {
@@ -672,22 +680,22 @@ function closeReturnModal() {
 // Transfer Asset Modal Functions
 function openTransferModal(assignmentId) {
     currentAssignmentForTransfer = assignmentId;
-    
+
     // Reset form
     document.getElementById('transferAssetForm').reset();
-    
+
     // Show loading state
     document.getElementById('transfer_asset_name').textContent = 'Loading...';
     document.getElementById('transfer_current_employee').textContent = 'Loading...';
     document.getElementById('transfer_assigned_date').textContent = 'Loading...';
     document.getElementById('transfer_days_assigned').textContent = 'Loading...';
     document.getElementById('transfer_quantity').textContent = 'Loading...';
-    
+
     // Show modal
     document.getElementById('transferAssetModal').style.display = 'flex';
-    
+
     // Fetch assignment details
-    fetch(`/asset-assignments/${assignmentId}/data`, {
+    fetch(`${BASE}/asset-assignments/${assignmentId}/data`, {
         headers: {
             'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -697,18 +705,18 @@ function openTransferModal(assignmentId) {
     .then(data => {
         if (data.success) {
             const assignment = data.assignment;
-            
+
             // Populate assignment info
             document.getElementById('transfer_assignment_id').value = assignment.id;
             document.getElementById('transfer_asset_name').textContent = assignment.asset.name;
-            document.getElementById('transfer_current_employee').textContent = 
+            document.getElementById('transfer_current_employee').textContent =
                 `${assignment.employee.first_name} ${assignment.employee.last_name}`;
             document.getElementById('transfer_current_employee').setAttribute('data-employee-id', assignment.employee.id);
-            document.getElementById('transfer_assigned_date').textContent = 
+            document.getElementById('transfer_assigned_date').textContent =
                 new Date(assignment.assignment_date).toLocaleDateString();
             document.getElementById('transfer_days_assigned').textContent = `${data.days_assigned || 0} days`;
             document.getElementById('transfer_quantity').textContent = assignment.quantity_assigned;
-            
+
             // Load available employees
             loadEmployeesForTransfer(assignment.employee.id);
         }
@@ -727,42 +735,43 @@ function closeTransferModal() {
 }
 
 function loadEmployeesForTransfer(currentEmployeeId) {
-    fetch('/employees/available', {
-        headers: {
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => response.json())
-    .then(employees => {
-        const select = document.getElementById('transfer_new_employee_id');
-        select.innerHTML = '<option value="">Choose new employee...</option>';
-        
-        employees
-            .filter(employee => employee.id != currentEmployeeId)
-            .forEach(employee => {
-                const option = document.createElement('option');
-                option.value = employee.id;
-                option.textContent = `${employee.name} (${employee.employee_number}) - ${employee.department}`;
-                select.appendChild(option);
-            });
-    })
-    .catch(error => {
-        console.error('Error loading employees:', error);
-        document.getElementById('transfer_new_employee_id').innerHTML = 
-            '<option value="">Failed to load employees</option>';
-    });
+  fetch(`${BASE}/employees/available`, {
+    headers: {
+      'Accept': 'application/json',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    }
+  })
+  .then(response => response.json())
+  .then(employees => {
+    const select = document.getElementById('transfer_new_employee_id');
+    select.innerHTML = '<option value="">Choose new employee...</option>';
+
+    employees
+      .filter(employee => employee.id != currentEmployeeId)
+      .forEach(employee => {
+        const option = document.createElement('option');
+        option.value = employee.id;
+        option.textContent = `${employee.name} (${employee.employee_number}) - ${employee.department}`;
+        select.appendChild(option);
+      });
+  })
+  .catch(error => {
+    console.error('Error loading employees:', error);
+    document.getElementById('transfer_new_employee_id').innerHTML =
+      '<option value="">Failed to load employees</option>';
+  });
 }
+
 
 // View Assignment Details Functions
 function viewAssignmentDetails(assignmentId) {
     currentAssignmentForDetails = assignmentId;
-    
+
     // Show loading state
     document.getElementById('detailsModalBody').innerHTML = '<p>Loading...</p>';
     document.getElementById('assignmentDetailsModal').style.display = 'flex';
-    
-    fetch(`/asset-assignments/${assignmentId}/data`, {
+
+   fetch(`${BASE}/asset-assignments/${assignmentId}/data`, {
         headers: {
             'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -772,10 +781,10 @@ function viewAssignmentDetails(assignmentId) {
     .then(data => {
         if (data.success) {
             const assignment = data.assignment;
-            
-            document.getElementById('detailsModalTitle').textContent = 
+
+            document.getElementById('detailsModalTitle').textContent =
                 `${assignment.asset.name} → ${assignment.employee.first_name} ${assignment.employee.last_name}`;
-            
+
             const modalBody = document.getElementById('detailsModalBody');
             modalBody.innerHTML = `
                 <div style="display: grid; gap: 20px;">
@@ -797,7 +806,7 @@ function viewAssignmentDetails(assignmentId) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div>
                         <h4 style="margin-block-end: 10px; color: #333;">📋 Assignment Timeline</h4>
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
@@ -809,7 +818,7 @@ function viewAssignmentDetails(assignmentId) {
                             </div>
                         </div>
                     </div>
-                    
+
                     ${assignment.assignment_notes ? `
                     <div>
                         <h4 style="margin-block-end: 10px; color: #333;">📝 Notes</h4>
@@ -824,7 +833,7 @@ function viewAssignmentDetails(assignmentId) {
     })
     /*.catch(error => {
         console.error('Error:', error);
-        document.getElementById('detailsModalBody').innerHTML = 
+        document.getElementById('detailsModalBody').innerHTML =
             '<p style="color: #f44336;">Failed to load assignment details</p>';
     });*/
 }
@@ -837,12 +846,12 @@ function closeDetailsModal() {
 // Form Submissions
 document.getElementById('returnAssetForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     if (!currentAssignmentForReturn) {
         alert('No assignment selected');
         return;
     }
-    
+
     const formData = new FormData(this);
     const jsonData = {};
     formData.forEach((value, key) => {
@@ -850,13 +859,13 @@ document.getElementById('returnAssetForm').addEventListener('submit', function(e
             jsonData[key] = value;
         }
     });
-    
+
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '⏳ Processing...';
     submitBtn.disabled = true;
-    
-    fetch(`/asset-assignments/${currentAssignmentForReturn}/return`, {
+
+    fetch(`${BASE}/asset-assignments/${currentAssignmentForReturn}/return`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -885,51 +894,74 @@ document.getElementById('returnAssetForm').addEventListener('submit', function(e
     });
 });
 
-document.getElementById('transferAssetForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    if (!currentAssignmentForTransfer) {
-        alert('No assignment selected');
-        return;
+document.getElementById('transferAssetForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  if (!currentAssignmentForTransfer) {
+    alert('No assignment selected');
+    return;
+  }
+
+  const select = document.getElementById('transfer_new_employee_id');
+  const chosen = select?.value || '';
+
+  if (!chosen) {
+    alert('Choose who to transfer to');
+    return;
+  }
+
+  const formData = new FormData(this);
+  // 🔑 Force the value into the payload so Laravel definitely sees it
+  formData.set('new_employee_id', chosen);
+
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
+  submitBtn.innerHTML = '⏳ Processing...';
+  submitBtn.disabled = true;
+
+ fetch(`${BASE}/asset-assignments/${currentAssignmentForTransfer}/transfer`, {
+  method: 'POST',
+  headers: {
+    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+    'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+  },
+  body: formData        // keep FormData (do NOT set Content-Type)
+})
+
+  .then(async (response) => {
+    const raw = await response.text();
+    let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
+    if (!response.ok) {
+      const msg = (data && (data.message || JSON.stringify(data.errors || data))) || raw || `HTTP ${response.status}`;
+      throw new Error(msg);
     }
-    
-    const formData = new FormData(this);
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '⏳ Processing...';
-    submitBtn.disabled = true;
-    
-    fetch(`/asset-assignments/${currentAssignmentForTransfer}/transfer`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Asset transferred successfully!');
-            closeTransferModal();
-            window.location.reload();
-        } else {
-            alert('Failed to transfer asset: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Failed to process transfer');
-    })
-    .finally(() => {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-    });
+    return data || {};
+  })
+  .then((data) => {
+    if (data.success) {
+      alert('Asset transferred successfully!');
+      closeTransferModal();
+      window.location.reload();
+    } else {
+      alert('Failed to transfer asset: ' + (data.message || 'Unknown error'));
+    }
+  })
+  .catch((err) => {
+    console.error(err);
+    alert('Failed to process transfer: ' + err.message);
+  })
+  .finally(() => {
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
+  });
 });
+
 
 // Auto-update asset status based on condition
 document.getElementById('return_condition')?.addEventListener('change', function() {
     const statusRadios = document.querySelectorAll('input[name="update_asset_status"]');
-    
+
     switch(this.value) {
         case 'poor':
             statusRadios.forEach(radio => {
@@ -955,7 +987,7 @@ document.addEventListener('click', function(event) {
     const returnModal = document.getElementById('returnAssetModal');
     const detailsModal = document.getElementById('assignmentDetailsModal');
     const transferModal = document.getElementById('transferAssetModal');
-    
+
     if (event.target === returnModal) {
         closeReturnModal();
     }

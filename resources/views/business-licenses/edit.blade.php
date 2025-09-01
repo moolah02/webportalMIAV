@@ -21,11 +21,11 @@
             <form action="{{ route('business-licenses.update', $businessLicense) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                
+
                 <!-- License Type Display (Read-only) -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">🔄 License Type</h4>
-                    
+
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span style="font-size: 18px;">{{ $businessLicense->isCompanyHeld() ? '🏢' : '👥' }}</span>
@@ -42,7 +42,7 @@
                 <!-- Basic Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📋 Basic Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Name *</label>
@@ -52,7 +52,7 @@
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Number *</label>
                             <input type="text" name="license_number" value="{{ old('license_number', $businessLicense->license_number) }}" required
@@ -76,7 +76,7 @@
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status *</label>
                             <select name="status" required style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
@@ -111,7 +111,7 @@
                 <!-- Dates Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📅 Dates Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Issue Date *</label>
@@ -121,7 +121,7 @@
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Expiry Date *</label>
                             <input type="date" name="expiry_date" value="{{ old('expiry_date', $businessLicense->expiry_date?->format('Y-m-d')) }}" required
@@ -148,7 +148,7 @@
                 <!-- Company-Held License Fields -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">💰 Financial Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Initial Cost ($)</label>
@@ -158,7 +158,7 @@
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Renewal Cost ($)</label>
                             <input type="number" name="renewal_cost" value="{{ old('renewal_cost', $businessLicense->renewal_cost) }}" step="0.01" min="0"
@@ -170,70 +170,11 @@
                     </div>
                 </div>
 
-                <!-- Assignment and Management -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">👥 Assignment & Management</h4>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Department *</label>
-                            <select name="department_id" required style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
-                                <option value="">Select Department</option>
-                                @foreach($departments as $department)
-                                <option value="{{ $department->id }}" {{ old('department_id', $businessLicense->department_id) == $department->id ? 'selected' : '' }}>
-                                    {{ $department->name }}
-                                </option>
-                                @endforeach
-                            </select>
-                            @error('department_id')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Responsible Employee</label>
-                            <select name="responsible_employee_id" style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
-                                <option value="">Select Employee</option>
-                                @foreach($employees as $employee)
-                                <option value="{{ $employee->id }}" {{ old('responsible_employee_id', $businessLicense->responsible_employee_id) == $employee->id ? 'selected' : '' }}>
-                                    {{ $employee->full_name }}
-                                </option>
-                                @endforeach
-                            </select>
-                            @error('responsible_employee_id')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Priority Level *</label>
-                            <select name="priority_level" required style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
-                                @foreach(\App\Models\BusinessLicense::PRIORITY_LEVELS as $key => $label)
-                                <option value="{{ $key }}" {{ old('priority_level', $businessLicense->priority_level) == $key ? 'selected' : '' }}>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            @error('priority_level')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Location</label>
-                            <input type="text" name="location" value="{{ old('location', $businessLicense->location) }}"
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('location')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Company Additional Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📝 Additional Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Regulatory Body</label>
@@ -243,7 +184,7 @@
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Renewal Reminder (Days)</label>
                             <input type="number" name="renewal_reminder_days" value="{{ old('renewal_reminder_days', $businessLicense->renewal_reminder_days) }}" min="1" max="365"
@@ -294,7 +235,7 @@
                 <!-- Customer Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">👤 Customer Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Customer Name *</label>
@@ -304,7 +245,7 @@
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Customer Email *</label>
                             <input type="email" name="customer_email" value="{{ old('customer_email', $businessLicense->customer_email) }}" required
@@ -324,7 +265,7 @@
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Customer Phone</label>
                             <input type="text" name="customer_phone" value="{{ old('customer_phone', $businessLicense->customer_phone) }}"
@@ -356,7 +297,7 @@
                 <!-- License & Billing Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">💰 License & Billing Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Revenue Amount ($) *</label>
@@ -366,7 +307,7 @@
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Billing Cycle *</label>
                             <select name="billing_cycle" required style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
@@ -390,7 +331,7 @@
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Support Level *</label>
                             <select name="support_level" required style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
@@ -418,7 +359,7 @@
                 <!-- Customer License Terms -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📋 License Terms & Conditions</h4>
-                    
+
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Terms</label>
                         <textarea name="license_terms" rows="4" style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">{{ old('license_terms', $businessLicense->license_terms) }}</textarea>
@@ -442,14 +383,14 @@
                 <!-- Document Upload -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📄 Document</h4>
-                    
+
                     @if($businessLicense->document_path)
                     <div style="background: #e8f5e8; padding: 10px; border-radius: 4px; margin-block-end: 10px; display: flex; align-items: center; gap: 10px;">
                         <span style="color: #4caf50;">📄 Current document: {{ basename($businessLicense->document_path) }}</span>
                         <a href="{{ route('business-licenses.download', $businessLicense) }}" style="color: #2196f3; text-decoration: none; font-size: 14px;">Download</a>
                     </div>
                     @endif
-                    
+
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Document</label>
                         <input type="file" name="document" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"

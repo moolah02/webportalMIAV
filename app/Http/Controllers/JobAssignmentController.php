@@ -24,7 +24,7 @@ class JobAssignmentController extends Controller
         // Clear any cached data
         \Cache::forget('job_assignment_regions');
         \Cache::forget('job_assignment_technicians');
-        
+
         // Get field technicians - FIXED to filter properly
         $technicians = Employee::active()
             ->whereHas('role', function($query) {
@@ -46,7 +46,7 @@ class JobAssignmentController extends Controller
         if ($technicians->isEmpty()) {
             // Adjust these role IDs based on your actual technician roles
             $technicianRoleIds = [3, 4]; // Update these with your actual technician role IDs
-            
+
             $technicians = Employee::active()
                 ->whereIn('role_id', $technicianRoleIds)
                 ->select('id', 'first_name', 'last_name', 'phone', 'role_id')
@@ -74,53 +74,53 @@ class JobAssignmentController extends Controller
                 $region->pos_terminals_count = PosTerminal::where('region_id', $region->id)->count();
                 return $region;
             });
-            
+
         \Log::info('Regions loaded', ['regions' => $regions->toArray()]);
 
         $clients = Client::orderBy('company_name')->get();
 
         // Get service types from categories
         $serviceTypes = Category::getServiceTypesWithDetails();
-        
+
         // Get status options for filtering
         $statusOptions = [
             'assigned' => 'Assigned',
-            'in_progress' => 'In Progress', 
+            'in_progress' => 'In Progress',
             'completed' => 'Completed',
             'cancelled' => 'Cancelled'
         ];
 
         // Get assignments with relationships - ADD MORE DEBUGGING
         $assignments = JobAssignment::with([
-            'technician:id,first_name,last_name,phone,role_id', 
+            'technician:id,first_name,last_name,phone,role_id',
             'technician.role:id,name',
             'region:id,name',
             'client:id,company_name'
         ])
         ->orderBy('created_at', 'desc') // Changed from scheduled_date to created_at
         ->get();
-        
+
         \Log::info('Assignments query result', [
             'total_assignments' => JobAssignment::count(),
             'assignments_with_relations' => $assignments->count(),
             'raw_assignments' => JobAssignment::select('id', 'assignment_id', 'technician_id', 'region_id', 'status', 'created_at')->get()->toArray()
         ]);
-        
+
         // Add computed fields to assignments
         $assignments->transform(function ($assignment) {
             if ($assignment->technician) {
                 $assignment->technician->name = $assignment->technician->first_name . ' ' . $assignment->technician->last_name;
                 $assignment->technician->specialization = $assignment->technician->role->name ?? 'General';
             }
-            
+
             // Add assignment_number if it doesn't exist
             if (!isset($assignment->assignment_number)) {
                 $assignment->assignment_number = $assignment->assignment_id;
             }
-            
+
             return $assignment;
         });
-        
+
         \Log::info('Final assignments for view', [
             'assignments_count' => $assignments->count(),
             'assignment_ids' => $assignments->pluck('assignment_id')->toArray()
@@ -137,9 +137,9 @@ class JobAssignmentController extends Controller
         ];
 
         return view('jobs.assignment', compact(
-            'technicians', 
-            'regions', 
-            'clients', 
+            'technicians',
+            'regions',
+            'clients',
             'assignments',
             'serviceTypes',
             'statusOptions',
@@ -150,7 +150,7 @@ class JobAssignmentController extends Controller
     /**
      * Get terminals for a region
      */
-    
+
 public function getRegionTerminals($regionId, Request $request)
 {
     try {
@@ -196,7 +196,7 @@ public function getRegionTerminals($regionId, Request $request)
         ], 500);
     }
 }
-    public function store(Request $request)
+public function store(Request $request)
 {
     \Log::info('Job assignment store request', [
         'all_data' => $request->all(),
@@ -205,11 +205,11 @@ public function getRegionTerminals($regionId, Request $request)
 
     // Get valid service types from categories
     $validServiceTypes = Category::getSelectOptions(Category::TYPE_SERVICE_TYPE)->keys()->toArray();
-    
+
     // If no service types from categories, use fallback
     if (empty($validServiceTypes)) {
         $validServiceTypes = [
-            'routine_maintenance', 'emergency_repair', 'software_update', 
+            'routine_maintenance', 'emergency_repair', 'software_update',
             'hardware_replacement', 'network_configuration', 'installation', 'decommission'
         ];
     }
@@ -247,18 +247,18 @@ public function getRegionTerminals($regionId, Request $request)
     }
 
     DB::beginTransaction();
-    
+
     try {
         // Decode and validate terminals
         $terminalsJson = $request->get('pos_terminals');
         \Log::info('Decoding terminals JSON', ['json' => $terminalsJson]);
-        
+
         $terminals = json_decode($terminalsJson, true);
-        
+
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \Exception('Invalid JSON in pos_terminals: ' . json_last_error_msg());
         }
-        
+
         if (empty($terminals) || !is_array($terminals)) {
             throw new \Exception('At least one terminal must be selected');
         }
@@ -275,7 +275,7 @@ public function getRegionTerminals($regionId, Request $request)
 
         // Generate assignment ID
         $assignmentId = JobAssignment::generateAssignmentId();
-        
+
         \Log::info('Creating assignment with validated data', [
             'assignment_id' => $assignmentId,
             'terminals_count' => count($validTerminals),
@@ -299,7 +299,7 @@ public function getRegionTerminals($regionId, Request $request)
         ]);
 
         DB::commit();
-        
+
         \Log::info('Assignment created successfully', [
             'id' => $assignment->id,
             'assignment_id' => $assignment->assignment_id
@@ -320,7 +320,7 @@ public function getRegionTerminals($regionId, Request $request)
 
     } catch (\Exception $e) {
         DB::rollBack();
-        
+
         \Log::error('Job assignment creation failed', [
             'error' => $e->getMessage(),
             'file' => $e->getFile(),
@@ -328,16 +328,16 @@ public function getRegionTerminals($regionId, Request $request)
             'trace' => $e->getTraceAsString(),
             'request_data' => $request->except(['_token'])
         ]);
-        
+
         $errorMessage = 'Error creating assignment: ' . $e->getMessage();
-        
+
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'success' => false,
                 'message' => $errorMessage
             ], 500);
         }
-        
+
         return redirect()->back()
                         ->withInput()
                         ->withErrors(['error' => $errorMessage]);
@@ -348,7 +348,7 @@ public function complete($assignmentId)
 {
     try {
         $assignment = JobAssignment::findOrFail($assignmentId);
-        
+
         if (!in_array($assignment->status, ['assigned', 'in_progress'])) {
             return response()->json([
                 'success' => false,
@@ -357,7 +357,7 @@ public function complete($assignmentId)
         }
 
         $updateData = ['status' => 'completed'];
-        
+
         if (!$assignment->actual_start_time) {
             $updateData['actual_start_time'] = Carbon::now();
         }
@@ -441,9 +441,9 @@ public function generateReport($assignmentId)
 
         try {
             $assignment = JobAssignment::findOrFail($assignmentId);
-            
+
             $updateData = ['status' => $request->status];
-            
+
             // Add timestamps based on status
             if ($request->status === 'in_progress' && $assignment->status === 'assigned') {
                 $updateData['actual_start_time'] = Carbon::now();
@@ -476,7 +476,7 @@ public function generateReport($assignmentId)
     {
         try {
             $assignment = JobAssignment::findOrFail($assignmentId);
-            
+
             if ($assignment->status !== 'assigned') {
                 return response()->json([
                     'success' => false,
@@ -505,44 +505,44 @@ public function generateReport($assignmentId)
     public function export(Request $request)
     {
         $status = $request->get('status');
-        
+
         $query = JobAssignment::with([
-            'technician:id,first_name,last_name', 
-            'region:id,name', 
+            'technician:id,first_name,last_name',
+            'region:id,name',
             'client:id,company_name'
         ]);
-        
+
         if ($status) {
             $query->where('status', $status);
         }
-        
+
         $assignments = $query->orderBy('scheduled_date', 'desc')->get();
-        
+
         $filename = 'job-assignments-' . date('Y-m-d') . '.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ];
-        
+
         $callback = function() use ($assignments) {
             $file = fopen('php://output', 'w');
-            
+
             fputcsv($file, [
-                'Assignment ID', 'Technician', 'Region', 'Terminals Count', 
-                'Client', 'Scheduled Date', 'Service Type', 'Priority', 
+                'Assignment ID', 'Technician', 'Region', 'Terminals Count',
+                'Client', 'Scheduled Date', 'Service Type', 'Priority',
                 'Status', 'Estimated Hours', 'Notes'
             ]);
-            
+
             foreach ($assignments as $assignment) {
                 $technicianName = '';
                 if ($assignment->technician) {
                     $technicianName = $assignment->technician->first_name . ' ' . $assignment->technician->last_name;
                 }
-                
+
                 // Get service type name from category
                 $serviceTypeCategory = Category::findBySlugAndType($assignment->service_type, Category::TYPE_SERVICE_TYPE);
                 $serviceTypeName = $serviceTypeCategory ? $serviceTypeCategory->name : $assignment->service_type;
-                
+
                 fputcsv($file, [
                     $assignment->assignment_id,
                     $technicianName,
@@ -557,10 +557,10 @@ public function generateReport($assignmentId)
                     $assignment->notes
                 ]);
             }
-            
+
             fclose($file);
         };
-        
+
         return response()->stream($callback, 200, $headers);
     }
  /**
@@ -586,7 +586,7 @@ public function generateReport($assignmentId)
             ->paginate(25)
             ->withQueryString();
 
-        
+
         // dropdowns
         $technicians = Employee::active()->fieldTechnicians()
             ->orderBy('first_name')->get(['id','first_name','last_name']);

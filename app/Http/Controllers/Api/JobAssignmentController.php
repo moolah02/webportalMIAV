@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use App\Models\JobAssignment;
 use App\Models\PosTerminal;
 use Carbon\Carbon;
 
 class JobAssignmentController extends Controller
 {
+
+
+
     /**
      * Get all assignments (with filtering)
      */
@@ -60,7 +64,7 @@ class JobAssignmentController extends Controller
     public function myAssignments(Request $request)
     {
         $employee = $request->user();
-        
+
         $query = JobAssignment::with(['posTerminals', 'client'])
                               ->where('technician_id', $employee->id);
 
@@ -140,8 +144,8 @@ class JobAssignmentController extends Controller
 
         // Check if user can view this assignment
         $employee = $request->user();
-        if (!$employee->hasPermission('manage_team') && 
-            !$employee->hasPermission('all') && 
+        if (!$employee->hasPermission('manage_team') &&
+            !$employee->hasPermission('all') &&
             $assignment->technician_id !== $employee->id) {
             return response()->json([
                 'success' => false,
@@ -207,8 +211,8 @@ class JobAssignmentController extends Controller
         $employee = $request->user();
 
         // Check permissions
-        if (!$employee->hasPermission('manage_team') && 
-            !$employee->hasPermission('all') && 
+        if (!$employee->hasPermission('manage_team') &&
+            !$employee->hasPermission('all') &&
             $assignment->technician_id !== $employee->id) {
             return response()->json([
                 'success' => false,
@@ -217,7 +221,7 @@ class JobAssignmentController extends Controller
         }
 
         $assignment->status = $request->status;
-        
+
         if ($request->has('notes')) {
             $assignment->notes = $request->notes;
         }
@@ -281,7 +285,7 @@ class JobAssignmentController extends Controller
 
         $assignment->status = 'in_progress';
         $assignment->actual_start_time = now();
-        
+
         if ($request->has('latitude') && $request->has('longitude')) {
             $assignment->start_location = [
                 'latitude' => $request->latitude,
@@ -347,7 +351,7 @@ class JobAssignmentController extends Controller
         $assignment->status = 'completed';
         $assignment->actual_end_time = now();
         $assignment->completion_notes = $request->completion_notes;
-        
+
         if ($request->has('latitude') && $request->has('longitude')) {
             $assignment->end_location = [
                 'latitude' => $request->latitude,
@@ -402,8 +406,8 @@ class JobAssignmentController extends Controller
         $employee = $request->user();
 
         // Check permissions
-        if (!$employee->hasPermission('manage_team') && 
-            !$employee->hasPermission('all') && 
+        if (!$employee->hasPermission('manage_team') &&
+            !$employee->hasPermission('all') &&
             $assignment->technician_id !== $employee->id) {
             return response()->json([
                 'success' => false,
@@ -451,7 +455,7 @@ class JobAssignmentController extends Controller
         }
 
         $path = $request->file('photo')->store('job-photos', 'public');
-        
+
         $photoData = [
             'path' => $path,
             'url' => asset('storage/' . $path),
@@ -474,20 +478,283 @@ class JobAssignmentController extends Controller
         ]);
     }
 
-    /**
-     * Get photos for assignment
-     */
-    public function getPhotos($id)
-    {
-        $assignment = JobAssignment::findOrFail($id);
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'photos' => $assignment->photos ?? []
-            ]
-        ]);
+     public function getRegionTerminals($regionId, Request $request)
+    {
+        try {
+            // Optional: validate inputs
+            $request->validate([
+                'client_id' => 'nullable|integer',
+            ]);
+
+            \Log::info('Getting terminals for region', [
+                'region_id' => (int) $regionId,
+                'client_id' => $request->get('client_id')
+            ]);
+
+            $query = PosTerminal::query()
+                ->where('region_id', (int) $regionId)
+                ->where('is_active', true);
+
+            if ($request->filled('client_id')) {
+                $query->where('client_id', (int) $request->get('client_id'));
+            }
+
+            $terminals = $query
+                ->with(['client:id,company_name']) // keep your existing shape
+                ->select([
+                    'id',
+                    'terminal_id',
+                    'merchant_name',
+                    'client_id',
+                    'status',
+                    'address',
+                    'physical_address',
+                    'region_id',
+                    'is_active',
+                ])
+                ->orderBy('terminal_id')
+                ->get();
+
+            \Log::info('Terminals found', [
+                'count' => $terminals->count(),
+                // avoid logging the whole payload in prod if large
+            ]);
+
+            return response()->json([
+                'success'   => true,
+                'count'     => $terminals->count(),
+                'terminals' => $terminals,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Error loading terminals', [
+                'region_id' => $regionId,
+                'error'     => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success'   => false,
+                'message'   => 'Error loading terminals: '.$e->getMessage(),
+                'terminals' => [],
+            ], 500);
+        }
     }
+
+public function mine(Request $request)
+{
+    $me = $request->user();
+
+    // Pull jobs (no filters, no pagination)
+    $jobs = JobAssignment::query()
+        ->with([
+            'region:id,name',
+            'client:id,company_name',
+            'project:id,project_name',
+        ])
+        ->where('technician_id', (int) $me->id)
+        ->orderByDesc('scheduled_date')
+        ->get();
+
+    // Collect ALL ids from job->pos_terminals
+    $allIdsRaw = [];
+    foreach ($jobs as $ja) {
+        $ids = $this->parseTerminalIds($ja->pos_terminals);
+        if (!empty($ids)) {
+            $allIdsRaw = array_merge($allIdsRaw, $ids);
+        }
+    }
+    // Unique AFTER normalization for consistency
+    $allIdsNorm = array_values(array_unique(array_map(fn($v) => $this->key($v), $allIdsRaw)));
+
+    // Also collect a numeric-only set to try matching by primary key `id`
+    $numericIds = array_values(array_filter(array_map(function ($v) {
+        $n = $this->normalizeTid($v);
+        return ctype_digit($n) ? $n : null;
+    }, $allIdsRaw)));
+
+    // Fetch terminals once: try all three keys: terminal_id, merchant_id, id
+    $terminalsByKey = [
+        'tid' => collect(),
+        'mid' => collect(),
+        'id'  => collect(),
+    ];
+
+    if (!empty($allIdsRaw)) {
+        // Use the *raw trimmed* values for DB whereIn (MySQL is usually case-insensitive for text)
+        $trimmedRaw = array_values(array_unique(array_filter(array_map(fn($v) => $this->normalizeTid($v), $allIdsRaw))));
+
+        $terminals = PosTerminal::query()
+            ->select([
+                'id',
+                'terminal_id',
+                'merchant_id',
+                'merchant_name',
+                'current_status',
+                'physical_address',
+                'client_id',
+            ])
+            ->where(function ($q) use ($trimmedRaw, $numericIds) {
+                if (!empty($trimmedRaw)) {
+                    $q->whereIn('terminal_id', $trimmedRaw)
+                      ->orWhereIn('merchant_id', $trimmedRaw);
+                }
+                if (!empty($numericIds)) {
+                    $q->orWhereIn('id', $numericIds);
+                }
+            })
+            ->get();
+
+        // Build maps with normalized, case-insensitive keys
+        $terminalsByKey['tid'] = $terminals->filter(fn($t) => $t->terminal_id !== null)
+            ->keyBy(fn($t) => $this->key($t->terminal_id));
+
+        $terminalsByKey['mid'] = $terminals->filter(fn($t) => $t->merchant_id !== null)
+            ->keyBy(fn($t) => $this->key($t->merchant_id));
+
+        $terminalsByKey['id']  = $terminals->keyBy(fn($t) => $this->key((string) $t->id));
+    }
+
+    // Shape the response per job using ONLY the job’s pos_terminals list
+    $data = $jobs->map(function ($ja) use ($terminalsByKey) {
+        $idsRaw  = $this->parseTerminalIds($ja->pos_terminals);
+        $idsNorm = array_map(fn($x) => $this->key($x), $idsRaw);
+
+        // Resolve each id by terminal_id -> merchant_id -> numeric id
+        $jobTerminals = collect($idsNorm)->map(function ($k) use ($terminalsByKey) {
+            return $terminalsByKey['tid']->get($k)
+                ?? $terminalsByKey['mid']->get($k)
+                ?? $terminalsByKey['id']->get($k);
+        })->filter()->values();
+
+        // Deduplicate terminal records by their primary key to be safe
+        $jobTerminals = $jobTerminals->unique('id')->values();
+
+        $merchants = $jobTerminals
+            ->pluck('merchant_name')
+            ->map(fn($m) => trim((string) $m))
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        return [
+            // Core
+            'id'             => $ja->id,
+            'assignment_id'  => $ja->assignment_id,
+            'status'         => $ja->status,
+            'priority'       => $ja->priority,
+            'scheduled_date' => optional($ja->scheduled_date)->toDateString(),
+            'notes'          => $ja->notes,
+
+            // Related
+            'project_name'   => optional($ja->project)->project_name,
+            'service_type'   => $ja->service_type,
+            'client_name'    => optional($ja->client)->company_name,
+            'region_name'    => optional($ja->region)->name,
+
+            // Terminals
+            'terminals_count' => count(array_unique($idsNorm)),
+            'merchants'       => $merchants,
+            'merchants_count' => $merchants->count(),
+
+            'terminals'       => $jobTerminals->map(function ($t) {
+                return [
+                    'id'               => $t->id,
+                    'terminal_id'      => $t->terminal_id,
+                    'merchant_id'      => $t->merchant_id,
+                    'merchant_name'    => $t->merchant_name,
+                    'current_status'   => $t->current_status,
+                    'physical_address' => $t->physical_address,
+                    'client_id'        => $t->client_id,
+                ];
+            })->values(),
+
+            // Timestamps
+            'created_at'     => optional($ja->created_at)->toISOString(),
+            'updated_at'     => optional($ja->updated_at)->toISOString(),
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'scope'   => 'mine',
+        'count'   => $data->count(),
+        'data'    => $data,
+    ]);
+}
+
+/**
+ * Normalize a single terminal-like id consistently:
+ * - trim spaces
+ * - strip quotes/brackets/parentheses
+ * - keep internal characters, but unify case for matching
+ */
+private function normalizeTid($v): string
+{
+    $v = trim((string) $v);
+    $v = trim($v, " \t\n\r\0\x0B\"'[]()");
+    // collapse weird unicode spaces
+    $v = preg_replace('/\s+/u', ' ', $v ?? '');
+    return $v;
+}
+
+/**
+ * Case-insensitive key for lookups after normalization.
+ */
+private function key($v): string
+{
+    return mb_strtoupper($this->normalizeTid($v), 'UTF-8');
+}
+
+/**
+ * Robustly parse terminal IDs from various shapes:
+ * - array (preferred; add casts on model)
+ * - JSON string '["T001","T002"]'
+ * - CSV/pipe/space 'T001, T002 | 003' or 'T001 T002'
+ * - null/empty -> []
+ */
+private function parseTerminalIds($raw): array
+{
+    $norm = fn($x) => $this->normalizeTid($x);
+
+    if (is_array($raw)) {
+        return array_values(array_filter(array_map($norm, $raw), fn($v) => $v !== ''));
+    }
+
+    if (is_string($raw)) {
+        $trimmed = trim($raw);
+
+        // JSON array?
+        if (Str::startsWith($trimmed, '[') && Str::endsWith($trimmed, ']')) {
+            $decoded = json_decode($trimmed, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return array_values(array_filter(array_map($norm, $decoded), fn($v) => $v !== ''));
+            }
+        }
+
+        // Fallback: split on comma / pipe / whitespace
+        $parts = preg_split('/[,\|\s]+/u', $trimmed);
+        return array_values(array_filter(array_map($norm, $parts), fn($v) => $v !== ''));
+    }
+
+    return [];
+}
+
+/**
+ * Get photos for assignment
+ */
+public function getPhotos($id)
+{
+    $assignment = JobAssignment::findOrFail($id);
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'photos' => $assignment->photos ?? []
+        ]
+    ]);
+}
+
 
     /**
      * Update location during assignment
@@ -634,7 +901,7 @@ class JobAssignmentController extends Controller
     public function syncAssignments(Request $request)
     {
         $employee = $request->user();
-        
+
         $assignments = JobAssignment::with(['posTerminals', 'client'])
                                   ->where('technician_id', $employee->id)
                                   ->whereIn('status', ['pending', 'in_progress'])
@@ -673,7 +940,7 @@ class JobAssignmentController extends Controller
 
         foreach ($request->updates as $update) {
             $assignment = JobAssignment::find($update['assignment_id']);
-            
+
             if ($assignment && $assignment->technician_id === $employee->id) {
                 $assignment->update($update['data']);
                 $results[] = [

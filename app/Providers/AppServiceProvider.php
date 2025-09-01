@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS for ngrok and secure environments
+        if (request()->server('HTTP_X_FORWARDED_PROTO') == 'https') {
+            URL::forceScheme('https');
+        }
+
         // Register middleware aliases for Laravel 11
         Route::aliasMiddleware('permission', \App\Http\Middleware\CheckPermission::class);
         Route::aliasMiddleware('role', \App\Http\Middleware\CheckRole::class);
@@ -58,7 +64,7 @@ class AppServiceProvider extends ServiceProvider
         // Manager or higher blade directive
         Blade::if('manager', function () {
             return Auth::check() && (
-                Auth::user()->hasPermission('all') || 
+                Auth::user()->hasPermission('all') ||
                 Auth::user()->hasPermission('manage_team')
             );
         });

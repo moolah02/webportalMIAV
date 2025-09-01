@@ -4,17 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Category; 
+use App\Models\Category;
 
 class PosTerminal extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'region',       
-        'region_id',    
-        'city',         
-        'province', 
+        'region',
+        'region_id',
+        'city',
+        'province',
         'terminal_id',
         'client_id',
         'merchant_name',
@@ -32,12 +32,16 @@ class PosTerminal extends Model
         'current_status',
         'last_service_date',
         'next_service_due',
+        'status_info',
+        'coordinates',
     ];
 
     protected $casts = [
         'installation_date' => 'date',
         'last_service_date' => 'date',
         'next_service_due' => 'date',
+        'status_info' => 'array',
+        'coordinates' => 'array',
     ];
 
     // Existing Relationships
@@ -154,7 +158,7 @@ class PosTerminal extends Model
     public function getStatusBadgeAttribute()
     {
         $statusCategory = $this->statusCategory;
-        
+
         if ($statusCategory) {
             return [
                 'class' => 'status-badge',
@@ -192,7 +196,7 @@ class PosTerminal extends Model
         $statusCategory = Category::where('type', Category::TYPE_TERMINAL_STATUS)
                                 ->where('slug', $this->current_status)
                                 ->first();
-        
+
         if ($statusCategory) {
             return [
                 'class' => 'bg-custom',
@@ -206,7 +210,7 @@ class PosTerminal extends Model
         $badges = [
             'active' => 'bg-success',
             'offline' => 'bg-danger',
-            'maintenance' => 'bg-warning', 
+            'maintenance' => 'bg-warning',
             'faulty' => 'bg-secondary',
             'decommissioned' => 'bg-dark',
         ];
@@ -252,7 +256,7 @@ class PosTerminal extends Model
     public function getLastVisitInfoAttribute()
     {
         $latestVisit = $this->latestVisit;
-        
+
         if (!$latestVisit) {
             return 'Never visited';
         }
@@ -260,4 +264,10 @@ class PosTerminal extends Model
         $daysSince = $latestVisit->visit_date->diffInDays(now());
         return "{$latestVisit->technician->name} - {$daysSince} days ago";
     }
+    // app/Models/PosTerminal.php
+public function region()
+{
+    return $this->belongsTo(\App\Models\Region::class, 'region_id');
+}
+
 }

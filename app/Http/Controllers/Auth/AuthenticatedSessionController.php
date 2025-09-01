@@ -24,15 +24,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Authenticate user
         $request->authenticate();
 
+        // Regenerate session to prevent fixation
         $request->session()->regenerate();
 
-        // Update last login time
+        // Update last login time (your model method)
         Auth::user()->updateLastLogin();
 
-        // Redirect based on role
-        return $this->redirectBasedOnRole();
+        // IMPORTANT: Ignore any previously intended URL
+        $request->session()->forget('url.intended');
+
+        // Send EVERYONE to the employee dashboard
+        return redirect()->route('employee.dashboard');
     }
 
     /**
@@ -46,27 +51,5 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
-    }
-
-    /**
-     * Redirect user based on their role
-     */
-    private function redirectBasedOnRole(): RedirectResponse
-    {
-        $employee = Auth::user();
-        
-        if ($employee->hasPermission('all')) {
-            return redirect()->intended('/dashboard');
-        }
-        
-        if ($employee->hasPermission('manage_team')) {
-            return redirect()->intended('/dashboard');
-        }
-        
-        if ($employee->hasPermission('view_jobs')) {
-            return redirect()->intended('/technician/dashboard');
-        }
-        
-        return redirect()->intended('/employee/dashboard');
     }
 }

@@ -96,6 +96,7 @@ class AssetAssignment extends Model
             'lost' => 'status-offline',
             'damaged' => 'status-offline',
             'transferred' => 'status-pending',
+
             default => 'status-pending'
         };
     }
@@ -108,9 +109,9 @@ class AssetAssignment extends Model
 
     public function isOverdue()
     {
-        return $this->status === 'assigned' && 
-               $this->expected_return_date && 
-               $this->expected_return_date->isPast() && 
+        return $this->status === 'assigned' &&
+               $this->expected_return_date &&
+               $this->expected_return_date->isPast() &&
                !$this->actual_return_date;
     }
 
@@ -196,7 +197,7 @@ class AssetAssignment extends Model
     {
         return match($this->status) {
             'assigned' => 'bg-success',
-            'returned' => 'bg-secondary', 
+            'returned' => 'bg-secondary',
             'lost' => 'bg-danger',
             'damaged' => 'bg-warning',
             'transferred' => 'bg-info',
@@ -204,13 +205,13 @@ class AssetAssignment extends Model
         };
     }
 
-   
+
     public function getConditionBadgeClassAttribute()
     {
         return match($this->condition_when_assigned) {
             'new' => 'bg-success',
             'good' => 'bg-primary',
-            'fair' => 'bg-warning', 
+            'fair' => 'bg-warning',
             'poor' => 'bg-danger',
             default => 'bg-secondary'
         };

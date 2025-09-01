@@ -29,7 +29,7 @@ class Asset extends Model
         'is_requestable',
         'requires_approval',
         'notes',
-        'assigned_quantity', 
+        'assigned_quantity',
     ];
 
     protected $casts = [
@@ -110,8 +110,8 @@ class Asset extends Model
 
     public function canBeRequested($quantity = 1)
     {
-        return $this->is_requestable && 
-               in_array($this->status, ['asset-active', 'active']) && 
+        return $this->is_requestable &&
+               in_array($this->status, ['asset-active', 'active']) &&
                $this->stock_quantity >= $quantity;
     }
 
@@ -213,8 +213,8 @@ public function getAvailableQuantityAttribute()
  */
 public function canBeAssigned($quantity = 1)
 {
-    return $this->is_requestable && 
-           in_array($this->status, ['asset-active', 'active']) && 
+    return $this->is_requestable &&
+           in_array($this->status, ['asset-active', 'active']) &&
            $this->getAvailableQuantityAttribute() >= $quantity;
 }
 
@@ -298,7 +298,7 @@ public static function getStats()
 
 
 
-   
+
 
 
 
@@ -309,13 +309,13 @@ public function index(Request $request)
     try {
         // Get the active tab (default to 'assets')
         $activeTab = $request->get('tab', 'assets');
-        
+
         // Common data for all tabs
         $assetCategories = Category::ofType('asset_category')->active()->ordered()->get();
         $assetStatuses = Category::ofType('asset_status')->active()->ordered()->get();
-        
+
         $data = compact('assetCategories', 'assetStatuses', 'activeTab');
-        
+
         switch ($activeTab) {
             case 'assignments':
                 return $this->assignmentsTab($request, $data);
@@ -326,7 +326,7 @@ public function index(Request $request)
             default:
                 return $this->assetsTab($request, $data);
         }
-        
+
     } catch (\Exception $e) {
         // Fallback for any errors
         return $this->assetsTab($request, ['assetCategories' => collect(), 'assetStatuses' => collect(), 'activeTab' => 'assets']);
@@ -416,10 +416,10 @@ private function assignmentsTab(Request $request, $data = [])
     }
 
     $assignments = $query->latest('assignment_date')->paginate(15);
-    
+
     // Get departments for filter
     $departments = Department::all();
-    
+
     $assignmentStats = AssetAssignment::getStats();
 
     return view('assets.index', array_merge($data, compact('assignments', 'departments', 'assignmentStats')));
@@ -453,7 +453,7 @@ private function assignmentHistoryTab(Request $request, $data = [])
     }
 
     $history = $query->latest('assignment_date')->paginate(15);
-    
+
     $statusOptions = AssetAssignment::getStatusOptions();
 
     return view('assets.index', array_merge($data, compact('history', 'statusOptions')));
@@ -613,13 +613,14 @@ public function transferAsset(Request $request, AssetAssignment $assignment)
 public function getAssignmentData(AssetAssignment $assignment)
 {
     $assignment->load(['asset', 'employee.department', 'assignedBy']);
-    
+
     return response()->json([
         'assignment' => $assignment,
         'can_return' => $assignment->canBeReturned(),
         'can_transfer' => $assignment->canBeTransferred(),
         'is_overdue' => $assignment->isOverdue(),
-        'days_assigned' => $assignment->days_assigned,
+        'days_assigned' => (int)$assignment->days_assigned,
+
     ]);
 }
 

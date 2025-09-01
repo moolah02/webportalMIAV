@@ -4,7 +4,7 @@
 <div>
     <!-- CSRF Token for AJAX requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
@@ -195,7 +195,7 @@
 
     <!-- Main Content Area - Hidden Initially -->
     <div style="display: none; grid-template-columns: 3fr 2fr; gap: 20px;" id="mainContentArea" class="main-content-section">
-        
+
         <!-- Left Side - Terminal Table -->
         <div class="content-card" style="padding: 0;">
             <!-- Table Header -->
@@ -217,7 +217,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Filters -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
                     <div>
@@ -262,7 +262,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Terminal Table -->
             <div style="max-height: 600px; overflow: auto; background: white;">
                 <table id="terminalTable" style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -295,7 +295,7 @@
                         </tr>
                     </tbody>
                 </table>
-                
+
                 <!-- Pagination -->
                 <div id="tablePagination" style="display: none; padding: 15px 20px; background: #f8f9fa; border-top: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center;">
                     <div style="font-size: 14px; color: #666;">
@@ -310,7 +310,7 @@
 
         <!-- Right Side - Assignment & Tracking -->
         <div style="display: grid; gap: 20px;">
-            
+
             <!-- Assignment Section -->
             <div class="content-card" id="assignmentSection">
                 <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
@@ -333,9 +333,9 @@
                             </div>
                             @foreach($technicians as $tech)
                                 <label class="dropdown-option">
-                                    <input type="checkbox" 
-                                           value="{{ $tech['id'] }}" 
-                                           data-name="{{ $tech['name'] }}" 
+                                    <input type="checkbox"
+                                           value="{{ $tech['id'] }}"
+                                           data-name="{{ $tech['name'] }}"
                                            data-spec="{{ $tech['specialization'] }}"
                                            data-availability="{{ $tech['availability_status'] }}"
                                            data-workload="{{ $tech['current_workload'] }}"
@@ -414,7 +414,7 @@
                 <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
                     📊 Technician Workload
                 </h4>
-                
+
                 <div id="technicianWorkload">
                     <div style="text-align: center; color: #666; padding: 20px;">
                         <div style="font-size: 32px; margin-block-end: 10px;">👥</div>
@@ -430,7 +430,7 @@
                     ⏳ Unassigned Terminals
                     <span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;" id="unassignedCount">0</span>
                 </h4>
-                
+
                 <div id="unassignedList" style="max-height: 200px; overflow-y: auto;">
                     <div style="text-align: center; color: #666; padding: 20px;">
                         <div style="font-size: 32px; margin-block-end: 10px;">⏳</div>
@@ -520,7 +520,7 @@
             </h3>
             <button onclick="closeProjectModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
         </div>
-        
+
         <!-- Modal Body -->
         <div style="padding: 20px;">
             <form id="createProjectForm">
@@ -533,7 +533,7 @@
                                placeholder="e.g., Q1 2025 Terminal Maintenance"
                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                     </div>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
@@ -548,7 +548,7 @@
                                 <option value="installation">Installation</option>
                             </select>
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
                                 Expected Duration
@@ -561,7 +561,7 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
                             Project Description
@@ -571,7 +571,7 @@
                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
                     </div>
                 </div>
-                
+
                 <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
                     <button type="submit" class="btn btn-primary" style="flex: 1;">
                         ➕ Create Project
@@ -596,13 +596,13 @@
             </h3>
             <button onclick="closeSuccessModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
         </div>
-        
+
         <!-- Modal Body -->
         <div style="padding: 20px;">
             <div id="successModalContent">
                 <!-- Content will be populated here -->
             </div>
-            
+
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button type="button" class="btn btn-primary" onclick="viewAssignments()" style="flex: 1;">
                     👁️ View All Assignments
@@ -860,13 +860,13 @@
         grid-template-columns: 1fr;
         gap: 10px;
     }
-    
+
     #terminalTable th,
     #terminalTable td {
         padding: 6px 4px;
         font-size: 12px;
     }
-    
+
     .status-badge {
         padding: 2px 6px;
         font-size: 10px;
@@ -1106,7 +1106,7 @@
         grid-template-columns: 1fr !important;
         gap: 20px;
     }
-    
+
     div[style*="grid-template-columns: 2fr 1fr 2fr 1fr"] {
         grid-template-columns: 1fr 1fr !important;
         gap: 15px;
@@ -1155,7 +1155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Terminal Deployment initialized');
     console.log('Available clients:', @json($clients));
     console.log('Available technicians:', @json($technicians));
-    
+
     setupEventListeners();
     updateLoadButton();
     updateProgressiveVisibility();
@@ -1166,12 +1166,12 @@ function setupEventListeners() {
     document.getElementById('deploymentDate').addEventListener('change', function() {
         deploymentState.deploymentDate = this.value;
     });
-    
+
     // Assignment mode
     document.querySelectorAll('input[name="assignmentMode"]').forEach(radio => {
         radio.addEventListener('change', updateAssignmentMode);
     });
-    
+
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
         if (!event.target.closest('.custom-dropdown')) {
@@ -1203,13 +1203,13 @@ function updateProgressiveVisibility() {
     toggleSection('progressStats', hasHierarchy);
     toggleSection('mainContentArea', hasClients && hasProjects);
     toggleSection('reviewSection', hasAssignments);
-    
+
     // Update button states
     updateButtonStates(hasClients, hasProjects, hasHierarchy, hasTechnicians, hasAssignments, hasSelections);
-    
+
     // Update step indicators
     updateStepIndicators(hasClients, hasProjects, hasHierarchy, hasTechnicians, hasAssignments);
-    
+
     // Show helpful hints
     updateHelpfulHints(hasClients, hasProjects, hasHierarchy, hasTechnicians, hasAssignments);
 }
@@ -1219,7 +1219,7 @@ function toggleSection(sectionId, shouldShow) {
     if (section) {
         if (shouldShow && section.style.display === 'none') {
             section.style.display = sectionId === 'progressStats' ? 'grid' : 'block';
-            
+
             // Add smooth animation
             section.style.opacity = '0';
             section.style.transform = 'translateY(20px)';
@@ -1239,18 +1239,18 @@ function updateButtonStates(hasClients, hasProjects, hasHierarchy, hasTechnician
     const loadBtn = document.getElementById('loadHierarchyBtn');
     loadBtn.disabled = !(hasClients && hasProjects);
     loadBtn.textContent = hasClients && hasProjects ? '🗺️ Load Client Terminals' : '🔒 Select Clients & Projects First';
-    
+
     // Assignment Buttons
     document.getElementById('assignSelectedBtn').disabled = !(hasSelections && hasTechnicians);
     document.getElementById('assignAllBtn').disabled = !(hasHierarchy && hasTechnicians);
     document.getElementById('clearAssignmentsBtn').disabled = !hasAssignments;
-    
+
     // Hierarchy Control Buttons
     ['expandAllBtn', 'collapseAllBtn', 'selectAllBtn', 'clearAllBtn'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) btn.disabled = !hasHierarchy;
     });
-    
+
     // Review Section Buttons
     ['generateWorkOrdersBtn', 'deployAllBtn', 'saveDraftBtn'].forEach(id => {
         const btn = document.getElementById(id);
@@ -1268,7 +1268,7 @@ function updateStepIndicators(hasClients, hasProjects, hasHierarchy, hasTechnici
         step1.classList.add('active');
         step1.classList.remove('completed');
     }
-    
+
     // Step 2: Hierarchy
     const step2 = document.getElementById('step2');
     if (hasHierarchy) {
@@ -1278,7 +1278,7 @@ function updateStepIndicators(hasClients, hasProjects, hasHierarchy, hasTechnici
         step2.classList.add('active');
         step2.classList.remove('completed');
     }
-    
+
     // Step 3: Technicians
     const step3 = document.getElementById('step3');
     if (hasTechnicians && hasHierarchy) {
@@ -1288,7 +1288,7 @@ function updateStepIndicators(hasClients, hasProjects, hasHierarchy, hasTechnici
         step3.classList.add('active');
         step3.classList.remove('completed');
     }
-    
+
     // Step 4: Deploy
     const step4 = document.getElementById('step4');
     if (hasAssignments) {
@@ -1299,7 +1299,7 @@ function updateStepIndicators(hasClients, hasProjects, hasHierarchy, hasTechnici
 function updateHelpfulHints(hasClients, hasProjects, hasHierarchy, hasTechnicians, hasAssignments) {
     // Update the hierarchy tree placeholder
     const treeContainer = document.getElementById('hierarchyTree');
-    
+
     if (!hasClients || !hasProjects) {
         treeContainer.innerHTML = `
             <div style="text-align: center; padding: 60px 20px; color: #666;">
@@ -1313,7 +1313,7 @@ function updateHelpfulHints(hasClients, hasProjects, hasHierarchy, hasTechnician
             </div>
         `;
     }
-    
+
     // Update technician workload placeholder
     if (!hasTechnicians && hasHierarchy) {
         document.getElementById('technicianWorkload').innerHTML = `
@@ -1333,10 +1333,10 @@ function toggleDropdown(dropdownId) {
     const dropdown = document.getElementById(dropdownId);
     const selected = dropdown.querySelector('.dropdown-selected');
     const options = dropdown.querySelector('.dropdown-options');
-    
+
     // Close other dropdowns first
     closeAllDropdowns();
-    
+
     // Toggle current dropdown
     if (options.classList.contains('show')) {
         closeDropdown(dropdownId);
@@ -1349,10 +1349,10 @@ function openDropdown(dropdownId) {
     const dropdown = document.getElementById(dropdownId);
     const selected = dropdown.querySelector('.dropdown-selected');
     const options = dropdown.querySelector('.dropdown-options');
-    
+
     selected.classList.add('active');
     options.classList.add('show');
-    
+
     // Focus search input if it exists
     const searchInput = options.querySelector('.dropdown-search input');
     if (searchInput) {
@@ -1364,7 +1364,7 @@ function closeDropdown(dropdownId) {
     const dropdown = document.getElementById(dropdownId);
     const selected = dropdown.querySelector('.dropdown-selected');
     const options = dropdown.querySelector('.dropdown-options');
-    
+
     selected.classList.remove('active');
     options.classList.remove('show');
 }
@@ -1383,12 +1383,12 @@ function closeAllDropdowns() {
 function filterOptions(optionsId, searchValue) {
     const options = document.getElementById(optionsId);
     const dropdownOptions = options.querySelectorAll('.dropdown-option');
-    
+
     searchValue = searchValue.toLowerCase();
-    
+
     dropdownOptions.forEach(option => {
         if (option.classList.contains('disabled')) return;
-        
+
         const text = option.textContent.toLowerCase();
         if (text.includes(searchValue)) {
             option.style.display = 'flex';
@@ -1400,10 +1400,10 @@ function filterOptions(optionsId, searchValue) {
 
 function updateClientSelection() {
     deploymentState.selectedClients.clear();
-    
+
     const checkboxes = document.querySelectorAll('#clientOptions input[type="checkbox"]:checked');
     const selectedText = document.getElementById('clientSelectedText');
-    
+
     if (checkboxes.length === 0) {
         selectedText.textContent = 'Choose clients...';
     } else if (checkboxes.length === 1) {
@@ -1411,27 +1411,27 @@ function updateClientSelection() {
     } else {
         selectedText.textContent = `${checkboxes.length} clients selected`;
     }
-    
+
     checkboxes.forEach(checkbox => {
         deploymentState.selectedClients.add(checkbox.value);
     });
-    
+
     console.log('Selected clients:', Array.from(deploymentState.selectedClients));
     updateTotalTerminalCount();
     loadProjectsForClients();
     updateLoadButton();
     updateProgressiveVisibility();
-    
+
     // Auto-close dropdown after selection
     setTimeout(() => closeDropdown('clientDropdown'), 300);
 }
 
 function updateTechnicianSelection() {
     deploymentState.selectedTechnicians.clear();
-    
+
     const checkboxes = document.querySelectorAll('#technicianOptions input[type="checkbox"]:checked');
     const selectedText = document.getElementById('technicianSelectedText');
-    
+
     if (checkboxes.length === 0) {
         selectedText.textContent = 'Choose technicians...';
     } else if (checkboxes.length === 1) {
@@ -1439,19 +1439,19 @@ function updateTechnicianSelection() {
     } else {
         selectedText.textContent = `${checkboxes.length} technicians selected`;
     }
-    
+
     checkboxes.forEach(checkbox => {
         deploymentState.selectedTechnicians.add(checkbox.value);
     });
-    
+
     updateTechnicianWorkload();
     updateAssignmentButtons();
     updateProgressiveVisibility();
-    
+
     if (deploymentState.selectedTechnicians.size > 0) {
         showAlert('✅ Step 3 Complete! Select terminals from the hierarchy to assign them.');
     }
-    
+
     // Auto-close dropdown after selection
     setTimeout(() => closeDropdown('technicianDropdown'), 300);
 }
@@ -1462,11 +1462,11 @@ function updateTechnicianSelection() {
 function updateTotalTerminalCount() {
     const checkboxes = document.querySelectorAll('#clientOptions input[type="checkbox"]:checked');
     let totalTerminals = 0;
-    
+
     checkboxes.forEach(checkbox => {
         totalTerminals += parseInt(checkbox.dataset.terminals) || 0;
     });
-    
+
     document.getElementById('totalTerminalCount').textContent = totalTerminals;
 }
 
@@ -1474,19 +1474,19 @@ function loadProjectsForClients() {
     const projectDropdown = document.getElementById('projectDropdown');
     const projectSelectedText = document.getElementById('projectSelectedText');
     const projectOptionsList = document.getElementById('projectOptionsList');
-    
+
     if (deploymentState.selectedClients.size === 0) {
         projectSelectedText.textContent = 'Select clients first...';
         projectOptionsList.innerHTML = '<div class="dropdown-option disabled">Select clients first...</div>';
         return;
     }
-    
+
     // Show loading state
     projectSelectedText.textContent = 'Loading projects...';
     projectOptionsList.innerHTML = '<div class="dropdown-option disabled">Loading projects...</div>';
-    
+
     const clientIds = Array.from(deploymentState.selectedClients);
-    
+
     fetch('{{ route("deployment.projects") }}', {
         method: 'POST',
         headers: {
@@ -1502,7 +1502,7 @@ function loadProjectsForClients() {
         if (data.success) {
             projectSelectedText.textContent = 'Choose projects...';
             projectOptionsList.innerHTML = '';
-            
+
             if (!data.projects || data.projects.length === 0) {
                 projectOptionsList.innerHTML = '<div class="dropdown-option disabled">No projects found for selected clients</div>';
             } else {
@@ -1540,10 +1540,10 @@ function loadProjectsForClients() {
 
 function updateProjectSelection() {
     deploymentState.selectedProjects.clear();
-    
+
     const checkboxes = document.querySelectorAll('#projectOptionsList input[type="checkbox"]:checked');
     const selectedText = document.getElementById('projectSelectedText');
-    
+
     if (checkboxes.length === 0) {
         selectedText.textContent = 'Choose projects...';
     } else if (checkboxes.length === 1) {
@@ -1551,15 +1551,15 @@ function updateProjectSelection() {
     } else {
         selectedText.textContent = `${checkboxes.length} projects selected`;
     }
-    
+
     checkboxes.forEach(checkbox => {
         deploymentState.selectedProjects.add(checkbox.value);
     });
-    
+
     console.log('Selected projects:', Array.from(deploymentState.selectedProjects));
     updateLoadButton();
     updateProgressiveVisibility();
-    
+
     // Auto-close dropdown after selection
     setTimeout(() => closeDropdown('projectDropdown'), 300);
 }
@@ -1567,7 +1567,7 @@ function updateProjectSelection() {
 function updateLoadButton() {
     const hasClients = deploymentState.selectedClients.size > 0;
     const hasProjects = deploymentState.selectedProjects.size > 0;
-    
+
     document.getElementById('loadHierarchyBtn').disabled = !(hasClients && hasProjects);
 }
 
@@ -1579,15 +1579,15 @@ function loadHierarchy() {
         showAlert('Please select at least one client', 'danger');
         return;
     }
-    
+
     if (deploymentState.selectedProjects.size === 0) {
         showAlert('Please select at least one project', 'danger');
         return;
     }
-    
+
     const tableBody = document.getElementById('terminalTableBody');
     setLoading(tableBody, true);
-    
+
     tableBody.innerHTML = `
         <tr>
             <td colspan="8" style="padding: 40px 20px; text-align: center; color: #666;">
@@ -1596,12 +1596,12 @@ function loadHierarchy() {
             </td>
         </tr>
     `;
-    
+
     const requestData = {
         client_ids: Array.from(deploymentState.selectedClients),
         project_ids: Array.from(deploymentState.selectedProjects)
     };
-    
+
     fetch('{{ route("deployment.terminals") }}', {
         method: 'POST',
         headers: {
@@ -1616,11 +1616,11 @@ function loadHierarchy() {
             console.log('Hierarchy loaded successfully:', data);
             deploymentState.hierarchyData = data.hierarchy;
             buildTerminalMap(data.hierarchy);
-            
+
             setLoading(tableBody, false);
             renderHierarchy();
             updateProgressStats();
-            
+
             updateProgressiveVisibility();
             showAlert('✅ Step 2 Complete! Now select technicians to start assigning terminals.');
         } else {
@@ -1646,9 +1646,9 @@ function loadHierarchy() {
 function buildTerminalMap(hierarchy) {
     console.log('Building terminal map from hierarchy:', hierarchy);
     deploymentState.allTerminals.clear();
-    
+
     const terminals = [];
-    
+
     const processNode = (node) => {
         if (node.type === 'terminal') {
             const terminalId = node.id.replace('terminal-', '');
@@ -1656,26 +1656,26 @@ function buildTerminalMap(hierarchy) {
             terminals.push(node);
             return;
         }
-        
+
         if (node.children) {
             node.children.forEach(processNode);
         }
-        
+
         if (node.terminals) {
             node.terminals.forEach(processNode);
         }
     };
-    
+
     hierarchy.forEach(processNode);
-    
+
     // Get assigned terminal IDs
     refreshAssignedTerminals().then(() => {
         // Populate filter options
         populateFilterOptions(terminals);
-        
+
         // Initialize filtered terminals
         deploymentState.filteredTerminals = terminals;
-        
+
         console.log('Final terminal map size:', deploymentState.allTerminals.size);
     });
 }
@@ -1704,27 +1704,27 @@ function populateFilterOptions(terminals) {
     const provinces = new Set();
     const cities = new Set();
     const regions = new Set();
-    
+
     terminals.forEach(terminal => {
         if (terminal.province) provinces.add(terminal.province);
         if (terminal.city) cities.add(terminal.city);
         if (terminal.area) regions.add(terminal.area);
     });
-    
+
     // Populate Province filter
     const provinceFilter = document.getElementById('provinceFilter');
     provinceFilter.innerHTML = '<option value="">All Provinces</option>';
     Array.from(provinces).sort().forEach(province => {
         provinceFilter.innerHTML += `<option value="${province}">${province}</option>`;
     });
-    
+
     // Populate City filter
     const cityFilter = document.getElementById('cityFilter');
     cityFilter.innerHTML = '<option value="">All Cities</option>';
     Array.from(cities).sort().forEach(city => {
         cityFilter.innerHTML += `<option value="${city}">${city}</option>`;
     });
-    
+
     // Populate Region filter
     const regionFilter = document.getElementById('regionFilter');
     regionFilter.innerHTML = '<option value="">All Regions</option>';
@@ -1741,35 +1741,35 @@ function applyFilters() {
     deploymentState.filters.status = document.getElementById('statusFilter').value;
     deploymentState.filters.assignment = document.getElementById('assignmentFilter').value;
     deploymentState.filters.search = document.getElementById('searchFilter').value.toLowerCase();
-    
+
     // Update dependent filters
     updateDependentFilters();
-    
+
     // Filter terminals
     const allTerminals = Array.from(deploymentState.allTerminals.values());
     deploymentState.filteredTerminals = allTerminals.filter(terminal => {
         const terminalId = terminal.id.replace('terminal-', '');
-        
+
         // Province filter
         if (deploymentState.filters.province && terminal.province !== deploymentState.filters.province) {
             return false;
         }
-        
+
         // City filter
         if (deploymentState.filters.city && terminal.city !== deploymentState.filters.city) {
             return false;
         }
-        
+
         // Region filter
         if (deploymentState.filters.region && terminal.area !== deploymentState.filters.region) {
             return false;
         }
-        
+
         // Status filter
         if (deploymentState.filters.status && terminal.status !== deploymentState.filters.status) {
             return false;
         }
-        
+
         // Assignment filter
         if (deploymentState.filters.assignment) {
             const isAssigned = deploymentState.assignedTerminalIds.has(terminalId);
@@ -1780,7 +1780,7 @@ function applyFilters() {
                 return false;
             }
         }
-        
+
         // Search filter
         if (deploymentState.filters.search) {
             const searchText = (
@@ -1790,19 +1790,19 @@ function applyFilters() {
                 (terminal.city || '') + ' ' +
                 (terminal.area || '')
             ).toLowerCase();
-            
+
             if (!searchText.includes(deploymentState.filters.search)) {
                 return false;
             }
         }
-        
+
         return true;
     });
-    
+
     // Reset pagination
     deploymentState.pagination.currentPage = 1;
     deploymentState.pagination.totalPages = Math.ceil(deploymentState.filteredTerminals.length / deploymentState.pagination.itemsPerPage);
-    
+
     // Render table
     renderTerminalTable();
     updatePagination();
@@ -1811,51 +1811,51 @@ function applyFilters() {
 function updateDependentFilters() {
     const selectedProvince = deploymentState.filters.province;
     const selectedCity = deploymentState.filters.city;
-    
+
     // Update City filter based on Province selection
     if (selectedProvince) {
         const cityFilter = document.getElementById('cityFilter');
         const citiesInProvince = new Set();
-        
+
         Array.from(deploymentState.allTerminals.values()).forEach(terminal => {
             if (terminal.province === selectedProvince && terminal.city) {
                 citiesInProvince.add(terminal.city);
             }
         });
-        
+
         const currentCity = cityFilter.value;
         cityFilter.innerHTML = '<option value="">All Cities</option>';
         Array.from(citiesInProvince).sort().forEach(city => {
             const selected = city === currentCity ? 'selected' : '';
             cityFilter.innerHTML += `<option value="${city}" ${selected}>${city}</option>`;
         });
-        
+
         // Reset city if it's not in the new list
         if (currentCity && !citiesInProvince.has(currentCity)) {
             deploymentState.filters.city = '';
         }
     }
-    
+
     // Update Region filter based on Province and City selection
     const regionFilter = document.getElementById('regionFilter');
     const regionsFiltered = new Set();
-    
+
     Array.from(deploymentState.allTerminals.values()).forEach(terminal => {
         const matchesProvince = !selectedProvince || terminal.province === selectedProvince;
         const matchesCity = !deploymentState.filters.city || terminal.city === deploymentState.filters.city;
-        
+
         if (matchesProvince && matchesCity && terminal.area) {
             regionsFiltered.add(terminal.area);
         }
     });
-    
+
     const currentRegion = regionFilter.value;
     regionFilter.innerHTML = '<option value="">All Regions</option>';
     Array.from(regionsFiltered).sort().forEach(region => {
         const selected = region === currentRegion ? 'selected' : '';
         regionFilter.innerHTML += `<option value="${region}" ${selected}>${region}</option>`;
     });
-    
+
     // Reset region if it's not in the new list
     if (currentRegion && !regionsFiltered.has(currentRegion)) {
         deploymentState.filters.region = '';
@@ -1867,7 +1867,7 @@ function renderTerminalTable() {
     const startIndex = (deploymentState.pagination.currentPage - 1) * deploymentState.pagination.itemsPerPage;
     const endIndex = Math.min(startIndex + deploymentState.pagination.itemsPerPage, deploymentState.filteredTerminals.length);
     const pageTerminals = deploymentState.filteredTerminals.slice(startIndex, endIndex);
-    
+
     if (pageTerminals.length === 0) {
         tableBody.innerHTML = `
             <tr>
@@ -1880,7 +1880,7 @@ function renderTerminalTable() {
         `;
         return;
     }
-    
+
     let html = '';
     pageTerminals.forEach(terminal => {
         const terminalId = terminal.id.replace('terminal-', '');
@@ -1888,12 +1888,12 @@ function renderTerminalTable() {
         const isAssigned = deploymentState.assignedTerminalIds.has(terminalId);
         const statusClass = getStatusClass(terminal.status);
         const assignmentClass = isAssigned ? 'assignment-assigned' : 'assignment-unassigned';
-        
+
         html += `
             <tr class="terminal-row ${isSelected ? 'selected' : ''}" data-terminal-id="${terminalId}">
                 <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">
-                    <input type="checkbox" ${isSelected ? 'checked' : ''} 
-                           onchange="toggleTerminalSelection('${terminalId}')" 
+                    <input type="checkbox" ${isSelected ? 'checked' : ''}
+                           onchange="toggleTerminalSelection('${terminalId}')"
                            style="cursor: pointer;">
                 </td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee; font-family: monospace; font-weight: 600;">
@@ -1920,7 +1920,7 @@ function renderTerminalTable() {
                     <span class="status-badge ${statusClass}">${terminal.status || 'unknown'}</span>
                 </td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
-                    <button class="btn btn-small" onclick="assignSingleTerminal('${terminalId}')" 
+                    <button class="btn btn-small" onclick="assignSingleTerminal('${terminalId}')"
                             style="background: #2196f3; color: white; padding: 4px 8px; font-size: 11px;"
                             ${isAssigned ? 'disabled title="Already assigned"' : ''}>
                         ${isAssigned ? 'Assigned' : 'Assign'}
@@ -1929,12 +1929,12 @@ function renderTerminalTable() {
             </tr>
         `;
     });
-    
+
     tableBody.innerHTML = html;
-    
+
     // Update counter
     document.getElementById('terminalCount').textContent = deploymentState.filteredTerminals.length;
-    
+
     // Enable/disable controls
     const hasTerminals = deploymentState.filteredTerminals.length > 0;
     ['selectAllBtn', 'clearAllBtn', 'exportBtn'].forEach(id => {
@@ -1954,13 +1954,13 @@ function getStatusClass(status) {
 
 function renderHierarchy() {
     console.log('renderHierarchy called with data:', deploymentState.hierarchyData);
-    
+
     if (!deploymentState.hierarchyData || deploymentState.hierarchyData.length === 0) {
         console.log('No hierarchy data, showing empty table');
         showEmptyTable();
         return;
     }
-    
+
     // Apply initial filters (no filters)
     applyFilters();
 }
@@ -1986,7 +1986,7 @@ function renderNode(node, level) {
     const isTerminal = node.type === 'terminal';
     const hasChildren = node.children && node.children.length > 0;
     const hasTerminals = node.terminals && node.terminals.length > 0;
-    
+
     if (isTerminal) {
         return renderTerminalNode(node);
     } else {
@@ -1998,15 +1998,15 @@ function renderContainerNode(node, hasChildren, hasTerminals, level) {
     const terminalIds = getTerminalIdsInNode(node.id);
     const allSelected = terminalIds.length > 0 && terminalIds.every(id => deploymentState.selectedTerminals.has(id));
     const someSelected = terminalIds.some(id => deploymentState.selectedTerminals.has(id));
-    
-    const expandIcon = (hasChildren || hasTerminals) ? 
+
+    const expandIcon = (hasChildren || hasTerminals) ?
         (node.collapsed ? '▶️' : '▼️') : '📁';
-    
+
     let html = `
         <div class="tree-node" data-id="${node.id}" data-type="${node.type}">
             <div class="node-header ${allSelected ? 'selected' : ''}" onclick="toggleNodeSelection('${node.id}')">
-                <input type="checkbox" 
-                       ${allSelected ? 'checked' : ''} 
+                <input type="checkbox"
+                       ${allSelected ? 'checked' : ''}
                        ${someSelected && !allSelected ? 'data-indeterminate="true"' : ''}
                        onchange="toggleNodeSelection('${node.id}')" onclick="event.stopPropagation()">
                 <div onclick="toggleNodeExpansion('${node.id}'); event.stopPropagation();" style="cursor: pointer; margin-right: 8px;">
@@ -2025,25 +2025,25 @@ function renderContainerNode(node, hasChildren, hasTerminals, level) {
                 </div>
             </div>
     `;
-    
+
     if (!node.collapsed && (hasChildren || hasTerminals)) {
         html += '<div class="node-children">';
-        
+
         if (hasChildren) {
             node.children.forEach(child => {
                 html += renderNode(child, level + 1);
             });
         }
-        
+
         if (hasTerminals) {
             node.terminals.forEach(terminal => {
                 html += renderNode(terminal, level + 1);
             });
         }
-        
+
         html += '</div>';
     }
-    
+
     html += '</div>';
     return html;
 }
@@ -2051,7 +2051,7 @@ function renderContainerNode(node, hasChildren, hasTerminals, level) {
 function renderTerminalNode(node) {
     const terminalId = node.id.replace('terminal-', '');
     const isSelected = deploymentState.selectedTerminals.has(terminalId);
-    
+
     // Get project badges
     let projectBadges = '';
     if (node.projects && node.projects.length > 0) {
@@ -2059,11 +2059,11 @@ function renderTerminalNode(node) {
             projectBadges += `<span class="project-badge project-${project.type}">${project.name}</span>`;
         });
     }
-    
+
     return `
         <div class="tree-node" data-id="${node.id}" data-type="terminal">
             <div class="terminal-node ${isSelected ? 'selected' : ''}" onclick="toggleTerminalSelection('${terminalId}')">
-                <input type="checkbox" ${isSelected ? 'checked' : ''} 
+                <input type="checkbox" ${isSelected ? 'checked' : ''}
                        onchange="toggleTerminalSelection('${terminalId}')" onclick="event.stopPropagation()">
                 <div class="terminal-info">
                     <div class="terminal-name" title="${node.merchant_name}">🏢 ${node.merchant_name}</div>
@@ -2081,8 +2081,8 @@ function renderTerminalNode(node) {
 }
 
 // Remove old hierarchical functions - no longer needed
-// These functions were for the tree view: renderNode, renderContainerNode, renderTerminalNode, 
-// toggleNodeSelection, toggleNodeExpansion, getTerminalIdsInNode, findNodeById, 
+// These functions were for the tree view: renderNode, renderContainerNode, renderTerminalNode,
+// toggleNodeSelection, toggleNodeExpansion, getTerminalIdsInNode, findNodeById,
 // expandAll, collapseAll, assignAllInNode
 
 function assignSingleTerminal(terminalId) {
@@ -2091,7 +2091,7 @@ function assignSingleTerminal(terminalId) {
         showAlert('Please select a technician first', 'danger');
         return;
     }
-    
+
     deploymentState.selectedTerminals.clear();
     deploymentState.selectedTerminals.add(terminalId);
     assignSelected();
@@ -2109,7 +2109,7 @@ function assignAll() {
 // =====================
 function updateTechnicianWorkload() {
     const container = document.getElementById('technicianWorkload');
-    
+
     if (deploymentState.selectedTechnicians.size === 0) {
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 20px;">
@@ -2120,22 +2120,22 @@ function updateTechnicianWorkload() {
         `;
         return;
     }
-    
+
     let html = '';
     const checkboxes = document.querySelectorAll('#technicianOptions input[type="checkbox"]:checked');
-    
+
     checkboxes.forEach(checkbox => {
         const workload = checkbox.dataset.workload || 0;
         const availability = checkbox.dataset.availability || 'available';
         const spec = checkbox.dataset.spec || 'General';
-        
+
         const availabilityColor = {
             'available': '#4caf50',
             'busy': '#ff9800',
             'very_busy': '#f44336',
             'overloaded': '#d32f2f'
         }[availability] || '#666';
-        
+
         html += `
             <div class="workload-item">
                 <div class="technician-name">${checkbox.dataset.name}</div>
@@ -2151,7 +2151,7 @@ function updateTechnicianWorkload() {
             </div>
         `;
     });
-    
+
     container.innerHTML = html;
 }
 
@@ -2163,16 +2163,16 @@ function assignSelected() {
         showAlert('Please select at least one technician', 'danger');
         return;
     }
-    
+
     if (deploymentState.selectedTerminals.size === 0) {
         showAlert('Please select terminals to assign', 'danger');
         return;
     }
-    
+
     const assignmentMode = document.querySelector('input[name="assignmentMode"]:checked').value;
     const selectedTerminalIds = Array.from(deploymentState.selectedTerminals);
     const selectedTechnicians = getSelectedTechnicianData();
-    
+
     const assignmentData = {
         selected_terminals: selectedTerminalIds,
         scheduled_date: deploymentState.deploymentDate || document.getElementById('deploymentDate').value,
@@ -2181,11 +2181,11 @@ function assignSelected() {
         assignment_type: assignmentMode,
         notes: `Deployment assignment - ${assignmentMode} mode`
     };
-    
+
     if (deploymentState.selectedProjects.size > 0) {
         assignmentData.project_id = Array.from(deploymentState.selectedProjects)[0];
     }
-    
+
     if (assignmentMode === 'team') {
         selectedTechnicians.forEach(tech => {
             createAssignment({...assignmentData, technician_id: tech.id}, tech);
@@ -2193,7 +2193,7 @@ function assignSelected() {
     } else {
         distributeTerminalsAmongTechnicians(selectedTechnicians, selectedTerminalIds, assignmentData);
     }
-    
+
     deploymentState.selectedTerminals.clear();
     renderHierarchy();
     updateProgressStats();
@@ -2212,12 +2212,12 @@ function getSelectedTechnicianData() {
 
 function distributeTerminalsAmongTechnicians(technicians, terminalIds, baseAssignmentData) {
     const terminalsPerTech = Math.ceil(terminalIds.length / technicians.length);
-    
+
     technicians.forEach((tech, index) => {
         const startIndex = index * terminalsPerTech;
         const endIndex = Math.min(startIndex + terminalsPerTech, terminalIds.length);
         const techTerminals = terminalIds.slice(startIndex, endIndex);
-        
+
         if (techTerminals.length > 0) {
             createAssignment({
                 ...baseAssignmentData,
@@ -2245,7 +2245,7 @@ function createAssignment(assignmentData, technician) {
             updateAssignmentSummary();
             updateUnassignedList();
             updateProgressiveVisibility();
-            
+
             // Refresh assigned terminals and re-render table
             refreshAssignedTerminals().then(() => {
                 renderTerminalTable();
@@ -2269,11 +2269,11 @@ function addToLocalAssignments(technicianId, technician, terminalIds) {
             priority: document.getElementById('assignmentPriority').value
         };
     }
-    
+
     terminalIds.forEach(terminalId => {
         if (!deploymentState.assignments[technicianId].terminals.includes(terminalId)) {
             deploymentState.assignments[technicianId].terminals.push(terminalId);
-            
+
             // Add region info
             const terminal = deploymentState.allTerminals.get(terminalId);
             if (terminal) {
@@ -2281,7 +2281,7 @@ function addToLocalAssignments(technicianId, technician, terminalIds) {
             }
         }
     });
-    
+
     updateProgressStats();
     showReviewSection();
 }
@@ -2292,22 +2292,22 @@ function addToLocalAssignments(technicianId, technician, terminalIds) {
 function updateProgressStats() {
     const totalTerminals = deploymentState.allTerminals.size;
     let assignedCount = 0;
-    
+
     Object.values(deploymentState.assignments).forEach(assignment => {
         assignedCount += assignment.terminals.length;
     });
-    
+
     const selectedCount = deploymentState.selectedTerminals.size;
     const unassignedCount = totalTerminals - assignedCount;
     const technicianCount = Object.keys(deploymentState.assignments).length;
-    
+
     document.getElementById('totalTerminals').textContent = totalTerminals;
     document.getElementById('assignedTerminals').textContent = assignedCount;
     document.getElementById('unassignedTerminals').textContent = unassignedCount;
     document.getElementById('selectedTerminals').textContent = selectedCount;
     document.getElementById('technicianCount').textContent = technicianCount;
     document.getElementById('unassignedCount').textContent = unassignedCount;
-    
+
     updateUnassignedList();
 }
 
@@ -2315,7 +2315,7 @@ function updateAssignmentButtons() {
     const hasSelections = deploymentState.selectedTerminals.size > 0;
     const hasTechnicians = deploymentState.selectedTechnicians.size > 0;
     const hasAssignments = Object.keys(deploymentState.assignments).length > 0;
-    
+
     document.getElementById('assignSelectedBtn').disabled = !(hasSelections && hasTechnicians);
     document.getElementById('assignAllBtn').disabled = !(deploymentState.allTerminals.size > 0 && hasTechnicians);
     document.getElementById('clearAssignmentsBtn').disabled = !hasAssignments;
@@ -2323,7 +2323,7 @@ function updateAssignmentButtons() {
 
 function updateAssignmentSummary() {
     const tableBody = document.getElementById('assignmentSummaryTable');
-    
+
     if (Object.keys(deploymentState.assignments).length === 0) {
         tableBody.innerHTML = `
             <tr>
@@ -2334,16 +2334,16 @@ function updateAssignmentSummary() {
         `;
         return;
     }
-    
+
     let html = '';
     Object.values(deploymentState.assignments).forEach((assignment, index) => {
         const regionList = Array.from(assignment.regions).join(', ');
         const priorityClass = {
             'normal': 'bg-primary',
-            'high': 'bg-warning', 
+            'high': 'bg-warning',
             'emergency': 'bg-danger'
         }[assignment.priority] || 'bg-primary';
-        
+
         html += `
             <tr>
                 <td>
@@ -2369,18 +2369,18 @@ function updateAssignmentSummary() {
             </tr>
         `;
     });
-    
+
     tableBody.innerHTML = html;
-    
+
     // Update summary stats
     const totalTechnicians = Object.keys(deploymentState.assignments).length;
     const totalTerminals = Object.values(deploymentState.assignments).reduce((sum, a) => sum + a.terminals.length, 0);
     const estimatedTime = totalTerminals * 1.5; // 1.5 hours per terminal
-    
+
     document.getElementById('summaryTechnicians').textContent = totalTechnicians;
     document.getElementById('summaryTerminals').textContent = totalTerminals;
     document.getElementById('summaryTime').textContent = `${estimatedTime} hours`;
-    
+
     // Enable deploy buttons
     ['generateWorkOrdersBtn', 'deployAllBtn', 'saveDraftBtn'].forEach(id => {
         document.getElementById(id).disabled = totalTechnicians === 0;
@@ -2390,20 +2390,20 @@ function updateAssignmentSummary() {
 function updateUnassignedList() {
     const container = document.getElementById('unassignedList');
     const assignedTerminalIds = new Set();
-    
+
     Object.values(deploymentState.assignments).forEach(assignment => {
         assignment.terminals.forEach(terminalId => {
             assignedTerminalIds.add(terminalId);
         });
     });
-    
+
     const unassignedTerminals = [];
     deploymentState.allTerminals.forEach((terminal, id) => {
         if (!assignedTerminalIds.has(id)) {
             unassignedTerminals.push(terminal);
         }
     });
-    
+
     if (unassignedTerminals.length === 0 && deploymentState.allTerminals.size > 0) {
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 20px;">
@@ -2413,7 +2413,7 @@ function updateUnassignedList() {
         `;
         return;
     }
-    
+
     if (deploymentState.allTerminals.size === 0) {
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 20px;">
@@ -2423,7 +2423,7 @@ function updateUnassignedList() {
         `;
         return;
     }
-    
+
     let html = '';
     unassignedTerminals.slice(0, 10).forEach(terminal => { // Show max 10
         html += `
@@ -2433,13 +2433,13 @@ function updateUnassignedList() {
             </div>
         `;
     });
-    
+
     if (unassignedTerminals.length > 10) {
         html += `<div style="text-align: center; padding: 10px; color: #666;">
             ... and ${unassignedTerminals.length - 10} more
         </div>`;
     }
-    
+
     container.innerHTML = html;
 }
 
@@ -2469,17 +2469,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (createProjectForm) {
         createProjectForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             if (deploymentState.selectedClients.size === 0) {
                 showAlert('Please select clients first', 'danger');
                 return;
             }
-            
+
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '⏳ Creating Project...';
             submitBtn.disabled = true;
-            
+
             const formData = {
                 name: document.getElementById('newProjectName').value.trim(),
                 type: document.getElementById('newProjectType').value,
@@ -2487,7 +2487,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 description: document.getElementById('newProjectDescription').value.trim(),
                 client_ids: Array.from(deploymentState.selectedClients)
             };
-            
+
             // Validate required fields
             if (!formData.name || !formData.type) {
                 showAlert('Please fill in all required fields', 'danger');
@@ -2495,7 +2495,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.disabled = false;
                 return;
             }
-            
+
             // Make API call to create project
             fetch('{{ route("deployment.projects.create") }}', {
                 method: 'POST',
@@ -2510,7 +2510,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     closeProjectModal();
                     showAlert(`Project "${formData.name}" created successfully!`);
-                    
+
                     // Add the new project to the dropdown
                     const projectOptionsList = document.getElementById('projectOptionsList');
                     const newProjectOption = document.createElement('label');
@@ -2519,15 +2519,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         <input type="checkbox" value="${data.project.id}" data-name="${data.project.name}" data-type="${data.project.type}" onchange="updateProjectSelection()">
                         <span>${data.project.name} (${data.project.type})</span>
                     `;
-                    
+
                     // Remove "no projects" message if it exists
                     const noProjectsMsg = projectOptionsList.querySelector('.disabled');
                     if (noProjectsMsg) {
                         noProjectsMsg.remove();
                     }
-                    
+
                     projectOptionsList.appendChild(newProjectOption);
-                    
+
                     // Auto-select the new project
                     const newCheckbox = newProjectOption.querySelector('input[type="checkbox"]');
                     newCheckbox.checked = true;
@@ -2559,35 +2559,35 @@ function updatePagination() {
     const pagination = document.getElementById('tablePagination');
     const startIndex = (deploymentState.pagination.currentPage - 1) * deploymentState.pagination.itemsPerPage + 1;
     const endIndex = Math.min(deploymentState.pagination.currentPage * deploymentState.pagination.itemsPerPage, deploymentState.filteredTerminals.length);
-    
+
     if (deploymentState.filteredTerminals.length === 0) {
         pagination.style.display = 'none';
         return;
     }
-    
+
     pagination.style.display = 'flex';
-    
+
     // Update showing text
     document.getElementById('showingFrom').textContent = startIndex;
     document.getElementById('showingTo').textContent = endIndex;
     document.getElementById('totalTerminals').textContent = deploymentState.filteredTerminals.length;
-    
+
     // Generate pagination buttons
     const buttonsContainer = document.getElementById('paginationButtons');
     let buttonsHtml = '';
-    
+
     // Previous button
     if (deploymentState.pagination.currentPage > 1) {
         buttonsHtml += `<button class="btn btn-small" onclick="changePage(${deploymentState.pagination.currentPage - 1})">← Previous</button>`;
     }
-    
+
     // Page numbers
     const totalPages = deploymentState.pagination.totalPages;
     const currentPage = deploymentState.pagination.currentPage;
-    
+
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, currentPage + 2);
-    
+
     if (endPage - startPage < 4) {
         if (startPage === 1) {
             endPage = Math.min(totalPages, startPage + 4);
@@ -2595,17 +2595,17 @@ function updatePagination() {
             startPage = Math.max(1, endPage - 4);
         }
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
         const active = i === currentPage ? 'btn-primary' : '';
         buttonsHtml += `<button class="btn btn-small ${active}" onclick="changePage(${i})">${i}</button>`;
     }
-    
+
     // Next button
     if (deploymentState.pagination.currentPage < deploymentState.pagination.totalPages) {
         buttonsHtml += `<button class="btn btn-small" onclick="changePage(${deploymentState.pagination.currentPage + 1})">Next →</button>`;
     }
-    
+
     buttonsContainer.innerHTML = buttonsHtml;
 }
 
@@ -2618,7 +2618,7 @@ function changePage(page) {
 function toggleSelectAll() {
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     const isChecked = selectAllCheckbox.checked;
-    
+
     if (isChecked) {
         selectAllVisible();
     } else {
@@ -2630,12 +2630,12 @@ function selectAllVisible() {
     const startIndex = (deploymentState.pagination.currentPage - 1) * deploymentState.pagination.itemsPerPage;
     const endIndex = Math.min(startIndex + deploymentState.pagination.itemsPerPage, deploymentState.filteredTerminals.length);
     const pageTerminals = deploymentState.filteredTerminals.slice(startIndex, endIndex);
-    
+
     pageTerminals.forEach(terminal => {
         const terminalId = terminal.id.replace('terminal-', '');
         deploymentState.selectedTerminals.add(terminalId);
     });
-    
+
     renderTerminalTable();
     updateProgressStats();
     updateAssignmentButtons();
@@ -2646,7 +2646,7 @@ function selectAll() {
         const terminalId = terminal.id.replace('terminal-', '');
         deploymentState.selectedTerminals.add(terminalId);
     });
-    
+
     renderTerminalTable();
     updateProgressStats();
     updateAssignmentButtons();
@@ -2671,14 +2671,14 @@ function exportTableData() {
         'Address': terminal.address || '',
         'Phone': terminal.phone || ''
     }));
-    
+
     // Convert to CSV
     const headers = Object.keys(data[0]);
     const csvContent = [
         headers.join(','),
         ...data.map(row => headers.map(header => `"${row[header]}"`).join(','))
     ].join('\\n');
-    
+
     // Download
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -2710,7 +2710,7 @@ function showAlert(message, type = 'success') {
     const alertId = 'alert-' + Date.now();
     const alertClass = type === 'success' ? 'alert-success' : type === 'danger' ? 'alert-danger' : 'alert-info';
     const icon = type === 'success' ? '✅' : type === 'danger' ? '❌' : 'ℹ️';
-    
+
     const alertHtml = `
         <div id="${alertId}" class="alert ${alertClass}" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; animation: slideIn 0.3s ease;">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -2720,9 +2720,9 @@ function showAlert(message, type = 'success') {
             </div>
         </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', alertHtml);
-    
+
     // Auto-remove after 5 seconds
     setTimeout(() => removeAlert(alertId), 5000);
 }
@@ -2738,11 +2738,11 @@ function removeAlert(alertId) {
 function showErrorModal(title, message, details = null) {
     const modal = document.createElement('div');
     modal.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100vh; 
-        background: rgba(0,0,0,0.5); z-index: 10000; 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+        background: rgba(0,0,0,0.5); z-index: 10000;
         display: flex; justify-content: center; align-items: center;
     `;
-    
+
     modal.innerHTML = `
         <div style="background: white; border-radius: 12px; padding: 0; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
             <div style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
@@ -2764,9 +2764,9 @@ function showErrorModal(title, message, details = null) {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
+
     // Close on backdrop click
     modal.addEventListener('click', function(e) {
         if (e.target === modal) {
@@ -2807,7 +2807,7 @@ function assignSingleTerminal(terminalId) {
         showAlert('Please select a technician first', 'danger');
         return;
     }
-    
+
     deploymentState.selectedTerminals.clear();
     deploymentState.selectedTerminals.add(terminalId);
     assignSelected();
@@ -2859,9 +2859,9 @@ function generateWorkOrders() {
         showAlert('No assignments to generate work orders for', 'danger');
         return;
     }
-    
+
     showAlert('Generating work orders...', 'info');
-    
+
     // Simulate work order generation
     setTimeout(() => {
         showAlert('Work orders generated successfully!');
@@ -2873,10 +2873,10 @@ function deployAll() {
         showAlert('No assignments to deploy', 'danger');
         return;
     }
-    
+
     const assignmentCount = Object.keys(deploymentState.assignments).length;
     const terminalCount = Object.values(deploymentState.assignments).reduce((sum, a) => sum + a.terminals.length, 0);
-    
+
     // Show success modal
     document.getElementById('successModalContent').innerHTML = `
         <div style="text-align: center; margin: 20px 0;">
@@ -2903,9 +2903,9 @@ function deployAll() {
             </div>
         </div>
     `;
-    
+
     document.getElementById('assignmentSuccessModal').style.display = 'flex';
-    
+
     // Clear state after successful deployment
     setTimeout(() => {
         clearAssignments();
@@ -2921,7 +2921,7 @@ function exportDeployment() {
         showAlert('No assignments to export', 'danger');
         return;
     }
-    
+
     // Export logic here
     showAlert('Export completed!');
 }
@@ -2944,7 +2944,7 @@ function createNewDeployment() {
 document.addEventListener('click', function(event) {
     const projectModal = document.getElementById('createProjectModal');
     const successModal = document.getElementById('assignmentSuccessModal');
-    
+
     if (event.target === projectModal) {
         closeProjectModal();
     }

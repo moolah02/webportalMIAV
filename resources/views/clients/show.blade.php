@@ -1,236 +1,174 @@
+{{-- resources/views/clients/show.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-block-end:24px;">
         <div>
-            <h2 style="margin: 0; color: #333;">👥 Add New Client</h2>
-            <p style="color: #666; margin: 5px 0 0 0;">Add a new client to your business</p>
+            <h2 style="margin:0;color:#111827;font-weight:700;letter-spacing:-.02em;">
+                {{ $client->company_name }}
+            </h2>
+            <p style="margin:6px 0 0;color:#6b7280;">Client details & history</p>
         </div>
-        <a href="{{ route('clients.index') }}" class="btn">← Back to Clients</a>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="{{ route('clients.index') }}" class="btn btn-outline">← Back to Clients</a>
+            <a href="{{ route('clients.edit', ['client' => $client->id]) }}" class="btn btn-secondary">Edit</a>
+        </div>
     </div>
 
-    <form action="{{ route('clients.store') }}" method="POST" id="clientForm">
-        @csrf
-        
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-            <!-- Main Form -->
+    <!-- Summary -->
+    <div class="content-card" style="margin-block-end:16px;">
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;">
             <div>
-                <!-- Basic Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">🏢 Company Information</h4>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Company Name *</label>
-                            <input type="text" name="company_name" value="{{ old('company_name') }}" required
-                                   placeholder="e.g., Acme Corporation"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('company_name')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contact Person *</label>
-                            <input type="text" name="contact_person" value="{{ old('contact_person') }}" required
-                                   placeholder="e.g., John Smith"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('contact_person')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Email Address *</label>
-                            <input type="email" name="email" value="{{ old('email') }}" required
-                                   placeholder="john@example.com"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('email')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Phone Number</label>
-                            <input type="tel" name="phone" value="{{ old('phone') }}"
-                                   placeholder="+1 (555) 123-4567"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('phone')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Address Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📍 Address Information</h4>
-                    
-                    <div style="margin-block-end: 20px;">
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Address</label>
-                        <textarea name="address" rows="3" placeholder="123 Main Street, Suite 100"
-                                  style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">{{ old('address') }}</textarea>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">City</label>
-                            <input type="text" name="city" value="{{ old('city') }}"
-                                   placeholder="New York"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Region</label>
-                            <input type="text" name="region" value="{{ old('region') }}"
-                                   placeholder="e.g., North America, Europe"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Contract Information -->
-                <div class="content-card">
-                    <h4 style="margin-block-end: 20px; color: #333;">📋 Contract Information</h4>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contract Start Date</label>
-                            <input type="date" name="contract_start_date" value="{{ old('contract_start_date') }}"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contract End Date</label>
-                            <input type="date" name="contract_end_date" value="{{ old('contract_end_date') }}"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        </div>
-                    </div>
-                </div>
+                <div class="label">Client Code</div>
+                <div class="value">{{ $client->client_code ?: '—' }}</div>
             </div>
-
-            <!-- Settings Sidebar -->
             <div>
-                <!-- Client Status -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 15px; color: #333;">⚙️ Client Status</h4>
-                    
-                    <div style="margin-block-end: 15px;">
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status *</label>
-                        <select name="status" required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            <option value="prospect" {{ old('status', 'prospect') == 'prospect' ? 'selected' : '' }}>Prospect</option>
-                            <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                            <option value="lost" {{ old('status') == 'lost' ? 'selected' : '' }}>Lost</option>
-                        </select>
-                        <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Set the current relationship status</div>
-                    </div>
-                </div>
-
-                <!-- Client Code Info -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 15px; color: #333;">🔖 Client Code</h4>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 12px; color: #666; margin-block-end: 5px;">Auto-generated</div>
-                        <div style="font-weight: bold; color: #2196f3;">Will be created automatically</div>
-                        <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Based on company name</div>
-                    </div>
-                </div>
-
-                <!-- Submit Buttons -->
-                <div class="content-card">
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button type="submit" class="btn btn-primary" style="inline-size: 100%; padding: 15px;">
-                            🎉 Add Client
-                        </button>
-                        <a href="{{ route('clients.index') }}" class="btn" style="inline-size: 100%; text-align: center;">
-                            Cancel
-                        </a>
-                    </div>
-                </div>
+                <div class="label">Status</div>
+                <span class="status-badge status-{{ strtolower($client->status) }}">{{ ucfirst($client->status) }}</span>
+            </div>
+            <div>
+                <div class="label">Region</div>
+                <div class="value">{{ $client->region ?: '—' }}</div>
+            </div>
+            <div>
+                <div class="label">City</div>
+                <div class="value">{{ $client->city ?: '—' }}</div>
             </div>
         </div>
-    </form>
+    </div>
+
+    <!-- Two-column layout -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
+        <!-- Left -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <div class="content-card">
+                <h4 class="card-title">🏢 Company Information</h4>
+                <div class="grid-2">
+                    <div>
+                        <div class="label">Company Name</div>
+                        <div class="value">{{ $client->company_name }}</div>
+                    </div>
+                    <div>
+                        <div class="label">Contact Person</div>
+                        <div class="value">{{ $client->contact_person ?: '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="label">Email</div>
+                        @if($client->email)
+                            <a href="mailto:{{ $client->email }}" class="link">{{ $client->email }}</a>
+                        @else
+                            <div class="value">—</div>
+                        @endif
+                    </div>
+                    <div>
+                        <div class="label">Phone</div>
+                        @if($client->phone)
+                            <a href="tel:{{ $client->phone }}" class="link">{{ $client->phone }}</a>
+                        @else
+                            <div class="value">—</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h4 class="card-title">📍 Address</h4>
+                <div class="value" style="white-space:pre-line;">
+                    {{ trim(collect([$client->address, $client->city, $client->region])->filter()->join(', ')) ?: '—' }}
+                </div>
+            </div>
+
+            <div class="content-card">
+                @php
+                  $start = $client->contract_start_date;
+                  $end   = $client->contract_end_date;
+                  $isPast = $end ? $end->isPast() : false;
+                  $isSoon = $end ? (!$isPast && $end->diffInDays(now()) <= 30) : false;
+                @endphp
+                <h4 class="card-title">📋 Contract</h4>
+                <div class="grid-2">
+                    <div>
+                        <div class="label">Start</div>
+                        <div class="value">{{ $start?->format('M d, Y') ?: '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="label">End</div>
+                        <div class="value">
+                            {{ $end?->format('M d, Y') ?: '—' }}
+                            @if($isPast)
+                                <span class="pill pill-danger">Expired</span>
+                            @elseif($isSoon)
+                                <span class="pill pill-warn">Expiring</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="content-card">
+                <h4 class="card-title">⚡ Quick Actions</h4>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <a href="{{ route('clients.edit', ['client' => $client->id]) }}" class="btn btn-secondary btn-small">Edit Client</a>
+                    <button type="button" class="btn btn-outline btn-small"
+                            onclick="contactClient('{{ $client->email }}')">Contact</button>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h4 class="card-title">📈 Related</h4>
+                <ul class="related">
+                    <li><span class="label">POS Terminals:</span> <span class="value">{{ $client->posTerminals()->count() }}</span></li>
+                    <li><span class="label">Projects:</span> <span class="value">{{ $client->projects()->count() }}</span></li>
+                    <li><span class="label">Tickets:</span> <span class="value">{{ $client->tickets()->count() }}</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+.content-card{background:#fff;padding:20px;border-radius:10px;border:1px solid #e5e7eb}
+.card-title{margin:0 0 12px;color:#111827;font-weight:700}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.label{font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.value{color:#111827}
+.link{color:#4f46e5;text-decoration:none}
+.link:hover{text-decoration:underline}
 
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
+.btn{padding:10px 16px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;text-decoration:none;cursor:pointer;font-weight:500;font-size:14px;transition:all .2s ease;display:inline-block;line-height:1}
+.btn:hover{border-color:#9ca3af;background:#f9fafb}
+.btn-secondary{background:#f3f4f6;color:#374151;border-color:#d1d5db}
+.btn-secondary:hover{background:#e5e7eb;border-color:#9ca3af}
+.btn-outline{background:transparent;color:#374151;border-color:#d1d5db}
+.btn-outline:hover{background:#f9fafb;color:#111827;border-color:#9ca3af}
+.btn-small{padding:6px 10px;font-size:13px}
 
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
+.status-badge{padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.status-active{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.status-prospect{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.status-inactive{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb}
+.status-lost{background:#fecaca;color:#991b1b;border:1px solid #fca5a5}
 
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
+.pill{margin-left:8px;padding:2px 6px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid transparent}
+.pill-danger{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+.pill-warn{background:#fef3c7;color:#92400e;border-color:#fde68a}
 
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
+.related{list-style:none;padding:0;margin:0}
+.related li{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed #eef1f4}
+.related li:first-child{border-top:none}
 </style>
 
 <script>
-// Form validation and UX improvements
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('clientForm');
-    
-    // Auto-generate preview of client code based on company name
-    const companyNameInput = document.querySelector('input[name="company_name"]');
-    if (companyNameInput) {
-        companyNameInput.addEventListener('input', function() {
-            const companyName = this.value;
-            const prefix = companyName.replace(/[^A-Za-z]/g, '').substring(0, 3).toUpperCase();
-            const preview = prefix ? prefix + 'XXXX' : 'Will be created automatically';
-            
-            const codeDisplay = document.querySelector('.content-card:nth-child(2) .font-weight-bold');
-            if (codeDisplay) {
-                codeDisplay.textContent = preview;
-            }
-        });
-    }
-    
-    // Form submission
-    form.addEventListener('submit', function(e) {
-        const companyName = document.querySelector('input[name="company_name"]').value;
-        const contactPerson = document.querySelector('input[name="contact_person"]').value;
-        const email = document.querySelector('input[name="email"]').value;
-        
-        if (!companyName || !contactPerson || !email) {
-            e.preventDefault();
-            alert('Please fill in all required fields');
-            return;
-        }
-        
-        // Show loading state
-        const submitBtn = document.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '⏳ Creating Client...';
-        submitBtn.disabled = true;
-    });
-});
+function contactClient(email){
+    if(email){ window.location.href='mailto:'+email; }
+    else{ alert('No email address available for this client'); }
+}
 </script>
 @endsection

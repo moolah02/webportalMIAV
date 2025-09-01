@@ -22,22 +22,22 @@ class AssetController extends Controller
         try {
             // Get the active tab (default to 'assets')
             $activeTab = $request->get('tab', 'assets');
-            
+
             // Get categories from database for filters
             $assetCategories = Category::ofType('asset_category')->active()->ordered()->get();
             $assetStatuses = Category::ofType('asset_status')->active()->ordered()->get();
-            
+
             // Handle different tabs with actual data
             switch ($activeTab) {
                 case 'assignments':
                     return $this->handleAssignmentsTab($request, $assetCategories, $assetStatuses);
-                    
+
                 case 'history':
                     return $this->handleHistoryTab($request, $assetCategories, $assetStatuses);
-                    
+
                 case 'assign':
                     return $this->handleAssignTab($request, $assetCategories, $assetStatuses);
-                    
+
                 default:
                     return $this->handleAssetsTab($request, $assetCategories, $assetStatuses);
             }
@@ -49,7 +49,7 @@ class AssetController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             // Fallback if anything fails
             $activeTab = 'assets';
             $assets = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
@@ -153,32 +153,32 @@ class AssetController extends Controller
         }
 
         $assignments = $assignmentsQuery->latest('assignment_date')->paginate(15);
-        
+
         // Transform assignments to add computed properties
         $assignments->getCollection()->transform(function ($assignment) {
             // Add full name to employee
             if ($assignment->employee) {
                 $assignment->employee->full_name = $assignment->employee->first_name . ' ' . $assignment->employee->last_name;
             }
-            
+
             // Add computed properties
-            $assignment->days_assigned = $assignment->assignment_date ? 
+            (int) $assignment->days_assigned = $assignment->assignment_date ?
                 $assignment->assignment_date->diffInDays(now()) : 0;
-            
-            $assignment->is_overdue = $assignment->expected_return_date && 
-                $assignment->expected_return_date->isPast() && 
+
+            $assignment->is_overdue = $assignment->expected_return_date &&
+                $assignment->expected_return_date->isPast() &&
                 $assignment->status === 'assigned';
-            
+
             if ($assignment->is_overdue) {
                 $assignment->days_overdue = $assignment->expected_return_date->diffInDays(now());
             }
-            
+
             return $assignment;
         });
-        
+
         // Load departments for filter
         $departments = Department::orderBy('name')->get();
-        
+
         // Calculate assignment stats
         $assignmentStats = [
             'active_assignments' => AssetAssignment::where('status', 'assigned')->count(),
@@ -203,53 +203,55 @@ class AssetController extends Controller
         ));
     }
 
-    private function handleHistoryTab($request, $assetCategories, $assetStatuses)
-    {
-        // Load assignment history with relationships
-        $historyQuery = AssetAssignment::with([
-            'asset:id,name,category,brand,model,sku',
-            'employee:id,first_name,last_name,employee_number,department_id',
-            'employee.department:id,name',
-            'assignedBy:id,first_name,last_name',
-            'returnedTo:id,first_name,last_name'
-        ]);
+   private function handleHistoryTab($request, $assetCategories, $assetStatuses)
+{
+    // Only past (non-active) records
+    $pastStatuses = ['returned', 'transferred', 'lost', 'damaged'];
 
-        // Apply filters
-        if ($request->filled('employee_search')) {
-            $search = $request->employee_search;
-            $historyQuery->whereHas('employee', function($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('employee_number', 'like', "%{$search}%");
-            });
-        }
+    $historyQuery = AssetAssignment::with([
+        'asset:id,name,category,brand,model,sku',
+        'employee:id,first_name,last_name,employee_number,department_id',
+        'employee.department:id,name',
+        'assignedBy:id,first_name,last_name',
+        'returnedTo:id,first_name,last_name'
+    ])->whereIn('status', $pastStatuses);   // 👈 key line
 
-        if ($request->filled('status_filter')) {
-            $historyQuery->where('status', $request->status_filter);
-        }
+    // (keep your existing filters)
+    if ($request->filled('employee_search')) {
+        $search = $request->employee_search;
+        $historyQuery->whereHas('employee', function($q) use ($search) {
+            $q->where('first_name', 'like', "%{$search}%")
+              ->orWhere('last_name', 'like', "%{$search}%")
+              ->orWhere('employee_number', 'like', "%{$search}%");
+        });
+    }
 
-        if ($request->filled('date_from')) {
-            $historyQuery->where('assignment_date', '>=', $request->date_from);
-        }
+    if ($request->filled('status_filter')) {
+        $historyQuery->where('status', $request->status_filter);
+    }
 
-        if ($request->filled('date_to')) {
-            $historyQuery->where('assignment_date', '<=', $request->date_to);
-        }
+    if ($request->filled('date_from')) {
+        $historyQuery->where('assignment_date', '>=', $request->date_from);
+    }
 
-        $history = $historyQuery->latest('assignment_date')->paginate(15);
-        
+    if ($request->filled('date_to')) {
+        $historyQuery->where('assignment_date', '<=', $request->date_to);
+    }
+
+    $history = $historyQuery->latest('assignment_date')->paginate(15);
+
         // Transform history to add computed properties
         $history->getCollection()->transform(function ($assignment) {
             // Add full name to employee
             if ($assignment->employee) {
                 $assignment->employee->full_name = $assignment->employee->first_name . ' ' . $assignment->employee->last_name;
             }
-            
+
             // Add computed properties
             $endDate = $assignment->actual_return_date ?? now();
-            $assignment->days_assigned = $assignment->assignment_date ? 
+            (int)$assignment->days_assigned = $assignment->assignment_date ?
                 $assignment->assignment_date->diffInDays($endDate) : 0;
-            
+
             // Status badge
             $assignment->status_badge = match($assignment->status) {
                 'assigned' => 'status-active',
@@ -259,13 +261,13 @@ class AssetController extends Controller
                 'transferred' => 'status-pending',
                 default => 'status-pending'
             };
-            
+
             return $assignment;
         });
-        
+
         // Status options for filter
         $statusOptions = [
-            'assigned' => 'Currently Assigned',
+            //'assigned' => 'Currently Assigned',
             'returned' => 'Returned',
             'transferred' => 'Transferred',
             'lost' => 'Lost',
@@ -306,20 +308,20 @@ class AssetController extends Controller
             ->select('id', 'first_name', 'last_name', 'employee_number', 'department_id')
             ->orderBy('first_name')
             ->get();
-            
+
         // Add full name to employees
         $employees->transform(function ($employee) {
             $employee->full_name = $employee->first_name . ' ' . $employee->last_name;
             return $employee;
         });
-        
+
         // Load departments
         $departments = Department::orderBy('name')->get();
-        
+
         // Condition options
         $conditionOptions = [
             'new' => 'New',
-            'good' => 'Good', 
+            'good' => 'Good',
             'fair' => 'Fair',
             'poor' => 'Poor'
         ];
@@ -461,7 +463,7 @@ class AssetController extends Controller
     public function show(Asset $asset)
     {
         $asset->load(['requestItems.assetRequest.employee']);
-        
+
         // Get recent requests for this asset
         $recentRequests = $asset->requestItems()
             ->with(['assetRequest.employee'])
@@ -688,7 +690,7 @@ class AssetController extends Controller
             ]);
 
             return response()->json([
-                'success' => true, 
+                'success' => true,
                 'message' => 'Stock updated successfully!',
                 'new_stock' => $asset->stock_quantity
             ]);
@@ -705,7 +707,7 @@ class AssetController extends Controller
         $assets = Asset::all();
 
         $filename = 'assets_' . now()->format('Y-m-d_H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -713,10 +715,10 @@ class AssetController extends Controller
 
         $callback = function() use ($assets) {
             $file = fopen('php://output', 'w');
-            
+
             // Header row
             fputcsv($file, [
-                'ID', 'Name', 'Category', 'Brand', 'Model', 'SKU', 
+                'ID', 'Name', 'Category', 'Brand', 'Model', 'SKU',
                 'Unit Price', 'Currency', 'Stock Quantity', 'Min Stock Level',
                 'Status', 'Is Requestable', 'License Plate', 'VIN Number', 'Created At'
             ]);
@@ -874,164 +876,161 @@ class AssetController extends Controller
 
     // Return asset method
     public function returnAsset(Request $request, AssetAssignment $assignment)
-    {
-        $request->validate([
-            'return_date' => 'required|date',
-            'condition_when_returned' => 'required|in:new,good,fair,poor',
-            'return_notes' => 'nullable|string|max:1000',
-            'update_asset_status' => 'required|in:available,maintenance,damaged,retired',
+{
+    $request->validate([
+        'return_date' => 'required|date',
+        'condition_when_returned' => 'required|in:new,good,fair,poor',
+        'return_notes' => 'nullable|string|max:1000',
+        'update_asset_status' => 'required|in:available,maintenance,damaged,retired',
+    ]);
+
+    if ($assignment->status !== 'assigned') {
+        return response()->json(['success' => false, 'message' => 'This asset cannot be returned.'], 422);
+    }
+
+    try {
+        DB::beginTransaction();
+
+        $assignment->update([
+            'status' => 'returned',
+            'actual_return_date' => $request->return_date,
+            'condition_when_returned' => $request->condition_when_returned,
+            'return_notes' => $request->return_notes,
+            'returned_to' => auth()->id() ?? 1,
         ]);
 
-        if ($assignment->status !== 'assigned') {
-            return response()->json([
-                'success' => false,
-                'message' => 'This asset cannot be returned.'
-            ], 422);
+        // IMPORTANT: do NOT decrement here; your AssetAssignment model already decrements
+        // assigned_quantity in the "updated" hook when status becomes "returned".
+
+        // Update asset status if changed (matches your UI radio)
+        if ($request->update_asset_status !== 'available') {
+            $assignment->asset->update(['status' => 'asset-' . $request->update_asset_status]);
         }
 
-        try {
-            DB::beginTransaction();
+        DB::commit();
 
-            $assignment->update([
-                'status' => 'returned',
-                'actual_return_date' => $request->return_date,
-                'condition_when_returned' => $request->condition_when_returned,
-                'return_notes' => $request->return_notes,
-                'returned_to' => auth()->id() ?? 1,
-            ]);
-
-            // Update asset assigned quantity
-            $assignment->asset->decrement('assigned_quantity', $assignment->quantity_assigned);
-
-            // Update asset status if needed
-            if ($request->update_asset_status !== 'available') {
-                $assignment->asset->update(['status' => 'asset-' . $request->update_asset_status]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Asset returned successfully!'
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollback();
-            \Log::error('Asset return failed: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to return asset: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json(['success' => true, 'message' => 'Asset returned successfully!']);
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        \Log::error('returnAsset error: '.$e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to return asset.'], 500);
     }
+}
 
     /**
      * Get assignment data for AJAX calls (for Details button)
      */
-    public function getAssignmentData(AssetAssignment $assignment)
-    {
-        try {
-            $assignment->load([
-                'asset:id,name,category,brand,model,sku',
-                'employee:id,first_name,last_name,employee_number,department_id',
-                'employee.department:id,name',
-                'assignedBy:id,first_name,last_name'
-            ]);
-            
-            // Add computed properties
-            $assignment->days_assigned = $assignment->assignment_date ? 
-                $assignment->assignment_date->diffInDays(now()) : 0;
-            
-            $assignment->is_overdue = $assignment->expected_return_date && 
-                $assignment->expected_return_date->isPast() && 
-                $assignment->status === 'assigned';
-            
-            if ($assignment->is_overdue) {
-                $assignment->days_overdue = $assignment->expected_return_date->diffInDays(now());
-            }
-            
-            return response()->json([
-                'success' => true,
-                'assignment' => $assignment,
-                'days_assigned' => $assignment->days_assigned,
-                'is_overdue' => $assignment->is_overdue,
-                'days_overdue' => $assignment->days_overdue ?? null
-            ]);
-            
-        } catch (\Exception $e) {
-            \Log::error('Error loading assignment data: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load assignment details'
-            ], 500);
+public function getAssignmentData(AssetAssignment $assignment)
+{
+    try {
+        $assignment->load([
+            'asset:id,name,category,brand,model,sku',
+            'employee:id,first_name,last_name,employee_number,department_id',
+            'employee.department:id,name',
+            'assignedBy:id,first_name,last_name',
+            'returnedTo:id,first_name,last_name', // ✅ important for returned/transferred rows
+        ]);
+
+        // compute helpers safely
+        $daysAssigned = $assignment->assignment_date
+            ? $assignment->assignment_date->diffInDays(now())
+            : 0;
+
+        $isOverdue = $assignment->expected_return_date
+            && $assignment->expected_return_date->isPast()
+            && $assignment->status === 'assigned';
+
+        $daysOverdue = $isOverdue
+            ? $assignment->expected_return_date->diffInDays(now())
+            : null;
+
+        // Add simple helper “full_name”s (avoid null issues in the view/JS)
+        $assignment->employee->full_name   = trim(($assignment->employee->first_name ?? '') . ' ' . ($assignment->employee->last_name ?? ''));
+        if ($assignment->assignedBy) {
+            $assignment->assignedBy->full_name = trim(($assignment->assignedBy->first_name ?? '') . ' ' . ($assignment->assignedBy->last_name ?? ''));
         }
+        if ($assignment->returnedTo) {
+            $assignment->returnedTo->full_name = trim(($assignment->returnedTo->first_name ?? '') . ' ' . ($assignment->returnedTo->last_name ?? ''));
+        }
+
+        return response()->json([
+            'success'        => true,
+            'assignment'     => $assignment,
+            'days_assigned'  => $daysAssigned,
+            'is_overdue'     => $isOverdue,
+            'days_overdue'   => $daysOverdue,
+        ]);
+    } catch (\Throwable $e) {
+        \Log::error('Error loading assignment data', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
+            'file'    => $e->getFile(),
+        ]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to load assignment history',
+        ], 500);
     }
+}
+
 
     /**
      * Transfer asset (for Transfer button)
      */
     public function transferAsset(Request $request, AssetAssignment $assignment)
-    {
-        $request->validate([
-            'new_employee_id' => 'required|exists:employees,id',
-            'transfer_date' => 'required|date',
-            'transfer_reason' => 'required|string',
-            'transfer_notes' => 'nullable|string|max:1000',
+{
+    $request->validate([
+        'new_employee_id' => 'required|exists:employees,id',
+        'transfer_date' => 'required|date',
+        'transfer_reason' => 'required|string',
+        'transfer_notes' => 'nullable|string|max:1000',
+    ]);
+
+    if ($assignment->status !== 'assigned') {
+        return response()->json(['success' => false, 'message' => 'This asset cannot be transferred.'], 422);
+    }
+
+    if ((int)$assignment->employee_id === (int)$request->new_employee_id) {
+        return response()->json(['success' => false, 'message' => 'Cannot transfer to the same employee.'], 422);
+    }
+
+    try {
+        $newEmployee = Employee::findOrFail($request->new_employee_id);
+
+        DB::beginTransaction();
+
+        // Close current assignment as "transferred"
+        $assignment->update([
+            'status' => 'transferred',
+            'actual_return_date' => $request->transfer_date,
+            'return_notes' => 'Transferred to ' . $newEmployee->first_name . ' ' . $newEmployee->last_name
+                            . '. Reason: ' . $request->transfer_reason
+                            . ($request->transfer_notes ? ('. ' . $request->transfer_notes) : ''),
+            'returned_to' => auth()->id() ?? 1,
         ]);
 
-        if ($assignment->status !== 'assigned') {
-            return response()->json([
-                'success' => false,
-                'message' => 'This asset cannot be transferred.'
-            ], 422);
-        }
+        // Create new "assigned" record for the target employee
+        AssetAssignment::create([
+            'asset_id' => $assignment->asset_id,
+            'employee_id' => $request->new_employee_id,
+            'quantity_assigned' => $assignment->quantity_assigned,
+            'assignment_date' => $request->transfer_date,
+            'expected_return_date' => null,
+            'condition_when_assigned' => $assignment->condition_when_assigned,
+            'assigned_by' => auth()->id() ?? 1,
+            'assignment_notes' => 'Transferred from ' . $assignment->employee->first_name . ' ' . $assignment->employee->last_name
+                                . '. Reason: ' . $request->transfer_reason
+                                . ($request->transfer_notes ? ('. ' . $request->transfer_notes) : ''),
+            'status' => 'assigned',
+        ]);
 
-        if ($assignment->employee_id == $request->new_employee_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot transfer to the same employee.'
-            ], 422);
-        }
+        DB::commit();
 
-        try {
-            $newEmployee = Employee::findOrFail($request->new_employee_id);
-
-            DB::beginTransaction();
-
-            // Mark current assignment as transferred
-            $assignment->update([
-                'status' => 'transferred',
-                'actual_return_date' => $request->transfer_date,
-                'return_notes' => 'Transferred to ' . $newEmployee->first_name . ' ' . $newEmployee->last_name . '. ' . ($request->transfer_notes ?? ''),
-                'returned_to' => auth()->id() ?? 1,
-            ]);
-
-            // Create new assignment for the new employee
-            AssetAssignment::create([
-                'asset_id' => $assignment->asset_id,
-                'employee_id' => $request->new_employee_id,
-                'quantity_assigned' => $assignment->quantity_assigned,
-                'assignment_date' => $request->transfer_date,
-                'condition_when_assigned' => $assignment->condition_when_assigned,
-                'assigned_by' => auth()->id() ?? 1,
-                'assignment_notes' => 'Transferred from ' . $assignment->employee->first_name . ' ' . $assignment->employee->last_name . '. ' . ($request->transfer_notes ?? ''),
-                'status' => 'assigned',
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Asset transferred successfully!'
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollback();
-            \Log::error('Asset transfer failed: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to transfer asset: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json(['success' => true, 'message' => 'Asset transferred successfully!']);
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        \Log::error('transferAsset error: '.$e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to transfer asset.'], 500);
     }
+}
 }

@@ -91,7 +91,9 @@ public function getRouteKeyName()
             'approved' => 'status-active',
             'rejected' => 'status-offline',
             'fulfilled' => 'status-active',
+
             'cancelled' => 'status-offline',
+
             default => 'status-pending'
         };
     }

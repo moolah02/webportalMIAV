@@ -28,7 +28,7 @@
                         </span>
                     </div>
                 </div>
-                
+
                 {{-- Status Update Actions --}}
                 <div class="action-section">
                     @if(auth()->user()->can('update', $assignment) || (auth()->user()->id == $assignment->technician_id))
@@ -50,13 +50,13 @@
                     @endif
                 </div>
             </div>
-            
+
             {{-- Details Grid --}}
             <div class="details-grid">
                 {{-- Assignment Details Column --}}
                 <div class="detail-section">
                     <h6 class="section-title">Assignment Details</h6>
-                    
+
                     <div class="detail-item">
                         <span class="detail-label">Technician</span>
                         <div class="detail-value">
@@ -72,12 +72,12 @@
                             @endif
                         </div>
                     </div>
-                    
+
                     <div class="detail-item">
                         <span class="detail-label">Client</span>
                         <span class="detail-value">{{ $assignment->client->company_name ?? '—' }}</span>
                     </div>
-                    
+
                     @if($assignment->project)
                     <div class="detail-item">
                         <span class="detail-label">Project</span>
@@ -85,11 +85,11 @@
                     </div>
                     @endif
                 </div>
-                
+
                 {{-- Service Information Column --}}
                 <div class="detail-section">
                     <h6 class="section-title">Service Information</h6>
-                    
+
                     <div class="detail-item">
                         <span class="detail-label">Scheduled Date</span>
                         <div class="detail-value">
@@ -101,12 +101,12 @@
                             @endif
                         </div>
                     </div>
-                    
+
                     <div class="detail-item">
                         <span class="detail-label">Service Type</span>
                         <span class="detail-value">{{ \Illuminate\Support\Str::headline($assignment->service_type) }}</span>
                     </div>
-                    
+
                     <div class="detail-item">
                         <span class="detail-label">Created</span>
                         <span class="detail-value">{{ $assignment->created_at?->format('M j, Y') ?? '—' }}</span>
@@ -118,7 +118,7 @@
 
     {{-- Terminals Section --}}
     @if($terminals->isEmpty())
-        <div class="card">
+        <div class="card mb-4">
             <div class="empty-terminals">
                 <div class="empty-icon">🖥️</div>
                 <h5 class="empty-title">No terminals assigned</h5>
@@ -131,7 +131,7 @@
                 <h6 class="card-title">Terminals</h6>
                 <div class="header-actions">
                     <span class="terminal-count">
-                        {{ $terminals->count() }} {{ Str::plural('terminal', $terminals->count()) }}
+                        {{ $terminals->count() }} {{ \Illuminate\Support\Str::plural('terminal', $terminals->count()) }}
                     </span>
                     <div class="search-box">
                         <input type="text" id="terminalSearch" placeholder="Search terminals..." class="form-control">
@@ -139,7 +139,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="table-responsive">
                 <table class="terminals-table">
                     <thead>
@@ -182,7 +182,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             {{-- No Results Message --}}
             <div id="noResults" class="no-results" style="display: none;">
                 <div class="text-center py-4">
@@ -192,6 +192,19 @@
             </div>
         </div>
     @endif
+
+    {{-- Live Site Visits (always visible) --}}
+    <div class="card mb-4" id="liveSiteVisitsCard">
+        <div class="card-header">
+            <h6 class="card-title">Live Site Visits</h6>
+            <span class="terminal-count" id="liveVisitCount">0</span>
+        </div>
+        <div class="card-body">
+            <div id="liveVisitsList" class="list-group" style="max-height: 420px; overflow-y:auto;">
+                <div class="text-muted">Waiting for updates…</div>
+            </div>
+        </div>
+    </div>
 
     {{-- Notes Section --}}
     @if($assignment->notes)
@@ -222,7 +235,7 @@
     border-bottom: 1px solid #e5e7eb;
     padding: 1rem 1.5rem;
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
@@ -269,7 +282,7 @@
 /* Header Section */
 .header-row {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: flex-start;
     flex-wrap: wrap;
     gap: 1.5rem;
@@ -373,7 +386,7 @@
 
 .detail-item {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: flex-start;
     padding: 0.75rem 0;
     border-bottom: 1px solid #f9fafb;
@@ -691,34 +704,34 @@
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
+
     .header-row {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .detail-item {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .detail-value {
         text-align: left;
     }
-    
+
     .technician-info {
         justify-content: flex-start;
     }
-    
+
     .card-body {
         padding: 1rem;
     }
-    
+
     .terminals-table th,
     .terminals-table td {
         padding: 0.5rem;
     }
-    
+
     .assignment-title {
         font-size: 1.25rem;
     }
@@ -728,34 +741,38 @@
     .empty-terminals {
         padding: 2rem 1rem;
     }
-    
+
     .status-group {
         width: 100%;
     }
-    
+
     .badge {
         flex: 1;
         text-align: center;
     }
 }
 </style>
+@endpush
 
+@push('scripts')
 <script>
+// ==============================
 // Terminal Search Functionality
+// ==============================
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('terminalSearch');
     const tableBody = document.getElementById('terminalsTableBody');
     const noResults = document.getElementById('noResults');
-    
+
     if (searchInput && tableBody) {
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase().trim();
             const rows = tableBody.querySelectorAll('.terminal-row');
             let visibleCount = 0;
-            
+
             rows.forEach(function(row) {
                 const searchableText = row.getAttribute('data-searchable');
-                
+
                 if (searchableText.includes(searchTerm)) {
                     row.style.display = '';
                     visibleCount++;
@@ -763,7 +780,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     row.style.display = 'none';
                 }
             });
-            
+
             // Show/hide no results message
             if (noResults) {
                 if (visibleCount === 0 && searchTerm !== '') {
@@ -776,13 +793,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ==============================
 // Status Update Function
+// ==============================
 function updateStatus(assignmentId, newStatus, buttonElement) {
     // Disable button and show loading
     const originalText = buttonElement.innerHTML;
     buttonElement.disabled = true;
     buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
-    
+
     // Make AJAX request
     fetch(`/api/assignments/${assignmentId}/status`, {
         method: 'PUT',
@@ -800,7 +819,7 @@ function updateStatus(assignmentId, newStatus, buttonElement) {
         if (data.success) {
             // Show success message
             showNotification('success', data.message || 'Status updated successfully');
-            
+
             // Reload page after short delay to reflect changes
             setTimeout(() => {
                 window.location.reload();
@@ -812,14 +831,16 @@ function updateStatus(assignmentId, newStatus, buttonElement) {
     .catch(error => {
         console.error('Error:', error);
         showNotification('error', error.message || 'Failed to update status');
-        
+
         // Re-enable button
         buttonElement.disabled = false;
         buttonElement.innerHTML = originalText;
     });
 }
 
+// ==============================
 // Show notification function
+// ==============================
 function showNotification(type, message) {
     // Create notification element
     const notification = document.createElement('div');
@@ -830,15 +851,15 @@ function showNotification(type, message) {
             <span>${message}</span>
         </div>
     `;
-    
+
     // Add to page
     document.body.appendChild(notification);
-    
+
     // Show notification
     setTimeout(() => {
         notification.classList.add('show');
     }, 100);
-    
+
     // Remove notification after 4 seconds
     setTimeout(() => {
         notification.classList.remove('show');
@@ -847,5 +868,58 @@ function showNotification(type, message) {
         }, 300);
     }, 4000);
 }
+
+// ==============================
+// Live Site Visits Polling (3b)
+// ==============================
+(function(){
+    const assignmentId = {{ (int)$assignment->id }};
+    const listEl = document.getElementById('liveVisitsList');
+    const countEl = document.getElementById('liveVisitCount');
+
+    async function fetchVisits() {
+        try {
+            const res = await fetch(`{{ route('api.jobs.assignments.visits', $assignment->id) }}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error('Feed error');
+
+            countEl.textContent = data.count;
+
+            if (data.count === 0) {
+                listEl.innerHTML = '<div class="text-muted">No visits yet for this assignment.</div>';
+                return;
+            }
+
+            listEl.innerHTML = data.visits.map(v => `
+                <div class="list-group-item" style="padding:12px 0; border-bottom:1px solid #f1f5f9;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-weight:600;">
+                            ${v.merchant_name ?? '—'} <span style="color:#6b7280;">(${v.terminal_id ?? '—'})</span>
+                        </div>
+                        <span class="badge" style="background:#f3f4f6;color:#374151;">
+                            ${v.status ? v.status.replace('_',' ') : 'open'}
+                        </span>
+                    </div>
+                    <div style="color:#6b7280; font-size:12px; margin-top:4px;">
+                        Tech: ${v.technician ?? '—'} • Started: ${v.started_at ?? '—'} ${v.ended_at ? '• Ended: '+v.ended_at : ''}
+                    </div>
+                    <div style="margin-top:6px; font-size:13px;">
+                        <strong>Terminal Status:</strong> ${v.terminal_status ?? '—'}
+                        ${v.comments ? `<div style="color:#374151; margin-top:4px;">${v.comments}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error(e);
+            listEl.innerHTML = '<div class="text-danger">Failed to load live visits.</div>';
+        }
+    }
+
+    // initial + poll every 10s
+    fetchVisits();
+    setInterval(fetchVisits, 10000);
+})();
 </script>
 @endpush
