@@ -253,9 +253,7 @@
     <a href="{{ route('jobs.show', $a->id) }}" class="btn btn-outline">
         View
     </a>
-    <a href="{{ route('site_visits.index', ['assignment_id' => $a->id]) }}" class="btn btn-secondary" style="margin-left:6px;">
-        Site Visits
-    </a>
+
 </td>
 
                         </tr>

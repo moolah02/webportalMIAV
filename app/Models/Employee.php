@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 
 class Employee extends Authenticatable
-
-
 {
-    use HasFactory, Notifiable;
-use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+    // Spatie guard (matches config/permission.php)
+    protected string $guard_name = 'web';
 
     protected $fillable = [
         'employee_number',
@@ -50,13 +50,14 @@ use HasApiTokens, HasFactory, Notifiable, HasRoles;
     ];
 
     protected $casts = [
-        'hire_date' => 'date',
-        'last_login_at' => 'datetime',
+        'hire_date'          => 'date',
+        'last_login_at'      => 'datetime',
         'two_factor_enabled' => 'boolean',
-        'salary' => 'decimal:2',
+        'salary'             => 'decimal:2',
     ];
 
-    // Relationships
+    /* ===================== Relationships ===================== */
+
     public function role()
     {
         return $this->belongsTo(Role::class);
@@ -77,264 +78,162 @@ use HasApiTokens, HasFactory, Notifiable, HasRoles;
         return $this->hasMany(Employee::class, 'manager_id');
     }
 
-    // Job Assignments relationship
     public function jobAssignments()
     {
         return $this->hasMany(JobAssignment::class, 'technician_id');
     }
 
-    // Asset Requests relationship - THIS WAS MISSING!
     public function assetRequests()
     {
         return $this->hasMany(AssetRequest::class, 'employee_id');
     }
 
-    // Helper Methods - Now using role instead of redundant fields
-
-    /**
-     * Check if employee is a field technician (based on role)
-     */
-    public function isFieldTechnician(): bool
+    public function assetAssignments()
     {
-        return $this->role ? $this->role->isTechnician() : false;
+        return $this->hasMany(AssetAssignment::class, 'employee_id');
+    }
+
+    public function assignedAssets()
+    {
+        return $this->hasMany(AssetAssignment::class, 'assigned_by');
+    }
+
+    public function assetsReturnedTo()
+    {
+        return $this->hasMany(AssetAssignment::class, 'returned_to');
     }
 
     /**
-     * Get employee specialization (based on role)
+     * Current assignments (status = assigned)
      */
-    public function getSpecialization()
+    public function currentAssetAssignments()
     {
-        return $this->role->name ?? 'General';
+        return $this->hasMany(AssetAssignment::class, 'employee_id')
+                    ->where('asset_assignments.status', 'assigned')
+                    ->with('asset');
     }
 
     /**
-     * Get employee type (based on role)
+     * Many-to-many convenience for currently assigned assets
      */
-    public function getEmployeeType(): string
+    public function getCurrentAssets()
     {
-        return $this->role ? $this->role->getEmployeeType() : 'employee';
+        return $this->belongsToMany(Asset::class, 'asset_assignments')
+                    ->wherePivot('status', 'assigned')
+                    ->withPivot([
+                        'id',
+                        'quantity_assigned',
+                        'assignment_date',
+                        'expected_return_date',
+                        'condition_when_assigned',
+                        'assignment_notes',
+                    ]);
     }
 
-    /**
-     * Get full name
-     */
+    /* ===================== Accessors / Helpers ===================== */
+
     public function getFullNameAttribute(): string
     {
         return $this->first_name . ' ' . $this->last_name;
     }
 
-    /**
-     * Get name (alias for full_name)
-     */
     public function getNameAttribute(): string
     {
         return $this->getFullNameAttribute();
     }
 
     /**
-     * Check if employee has specific permission (via role)
+     * Total value of currently assigned assets
+     * (FIXED: call the correct relation method)
+     */
+    public function getAssignedAssetsValueAttribute(): float
+    {
+        return (float) $this->currentAssetAssignments()
+            ->join('assets', 'assets.id', '=', 'asset_assignments.asset_id')
+            ->sum(DB::raw('assets.unit_price * asset_assignments.quantity_assigned'));
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function isFieldTechnician(): bool
+    {
+        return $this->role ? $this->role->isTechnician() : false;
+    }
+
+    public function getSpecialization()
+    {
+        return $this->role->name ?? 'General';
+    }
+
+    public function getEmployeeType(): string
+    {
+        return $this->role ? $this->role->getEmployeeType() : 'employee';
+    }
+
+    /**
+     * Keep your existing app-level permission check via Role model
      */
     public function hasPermission(string $permission): bool
     {
         return $this->role ? $this->role->hasPermission($permission) : false;
     }
 
-    /**
-     * Check if employee is active
-     */
-    public function isActive(): bool
-    {
-        return $this->status === 'active';
-    }
-
-    /**
-     * Check if employee is manager/supervisor
-     */
     public function isManager(): bool
     {
         return $this->getEmployeeType() === 'manager';
     }
 
-    /**
-     * Check if employee is admin
-     */
     public function isAdmin(): bool
     {
         return $this->getEmployeeType() === 'admin';
     }
 
-    // Scopes for querying
+    public function updateLastLogin(): void
+    {
+        $this->update(['last_login_at' => now()]);
+    }
 
-    /**
-     * Scope to get only field technicians
-     */
+    /* ===================== Scopes ===================== */
+
     public function scopeFieldTechnicians($query)
     {
-        return $query->whereHas('role', function($q) {
-            $q->where(function($subQ) {
-                $technicianKeywords = ['technician', 'field', 'maintenance', 'service', 'repair', 'tech', 'installer', 'hardware'];
-                foreach ($technicianKeywords as $keyword) {
-                    $subQ->orWhere('name', 'LIKE', "%{$keyword}%");
+        return $query->whereHas('role', function ($q) {
+            $q->where(function ($subQ) {
+                foreach (['technician','field','maintenance','service','repair','tech','installer','hardware'] as $kw) {
+                    $subQ->orWhere('name', 'like', "%{$kw}%");
                 }
             });
         });
     }
 
-    /**
-     * Scope to get active employees
-     */
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
     }
 
-    /**
-     * Scope to get managers
-     */
     public function scopeManagers($query)
     {
-        return $query->whereHas('role', function($q) {
-            $q->where('name', 'LIKE', '%manager%')
-              ->orWhere('name', 'LIKE', '%supervisor%')
-              ->orWhere('name', 'LIKE', '%admin%');
+        return $query->whereHas('role', function ($q) {
+            $q->where('name', 'like', '%manager%')
+              ->orWhere('name', 'like', '%supervisor%')
+              ->orWhere('name', 'like', '%admin%');
         });
     }
 
-    public function updateLastLogin()
+    public function scopeWithAssignedAssets($query)
     {
-        $this->update([
-            'last_login_at' => now()
-        ]);
+        return $query->whereHas('currentAssetAssignments');
     }
 
-
-
-public function assetAssignments()
-{
-    return $this->hasMany(AssetAssignment::class, 'employee_id');
-}
-
-
-    public function getAssignedAssetsValueAttribute()
+    public function scopeWithOverdueReturns($query)
     {
-        return $this->currentAssetAssignments()
-                    ->join('assets', 'asset_assignments.asset_id', '=', 'assets.id')
-                    ->sum(\DB::raw('assets.unit_price * asset_assignments.quantity_assigned')) ?? 0;
-    }
-
-
-public function assignedAssets()
-{
-    return $this->hasMany(AssetAssignment::class, 'assigned_by');
-}
-
-/**
- * Assets returned to this employee (if they handle returns)
- */
-public function assetsReturnedTo()
-{
-    return $this->hasMany(AssetAssignment::class, 'returned_to');
-}
-
-/**
- * Get all assets currently assigned to this employee
- */
-public function getCurrentAssets()
-{
-    return $this->belongsToMany(Asset::class, 'asset_assignments')
-                ->wherePivot('status', 'assigned')
-                ->withPivot([
-                    'id',
-                    'quantity_assigned',
-                    'assignment_date',
-                    'expected_return_date',
-                    'condition_when_assigned',
-                    'assignment_notes'
-                ]);
-}
-
-/**
- * Get assignment history for this employee
- */
-public function getAssignmentHistory()
-{
-    return $this->assetAssignments()
-                ->with(['asset', 'assignedBy'])
-                ->latest('assignment_date')
-                ->get();
-}
-
-public function currentAssetAssignments()
-    {
-        return $this->hasMany(AssetAssignment::class, 'employee_id')
-                    ->where('asset_assignments.status', 'assigned')
-                    ->with('asset');
-    }
-/**
- * Get overdue asset returns for this employee
- */
-public function getOverdueAssets()
-    {
-        return $this->assetAssignments()
-                    ->where('asset_assignments.status', 'assigned')
-                    ->where('expected_return_date', '<', now())
-                    ->whereNull('actual_return_date')
-                    ->with('asset')
-                    ->get();
-    }
-/**
- * Get count of assets assigned to this employee
- */
-
-/**
- * Get total value of assets assigned to this employee
- */
-
-public function canReceiveAssetAssignment(): bool
-{
-    // Basic check - employee must be active
-    if (!$this->isActive()) {
-        return false;
-    }
-
-    // Add any role-based or department-based limits here
-    // For example, temporary employees might have limits
-
-    return true;
-}
-
-/**
- * Check if employee can assign assets to others
- */
-public function canAssignAssets(): bool
-{
-    return $this->hasPermission('manage_assets') ||
-           $this->hasPermission('all') ||
-           $this->isManager() ||
-           $this->isAdmin();
-}
-
-/**
- * Scope to get employees with assigned assets
- */
-public function scopeWithAssignedAssets($query)
-{
-    return $query->whereHas('currentAssetAssignments');
-}
-
-/**
- * Scope to get employees with overdue returns
- */
-public function scopeWithOverdueReturns($query)
-    {
-        return $query->whereHas('assetAssignments', function($q) {
+        return $query->whereHas('assetAssignments', function ($q) {
             $q->where('asset_assignments.status', 'assigned')
               ->where('expected_return_date', '<', now())
               ->whereNull('actual_return_date');
         });
     }
-    /*public function can($abilities, $arguments = [])
-    {
-        return Gate::forUser($this)->check($abilities, $arguments);
-    }*/
 }

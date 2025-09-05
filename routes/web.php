@@ -24,9 +24,7 @@ use App\Http\Controllers\ReportBuilderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\PosTerminalImportController;
-
-
-
+use App\Http\Controllers\SystemReportsController;
 
 // ==============================================
 // ROOT ROUTE - REDIRECT TO DASHBOARD
@@ -41,7 +39,6 @@ Route::get('/', function () {
             return redirect('/login')->withErrors(['email' => 'Your account has been deactivated.']);
         }
 
-        // Everyone goes to dashboard now
         return redirect('/dashboard');
     }
 
@@ -67,7 +64,7 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     // ==============================================
-    // DASHBOARD ROUTES
+    // DASHBOARD ROUTES - UPDATED WITH NEW PERMISSIONS
     // ==============================================
 
     Route::get('/dashboard', function () {
@@ -86,149 +83,151 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         ->name('employee.dashboard');
 
     // ==============================================
-    // CLIENT MANAGEMENT ROUTES
+    // CLIENT MANAGEMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
     Route::prefix('clients')->name('clients.')->group(function () {
-        Route::get('/', [ClientController::class, 'index'])->name('index');
-        Route::get('/create', [ClientController::class, 'create'])->name('create');
-        Route::post('/', [ClientController::class, 'store'])->name('store');
+        Route::get('/', [ClientController::class, 'index'])
+            ->middleware('permission:view_clients,manage_clients,all')
+            ->name('index');
+
+        Route::get('/create', [ClientController::class, 'create'])
+            ->middleware('permission:manage_clients,all')
+            ->name('create');
+
+        Route::post('/', [ClientController::class, 'store'])
+            ->middleware('permission:manage_clients,all')
+            ->name('store');
+
         Route::get('/{client}', [ClientController::class, 'show'])
-    ->whereNumber('client')
-    ->name('show');
+            ->middleware('permission:view_clients,manage_clients,all')
+            ->whereNumber('client')
+            ->name('show');
 
-Route::get('/{client}/edit', [ClientController::class, 'edit'])
-    ->whereNumber('client')
-    ->name('edit');
+        Route::get('/{client}/edit', [ClientController::class, 'edit'])
+            ->middleware('permission:manage_clients,all')
+            ->whereNumber('client')
+            ->name('edit');
 
-        Route::put('/{client}', [ClientController::class, 'update'])->name('update');
-        Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+        Route::put('/{client}', [ClientController::class, 'update'])
+            ->middleware('permission:manage_clients,all')
+            ->name('update');
+
+        Route::delete('/{client}', [ClientController::class, 'destroy'])
+            ->middleware('permission:manage_clients,all')
+            ->name('destroy');
     });
-
-// ==============================================
-// POS TERMINAL ROUTES - CONSOLIDATED (fixed)
-// ==============================================
-Route::prefix('pos-terminals')->name('pos-terminals.')->group(function () {
-    // --- Specific routes first ---
-
-    // Charts
-    Route::get('/chart-data', [PosTerminalController::class, 'getChartData'])
-        ->middleware('auth') // loosen for now
-        ->name('chart-data');
-
-    // Column Mapping
-    Route::get('/column-mapping', [PosTerminalController::class, 'showColumnMapping'])
-        ->middleware('auth')
-        ->name('column-mapping');
-
-    Route::post('/column-mapping', [PosTerminalController::class, 'storeColumnMapping'])
-        ->middleware('auth')
-        ->name('store-mapping');
-
-    Route::delete('/column-mapping/{mapping}', [PosTerminalController::class, 'deleteColumnMapping'])
-        ->middleware('auth')
-        ->name('delete-mapping');
-
-    Route::patch('/column-mapping/{mapping}/toggle', [PosTerminalController::class, 'toggleColumnMapping'])
-        ->middleware('auth')
-        ->name('toggle-mapping');
-
-    // Import / Preview / Template  -> PosTerminalImportController
-    Route::get('/import', [PosTerminalController::class, 'showImport'])
-        ->middleware('auth')
-        ->name('import.form');
-
-    Route::post('/import', [PosTerminalImportController::class, 'import'])
-        ->middleware('auth')
-        ->name('import');
-
-    Route::post('/preview-import', [PosTerminalImportController::class, 'preview'])
-        ->middleware('auth')
-        ->name('preview-import');
-
-    // legacy alias (still points to preview)
-    Route::post('/preview-import-enhanced', [PosTerminalImportController::class, 'preview'])
-        ->middleware('auth')
-        ->name('preview-import-enhanced');
-
-    Route::get('/download-template', [PosTerminalImportController::class, 'downloadTemplate'])
-        ->middleware('auth')
-        ->name('download-template');
-
-    // Export (used by your Blade "Export" button)
-    Route::get('/export', [PosTerminalController::class, 'export'])
-        ->middleware('auth')
-        ->name('export');
-
-    // --- CRUD (dynamic) routes last ---
-    Route::get('/', [PosTerminalController::class, 'index'])
-        ->middleware('auth')
-        ->name('index');
-
-    Route::get('/create', [PosTerminalController::class, 'create'])
-        ->middleware('auth')
-        ->name('create');
-
-    Route::post('/', [PosTerminalController::class, 'store'])
-        ->middleware('auth')
-        ->name('store');
-
-    // These MUST be last due to {posTerminal}
-    Route::get('/{posTerminal}', [PosTerminalController::class, 'show'])
-        ->middleware('auth')
-        ->name('show');
-
-    Route::get('/{posTerminal}/edit', [PosTerminalController::class, 'edit'])
-        ->middleware('auth')
-        ->name('edit');
-
-    Route::put('/{posTerminal}', [PosTerminalController::class, 'update'])
-        ->middleware('auth')
-        ->name('update');
-
-    Route::delete('/{posTerminal}', [PosTerminalController::class, 'destroy'])
-        ->middleware('auth')
-        ->name('destroy');
-
-    Route::patch('/{posTerminal}/status', [PosTerminalController::class, 'updateStatus'])
-        ->middleware('auth')
-        ->name('update-status');
-
-    Route::prefix('/{posTerminal}')->group(function () {
-        Route::post('/tickets', [PosTerminalController::class, 'createTicket'])
-            ->middleware('auth')
-            ->name('tickets.create');
-
-        Route::post('/services', [PosTerminalController::class, 'scheduleService'])
-            ->middleware('auth')
-            ->name('services.create');
-
-        Route::post('/notes', [PosTerminalController::class, 'addNote'])
-            ->middleware('auth')
-            ->name('notes.create');
-
-        Route::get('/statistics', [PosTerminalController::class, 'getStatistics'])
-            ->middleware('auth')
-            ->name('statistics');
-    });
-});
-// Add to your routes file temporarily
-Route::get('/debug-upload', function() {
-    return response()->json([
-        'upload_max_filesize' => ini_get('upload_max_filesize'),
-        'post_max_size' => ini_get('post_max_size'),
-        'max_file_uploads' => ini_get('max_file_uploads'),
-        'memory_limit' => ini_get('memory_limit'),
-        'max_execution_time' => ini_get('max_execution_time'),
-    ]);
-});
 
     // ==============================================
-    // JOB ASSIGNMENT ROUTES - CLEANED UP
+    // POS TERMINAL ROUTES - UPDATED PERMISSIONS
+    // ==============================================
+    Route::prefix('pos-terminals')->name('pos-terminals.')->group(function () {
+        // Charts
+        Route::get('/chart-data', [PosTerminalController::class, 'getChartData'])
+            ->middleware('permission:view_terminals,manage_terminals,all')
+            ->name('chart-data');
+
+        // Column Mapping
+        Route::get('/column-mapping', [PosTerminalController::class, 'showColumnMapping'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('column-mapping');
+
+        Route::post('/column-mapping', [PosTerminalController::class, 'storeColumnMapping'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('store-mapping');
+
+        Route::delete('/column-mapping/{mapping}', [PosTerminalController::class, 'deleteColumnMapping'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('delete-mapping');
+
+        Route::patch('/column-mapping/{mapping}/toggle', [PosTerminalController::class, 'toggleColumnMapping'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('toggle-mapping');
+
+        // Import / Preview / Template
+        Route::get('/import', [PosTerminalController::class, 'showImport'])
+            ->middleware('permission:import_data,manage_terminals,all')
+            ->name('import.form');
+
+        Route::post('/import', [PosTerminalImportController::class, 'import'])
+            ->middleware('permission:import_data,manage_terminals,all')
+            ->name('import');
+
+        Route::post('/preview-import', [PosTerminalImportController::class, 'preview'])
+            ->middleware('permission:import_data,manage_terminals,all')
+            ->name('preview-import');
+
+        Route::post('/preview-import-enhanced', [PosTerminalImportController::class, 'preview'])
+            ->middleware('permission:import_data,manage_terminals,all')
+            ->name('preview-import-enhanced');
+
+        Route::get('/download-template', [PosTerminalImportController::class, 'downloadTemplate'])
+            ->middleware('permission:import_data,manage_terminals,all')
+            ->name('download-template');
+
+        // Export
+        Route::get('/export', [PosTerminalController::class, 'export'])
+            ->middleware('permission:export_data,manage_terminals,all')
+            ->name('export');
+
+        // CRUD routes
+        Route::get('/', [PosTerminalController::class, 'index'])
+            ->middleware('permission:view_terminals,manage_terminals,all')
+            ->name('index');
+
+        Route::get('/create', [PosTerminalController::class, 'create'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('create');
+
+        Route::post('/', [PosTerminalController::class, 'store'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('store');
+
+        Route::get('/{posTerminal}', [PosTerminalController::class, 'show'])
+            ->middleware('permission:view_terminals,manage_terminals,all')
+            ->name('show');
+
+        Route::get('/{posTerminal}/edit', [PosTerminalController::class, 'edit'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('edit');
+
+        Route::put('/{posTerminal}', [PosTerminalController::class, 'update'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('update');
+
+        Route::delete('/{posTerminal}', [PosTerminalController::class, 'destroy'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('destroy');
+
+        Route::patch('/{posTerminal}/status', [PosTerminalController::class, 'updateStatus'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('update-status');
+
+        Route::prefix('/{posTerminal}')->group(function () {
+            Route::post('/tickets', [PosTerminalController::class, 'createTicket'])
+                ->middleware('permission:manage_tickets,all')
+                ->name('tickets.create');
+
+            Route::post('/services', [PosTerminalController::class, 'scheduleService'])
+                ->middleware('permission:assign_jobs,manage_jobs,all')
+                ->name('services.create');
+
+            Route::post('/notes', [PosTerminalController::class, 'addNote'])
+                ->middleware('permission:manage_terminals,all')
+                ->name('notes.create');
+
+            Route::get('/statistics', [PosTerminalController::class, 'getStatistics'])
+                ->middleware('permission:view_terminals,manage_terminals,all')
+                ->name('statistics');
+        });
+    });
+
+    // ==============================================
+    // JOB ASSIGNMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
     // Job management routes (for managers/dispatchers)
-    Route::prefix('jobs')->name('jobs.')->middleware('permission:manage_team,all')->group(function () {
+    Route::prefix('jobs')->name('jobs.')->middleware('permission:manage_jobs,assign_jobs,all')->group(function () {
         Route::get('/assignment', [JobAssignmentController::class, 'index'])->name('assignment');
         Route::post('/assignment', [JobAssignmentController::class, 'store'])->name('assignment.store');
         Route::get('/regions/{region}/terminals', [JobAssignmentController::class, 'getRegionTerminals'])->name('regions.terminals');
@@ -242,7 +241,7 @@ Route::get('/debug-upload', function() {
 
     // Job assignments list pages
     Route::get('/jobs/assignments', [JobAssignmentController::class, 'listAll'])
-        ->middleware('permission:view_jobs,manage_team,all')
+        ->middleware('permission:view_jobs,manage_jobs,assign_jobs,all')
         ->name('jobs.index');
 
     Route::get('/jobs/assignments/mine', [JobAssignmentController::class, 'mine'])
@@ -251,49 +250,91 @@ Route::get('/debug-upload', function() {
 
     // Full page detail view
     Route::get('/jobs/assignments/{assignment}', [JobAssignmentController::class, 'showPage'])
-        ->middleware('permission:view_jobs,manage_team,all')
+        ->middleware('permission:view_jobs,manage_jobs,assign_jobs,all')
         ->name('jobs.show');
 
     // API route for status updates
-    Route::put('/api/assignments/{assignmentId}/status', [JobAssignmentController::class, 'updateStatus']);
+    Route::put('/api/assignments/{assignmentId}/status', [JobAssignmentController::class, 'updateStatus'])
+        ->middleware('permission:view_jobs,manage_jobs,assign_jobs,all');
 
     // ==============================================
     // TECHNICIAN MANAGEMENT ROUTES
     // ==============================================
 
-    Route::middleware('permission:manage_team,all')->group(function () {
+    Route::middleware('permission:manage_team,manage_employees,all')->group(function () {
         Route::resource('technicians', TechnicianController::class);
         Route::patch('/technicians/{technician}/availability', [TechnicianController::class, 'updateAvailability'])
             ->name('technicians.update-availability');
     });
 
     // ==============================================
-    // ASSET MANAGEMENT ROUTES - CONSOLIDATED
+    // ASSET MANAGEMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
     Route::prefix('assets')->name('assets.')->group(function () {
         // Main CRUD routes
-        Route::get('/', [AssetController::class, 'index'])->name('index');
-        Route::get('/create', [AssetController::class, 'create'])->name('create');
-        Route::post('/', [AssetController::class, 'store'])->name('store');
-        Route::get('/{asset}', [AssetController::class, 'show'])->name('show');
-        Route::get('/{asset}/edit', [AssetController::class, 'edit'])->name('edit');
-        Route::put('/{asset}', [AssetController::class, 'update'])->name('update');
-        Route::delete('/{asset}', [AssetController::class, 'destroy'])->name('destroy');
+        Route::get('/', [AssetController::class, 'index'])
+            ->middleware('permission:view_assets,manage_assets,all')
+            ->name('index');
+
+        Route::get('/create', [AssetController::class, 'create'])
+            ->middleware('permission:manage_assets,all')
+            ->name('create');
+
+        Route::post('/', [AssetController::class, 'store'])
+            ->middleware('permission:manage_assets,all')
+            ->name('store');
+
+        Route::get('/{asset}', [AssetController::class, 'show'])
+            ->middleware('permission:view_assets,manage_assets,all')
+            ->name('show');
+
+        Route::get('/{asset}/edit', [AssetController::class, 'edit'])
+            ->middleware('permission:manage_assets,all')
+            ->name('edit');
+
+        Route::put('/{asset}', [AssetController::class, 'update'])
+            ->middleware('permission:manage_assets,all')
+            ->name('update');
+
+        Route::delete('/{asset}', [AssetController::class, 'destroy'])
+            ->middleware('permission:manage_assets,all')
+            ->name('destroy');
 
         // Stock management
-        Route::post('/{asset}/update-stock', [AssetController::class, 'updateStock'])->name('update-stock');
-        Route::post('/bulk-update-stock', [AssetController::class, 'bulkUpdateStock'])->name('bulk-update-stock');
+        Route::post('/{asset}/update-stock', [AssetController::class, 'updateStock'])
+            ->middleware('permission:manage_assets,all')
+            ->name('update-stock');
+
+        Route::post('/bulk-update-stock', [AssetController::class, 'bulkUpdateStock'])
+            ->middleware('permission:bulk_operations,manage_assets,all')
+            ->name('bulk-update-stock');
 
         // Reports and exports
-        Route::get('/export/csv', [AssetController::class, 'export'])->name('export');
-        Route::get('/alerts/low-stock', [AssetController::class, 'lowStockAlerts'])->name('low-stock-alerts');
-        Route::get('/{asset}/vehicle-info', [AssetController::class, 'getVehicleInfo'])->name('vehicle-info');
-        Route::get('/assignment-report', [AssetController::class, 'assignmentReport'])->name('assignment-report');
-        Route::get('/overdue-report', [AssetController::class, 'overdueReport'])->name('overdue-report');
+        Route::get('/export/csv', [AssetController::class, 'export'])
+            ->middleware('permission:export_data,manage_assets,all')
+            ->name('export');
+
+        Route::get('/alerts/low-stock', [AssetController::class, 'lowStockAlerts'])
+            ->middleware('permission:view_assets,manage_assets,all')
+            ->name('low-stock-alerts');
+
+        Route::get('/{asset}/vehicle-info', [AssetController::class, 'getVehicleInfo'])
+            ->middleware('permission:view_assets,manage_assets,all')
+            ->name('vehicle-info');
+
+        Route::get('/assignment-report', [AssetController::class, 'assignmentReport'])
+            ->middleware('permission:view_reports,manage_assets,all')
+            ->name('assignment-report');
+
+        Route::get('/overdue-report', [AssetController::class, 'overdueReport'])
+            ->middleware('permission:view_reports,manage_assets,all')
+            ->name('overdue-report');
 
         // Asset assignments
-        Route::post('/assign', [AssetController::class, 'assignAsset'])->name('assign');
+        Route::post('/assign', [AssetController::class, 'assignAsset'])
+            ->middleware('permission:manage_assets,all')
+            ->name('assign');
 
         // Legacy routes for compatibility
         Route::get('/internal', function () {
@@ -306,39 +347,76 @@ Route::get('/debug-upload', function() {
 
         Route::get('/licenses', function () {
             return view('assets.licenses', ['title' => 'Business Licenses']);
-        })->middleware('permission:manage_assets,all')->name('licenses');
+        })->middleware('permission:manage_licenses,manage_assets,all')->name('licenses');
     });
 
     // ==============================================
-    // ASSET ASSIGNMENT ROUTES - CONSOLIDATED
+    // ASSET ASSIGNMENT ROUTES
     // ==============================================
 
     Route::prefix('asset-assignments')->name('asset-assignments.')->group(function () {
-        Route::get('/{assignment}/data', [AssetController::class, 'getAssignmentData'])->name('data');
-        Route::patch('/{assignment}/return', [AssetController::class, 'returnAsset'])->name('return');
-        Route::patch('/{assignment}/transfer', [AssetController::class, 'transferAsset'])->name('transfer');
-    Route::patch('/asset-assignments/{assignment}/transfer', [AssetController::class, 'transferAsset'])
-     ->name('asset-assignments.transfer');
+        Route::get('/{assignment}/data', [AssetController::class, 'getAssignmentData'])
+            ->middleware('permission:view_assets,manage_assets,all')
+            ->name('data');
+
+        Route::patch('/{assignment}/return', [AssetController::class, 'returnAsset'])
+            ->middleware('permission:manage_assets,all')
+            ->name('return');
+
+        Route::patch('/{assignment}/transfer', [AssetController::class, 'transferAsset'])
+            ->middleware('permission:manage_assets,all')
+            ->name('transfer');
     });
 
     // Additional employee routes for asset assignments
-    Route::get('/employees/available', [AssetController::class, 'getAvailableEmployees'])->name('employees.available');
+    Route::get('/employees/available', [AssetController::class, 'getAvailableEmployees'])
+        ->middleware('permission:view_employees,manage_assets,all')
+        ->name('employees.available');
 
     // ==============================================
     // ASSET REQUEST ROUTES
     // ==============================================
 
     Route::prefix('asset-requests')->name('asset-requests.')->group(function () {
-        Route::get('/catalog', [AssetRequestController::class, 'catalog'])->name('catalog');
-        Route::post('/cart/add/{asset}', [AssetRequestController::class, 'addToCart'])->name('cart.add');
-        Route::get('/cart', [AssetRequestController::class, 'cart'])->name('cart');
-        Route::patch('/cart/{asset}', [AssetRequestController::class, 'updateCart'])->name('cart.update');
-        Route::delete('/cart/{asset}', [AssetRequestController::class, 'removeFromCart'])->name('cart.remove');
-        Route::get('/checkout', [AssetRequestController::class, 'checkout'])->name('checkout');
-        Route::post('/', [AssetRequestController::class, 'store'])->name('store');
-        Route::get('/', [AssetRequestController::class, 'index'])->name('index');
-        Route::get('/{assetRequest}', [AssetRequestController::class, 'show'])->name('show');
-        Route::patch('/{assetRequest}/cancel', [AssetRequestController::class, 'cancel'])->name('cancel');
+        Route::get('/catalog', [AssetRequestController::class, 'catalog'])
+            ->middleware('permission:request_assets,view_own_data')
+            ->name('catalog');
+
+        Route::post('/cart/add/{asset}', [AssetRequestController::class, 'addToCart'])
+            ->middleware('permission:request_assets,view_own_data')
+            ->name('cart.add');
+
+        Route::get('/cart', [AssetRequestController::class, 'cart'])
+            ->middleware('permission:request_assets,view_own_data')
+            ->name('cart');
+
+        Route::patch('/cart/{asset}', [AssetRequestController::class, 'updateCart'])
+            ->middleware('permission:request_assets,view_own_data')
+            ->name('cart.update');
+
+        Route::delete('/cart/{asset}', [AssetRequestController::class, 'removeFromCart'])
+            ->middleware('permission:request_assets,view_own_data')
+            ->name('cart.remove');
+
+        Route::get('/checkout', [AssetRequestController::class, 'checkout'])
+            ->middleware('permission:request_assets,view_own_data')
+            ->name('checkout');
+
+        Route::post('/', [AssetRequestController::class, 'store'])
+            ->middleware('permission:request_assets,view_own_data')
+            ->name('store');
+
+        Route::get('/', [AssetRequestController::class, 'index'])
+            ->middleware('permission:view_own_requests,view_own_data')
+            ->name('index');
+
+        Route::get('/{assetRequest}', [AssetRequestController::class, 'show'])
+            ->middleware('permission:view_own_requests,view_own_data')
+            ->name('show');
+
+        Route::patch('/{assetRequest}/cancel', [AssetRequestController::class, 'cancel'])
+            ->middleware('permission:view_own_requests,view_own_data')
+            ->name('cancel');
     });
 
     // ==============================================
@@ -346,31 +424,76 @@ Route::get('/debug-upload', function() {
     // ==============================================
 
     Route::prefix('asset-approvals')->name('asset-approvals.')->group(function () {
-        Route::get('/', [AssetApprovalController::class, 'index'])->name('index');
-        Route::get('/{id}', [AssetApprovalController::class, 'show'])->name('show');
-        Route::post('/{id}/approve', [AssetApprovalController::class, 'approve'])->name('approve');
-        Route::post('/{id}/reject', [AssetApprovalController::class, 'reject'])->name('reject');
-        Route::post('/bulk-action', [AssetApprovalController::class, 'bulkAction'])->name('bulk-action');
-        Route::get('/stats/data', [AssetApprovalController::class, 'getStats'])->name('stats');
-        Route::get('/export/report', [AssetApprovalController::class, 'exportReport'])->name('export');
+        Route::get('/', [AssetApprovalController::class, 'index'])
+            ->middleware('permission:approve_requests,all')
+            ->name('index');
+
+        Route::get('/{id}', [AssetApprovalController::class, 'show'])
+            ->middleware('permission:approve_requests,all')
+            ->name('show');
+
+        Route::post('/{id}/approve', [AssetApprovalController::class, 'approve'])
+            ->middleware('permission:approve_requests,all')
+            ->name('approve');
+
+        Route::post('/{id}/reject', [AssetApprovalController::class, 'reject'])
+            ->middleware('permission:approve_requests,all')
+            ->name('reject');
+
+        Route::post('/bulk-action', [AssetApprovalController::class, 'bulkAction'])
+            ->middleware('permission:bulk_operations,approve_requests,all')
+            ->name('bulk-action');
+
+        Route::get('/stats/data', [AssetApprovalController::class, 'getStats'])
+            ->middleware('permission:approve_requests,all')
+            ->name('stats');
+
+        Route::get('/export/report', [AssetApprovalController::class, 'exportReport'])
+            ->middleware('permission:export_reports,approve_requests,all')
+            ->name('export');
     });
 
     // ==============================================
-    // EMPLOYEE MANAGEMENT ROUTES
+    // EMPLOYEE MANAGEMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
     Route::prefix('employees')->name('employees.')->group(function () {
-        Route::get('/', [EmployeeController::class, 'index'])->name('index');
-        Route::get('/create', [EmployeeController::class, 'create'])->name('create');
-        Route::post('/', [EmployeeController::class, 'store'])->name('store');
-        Route::get('/{employee}', [EmployeeController::class, 'show'])->name('show');
-        Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])->name('edit');
-        Route::put('/{employee}', [EmployeeController::class, 'update'])->name('update');
-        Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->name('destroy');
+        Route::get('/', [EmployeeController::class, 'index'])
+            ->middleware('permission:view_employees,manage_employees,all')
+            ->name('index');
+
+        Route::get('/create', [EmployeeController::class, 'create'])
+            ->middleware('permission:manage_employees,all')
+            ->name('create');
+
+        Route::post('/', [EmployeeController::class, 'store'])
+            ->middleware('permission:manage_employees,all')
+            ->name('store');
+
+        Route::get('/{employee}', [EmployeeController::class, 'show'])
+            ->middleware('permission:view_employees,manage_employees,all')
+            ->name('show');
+
+        Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])
+            ->middleware('permission:manage_employees,all')
+            ->name('edit');
+
+        Route::put('/{employee}', [EmployeeController::class, 'update'])
+            ->middleware('permission:manage_employees,all')
+            ->name('update');
+
+        Route::delete('/{employee}', [EmployeeController::class, 'destroy'])
+            ->middleware('permission:manage_employees,all')
+            ->name('destroy');
 
         // Quick actions
-        Route::patch('/{employee}/role', [EmployeeController::class, 'updateRole'])->name('update-role');
-        Route::patch('/{employee}/status', [EmployeeController::class, 'toggleStatus'])->name('toggle-status');
+        Route::patch('/{employee}/role', [EmployeeController::class, 'updateRole'])
+            ->middleware('permission:manage_employees,all')
+            ->name('update-role');
+
+        Route::patch('/{employee}/status', [EmployeeController::class, 'toggleStatus'])
+            ->middleware('permission:manage_employees,all')
+            ->name('toggle-status');
     });
 
     // ==============================================
@@ -378,28 +501,64 @@ Route::get('/debug-upload', function() {
     // ==============================================
 
     Route::prefix('profile')->name('employee.')->group(function () {
-        Route::get('/', [EmployeeController::class, 'profile'])->name('profile');
-        Route::get('/edit', [EmployeeController::class, 'editProfile'])->name('edit-profile');
-        Route::patch('/update', [EmployeeController::class, 'updateProfile'])->name('update-profile');
-        Route::patch('/password', [EmployeeController::class, 'updatePassword'])->name('update-password');
+        Route::get('/', [EmployeeController::class, 'profile'])
+            ->middleware('permission:view_own_data')
+            ->name('profile');
+
+        Route::get('/edit', [EmployeeController::class, 'editProfile'])
+            ->middleware('permission:view_own_data')
+            ->name('edit-profile');
+
+        Route::patch('/update', [EmployeeController::class, 'updateProfile'])
+            ->middleware('permission:view_own_data')
+            ->name('update-profile');
+
+        Route::patch('/password', [EmployeeController::class, 'updatePassword'])
+            ->middleware('permission:view_own_data')
+            ->name('update-password');
     });
 
     // ==============================================
-    // ROLE MANAGEMENT ROUTES
+    // ROLE MANAGEMENT ROUTES - UPDATED WITH PERMISSIONS
     // ==============================================
 
     Route::prefix('roles')->name('roles.')->group(function () {
-        Route::get('/', [RoleController::class, 'index'])->name('index');
-        Route::get('/create', [RoleController::class, 'create'])->name('create');
-        Route::post('/', [RoleController::class, 'store'])->name('store');
-        Route::get('/{role}', [RoleController::class, 'show'])->name('show');
-        Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit');
-        Route::put('/{role}', [RoleController::class, 'update'])->name('update');
-        Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
+        Route::get('/', [RoleController::class, 'index'])
+            ->middleware('permission:manage_roles,all')
+            ->name('index');
+
+        Route::get('/create', [RoleController::class, 'create'])
+            ->middleware('permission:manage_roles,all')
+            ->name('create');
+
+        Route::post('/', [RoleController::class, 'store'])
+            ->middleware('permission:manage_roles,all')
+            ->name('store');
+
+        Route::get('/{role}', [RoleController::class, 'show'])
+            ->middleware('permission:manage_roles,all')
+            ->name('show');
+
+        Route::get('/{role}/edit', [RoleController::class, 'edit'])
+            ->middleware('permission:manage_roles,all')
+            ->name('edit');
+
+        Route::put('/{role}', [RoleController::class, 'update'])
+            ->middleware('permission:manage_roles,all')
+            ->name('update');
+
+        Route::delete('/{role}', [RoleController::class, 'destroy'])
+            ->middleware('permission:manage_roles,all')
+            ->name('destroy');
 
         // Additional actions
-        Route::post('/{role}/clone', [RoleController::class, 'clone'])->name('clone');
-        Route::patch('/{role}/permissions', [RoleController::class, 'updatePermissions'])->name('update-permissions');
+        Route::post('/{role}/clone', [RoleController::class, 'clone'])
+            ->middleware('permission:manage_roles,all')
+            ->name('clone');
+
+        Route::patch('/{role}/permissions', [RoleController::class, 'updatePermissions'])
+            ->middleware('permission:manage_roles,all')
+            ->name('update-permissions');
     });
 
     // ==============================================
@@ -407,38 +566,78 @@ Route::get('/debug-upload', function() {
     // ==============================================
 
     Route::prefix('business-licenses')->name('business-licenses.')->group(function () {
-        Route::get('/', [BusinessLicenseController::class, 'index'])->name('index');
-        Route::get('/create', [BusinessLicenseController::class, 'create'])->name('create');
-        Route::post('/', [BusinessLicenseController::class, 'store'])->name('store');
-        Route::get('/{businessLicense}', [BusinessLicenseController::class, 'show'])->name('show');
-        Route::get('/{businessLicense}/edit', [BusinessLicenseController::class, 'edit'])->name('edit');
-        Route::put('/{businessLicense}', [BusinessLicenseController::class, 'update'])->name('update');
-        Route::delete('/{businessLicense}', [BusinessLicenseController::class, 'destroy'])->name('destroy');
+        Route::get('/', [BusinessLicenseController::class, 'index'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('index');
+
+        Route::get('/create', [BusinessLicenseController::class, 'create'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('create');
+
+        Route::post('/', [BusinessLicenseController::class, 'store'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('store');
+
+        Route::get('/{businessLicense}', [BusinessLicenseController::class, 'show'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('show');
+
+        Route::get('/{businessLicense}/edit', [BusinessLicenseController::class, 'edit'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('edit');
+
+        Route::put('/{businessLicense}', [BusinessLicenseController::class, 'update'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('update');
+
+        Route::delete('/{businessLicense}', [BusinessLicenseController::class, 'destroy'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('destroy');
 
         // Special actions
-        Route::get('/{businessLicense}/renew', [BusinessLicenseController::class, 'renew'])->name('renew');
-        Route::post('/{businessLicense}/renew', [BusinessLicenseController::class, 'processRenewal'])->name('process-renewal');
-        Route::get('/{businessLicense}/download', [BusinessLicenseController::class, 'downloadDocument'])->name('download');
+        Route::get('/{businessLicense}/renew', [BusinessLicenseController::class, 'renew'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('renew');
+
+        Route::post('/{businessLicense}/renew', [BusinessLicenseController::class, 'processRenewal'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('process-renewal');
+
+        Route::get('/{businessLicense}/download', [BusinessLicenseController::class, 'downloadDocument'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('download');
 
         // Reports and views
-        Route::get('/reports/expiring', [BusinessLicenseController::class, 'expiring'])->name('expiring');
-        Route::get('/reports/compliance', [BusinessLicenseController::class, 'compliance'])->name('compliance');
-        Route::get('/filtered-stats', [BusinessLicenseController::class, 'getFilteredStats'])->name('filtered-stats');
+        Route::get('/reports/expiring', [BusinessLicenseController::class, 'expiring'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('expiring');
+
+        Route::get('/reports/compliance', [BusinessLicenseController::class, 'compliance'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('compliance');
+
+        Route::get('/filtered-stats', [BusinessLicenseController::class, 'getFilteredStats'])
+            ->middleware('permission:manage_licenses,all')
+            ->name('filtered-stats');
     });
 
     // ==============================================
     // TICKET MANAGEMENT ROUTES
     // ==============================================
 
-    Route::resource('tickets', TicketController::class);
-    Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus'])->name('tickets.updateStatus');
-    Route::post('tickets/{ticket}/assign', [TicketController::class, 'assignTicket'])->name('tickets.assign');
+    Route::resource('tickets', TicketController::class)->middleware('permission:view_tickets,manage_tickets,all');
+    Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.updateStatus');
+    Route::post('tickets/{ticket}/assign', [TicketController::class, 'assignTicket'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.assign');
 
     // ==============================================
-    // DEPLOYMENT ROUTES - CONSOLIDATED
+    // DEPLOYMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
-    Route::prefix('deployment')->name('deployment.')->group(function () {
+    Route::prefix('deployment')->name('deployment.')->middleware('permission:manage_deployments,all')->group(function () {
         // Main deployment page
         Route::get('/', [TerminalDeploymentController::class, 'index'])->name('index');
         Route::get('/hierarchical', [TerminalDeploymentController::class, 'index'])->name('hierarchical');
@@ -483,86 +682,106 @@ Route::get('/debug-upload', function() {
     });
 
     // ==============================================
-    // SITE VISIT ROUTES - CONSOLIDATED
+    // SITE VISIT ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
     Route::prefix('site-visits')->name('site_visits.')->group(function () {
-        // Main site visits page (create/batch form + recent visits)
         Route::get('/', [SiteVisitController::class, 'index'])
-            ->middleware('permission:view_jobs,manage_team,all')
+            ->middleware('permission:view_visits,manage_visits,all')
             ->name('index');
 
-        // Create one or many visits in one request
         Route::post('/', [SiteVisitController::class, 'storeBatch'])
-            ->middleware('permission:view_jobs,manage_team,all')
+            ->middleware('permission:manage_visits,all')
             ->name('storeBatch');
 
-        // Lookups (autofill)
         Route::get('/lookup/terminal/{id}', [SiteVisitController::class, 'terminalLookup'])
-            ->middleware('permission:view_jobs,manage_team,all')
+            ->middleware('permission:view_visits,manage_visits,all')
             ->name('terminalLookup');
 
         Route::get('/lookup/assignment/{id}', [SiteVisitController::class, 'assignmentLookup'])
-            ->middleware('permission:view_jobs,manage_team,all')
+            ->middleware('permission:view_visits,manage_visits,all')
             ->name('assignmentLookup');
 
-        // Edit terminal page
         Route::get('/edit-terminal', [SiteVisitController::class, 'editTerminal'])
-            ->middleware('permission:view_jobs,manage_team,all')
+            ->middleware('permission:manage_visits,all')
             ->name('edit_terminal');
 
-        // Single visit view/update
         Route::get('/{visit}', [SiteVisitController::class, 'show'])
-            ->middleware('permission:view_jobs,manage_team,all')
+            ->middleware('permission:view_visits,manage_visits,all')
             ->name('show');
 
         Route::put('/{visit}', [SiteVisitController::class, 'update'])
-            ->middleware('permission:view_jobs,manage_team,all')
+            ->middleware('permission:manage_visits,all')
             ->name('update');
 
-        // Attachments (photos/signature)
         Route::post('/{visit}/attachments', [SiteVisitController::class, 'uploadAttachment'])
-            ->middleware('permission:view_jobs,manage_team,all')
+            ->middleware('permission:manage_visits,all')
             ->name('attachments');
     });
 
     // Site visit integration with job assignments
     Route::get('/jobs/assignments/{assignment}/visits', [SiteVisitController::class, 'indexForAssignment'])
-        ->middleware('permission:view_jobs,manage_team,all')
+        ->middleware('permission:view_jobs,view_visits,all')
         ->name('jobs.assignments.visits');
 
-    // API route for real-time updates
     Route::get('/api/jobs/assignments/{assignment}/visits', [SiteVisitController::class, 'listJson'])
-        ->middleware('permission:view_jobs,manage_team,all')
+        ->middleware('permission:view_jobs,view_visits,all')
         ->name('api.jobs.assignments.visits');
 
     // ==============================================
-    // REPORTS ROUTES
+    // REPORTS ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
-    Route::middleware('permission:view_reports,manage_team,all')->prefix('reports')->name('reports.')->group(function () {
-        Route::get('/', function () {
-            return view('reports.index', ['title' => 'Reports Dashboard']);
-        })->name('index');
+    Route::middleware('permission:view_reports,all')->prefix('reports')->name('reports.')->group(function () {
+        // Main reports dashboard
+        Route::get('/', [SystemReportsController::class, 'index'])->name('index');
 
+        // System-wide reports
+        Route::get('/system', [SystemReportsController::class, 'index'])->name('system');
+        Route::get('/system/export', [SystemReportsController::class, 'exportSystemReport'])->name('system.export');
+        Route::get('/system/export-csv', [SystemReportsController::class, 'exportCsv'])->name('system.export-csv');
+
+        // Report builder
         Route::get('/builder', function () {
             return view('reports.builder', ['title' => 'Report Builder']);
-        })->name('builder');
+        })->middleware('permission:use_report_builder,all')->name('builder');
 
         // Technician Visit Reports
-        Route::get('/technician-visits', [TechnicianReportsController::class, 'index'])->name('technician-visits');
-        Route::get('/technician-visits/filter', [TechnicianReportsController::class, 'filter']);
-        Route::get('/technician-visits/{visit}', [TechnicianReportsController::class, 'show']);
-        Route::get('/technician-visits/{visit}/photos', [TechnicianReportsController::class, 'getPhotos']);
-        Route::get('/technician-visits/{visit}/pdf', [TechnicianReportsController::class, 'generatePDF']);
-        Route::get('/technician-visits/export', [TechnicianReportsController::class, 'export']);
+        Route::get('/technician-visits', [TechnicianReportsController::class, 'index'])
+            ->middleware('permission:view_technician_visits,all')
+            ->name('technician-visits');
+
+        Route::get('/technician-visits/filter', [TechnicianReportsController::class, 'filter'])
+            ->middleware('permission:view_technician_visits,all')
+            ->name('technician-visits.filter');
+
+        Route::get('/technician-visits/{visit}', [TechnicianReportsController::class, 'show'])
+            ->middleware('permission:view_technician_visits,all')
+            ->name('technician-visits.show');
+
+        Route::get('/technician-visits/{visit}/photos', [TechnicianReportsController::class, 'getPhotos'])
+            ->middleware('permission:view_technician_visits,all')
+            ->name('technician-visits.photos');
+
+        Route::get('/technician-visits/{visit}/pdf', [TechnicianReportsController::class, 'generatePDF'])
+            ->middleware('permission:view_technician_visits,all')
+            ->name('technician-visits.pdf');
+
+        Route::get('/technician-visits/export', [TechnicianReportsController::class, 'export'])
+            ->middleware('permission:export_reports,all')
+            ->name('technician-visits.export');
+
+        // API endpoints for real-time data
+        Route::get('/api/system-health', [SystemReportsController::class, 'getSystemHealth']);
+        Route::get('/api/terminal-status', [SystemReportsController::class, 'getTerminalStatus']);
+        Route::get('/api/service-metrics', [SystemReportsController::class, 'getServiceMetrics']);
     });
 
     // ==============================================
-    // SETTINGS ROUTES
+    // SETTINGS ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
-    Route::prefix('settings')->name('settings.')->group(function () {
+    Route::prefix('settings')->name('settings.')->middleware('permission:manage_settings,all')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('index');
 
         // Category Management Routes
@@ -580,83 +799,81 @@ Route::get('/debug-upload', function() {
     });
 
     // ==============================================
-    // DOCUMENT MANAGEMENT ROUTES
+    // DOCUMENT MANAGEMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
     Route::prefix('documents')->name('documents.')->group(function () {
         Route::get('/', function () {
             return view('documents.index', ['title' => 'Documents']);
-        })->name('index');
+        })->middleware('permission:view_documents,manage_documents,all')
+          ->name('index');
 
         Route::get('/upload', function () {
             return view('documents.upload', ['title' => 'Upload Document']);
-        })->middleware('permission:manage_assets,all')->name('upload');
+        })->middleware('permission:manage_documents,all')
+          ->name('upload');
     });
 
     // ==============================================
-    // ADMIN ROUTES
+    // CLIENT DASHBOARDS ROUTES
     // ==============================================
 
-    Route::middleware('permission:all')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/employees', function () {
-            return view('admin.employees', ['title' => 'Employee Management']);
-        })->name('employees');
+    Route::prefix('client-dashboards')->name('client-dashboards.')->group(function () {
+        Route::get('/', [ClientDashboardController::class, 'index'])
+            ->middleware('permission:view_client_dashboards,all')
+            ->name('index');
 
-        Route::get('/system-settings', function () {
-            return view('admin.settings', ['title' => 'System Settings']);
-        })->name('settings');
+        Route::get('/{client}', [ClientDashboardController::class, 'show'])
+            ->middleware('permission:view_client_dashboards,all')
+            ->name('show');
 
-        Route::get('/roles', function () {
-            return view('admin.roles', ['title' => 'Role Management']);
-        })->name('roles');
+        Route::get('/{client}/export-data', [ClientDashboardController::class, 'exportData'])
+            ->middleware('permission:export_data,all')
+            ->name('export-data');
 
-        Route::get('/departments', function () {
-            return view('admin.departments', ['title' => 'Department Management']);
-        })->name('departments');
+        Route::get('/{client}/export-table', [ClientDashboardController::class, 'exportTable'])
+            ->middleware('permission:export_data,all')
+            ->name('export-table');
+
+        Route::get('/{client}/terminals/create', [ClientDashboardController::class, 'createTerminal'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('terminals.create');
+
+        Route::post('/{client}/terminals', [ClientDashboardController::class, 'storeTerminal'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('terminals.store');
+
+        Route::get('/{client}/terminals/{terminal}', [ClientDashboardController::class, 'viewTerminal'])
+            ->middleware('permission:view_terminals,all')
+            ->name('terminals.show');
+
+        Route::get('/{client}/terminals/{terminal}/edit', [ClientDashboardController::class, 'editTerminal'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('terminals.edit');
+
+        Route::put('/{client}/terminals/{terminal}', [ClientDashboardController::class, 'updateTerminal'])
+            ->middleware('permission:manage_terminals,all')
+            ->name('terminals.update');
+
+        Route::get('/{client}/projects/create', [ClientDashboardController::class, 'createProject'])
+            ->middleware('permission:manage_deployments,all')
+            ->name('projects.create');
+
+        Route::post('/{client}/projects', [ClientDashboardController::class, 'storeProject'])
+            ->middleware('permission:manage_deployments,all')
+            ->name('projects.store');
+
+        Route::get('/{client}/reports/{reportType}', [ClientDashboardController::class, 'generateReport'])
+            ->middleware('permission:view_reports,all')
+            ->name('reports');
+
+        Route::get('/{client}/filter-data', [ClientDashboardController::class, 'getFilterData'])
+            ->middleware('permission:view_client_dashboards,all')
+            ->name('filter-data');
     });
 
     // ==============================================
-    // MANAGER ROUTES
-    // ==============================================
-
-    Route::middleware('permission:manage_team')->prefix('manager')->name('manager.')->group(function () {
-        Route::get('/team', function () {
-            return view('manager.team', ['title' => 'Team Management']);
-        })->name('team');
-
-        Route::get('/approvals', function () {
-            return view('manager.approvals', ['title' => 'Pending Approvals']);
-        })->name('approvals');
-
-        Route::get('/reports', function () {
-            return view('manager.reports', ['title' => 'Team Reports']);
-        })->name('reports');
-    });
-
-// ==============================================
-    // REPORTS ROUTES
-    // ==============================================
-
-    Route::middleware(['auth'])->group(function () {
-    Route::get('/reports/builder', [ReportBuilderController::class, 'index'])->name('reports.builder');
-    Route::post('/reports/run', [ReportBuilderController::class, 'run'])->name('reports.run');
-    Route::get('/reports/export/csv', [ReportBuilderController::class, 'exportCsv'])->name('reports.export.csv');
-Route::post('/reports/run-custom', [ReportBuilderController::class, 'runCustom'])
-    ->name('reports.run.custom');
-
-    Route::post('/reports/run-custom', [ReportBuilderController::class, 'runCustom'])->name('reports.run.custom');
-
-    Route::get('/reports/options/clients',   [ReportBuilderController::class, 'optClients'])->name('reports.options.clients');
-Route::get('/reports/options/projects',  [ReportBuilderController::class, 'optProjects'])->name('reports.options.projects');
-Route::get('/reports/options/regions',   [ReportBuilderController::class, 'optRegions'])->name('reports.options.regions');
-Route::get('/reports/options/terminals', [ReportBuilderController::class, 'optTerminals'])->name('reports.options.terminals');
-
-// Run simple report
-Route::post('/reports/run-simple', [ReportBuilderController::class, 'runSimple'])->name('reports.run.simple');
-});
-
-    // ==============================================
-    // TECHNICIAN ROUTES
+    // TECHNICIAN ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
     Route::middleware('permission:view_jobs')->prefix('technician')->name('technician.')->group(function () {
@@ -666,84 +883,86 @@ Route::post('/reports/run-simple', [ReportBuilderController::class, 'runSimple']
 
         Route::get('/reports', function () {
             return view('technician.reports', ['title' => 'Service Reports']);
-        })->name('reports');
+        })->middleware('permission:create_reports,view_own_reports')
+          ->name('reports');
 
         Route::get('/schedule', function () {
             return view('technician.schedule', ['title' => 'My Schedule']);
-        })->name('schedule');
+        })->middleware('permission:view_schedule')
+          ->name('schedule');
 
-        // List visits for an assignment filtered to ONE terminal (View more)
-        Route::get(
-            '/jobs/assignments/{assignment}/terminal/{terminal}/visits',
-            [SiteVisitController::class, 'listForTerminal']
-        )->middleware('permission:view_jobs,manage_team,all')
-         ->name('jobs.assignments.terminal.visits');
-    });
-Route::get('/visits', [VisitController::class, 'index'])
-    ->name('visits.index');     // <-- this name is what the menu uses
-
-Route::get('/visits/{visit}', [VisitController::class, 'show'])
-    ->name('visits.show');
-Route::get('/visits/suggest/merchants', [VisitController::class, 'suggestMerchants'])
-    ->name('visits.suggest.merchants');
-Route::get('/visits/suggest/employees', [VisitController::class, 'suggestEmployees'])
-    ->name('visits.suggest.employees');
-
-// ==============================================
-// REPORT BUILDER ROUTES
-// ==============================================
-
-// UI (Blade page)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/reports/builder', [\App\Http\Controllers\ReportBuilderController::class, 'index'])
-        ->name('reports.builder');
-});
-
-// API endpoints (session + CSRF, no Sanctum)
-Route::middleware(['web', 'auth'])->prefix('api/report')->group(function () {
-    Route::post('/preview', [\App\Http\Controllers\ReportController::class, 'preview'])
-        ->name('api.report.preview');
-    Route::post('/export', [\App\Http\Controllers\ReportController::class, 'export'])
-        ->name('api.report.export');
-    Route::get('/fields', [\App\Http\Controllers\ReportController::class, 'getAvailableFields'])
-        ->name('api.report.fields');
-
-    // Report template CRUD
-    Route::prefix('templates')->group(function () {
-        Route::get('/', [\App\Http\Controllers\ReportTemplateController::class, 'index'])
-            ->name('api.report.templates.index');
-        Route::post('/', [\App\Http\Controllers\ReportTemplateController::class, 'store'])
-            ->name('api.report.templates.store');
-        Route::get('/{id}', [\App\Http\Controllers\ReportTemplateController::class, 'show'])
-            ->name('api.report.templates.show');
-        Route::put('/{id}', [\App\Http\Controllers\ReportTemplateController::class, 'update'])
-            ->name('api.report.templates.update');
-        Route::delete('/{id}', [\App\Http\Controllers\ReportTemplateController::class, 'destroy'])
-            ->name('api.report.templates.destroy');
-        Route::post('/{id}/duplicate', [\App\Http\Controllers\ReportTemplateController::class, 'duplicate'])
-            ->name('api.report.templates.duplicate');
-        Route::get('/tags/list', [\App\Http\Controllers\ReportTemplateController::class, 'getTags'])
-            ->name('api.report.templates.tags');
+        Route::get('/jobs/assignments/{assignment}/terminal/{terminal}/visits', [SiteVisitController::class, 'listForTerminal'])
+            ->middleware('permission:view_visits,all')
+            ->name('jobs.assignments.terminal.visits');
     });
 
-    // Optional: quick test route to verify JSON works
-    Route::post('/ping', fn () => response()->json(['ok' => true, 'time' => now()]));
-});
+    // ==============================================
+    // VISIT ROUTES
+    // ==============================================
+    Route::prefix('visits')->name('visits.')->group(function () {
+        Route::get('/', [VisitController::class, 'index'])
+            ->middleware('permission:view_visits,all')
+            ->name('index');
 
-// ==============================================
-// CLIENT DASHBOARDS ROUTES
-// ==============================================
+        Route::get('/{visit}', [VisitController::class, 'show'])
+            ->middleware('permission:view_visits,all')
+            ->name('show');
 
-Route::prefix('client-dashboards')->name('client-dashboards.')->group(function () {
-    Route::get('/', [ClientDashboardController::class, 'index'])
-        ->middleware('permission:view_clients,manage_team,all')
-        ->name('index');
+        Route::get('/suggest/merchants', [VisitController::class, 'suggestMerchants'])
+            ->middleware('permission:view_visits,all')
+            ->name('suggest.merchants');
 
-    Route::get('/{client}', [ClientDashboardController::class, 'show'])
-        ->middleware('permission:view_clients,manage_team,all')
-        ->name('show');
-});
-// Add this to your routes file if you want project management
-Route::resource('projects', ProjectController::class)
-    ->middleware('permission:manage_team,all');
+        Route::get('/suggest/employees', [VisitController::class, 'suggestEmployees'])
+            ->middleware('permission:view_visits,all')
+            ->name('suggest.employees');
+    });
+
+    // ==============================================
+    // REPORT BUILDER ROUTES
+    // ==============================================
+
+    Route::middleware('permission:use_report_builder,all')->group(function () {
+        Route::get('/reports/builder', [ReportBuilderController::class, 'index'])->name('reports.builder');
+        Route::post('/reports/run', [ReportBuilderController::class, 'run'])->name('reports.run');
+        Route::get('/reports/export/csv', [ReportBuilderController::class, 'exportCsv'])->name('reports.export.csv');
+        Route::post('/reports/run-custom', [ReportBuilderController::class, 'runCustom'])->name('reports.run.custom');
+        Route::get('/reports/options/clients', [ReportBuilderController::class, 'optClients'])->name('reports.options.clients');
+        Route::get('/reports/options/projects', [ReportBuilderController::class, 'optProjects'])->name('reports.options.projects');
+        Route::get('/reports/options/regions', [ReportBuilderController::class, 'optRegions'])->name('reports.options.regions');
+        Route::get('/reports/options/terminals', [ReportBuilderController::class, 'optTerminals'])->name('reports.options.terminals');
+        Route::post('/reports/run-simple', [ReportBuilderController::class, 'runSimple'])->name('reports.run.simple');
+    });
+
+    // API endpoints for reports
+    Route::middleware(['permission:use_report_builder,all'])->prefix('api/report')->group(function () {
+        Route::post('/preview', [ReportController::class, 'preview'])->name('api.report.preview');
+        Route::post('/export', [ReportController::class, 'export'])->name('api.report.export');
+        Route::get('/fields', [ReportController::class, 'getAvailableFields'])->name('api.report.fields');
+
+        // Report template CRUD
+        Route::prefix('templates')->group(function () {
+            Route::get('/', [\App\Http\Controllers\ReportTemplateController::class, 'index'])->name('api.report.templates.index');
+            Route::post('/', [\App\Http\Controllers\ReportTemplateController::class, 'store'])->name('api.report.templates.store');
+            Route::get('/{id}', [\App\Http\Controllers\ReportTemplateController::class, 'show'])->name('api.report.templates.show');
+            Route::put('/{id}', [\App\Http\Controllers\ReportTemplateController::class, 'update'])->name('api.report.templates.update');
+            Route::delete('/{id}', [\App\Http\Controllers\ReportTemplateController::class, 'destroy'])->name('api.report.templates.destroy');
+            Route::post('/{id}/duplicate', [\App\Http\Controllers\ReportTemplateController::class, 'duplicate'])->name('api.report.templates.duplicate');
+            Route::get('/tags/list', [\App\Http\Controllers\ReportTemplateController::class, 'getTags'])->name('api.report.templates.tags');
+        });
+
+        Route::post('/ping', fn () => response()->json(['ok' => true, 'time' => now()]));
+    });
+
+    // ==============================================
+    // DEBUG ROUTE (Remove in production)
+    // ==============================================
+    Route::get('/debug-upload', function() {
+        return response()->json([
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+            'max_file_uploads' => ini_get('max_file_uploads'),
+            'memory_limit' => ini_get('memory_limit'),
+            'max_execution_time' => ini_get('max_execution_time'),
+        ]);
+    });
 });

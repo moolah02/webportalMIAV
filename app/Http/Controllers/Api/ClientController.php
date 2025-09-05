@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Client;
+use Illuminate\Support\Facades\Log;
 
 class ClientController extends Controller
 {
@@ -100,7 +101,7 @@ class ClientController extends Controller
     public function getTerminals($id)
     {
         $client = Client::findOrFail($id);
-        
+
         $terminals = $client->posTerminals()
                            ->select('id', 'terminal_id', 'merchant_name', 'status', 'region', 'city', 'physical_address')
                            ->get();
@@ -129,14 +130,14 @@ class ClientController extends Controller
     public function getProjects($id)
     {
         $client = Client::findOrFail($id);
-        
+
         $projects = [];
         try {
             if (method_exists($client, 'projects')) {
                 $projects = $client->projects()->get();
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not load client projects: ' . $e->getMessage());
+            Log::warning('Could not load client projects: ' . $e->getMessage());
         }
 
         return response()->json([

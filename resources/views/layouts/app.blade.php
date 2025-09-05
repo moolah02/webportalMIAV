@@ -471,9 +471,7 @@
     <span class="nav-icon">📋</span> All Job Assignment
   </a>
 
-  <a href="{{ route('reports.technician-visits') }}" class="nav-sub {{ request()->routeIs('reports.technician-visits*') ? 'active' : '' }}">
-    <span class="nav-icon">📊</span> Technician Reports
-  </a>
+
 
   <a href="{{ route('visits.index') }}"
    class="nav-sub {{ request()->routeIs('visits.*') ? 'active' : '' }}">
@@ -518,15 +516,13 @@
           <span class="nav-icon">🔧</span> Technician Portal
         </div>
         <div class="submenu {{ request()->routeIs('technician.jobs','technician.reports','technician.schedule') ? 'show' : '' }}">
-          <a href="{{ route('jobs.mine') }}" class="nav-sub {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
+           <a href="{{ route('employee.dashboard') }}" class="nav-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
+          <span class="nav-icon">📈</span> Employee Dashboard
+        </a>
+        <a href="{{ route('jobs.mine') }}" class="nav-sub {{ request()->routeIs('jobs.*') ? 'active' : '' }}">
             <span class="nav-icon">📋</span> MyJob Assignment
           </a>
-          <a href="{{ route('technician.reports') }}" class="nav-sub {{ request()->routeIs('technician.reports') ? 'active' : '' }}">
-            <span class="nav-icon">📝</span> Service Reports
-          </a>
-          <a href="{{ route('technician.schedule') }}" class="nav-sub {{ request()->routeIs('technician.schedule') ? 'active' : '' }}">
-            <span class="nav-icon">📅</span> My Schedule
-          </a>
+
         </div>
 
         <!-- Administration -->
@@ -537,9 +533,7 @@
           <a href="{{ route('settings.index') }}" class="nav-sub {{ request()->routeIs('settings.*') ? 'active' : '' }}">
             <span class="nav-icon">🔧</span> System Settings
           </a>
-          <a href="{{ route('documents.index') }}" class="nav-sub {{ request()->routeIs('documents.*') ? 'active' : '' }}">
-            <span class="nav-icon">📁</span> Documents
-          </a>
+
         </div>
 
        <!-- Reports & Analytics -->
@@ -547,9 +541,17 @@
   <span class="nav-icon">📊</span> Reports & Analytics
 </div>
 <div class="submenu {{ request()->routeIs('reports.*') ? 'show' : '' }}">
-  <a href="{{ route('reports.index') }}" class="nav-sub {{ request()->routeIs('reports.index') ? 'active' : '' }}">
+  <!-- Main System Dashboard -->
+  <a href="{{ route('reports.index') }}" class="nav-sub {{ request()->routeIs('reports.index', 'reports.system') ? 'active' : '' }}">
     <span class="nav-icon">📈</span> Reports Dashboard
   </a>
+
+  <!-- Technician Visit Reports -->
+  <a href="{{ route('reports.technician-visits') }}" class="nav-sub {{ request()->routeIs('reports.technician-visits') ? 'active' : '' }}">
+    <span class="nav-icon">👨‍🔧</span> Technician Visits
+  </a>
+
+  <!-- Report Builder -->
   <a href="{{ route('reports.builder') }}" class="nav-sub {{ request()->routeIs('reports.builder') ? 'active' : '' }}">
     <span class="nav-icon">🏗️</span> Report Builder
   </a>

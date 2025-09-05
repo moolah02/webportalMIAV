@@ -1,7 +1,7 @@
 {{--
 ==============================================
-COMPLETE ROLE CREATE FORM
-File: resources/views/roles/create.blade.php
+COMPLETE ROLE EDIT FORM
+File: resources/views/roles/edit.blade.php
 ==============================================
 --}}
 @extends('layouts.app')
@@ -11,13 +11,39 @@ File: resources/views/roles/create.blade.php
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333; font-size: 24px; font-weight: 600;">🔑 Create New Role</h2>
-            <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Define a new role with specific permissions for your team</p>
+            <h2 style="margin: 0; color: #333; font-size: 24px; font-weight: 600;">✏️ Edit Role</h2>
+            <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">
+                Modify permissions for: <strong>{{ ucwords(str_replace('_', ' ', $role->name)) }}</strong>
+            </p>
         </div>
-        <a href="{{ route('roles.index') }}" class="btn">← Back to Roles</a>
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ route('roles.show', $role) }}" class="btn">👁️ View Details</a>
+            <a href="{{ route('roles.index') }}" class="btn">← Back to Roles</a>
+        </div>
     </div>
 
-    <form action="{{ route('roles.store') }}" method="POST" id="roleForm">
+    <!-- Current Role Info -->
+    <div class="content-card" style="margin-bottom: 20px; background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0 0 8px 0; color: #333;">Current Role Information</h4>
+                <div style="display: flex; gap: 20px; font-size: 14px; color: #666;">
+                    <span><strong>Role:</strong> {{ ucwords(str_replace('_', ' ', $role->name)) }}</span>
+                    <span><strong>Created:</strong> {{ $role->created_at->format('M d, Y') }}</span>
+                    <span><strong>Permissions:</strong> {{ count($role->permissions ?? []) }}</span>
+                    <span><strong>Employees:</strong> {{ $role->employees()->count() }}</span>
+                </div>
+            </div>
+            @if(is_array($role->permissions) && in_array('all', $role->permissions))
+                <span style="background: #ffebee; color: #d32f2f; padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                    ⚡ SUPER ADMIN ROLE
+                </span>
+            @endif
+        </div>
+    </div>
+
+    <form action="{{ route('roles.update', $role) }}" method="POST" id="roleForm">
+        @method('PUT')
         @csrf
 
         <div style="display: grid; grid-template-columns: 1fr 350px; gap: 30px;">
@@ -31,11 +57,11 @@ File: resources/views/roles/create.blade.php
 
                     <div style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Role Name *</label>
-                        <input type="text" name="name" value="{{ old('name') }}" required
+                        <input type="text" name="name" value="{{ old('name', $role->name) }}" required
                                placeholder="e.g., field_technician, office_manager, sales_coordinator"
                                style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px; transition: border-color 0.2s ease;">
                         <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            💡 Use lowercase with underscores. Will display as "Field Technician"
+                            💡 Use lowercase with underscores. Will display as "{{ ucwords(str_replace('_', ' ', $role->name)) }}"
                         </div>
                         @error('name')
                             <div style="color: #f44336; font-size: 12px; margin-top: 5px; padding: 8px; background: #ffebee; border-radius: 4px;">{{ $message }}</div>
@@ -57,6 +83,7 @@ File: resources/views/roles/create.blade.php
 
                     @php
                         $groupedPermissions = collect($allPermissions)->groupBy('category');
+                        $currentPermissions = old('permissions', $role->permissions ?? []);
                         $categoryConfig = [
                             'admin' => ['name' => 'System Administration', 'icon' => '⚡', 'color' => '#f44336'],
                             'dashboard' => ['name' => 'Dashboard Access', 'icon' => '📊', 'color' => '#2196f3'],
@@ -73,6 +100,8 @@ File: resources/views/roles/create.blade.php
                     @foreach($groupedPermissions as $category => $permissions)
                     @php
                         $config = $categoryConfig[$category] ?? ['name' => ucfirst($category), 'icon' => '📋', 'color' => '#666'];
+                        $selectedInCategory = count(array_intersect($currentPermissions, array_keys($permissions->toArray())));
+                        $expandByDefault = $selectedInCategory > 0;
                     @endphp
                     <div class="permission-category" style="margin-bottom: 20px; border: 2px solid #f0f0f0; border-radius: 12px; overflow: hidden; transition: all 0.3s ease;">
                         <!-- Category Header -->
@@ -99,10 +128,10 @@ File: resources/views/roles/create.blade.php
                             </div>
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <div class="category-selection-info" id="info-{{ $category }}" style="font-size: 12px; color: #666;">
-                                    <span id="selected-{{ $category }}">0</span>/{{ count($permissions) }} selected
+                                    <span id="selected-{{ $category }}">{{ $selectedInCategory }}</span>/{{ count($permissions) }} selected
                                 </div>
                                 <div class="category-toggle-icon" id="toggle-{{ $category }}"
-                                     style="font-size: 18px; color: {{ $config['color'] }}; transition: transform 0.3s ease;">
+                                     style="font-size: 18px; color: {{ $config['color'] }}; transition: transform 0.3s ease; {{ $expandByDefault ? 'transform: rotate(180deg);' : '' }}">
                                     ▼
                                 </div>
                             </div>
@@ -110,7 +139,7 @@ File: resources/views/roles/create.blade.php
 
                         <!-- Category Content -->
                         <div class="category-content" id="category-{{ $category }}"
-                             style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                             style="max-height: {{ $expandByDefault ? '1000px' : '0' }}; overflow: hidden; transition: max-height 0.3s ease; {{ $expandByDefault ? '' : '' }}">
                             <div style="padding: 20px;">
                                 <!-- Category Actions -->
                                 <div style="display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0;">
@@ -123,21 +152,24 @@ File: resources/views/roles/create.blade.php
                                 <!-- Permissions Grid -->
                                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px;">
                                     @foreach($permissions as $key => $permission)
-                                    <div class="permission-item"
+                                    @php
+                                        $isChecked = in_array($key, $currentPermissions);
+                                    @endphp
+                                    <div class="permission-item {{ $isChecked ? 'selected' : '' }} {{ $key === 'all' && $isChecked ? 'danger' : '' }}"
                                          id="permission-{{ $key }}"
                                          data-category="{{ $category }}"
                                          onclick="togglePermission('{{ $key }}')"
-                                         style="border: 1px solid #e0e0e0;
+                                         style="border: 1px solid {{ $isChecked ? ($key === 'all' ? '#f44336' : '#2196f3') : '#e0e0e0' }};
                                                 border-radius: 8px;
                                                 padding: 16px;
                                                 cursor: pointer;
                                                 transition: all 0.2s ease;
-                                                background: #fff;">
+                                                background: {{ $isChecked ? ($key === 'all' ? '#ffebee' : '#e3f2fd') : '#fff' }};">
                                         <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; margin: 0;">
                                             <input type="checkbox"
                                                    name="permissions[]"
                                                    value="{{ $key }}"
-                                                   {{ in_array($key, old('permissions', [])) ? 'checked' : '' }}
+                                                   {{ $isChecked ? 'checked' : '' }}
                                                    onchange="updatePermissionCard(this)"
                                                    style="margin-top: 3px;">
                                             <div style="flex: 1;">
@@ -181,9 +213,7 @@ File: resources/views/roles/create.blade.php
                     </h4>
 
                     <div id="selected-permissions" style="min-height: 120px; max-height: 300px; overflow-y: auto;">
-                        <div style="color: #666; font-style: italic; text-align: center; padding: 40px 20px;">
-                            No permissions selected yet
-                        </div>
+                        <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
 
@@ -227,7 +257,7 @@ File: resources/views/roles/create.blade.php
 
                     <div class="summary-item">
                         <span>Total Permissions:</span>
-                        <span id="total-count" style="font-weight: bold; color: #2196f3;">0</span>
+                        <span id="total-count" style="font-weight: bold; color: #2196f3;">{{ count($currentPermissions) }}</span>
                     </div>
 
                     <div class="summary-item">
@@ -239,17 +269,30 @@ File: resources/views/roles/create.blade.php
                         <span>Categories:</span>
                         <span id="category-count" style="font-weight: bold; color: #ff9800;">0</span>
                     </div>
+
+                    <div class="summary-item">
+                        <span>Employees Affected:</span>
+                        <span style="font-weight: bold; color: #e91e63;">{{ $role->employees()->count() }}</span>
+                    </div>
                 </div>
 
                 <!-- Submit Buttons -->
                 <div class="content-card">
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 16px;">
-                            🎉 Create Role
+                            💾 Update Role
                         </button>
-                        <a href="{{ route('roles.index') }}" class="btn" style="width: 100%; text-align: center; padding: 12px;">
+                        <a href="{{ route('roles.show', $role) }}" class="btn" style="width: 100%; text-align: center; padding: 12px;">
                             Cancel
                         </a>
+
+                        @if($role->employees()->count() > 0)
+                        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 10px; margin-top: 10px;">
+                            <div style="font-size: 12px; color: #856404;">
+                                ⚠️ <strong>Note:</strong> Changes will affect {{ $role->employees()->count() }} employee(s) using this role.
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -484,7 +527,7 @@ function collapseAllCategories() {
 
 // Permission management
 function selectAllInCategory(category) {
-    document.querySelectorAll(`input[value][data-category="${category}"]`).forEach(checkbox => {
+    document.querySelectorAll(`.permission-item[data-category="${category}"] input`).forEach(checkbox => {
         checkbox.checked = true;
         updatePermissionCard(checkbox);
     });
@@ -532,7 +575,6 @@ function updatePermissionCard(checkbox) {
 function updateCategoryInfo(category) {
     const categoryPermissions = document.querySelectorAll(`.permission-item[data-category="${category}"] input`);
     const selectedCount = Array.from(categoryPermissions).filter(cb => cb.checked).length;
-    const totalCount = categoryPermissions.length;
 
     const infoElement = document.getElementById(`selected-${category}`);
     if (infoElement) {
@@ -546,7 +588,7 @@ function applyTemplate(templateName) {
 
     // Show confirmation for super admin
     if (templateName === 'super_admin') {
-        if (!confirm('This will create a Super Administrator role with FULL SYSTEM ACCESS. Continue?')) {
+        if (!confirm('This will give this role FULL SYSTEM ACCESS (Super Admin). Continue?')) {
             return;
         }
     }
@@ -592,7 +634,7 @@ function updateSelectedPermissions() {
     if (checkedBoxes.length === 0) {
         selectedDiv.innerHTML = `
             <div style="color: #666; font-style: italic; text-align: center; padding: 40px 20px;">
-                No permissions selected yet
+                No permissions selected
             </div>
         `;
         return;
@@ -713,9 +755,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Confirm if creating super admin role
+        const hasAll = Array.from(checkedBoxes).some(cb => cb.value === 'all');
+        if (hasAll && !confirm('You are updating this role to have FULL SYSTEM ACCESS. This will affect all employees with this role. Continue?')) {
+            e.preventDefault();
+            return;
+        }
+
         // Show loading state
         const submitBtn = document.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '⏳ Creating Role...';
+        submitBtn.innerHTML = '⏳ Updating Role...';
         submitBtn.disabled = true;
     });
 });

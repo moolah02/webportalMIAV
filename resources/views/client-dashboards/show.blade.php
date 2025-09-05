@@ -1,390 +1,692 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
+<div>
     <!-- Header -->
-    <div class="bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('client-dashboards.index') }}"
-                       class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                        </svg>
-                    </a>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">{{ $client->company_name }}</h1>
-                        <div class="flex items-center space-x-3 mt-1">
-                            <span class="text-sm text-gray-500">{{ $client->client_code }}</span>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                {{ $client->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ ucfirst($client->status) }}
-                            </span>
-                        </div>
-                    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <a href="{{ route('client-dashboards.index') }}"
+               style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: #F8F9FA; color: #666; text-decoration: none; transition: all 0.2s ease; font-size: 18px;"
+               onmouseover="this.style.background='#E0E0E0'"
+               onmouseout="this.style.background='#F8F9FA'">
+                ←
+            </a>
+            <div>
+                <h2 style="margin: 0; color: #333; font-size: 24px; font-weight: 600;">{{ $client->company_name }}</h2>
+                <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+                    <span style="color: #666; font-size: 14px; font-family: monospace;">{{ $client->client_code }}</span>
+                    <span class="status-badge status-{{ $client->status }}">
+                        {{ ucfirst($client->status) }}
+                    </span>
                 </div>
             </div>
         </div>
+        <button onclick="exportData()" class="btn btn-primary">Export Data</button>
     </div>
 
-    <!-- Main Dashboard -->
-    <div class="max-w-full mx-auto px-6 py-8">
-        <!-- Statistics Cards - now horizontal -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
-            <div class="stat-card h-full text-center p-6 rounded-lg border transition-all duration-200 hover:transform hover:scale-105"
-                 style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-color: #dee2e6;">
-                <div id="total-count" class="text-3xl font-bold text-gray-900 mb-1">
-                    {{ $terminalStats['total'] }}
-                </div>
-                <div class="text-xs text-gray-600 uppercase font-medium tracking-wide">Total Terminals</div>
-                <div class="text-xs text-gray-400 mt-1">Active network size</div>
+    <!-- Statistics Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-block-end: 30px;">
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #F5F5F5;">
+                <span style="color: #333; font-size: 24px;">💻</span>
             </div>
+            <div class="metric-content">
+                <div class="metric-number">{{ $terminalStats['total'] }}</div>
+                <div class="metric-label">TOTAL TERMINALS</div>
+                <div style="font-size: 11px; color: #999; margin-top: 2px;">Active network size</div>
+            </div>
+        </div>
 
-            <div class="stat-card h-full text-center p-6 rounded-lg border transition-all duration-200 hover:transform hover:scale-105"
-                 style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-color: #b8dacc;">
-                <div id="active-count" class="text-3xl font-bold mb-1" style="color: #155724;">
-                    {{ $terminalStats['by_status']['active'] ?? 0 }}
-                </div>
-                <div class="text-xs uppercase font-medium tracking-wide" style="color: #155724;">Active</div>
-                <div class="text-xs mt-1" style="color: #155724;">
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #E8F5E8;">
+                <span style="color: #388E3C; font-size: 24px;">✅</span>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" style="color: #388E3C;">{{ $terminalStats['by_status']['active'] ?? 0 }}</div>
+                <div class="metric-label">ACTIVE</div>
+                <div style="font-size: 11px; color: #666; margin-top: 2px;">
                     {{ $terminalStats['total'] > 0 ? round((($terminalStats['by_status']['active'] ?? 0) / $terminalStats['total']) * 100, 1) : 0 }}% uptime
                 </div>
             </div>
+        </div>
 
-            <div class="stat-card h-full text-center p-6 rounded-lg border transition-all duration-200 hover:transform hover:scale-105"
-                 style="background: linear-gradient(135deg, #f8d7da 0%, #f1b0b7 100%); border-color: #f1b0b7;">
-                <div id="faulty-count" class="text-3xl font-bold mb-1" style="color: #721c24;">
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #FFEBEE;">
+                <span style="color: #D32F2F; font-size: 24px;">⚠️</span>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" style="color: #D32F2F;">
                     {{ ($terminalStats['by_status']['maintenance'] ?? 0) + ($terminalStats['by_status']['faulty'] ?? 0) }}
                 </div>
-                <div class="text-xs uppercase font-medium tracking-wide" style="color: #721c24;">Need Attention</div>
-                <div class="text-xs text-gray-500 mt-1">Require service</div>
-            </div>
-
-            <div class="stat-card h-full text-center p-6 rounded-lg border transition-all duration-200 hover:transform hover:scale-105"
-                 style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-color: #ffeaa7;">
-                <div id="offline-count" class="text-3xl font-bold mb-1" style="color: #856404;">
-                    {{ $terminalStats['by_status']['offline'] ?? 0 }}
-                </div>
-                <div class="text-xs uppercase font-medium tracking-wide" style="color: #856404;">Offline</div>
-                <div class="text-xs text-gray-500 mt-1">Not responding</div>
-            </div>
-
-            <div class="stat-card h-full text-center p-6 rounded-lg border transition-all duration-200 hover:transform hover:scale-105"
-                 style="background: linear-gradient(135deg, #e7f3ff 0%, #b3d9ff 100%); border-color: #b3d9ff;">
-                <div class="text-3xl font-bold mb-1" style="color: #0066cc;">
-                    0
-                </div>
-                <div class="text-xs uppercase font-medium tracking-wide" style="color: #0066cc;">Recently Serviced</div>
-                <div class="text-xs text-gray-500 mt-1">Last 30 days</div>
+                <div class="metric-label">NEED ATTENTION</div>
+                <div style="font-size: 11px; color: #666; margin-top: 2px;">Require service</div>
             </div>
         </div>
 
-        <!-- Second Row: Service Due Card -->
-        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
-            <div class="stat-card text-center p-6 rounded-lg border transition-all duration-200 hover:transform hover:scale-105"
-                 style="background: linear-gradient(135deg, #fff0e6 0%, #ffcc99 100%); border-color: #ffcc99;">
-                <div class="text-3xl font-bold mb-1" style="color: #cc6600;">
-                    {{ $terminalStats['total'] }}
-                </div>
-                <div class="text-xs uppercase font-medium tracking-wide" style="color: #cc6600;">Service Due</div>
-                <div class="text-xs text-gray-500 mt-1">Maintenance needed</div>
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #FFF3E0;">
+                <span style="color: #F57C00; font-size: 24px;">📴</span>
+            </div>
+            <div class="metric-content">
+                <div class="metric-number" style="color: #F57C00;">{{ $terminalStats['by_status']['offline'] ?? 0 }}</div>
+                <div class="metric-label">OFFLINE</div>
+                <div style="font-size: 11px; color: #666; margin-top: 2px;">Not responding</div>
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="bg-white border border-gray-200 rounded-lg p-6 mb-8 shadow-sm">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">Terminal Analytics</h2>
-
-            <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <!-- Service Timeline -->
-                <div class="chart-container bg-gray-50 p-6 rounded-lg border border-gray-200">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4">Service Timeline</h3>
-                    <div class="relative" style="height: 250px;">
-                        <canvas id="serviceDueChart"></canvas>
-                    </div>
-                    <div class="mt-3 text-xs text-gray-600 text-center">
-                        Maintenance schedule tracking
-                    </div>
-                </div>
-
-                <!-- Regional Distribution -->
-                <div class="chart-container bg-gray-50 p-6 rounded-lg border border-gray-200">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4">Regional Distribution</h3>
-                    <div class="relative" style="height: 250px;">
-                        <canvas id="locationChart"></canvas>
-                    </div>
-                    <div class="mt-3 text-xs text-gray-600 text-center">
-                        Terminals by location
-                    </div>
-                </div>
-
-                <!-- Device Models -->
-                <div class="chart-container bg-gray-50 p-6 rounded-lg border border-gray-200">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4">Device Models</h3>
-                    <div class="relative" style="height: 250px;">
-                        <canvas id="modelsChart"></canvas>
-                    </div>
-                    <div class="mt-3 text-xs text-gray-600 text-center">
-                        Terminal model distribution
-                    </div>
-                </div>
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #E3F2FD;">
+                <span style="color: #1976D2; font-size: 24px;">🔧</span>
             </div>
-
-            <!-- Additional Metrics Row -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="text-center p-4 rounded-md border" style="background: #e7f3ff; border-color: #b3d9ff;">
-                    <div class="text-xl font-semibold mb-1" style="color: #0066cc;">
-                        0
-                    </div>
-                    <div class="text-xs uppercase tracking-wide" style="color: #0066cc;">Recently Serviced</div>
-                </div>
-
-                <div class="text-center p-4 rounded-md border" style="background: #fff0e6; border-color: #ffcc99;">
-                    <div class="text-xl font-semibold mb-1" style="color: #cc6600;">
-                        {{ $terminalStats['total'] }}
-                    </div>
-                    <div class="text-xs uppercase tracking-wide" style="color: #cc6600;">Service Due</div>
-                </div>
-
-                <div class="text-center p-4 rounded-md border" style="background: #f0f8f0; border-color: #b3e6b3;">
-                    <div class="text-xl font-semibold mb-1" style="color: #008000;">
-                        0
-                    </div>
-                    <div class="text-xs uppercase tracking-wide" style="color: #008000;">New Installs</div>
-                </div>
-
-                <div class="text-center p-4 rounded-md border" style="background: #fdf2f8; border-color: #f8bbd9;">
-                    <div class="text-xl font-semibold mb-1" style="color: #be185d;">
-                        4
-                    </div>
-                    <div class="text-xs uppercase tracking-wide" style="color: #be185d;">Device Types</div>
-                </div>
+            <div class="metric-content">
+                <div class="metric-number" style="color: #1976D2;">0</div>
+                <div class="metric-label">RECENTLY SERVICED</div>
+                <div style="font-size: 11px; color: #666; margin-top: 2px;">Last 30 days</div>
             </div>
         </div>
 
-        <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
-            <!-- POS Terminals Table - Takes up 3/4 of the width -->
-            <div class="xl:col-span-3">
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                    <!-- Header -->
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h2 class="text-lg font-semibold text-gray-900">POS Terminals</h2>
-                                <p class="text-sm text-gray-500">{{ $terminalStats['total'] }} total terminals</p>
-                            </div>
-                            <button class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                                Export
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Filters -->
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <div class="flex items-center space-x-4 mb-4">
-                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.586V4z"/>
-                            </svg>
-                            <h3 class="text-sm font-medium text-gray-900">Filters & Search</h3>
-                            <button class="text-sm text-blue-600 hover:text-blue-700">Clear All Filters</button>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
-                            <input type="text" placeholder="Search terminals..."
-                                   class="rounded-md border-gray-300 shadow-sm text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <button class="px-4 py-2 text-sm bg-gray-800 text-white rounded-md hover:bg-gray-700">Search</button>
-                            <button class="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Clear</button>
-                            <button class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">Add Terminal</button>
-                            <button class="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Export</button>
-                        </div>
-                        <div class="grid grid-cols-5 gap-3">
-                            <select class="rounded-md border-gray-300 shadow-sm text-sm">
-                                <option>All Clients</option>
-                            </select>
-                            <select class="rounded-md border-gray-300 shadow-sm text-sm">
-                                <option>All Status</option>
-                            </select>
-                            <select class="rounded-md border-gray-300 shadow-sm text-sm">
-                                <option>All Regions</option>
-                            </select>
-                            <select class="rounded-md border-gray-300 shadow-sm text-sm">
-                                <option>All Cities</option>
-                            </select>
-                            <select class="rounded-md border-gray-300 shadow-sm text-sm">
-                                <option>All Provinces</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Table - Full Width Without Horizontal Scroll -->
-                    <div class="w-full">
-                        <table class="w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Terminal ID</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client/Bank</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Service</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($terminals as $terminal)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $terminal->terminal_id }}</div>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $client->company_name }}</div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $terminal->merchant_name ?? 'City Electronics' }}</div>
-                                        <div class="text-sm text-gray-500">{{ $terminal->merchant_contact_person ?? 'Mike Smith' }}</div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="text-sm text-gray-900">{{ $terminal->merchant_contact_person ?? 'Jane Doe' }}</div>
-                                        <div class="text-sm text-gray-500">+254734567890</div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="text-sm text-gray-900">{{ $terminal->city ?? 'Unknown' }}</div>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                            @switch($terminal->current_status ?? 'maintenance')
-                                                @case('active') bg-green-100 text-green-800 @break
-                                                @case('offline') bg-orange-100 text-orange-800 @break
-                                                @case('maintenance') bg-yellow-100 text-yellow-800 @break
-                                                @case('faulty') bg-red-100 text-red-800 @break
-                                                @default bg-yellow-100 text-yellow-800
-                                            @endswitch">
-                                            {{ strtoupper($terminal->current_status ?? 'MAINTENANCE') }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        Jul 15, 2024
-                                        <div class="text-xs text-gray-400">1 year ago</div>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="#" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
-                                        <a href="#" class="text-blue-600 hover:text-blue-900">Edit</a>
-                                    </td>
-                                </tr>
-                                @empty
-                                <!-- Sample Data Rows -->
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">POS-002</div>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">ABC Bank</div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="text-sm font-medium text-gray-900">City Electronics</div>
-                                        <div class="text-sm text-gray-500">Mike Smith</div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="text-sm text-gray-900">Mike Smith</div>
-                                        <div class="text-sm text-gray-500">+254734567890</div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="text-sm text-gray-900">Unknown</div>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            MAINTENANCE
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        Jul 15, 2024
-                                        <div class="text-xs text-gray-400">1 year ago</div>
-                                    </td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="#" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
-                                        <a href="#" class="text-blue-600 hover:text-blue-900">Edit</a>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Projects Section -->
-                    <div class="border-t border-gray-200 p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Active Projects</h3>
-                                <p class="text-sm text-gray-500">3 ongoing projects</p>
-                            </div>
-                            <button class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">
-                                + Create Project
-                            </button>
-                        </div>
-
-                        <div class="border rounded-lg p-4">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="text-sm font-medium text-gray-900">Terminal Discovery Phase 1</h4>
-                                    <p class="text-sm text-gray-600">CLI-DIS-202508-01</p>
-                                    <p class="text-sm text-gray-500 mt-1">Initial discovery and assessment of all POS terminals...</p>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                                        Active
-                                    </span>
-                                    <span class="text-xs text-gray-500">Discovery</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #FFF0E6;">
+                <span style="color: #CC6600; font-size: 24px;">📅</span>
             </div>
-
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                <!-- Recent Visits -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                    <div class="px-4 py-3 border-b border-gray-200">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-sm font-semibold text-gray-900">Recent Visits</h3>
-                            <button class="text-xs text-blue-600 hover:text-blue-700 font-medium">View More</button>
-                        </div>
-                    </div>
-                    <div class="divide-y divide-gray-100">
-                        @for($i = 1; $i <= 4; $i++)
-                        <div class="px-4 py-3">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Terminal {{ $i }}</p>
-                                    <p class="text-sm text-gray-600">Monah Chimwa</p>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-xs px-2 py-1 rounded bg-green-100 text-green-800">Open</span>
-                                    <p class="text-xs text-gray-500 mt-1">Aug 26, 2025</p>
-                                </div>
-                            </div>
-                        </div>
-                        @endfor
-                    </div>
-                </div>
-
-                <!-- Open Tickets -->
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-                    <div class="px-4 py-3 border-b border-gray-200">
-                        <h3 class="text-sm font-semibold text-gray-900">Open Tickets</h3>
-                    </div>
-                    <div class="p-4">
-                        <p class="text-sm text-gray-500">No open tickets</p>
-                    </div>
-                </div>
+            <div class="metric-content">
+                <div class="metric-number" style="color: #CC6600;">{{ $terminalStats['total'] }}</div>
+                <div class="metric-label">SERVICE DUE</div>
+                <div style="font-size: 11px; color: #666; margin-top: 2px;">Maintenance needed</div>
             </div>
         </div>
     </div>
+
+    <!-- Charts Section -->
+    <div class="content-card" style="margin-block-end: 30px;">
+        <h3 style="margin: 0 0 24px 0; color: #333; font-size: 18px; font-weight: 600;">Terminal Analytics</h3>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-block-end: 24px;">
+            <!-- Service Timeline -->
+            <div style="background: #FAFAFA; padding: 20px; border-radius: 8px; border: 1px solid #F0F0F0;">
+                <h4 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 600;">Service Timeline</h4>
+                <div style="position: relative; height: 200px;">
+                    <canvas id="serviceDueChart"></canvas>
+                </div>
+                <div style="margin-top: 12px; font-size: 12px; color: #666; text-align: center;">
+                    Maintenance schedule tracking
+                </div>
+            </div>
+
+            <!-- Regional Distribution -->
+            <div style="background: #FAFAFA; padding: 20px; border-radius: 8px; border: 1px solid #F0F0F0;">
+                <h4 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 600;">Regional Distribution</h4>
+                <div style="position: relative; height: 200px;">
+                    <canvas id="locationChart"></canvas>
+                </div>
+                <div style="margin-top: 12px; font-size: 12px; color: #666; text-align: center;">
+                    Terminals by location
+                </div>
+            </div>
+
+            <!-- Device Models -->
+            <div style="background: #FAFAFA; padding: 20px; border-radius: 8px; border: 1px solid #F0F0F0;">
+                <h4 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 600;">Device Models</h4>
+                <div style="position: relative; height: 200px;">
+                    <canvas id="modelsChart"></canvas>
+                </div>
+                <div style="margin-top: 12px; font-size: 12px; color: #666; text-align: center;">
+                    Terminal model distribution
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Metrics Row -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div style="text-align: center; padding: 16px; border-radius: 8px; background: #E3F2FD; border: 1px solid #BBDEFB;">
+                <div style="font-size: 20px; font-weight: 600; color: #1976D2; margin-bottom: 4px;">0</div>
+                <div style="font-size: 12px; color: #1976D2; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Recently Serviced</div>
+            </div>
+
+            <div style="text-align: center; padding: 16px; border-radius: 8px; background: #FFF0E6; border: 1px solid #FFE0CC;">
+                <div style="font-size: 20px; font-weight: 600; color: #CC6600; margin-bottom: 4px;">{{ $terminalStats['total'] }}</div>
+                <div style="font-size: 12px; color: #CC6600; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Service Due</div>
+            </div>
+
+            <div style="text-align: center; padding: 16px; border-radius: 8px; background: #E8F5E8; border: 1px solid #C8E6C9;">
+                <div style="font-size: 20px; font-weight: 600; color: #388E3C; margin-bottom: 4px;">0</div>
+                <div style="font-size: 12px; color: #388E3C; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">New Installs</div>
+            </div>
+
+            <div style="text-align: center; padding: 16px; border-radius: 8px; background: #F3E5F5; border: 1px solid #E1BEE7;">
+                <div style="font-size: 20px; font-weight: 600; color: #7B1FA2; margin-bottom: 4px;">4</div>
+                <div style="font-size: 12px; color: #7B1FA2; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Device Types</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 30px;">
+        <!-- POS Terminals Table -->
+        <div class="content-card">
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px; padding-bottom: 16px; border-bottom: 1px solid #F0F0F0;">
+                <div>
+                    <h3 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">POS Terminals</h3>
+                    <p style="margin: 4px 0 0 0; color: #666; font-size: 14px;">{{ $terminalStats['total'] }} total terminals</p>
+                </div>
+                <button onclick="exportTable()" class="btn">Export</button>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-section" style="background: #F8F9FA; padding: 20px; border-radius: 8px; margin-block-end: 20px; border: 1px solid #F0F0F0;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-block-end: 16px;">
+                    <span style="color: #666; font-size: 20px;">🔍</span>
+                    <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Filters & Search</h4>
+                    <button type="button" onclick="clearFilters()" style="background: none; border: none; color: #1976D2; font-size: 12px; cursor: pointer; text-decoration: underline;">Clear All Filters</button>
+                </div>
+
+                <form method="GET" action="{{ route('client-dashboards.show', $client) }}">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 12px; margin-block-end: 12px;">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search terminals..."
+                               style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                        <button type="button" onclick="clearFilters()" class="btn">Clear</button>
+                        <button type="button" onclick="addTerminal()" class="btn btn-primary">+ Add Terminal</button>
+                        <button type="button" onclick="exportTable()" class="btn">Export</button>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+                        <select name="client" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
+                            <option value="">All Clients</option>
+                            <option value="{{ $client->id }}" selected>{{ $client->company_name }}</option>
+                        </select>
+                        <select name="status" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
+                            <option value="">All Status</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="offline" {{ request('status') == 'offline' ? 'selected' : '' }}>Offline</option>
+                            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+                            <option value="faulty" {{ request('status') == 'faulty' ? 'selected' : '' }}>Faulty</option>
+                        </select>
+                        <select name="region" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
+                            <option value="">All Regions</option>
+                            @if(isset($regions))
+                                @foreach($regions as $region)
+                                    <option value="{{ $region->id }}" {{ request('region') == $region->id ? 'selected' : '' }}>
+                                        {{ $region->name }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <select name="city" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
+                            <option value="">All Cities</option>
+                            @if(isset($cities))
+                                @foreach($cities as $city)
+                                    <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>
+                                        {{ $city }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <select name="province" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
+                            <option value="">All Provinces</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <table class="terminals-table">
+                    <thead>
+                        <tr>
+                            <th>Terminal ID</th>
+                            <th>Client/Bank</th>
+                            <th>Merchant</th>
+                            <th>Contact</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Last Service</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($terminals as $terminal)
+                        <tr>
+                            <td>
+                                <div style="font-weight: 500; color: #333;">{{ $terminal->terminal_id }}</div>
+                            </td>
+                            <td>
+                                <div style="color: #333;">{{ $client->company_name }}</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 500; color: #333;">{{ $terminal->merchant_name ?? 'City Electronics' }}</div>
+                                <div style="font-size: 12px; color: #666;">{{ $terminal->merchant_contact_person ?? 'Mike Smith' }}</div>
+                            </td>
+                            <td>
+                                <div style="color: #333;">{{ $terminal->merchant_contact_person ?? 'Jane Doe' }}</div>
+                                <div style="font-size: 12px; color: #666;">{{ $terminal->merchant_phone ?? '+254734567890' }}</div>
+                            </td>
+                            <td>
+                                <div style="color: #333;">{{ $terminal->city ?? 'Unknown' }}</div>
+                            </td>
+                            <td>
+                                <span class="terminal-status-badge status-{{ $terminal->current_status ?? 'maintenance' }}">
+                                    {{ strtoupper($terminal->current_status ?? 'MAINTENANCE') }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="color: #333; font-size: 14px;">
+                                    {{ $terminal->last_service_date ? \Carbon\Carbon::parse($terminal->last_service_date)->format('M d, Y') : 'Jul 15, 2024' }}
+                                </div>
+                                <div style="font-size: 12px; color: #999;">
+                                    {{ $terminal->last_service_date ? \Carbon\Carbon::parse($terminal->last_service_date)->diffForHumans() : '1 year ago' }}
+                                </div>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 6px;">
+                                    <button onclick="viewTerminal('{{ $terminal->id }}')" class="action-btn" title="View">👁️</button>
+                                    <button onclick="editTerminal('{{ $terminal->id }}')" class="action-btn" title="Edit">✏️</button>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <!-- Sample Data Rows -->
+                        <tr>
+                            <td>
+                                <div style="font-weight: 500; color: #333;">POS-002</div>
+                            </td>
+                            <td>
+                                <div style="color: #333;">{{ $client->company_name }}</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 500; color: #333;">City Electronics</div>
+                                <div style="font-size: 12px; color: #666;">Mike Smith</div>
+                            </td>
+                            <td>
+                                <div style="color: #333;">Mike Smith</div>
+                                <div style="font-size: 12px; color: #666;">+254734567890</div>
+                            </td>
+                            <td>
+                                <div style="color: #333;">Unknown</div>
+                            </td>
+                            <td>
+                                <span class="terminal-status-badge status-maintenance">
+                                    MAINTENANCE
+                                </span>
+                            </td>
+                            <td>
+                                <div style="color: #333; font-size: 14px;">Jul 15, 2024</div>
+                                <div style="font-size: 12px; color: #999;">1 year ago</div>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 6px;">
+                                    <button onclick="viewTerminal('sample')" class="action-btn" title="View">👁️</button>
+                                    <button onclick="editTerminal('sample')" class="action-btn" title="Edit">✏️</button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if(isset($terminals) && method_exists($terminals, 'links'))
+            <div style="margin-top: 20px; display: flex; justify-content: center;">
+                {{ $terminals->appends(request()->query())->links() }}
+            </div>
+            @endif
+
+            <!-- Projects Section -->
+            <div style="border-top: 1px solid #F0F0F0; margin-top: 24px; padding-top: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 16px;">
+                    <div>
+                        <h4 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Active Projects</h4>
+                        <p style="margin: 4px 0 0 0; color: #666; font-size: 14px;">{{ $projects->count() ?? 3 }} ongoing projects</p>
+                    </div>
+                    <button onclick="createProject()" class="btn">+ Create Project</button>
+                </div>
+
+                @if(isset($projects) && $projects->count() > 0)
+                    @foreach($projects->take(3) as $project)
+                    <div style="background: #FAFAFA; border: 1px solid #F0F0F0; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h5 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">{{ $project->project_name }}</h5>
+                                <p style="margin: 4px 0; color: #666; font-size: 12px; font-family: monospace;">{{ $project->project_code }}</p>
+                                <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">{{ $project->description }}</p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span class="status-badge status-{{ $project->status }}">{{ ucfirst($project->status) }}</span>
+                                <span style="font-size: 12px; color: #666;">{{ ucfirst($project->priority ?? 'normal') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                @else
+                <div style="background: #FAFAFA; border: 1px solid #F0F0F0; border-radius: 8px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h5 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Terminal Discovery Phase 1</h5>
+                            <p style="margin: 4px 0; color: #666; font-size: 12px; font-family: monospace;">CLI-DIS-202508-01</p>
+                            <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">Initial discovery and assessment of all POS terminals...</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="status-badge status-active">Active</span>
+                            <span style="font-size: 12px; color: #666;">Discovery</span>
+                        </div>
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- Recent Visits -->
+    <div class="content-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 16px; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0;">
+            <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Recent Visits</h4>
+            <a href="{{ route('visits.index') }}?client_id={{ $client->id }}"
+               style="background: none; border: none; color: #1976D2; font-size: 12px; cursor: pointer; text-decoration: underline;">
+               View More
+            </a>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            @if(isset($recentVisits) && $recentVisits->count() > 0)
+                @foreach($recentVisits->take(4) as $visit)
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <div style="font-weight: 500; color: #333; font-size: 14px;">
+                            <a href="{{ route('client-dashboards.terminals.show', [$client, $visit->posTerminal]) }}"
+                               style="color: #333; text-decoration: none;">
+                               Terminal {{ $visit->posTerminal->terminal_id ?? 'N/A' }}
+                            </a>
+                        </div>
+                        <div style="color: #666; font-size: 12px;">{{ $visit->technician->full_name ?? 'Technician' }}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="status-badge status-{{ $visit->status ?? 'active' }}" style="font-size: 10px; padding: 2px 6px;">
+                            {{ ucfirst($visit->status ?? 'Open') }}
+                        </span>
+                        <div style="font-size: 11px; color: #999; margin-top: 2px;">
+                            {{ $visit->visit_date ? \Carbon\Carbon::parse($visit->visit_date)->format('M d, Y') : 'Aug 26, 2025' }}
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            @else
+                {{-- Sample data when no visits exist --}}
+                @for($i = 1; $i <= 4; $i++)
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <div style="font-weight: 500; color: #333; font-size: 14px;">Terminal {{ $i }}</div>
+                        <div style="color: #666; font-size: 12px;">Monah Chimwa</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="status-badge status-active" style="font-size: 10px; padding: 2px 6px;">Open</span>
+                        <div style="font-size: 11px; color: #999; margin-top: 2px;">Aug 26, 2025</div>
+                    </div>
+                </div>
+                @endfor
+            @endif
+        </div>
+    </div>
+
+    <!-- Open Tickets -->
+    <div class="content-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0; margin-block-end: 16px;">
+            <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Open Tickets</h4>
+            <a href="{{ route('tickets.index') }}?client_id={{ $client->id }}"
+               style="background: none; border: none; color: #1976D2; font-size: 12px; cursor: pointer; text-decoration: underline;">
+               View All
+            </a>
+        </div>
+        @if(isset($openTickets) && $openTickets->count() > 0)
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                @foreach($openTickets->take(3) as $ticket)
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <div style="font-weight: 500; color: #333; font-size: 14px;">
+                            <a href="{{ route('tickets.show', $ticket) }}"
+                               style="color: #333; text-decoration: none;">
+                               {{ $ticket->title ?? 'Support Ticket' }}
+                            </a>
+                        </div>
+                        <div style="color: #666; font-size: 12px;">{{ $ticket->posTerminal->terminal_id ?? 'Terminal' }}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="status-badge status-{{ $ticket->status }}" style="font-size: 10px; padding: 2px 6px;">
+                            {{ ucfirst($ticket->status) }}
+                        </span>
+                        <div style="font-size: 11px; color: #999; margin-top: 2px;">{{ $ticket->created_at->format('M d, Y') }}</div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @else
+        <div style="text-align: center; padding: 20px; color: #666;">
+            <div style="font-size: 32px; margin-bottom: 8px;">🎫</div>
+            <p style="margin: 0; font-size: 14px;">No open tickets</p>
+        </div>
+        @endif
+    </div>
+
+    <!-- Active Projects -->
+    <div class="content-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0; margin-block-end: 16px;">
+            <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Active Projects</h4>
+            <a href="{{ route('client-dashboards.projects.create', $client) }}"
+               style="background: none; border: none; color: #1976D2; font-size: 12px; cursor: pointer; text-decoration: underline;">
+               + New Project
+            </a>
+        </div>
+        @if(isset($projects) && $projects->count() > 0)
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                @foreach($projects->take(2) as $project)
+                <div style="background: #FAFAFA; border: 1px solid #F0F0F0; border-radius: 8px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <div style="font-weight: 500; color: #333; font-size: 13px;">{{ $project->project_name }}</div>
+                        <span class="status-badge status-{{ $project->status }}" style="font-size: 10px; padding: 2px 6px;">
+                            {{ ucfirst($project->status) }}
+                        </span>
+                    </div>
+                    <div style="font-size: 11px; color: #666; font-family: monospace; margin-bottom: 4px;">{{ $project->project_code }}</div>
+                    <div style="font-size: 12px; color: #666;">{{ Str::limit($project->description, 60) }}</div>
+                </div>
+                @endforeach
+            </div>
+        @else
+        <div style="text-align: center; padding: 20px; color: #666;">
+            <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+            <p style="margin: 0; font-size: 14px;">No active projects</p>
+        </div>
+        @endif
+    </div>
 </div>
+
+{{-- Add this JavaScript to the bottom of your view to fix the terminal view links --}}
+<script>
+// Function to view terminal details
+function viewTerminalDetails(terminalId) {
+    if (terminalId && terminalId !== 'sample') {
+        window.location.href = `/client-dashboards/{{ $client->id }}/terminals/${terminalId}`;
+    }
+}
+
+// Update the table action buttons to use the correct terminal IDs
+document.addEventListener('DOMContentLoaded', function() {
+    // Fix any sample terminal links
+    document.querySelectorAll('a[href*="/terminals/sample"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('This is sample data. No terminal details available.');
+        });
+    });
+});
+</script>
+/* Metric Cards */
+.metric-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #F0F0F0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.metric-content {
+    flex: 1;
+}
+
+.metric-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* Content Card */
+.content-card {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #F0F0F0;
+}
+
+/* Table Styles */
+.table-container {
+    overflow-x: auto;
+}
+
+.terminals-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.terminals-table th {
+    background: #F8F9FA;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+.terminals-table td {
+    padding: 12px;
+    border-bottom: 1px solid #F0F0F0;
+    vertical-align: top;
+}
+
+.terminals-table tr:hover {
+    background: #FAFAFA;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.status-active { background: #E8F5E8; color: #2E7D32; }
+.status-pending { background: #FFF3E0; color: #F57C00; }
+.status-inactive { background: #F5F5F5; color: #666; }
+.status-planning { background: #E3F2FD; color: #1976D2; }
+.status-completed { background: #E8F5E8; color: #2E7D32; }
+.status-on_hold { background: #FFF3E0; color: #F57C00; }
+.status-cancelled { background: #FFEBEE; color: #D32F2F; }
+
+.terminal-status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.terminal-status-badge.status-active { background: #E8F5E8; color: #2E7D32; }
+.terminal-status-badge.status-offline { background: #FFF3E0; color: #F57C00; }
+.terminal-status-badge.status-maintenance { background: #FFF3E0; color: #F57C00; }
+.terminal-status-badge.status-faulty { background: #FFEBEE; color: #D32F2F; }
+
+/* Action Buttons */
+.action-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    background: #F8F9FA;
+    color: #666;
+}
+
+.action-btn:hover {
+    background: #E0E0E0;
+    transform: translateY(-1px);
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 16px;
+    border: 1px solid #E0E0E0;
+    border-radius: 6px;
+    background: white;
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.btn:hover {
+    border-color: #1976D2;
+    color: #1976D2;
+}
+
+.btn-primary {
+    background: #1976D2;
+    color: white;
+    border-color: #1976D2;
+}
+
+.btn-primary:hover {
+    background: #1565C0;
+    border-color: #1565C0;
+    color: white;
+}
+</style>
 
 <!-- Chart.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -500,9 +802,64 @@ function initializeCharts() {
     }
 }
 
+// Button Functions
+function exportData() {
+    window.open(`/client-dashboards/{{ $client->id }}/export-data`, '_blank');
+}
+
+function exportTable() {
+    const params = new URLSearchParams(window.location.search);
+    const queryString = params.toString();
+    const url = `/client-dashboards/{{ $client->id }}/export-table${queryString ? '?' + queryString : ''}`;
+    window.open(url, '_blank');
+}
+
+function clearFilters() {
+    window.location.href = '{{ route("client-dashboards.show", $client) }}';
+}
+
+function addTerminal() {
+    window.location.href = '/client-dashboards/{{ $client->id }}/terminals/create';
+}
+
+function viewTerminal(terminalId) {
+    if (terminalId !== 'sample') {
+        window.location.href = `/client-dashboards/{{ $client->id }}/terminals/${terminalId}`;
+    }
+}
+
+function editTerminal(terminalId) {
+    if (terminalId !== 'sample') {
+        window.location.href = `/client-dashboards/{{ $client->id }}/terminals/${terminalId}/edit`;
+    }
+}
+
+function createProject() {
+    window.location.href = '/client-dashboards/{{ $client->id }}/projects/create';
+}
+
+function generateReport() {
+    const reportType = prompt('Generate report:\n\n1. Monthly Summary\n2. Terminal Performance\n3. Activity Report\n\nEnter 1, 2, or 3:');
+
+    if (reportType) {
+        const reportTypes = {
+            '1': 'monthly',
+            '2': 'terminals',
+            '3': 'activity'
+        };
+
+        if (reportTypes[reportType]) {
+            window.open(`/client-dashboards/{{ $client->id }}/reports/${reportTypes[reportType]}`, '_blank');
+        } else {
+            alert('Invalid selection. Please enter 1, 2, or 3.');
+        }
+    }
+}
+
 // Initialize charts on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeCharts();
+    console.log('Client Dashboard initialized for client {{ $client->id }}');
 });
 </script>
 @endsection

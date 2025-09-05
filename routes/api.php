@@ -7,20 +7,11 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\JobAssignmentController;
 use App\Http\Controllers\Api\PosTerminalController;
-use App\Http\Controllers\Api\AssetController;
+use App\Http\Controllers\Api\AssetController as AssetApi;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\TechnicianController;
 use App\Http\Controllers\Api\ReportsController;
-use App\Http\Controllers\Api\EmployeeController;
-use App\Http\Controllers\Api\RoleController;
-use App\Http\Controllers\Api\BusinessLicenseController;
-//use App\Http\Controllers\Api\AssetRequestController;
-use App\Http\Controllers\Api\AssetApprovalController;
-use App\Http\Controllers\Api\TerminalDeploymentController;
-use App\Http\Controllers\Api\SettingsController;
-use App\Http\Controllers\Api\DocumentController;
-use App\Http\Controllers\Api\TechnicianReportsController;
 use App\Http\Controllers\Api\VisitController as ApiVisitController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\ReportTemplateController;
@@ -237,247 +228,53 @@ Route::middleware('auth:sanctum')->prefix('jobs')->group(function () {
     // ASSET MANAGEMENT ROUTES - COMPREHENSIVE
     // ==============================================
 
-    Route::prefix('assets')->group(function () {
-        // Main CRUD routes
-        Route::get('/', [AssetController::class, 'index']); // No pagination - return all
-        Route::post('/', [AssetController::class, 'store']);
-        Route::get('/{asset}', [AssetController::class, 'show']);
-        Route::put('/{asset}', [AssetController::class, 'update']);
-        Route::delete('/{asset}', [AssetController::class, 'destroy']);
+Route::pattern('asset', '[0-9]+');
+Route::pattern('assignment', '[0-9]+');
 
-        // Stock management
-        Route::post('/{asset}/update-stock', [AssetController::class, 'updateStock']);
-        Route::post('/bulk-update-stock', [AssetController::class, 'bulkUpdateStock']);
+Route::middleware(['auth:sanctum'])->prefix('assets')->group(function () {
+    // Static/collection endpoints FIRST
+    Route::get('/',               [AssetApi::class, 'index']);
+    Route::get('/categories',     [AssetApi::class, 'getCategories']);
+    Route::get('/statistics',     [AssetApi::class, 'statistics']);
+    Route::get('/requests',       [AssetApi::class, 'getRequests']);
+    Route::post('/requests',      [AssetApi::class, 'createRequest']);
+    Route::get('/my-assignments', [AssetApi::class, 'myAssignments']);
+    Route::post('/assignments/{assignment}/return', [AssetApi::class, 'returnAsset'])
+        ->whereNumber('assignment');
 
-        // Asset assignments
-        Route::post('/assign', [AssetController::class, 'assignAsset']);
-        Route::get('/my-assignments', [AssetController::class, 'myAssignments']);
-        Route::post('/assignments/{assignment}/return', [AssetController::class, 'returnAsset']);
-        Route::patch('/assignments/{assignment}/transfer', [AssetController::class, 'transferAsset']);
-        Route::get('/assignments/{assignment}/data', [AssetController::class, 'getAssignmentData']);
-
-        // Reports and exports
-        Route::get('/export', [AssetController::class, 'export']);
-        Route::get('/low-stock-alerts', [AssetController::class, 'lowStockAlerts']);
-        Route::get('/{asset}/vehicle-info', [AssetController::class, 'getVehicleInfo']);
-        Route::get('/assignment-report', [AssetController::class, 'assignmentReport']);
-        Route::get('/overdue-report', [AssetController::class, 'overdueReport']);
-
-        // Asset requests
-        Route::get('/requests', [AssetController::class, 'getRequests']);
-        Route::post('/requests', [AssetController::class, 'createRequest']);
-        Route::post('/{asset}/request', [AssetController::class, 'requestAsset']);
-        Route::patch('/requests/{request}/status', [AssetController::class, 'updateRequestStatus']);
-
-        // Utility routes
-        Route::get('/available-employees', [AssetController::class, 'getAvailableEmployees']);
-        Route::get('/categories', [AssetController::class, 'getCategories']);
-        Route::get('/statistics', [AssetController::class, 'getStatistics']);
-    });
-/*
-    // ==============================================
-    // ASSET REQUEST ROUTES - COMPREHENSIVE
-    // ==============================================
-
-    Route::prefix('asset-requests')->group(function () {
-        Route::get('/', [AssetRequestController::class, 'index']); // No pagination - return all
-        Route::post('/', [AssetRequestController::class, 'store']);
-        Route::get('/{request}', [AssetRequestController::class, 'show']);
-        Route::patch('/{request}/cancel', [AssetRequestController::class, 'cancel']);
-
-        // Catalog and cart functionality
-        Route::get('/catalog', [AssetRequestController::class, 'catalog']);
-        Route::post('/cart/add/{asset}', [AssetRequestController::class, 'addToCart']);
-        Route::get('/cart', [AssetRequestController::class, 'getCart']);
-        Route::patch('/cart/{asset}', [AssetRequestController::class, 'updateCart']);
-        Route::delete('/cart/{asset}', [AssetRequestController::class, 'removeFromCart']);
-        Route::get('/checkout', [AssetRequestController::class, 'getCheckout']);
-        Route::post('/checkout', [AssetRequestController::class, 'checkout']);
-
-        // Status management
-        Route::patch('/{request}/status', [AssetRequestController::class, 'updateStatus']);
-        Route::get('/by-status/{status}', [AssetRequestController::class, 'getByStatus']);
-        Route::get('/statistics', [AssetRequestController::class, 'getStatistics']);
-    });
+    // ID routes LAST (and constrained)
+    Route::post('/{asset}/request', [AssetApi::class, 'requestAsset'])->whereNumber('asset');
+    Route::get('/{asset}',          [AssetApi::class, 'show'])->whereNumber('asset');
+});
 
     // ==============================================
-    // ASSET APPROVAL ROUTES - NEW
+    // REPORTS ROUTES - ENHANCED
     // ==============================================
 
-    Route::prefix('asset-approvals')->group(function () {
-        Route::get('/', [AssetApprovalController::class, 'index']); // No pagination - return all
-        Route::get('/{approval}', [AssetApprovalController::class, 'show']);
-        Route::post('/{approval}/approve', [AssetApprovalController::class, 'approve']);
-        Route::post('/{approval}/reject', [AssetApprovalController::class, 'reject']);
-        Route::post('/bulk-action', [AssetApprovalController::class, 'bulkAction']);
-        Route::get('/statistics', [AssetApprovalController::class, 'getStats']);
-        Route::get('/export', [AssetApprovalController::class, 'exportReport']);
-        Route::get('/pending', [AssetApprovalController::class, 'getPending']);
-        Route::get('/history', [AssetApprovalController::class, 'getHistory']);
-    });
-*/
-    // ==============================================
-    // EMPLOYEE MANAGEMENT ROUTES - NEW
-    // ==============================================
-
-    Route::prefix('employees')->group(function () {
-        Route::get('/', [EmployeeController::class, 'index']); // No pagination - return all
-        Route::post('/', [EmployeeController::class, 'store']);
-        Route::get('/{employee}', [EmployeeController::class, 'show']);
-        Route::put('/{employee}', [EmployeeController::class, 'update']);
-        Route::delete('/{employee}', [EmployeeController::class, 'destroy']);
-
-        // Quick actions
-        Route::patch('/{employee}/role', [EmployeeController::class, 'updateRole']);
-        Route::patch('/{employee}/status', [EmployeeController::class, 'toggleStatus']);
-        Route::patch('/{employee}/activate', [EmployeeController::class, 'activate']);
-        Route::patch('/{employee}/deactivate', [EmployeeController::class, 'deactivate']);
-
-        // Employee-specific data
-        Route::get('/{employee}/assignments', [EmployeeController::class, 'getAssignments']);
-        Route::get('/{employee}/performance', [EmployeeController::class, 'getPerformance']);
-        Route::get('/{employee}/assets', [EmployeeController::class, 'getAssets']);
-        Route::get('/{employee}/tickets', [EmployeeController::class, 'getTickets']);
-
-        // Utility routes
-        Route::get('/by-role/{role}', [EmployeeController::class, 'getByRole']);
-        Route::get('/by-department/{department}', [EmployeeController::class, 'getByDepartment']);
-        Route::get('/active', [EmployeeController::class, 'getActive']);
-        Route::get('/inactive', [EmployeeController::class, 'getInactive']);
-        Route::get('/statistics', [EmployeeController::class, 'getStatistics']);
-        Route::get('/export', [EmployeeController::class, 'export']);
-    });
-
-    // ==============================================
-    // ROLE MANAGEMENT ROUTES - NEW
-    // ==============================================
-
-    Route::prefix('roles')->group(function () {
-        Route::get('/', [RoleController::class, 'index']); // No pagination - return all
-        Route::post('/', [RoleController::class, 'store']);
-        Route::get('/{role}', [RoleController::class, 'show']);
-        Route::put('/{role}', [RoleController::class, 'update']);
-        Route::delete('/{role}', [RoleController::class, 'destroy']);
-
-        // Role management actions
-        Route::post('/{role}/clone', [RoleController::class, 'clone']);
-        Route::patch('/{role}/permissions', [RoleController::class, 'updatePermissions']);
-        Route::get('/{role}/employees', [RoleController::class, 'getEmployees']);
-        Route::get('/{role}/permissions', [RoleController::class, 'getPermissions']);
-
-        // Utility routes
-        Route::get('/permissions/available', [RoleController::class, 'getAvailablePermissions']);
-        Route::get('/statistics', [RoleController::class, 'getStatistics']);
-    });
-
-    // ==============================================
-    // BUSINESS LICENSE ROUTES - NEW
-    // ==============================================
-
-    Route::prefix('business-licenses')->group(function () {
-        Route::get('/', [BusinessLicenseController::class, 'index']); // No pagination - return all
-        Route::post('/', [BusinessLicenseController::class, 'store']);
-        Route::get('/{license}', [BusinessLicenseController::class, 'show']);
-        Route::put('/{license}', [BusinessLicenseController::class, 'update']);
-        Route::delete('/{license}', [BusinessLicenseController::class, 'destroy']);
-
-        // License-specific actions
-        Route::post('/{license}/renew', [BusinessLicenseController::class, 'renew']);
-        Route::post('/{license}/process-renewal', [BusinessLicenseController::class, 'processRenewal']);
-        Route::get('/{license}/download', [BusinessLicenseController::class, 'downloadDocument']);
-
-        // Reports and filters
-        Route::get('/expiring', [BusinessLicenseController::class, 'getExpiring']);
-        Route::get('/expired', [BusinessLicenseController::class, 'getExpired']);
-        Route::get('/active', [BusinessLicenseController::class, 'getActive']);
-        Route::get('/compliance-report', [BusinessLicenseController::class, 'getComplianceReport']);
-        Route::get('/statistics', [BusinessLicenseController::class, 'getFilteredStats']);
-        Route::get('/export', [BusinessLicenseController::class, 'export']);
-
-        // Categories and types
-        Route::get('/types', [BusinessLicenseController::class, 'getTypes']);
-        Route::get('/by-type/{type}', [BusinessLicenseController::class, 'getByType']);
-    });
-
-    // ==============================================
-    // TICKET MANAGEMENT ROUTES - MATCHING WEB
-    // ==============================================
-
+    Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('tickets')->group(function () {
-        // Basic CRUD - matches web resource routes
-        Route::get('/', [TicketController::class, 'index']); // No pagination - return all
+        // No pagination – return all (scoped to logged-in user)
+        Route::get('/', [TicketController::class, 'index']);
+
+        // Create a ticket
         Route::post('/', [TicketController::class, 'store']);
+
+        // Specific ticket
         Route::get('/{ticket}', [TicketController::class, 'show']);
         Route::put('/{ticket}', [TicketController::class, 'update']);
         Route::delete('/{ticket}', [TicketController::class, 'destroy']);
 
         // Actions that exist in web routes
         Route::patch('/{ticket}/status', [TicketController::class, 'updateStatus']);
-        Route::post('/{ticket}/assign', [TicketController::class, 'assignTicket']);
 
-        // Additional API-specific routes (ensure these methods exist in controller)
+        // Additional API-specific routes
         Route::post('/{ticket}/comments', [TicketController::class, 'addComment']);
         Route::get('/{ticket}/history', [TicketController::class, 'getHistory']);
 
-        // User-specific tickets (ensure method exists)
-        Route::get('/assigned-to-me', function(Request $request) {
-            return app(\App\Http\Controllers\Api\TicketController::class)->index($request->merge(['assigned_to' => auth()->id()]));
-        });
+        // Optional: explicit “mine” shortcut
+        Route::get('/mine/list', [TicketController::class, 'myTickets']);
     });
-
-    // ==============================================
-    // DEPLOYMENT ROUTES - NEW COMPREHENSIVE
-    // ==============================================
-
-    Route::prefix('deployment')->group(function () {
-        // Main deployment data
-        Route::get('/', [TerminalDeploymentController::class, 'index']); // No pagination - return all
-        Route::get('/initial-data', [TerminalDeploymentController::class, 'getInitialData']);
-        Route::get('/hierarchical', [TerminalDeploymentController::class, 'getHierarchical']);
-
-        // Project management
-        Route::post('/projects', [TerminalDeploymentController::class, 'getProjectsByClients']);
-        Route::post('/projects/create', [TerminalDeploymentController::class, 'createProject']);
-        Route::patch('/projects/{project}', [TerminalDeploymentController::class, 'updateProject']);
-        Route::get('/projects/{project}', [TerminalDeploymentController::class, 'getProject']);
-        Route::delete('/projects/{project}', [TerminalDeploymentController::class, 'deleteProject']);
-
-        // Terminal management
-        Route::post('/terminals', [TerminalDeploymentController::class, 'getHierarchicalTerminals']);
-        Route::get('/terminals/unassigned', [TerminalDeploymentController::class, 'getUnassignedTerminals']);
-        Route::get('/terminals/assigned', [TerminalDeploymentController::class, 'getAssignedTerminals']);
-
-        // Assignment operations
-        Route::post('/assign', [TerminalDeploymentController::class, 'createAssignment']);
-        Route::post('/bulk-assign', [TerminalDeploymentController::class, 'bulkAssign']);
-        Route::post('/quick-assign', [TerminalDeploymentController::class, 'quickAssignTerminal']);
-        Route::post('/auto-assign', [TerminalDeploymentController::class, 'autoAssignTerminals']);
-
-        // Assignment management
-        Route::get('/assignments/{assignment}', [TerminalDeploymentController::class, 'getAssignmentDetails']);
-        Route::patch('/assignments/{assignment}', [TerminalDeploymentController::class, 'updateAssignment']);
-        Route::delete('/assignments/{assignment}', [TerminalDeploymentController::class, 'cancelAssignment']);
-
-        // Work orders and deployment
-        Route::post('/work-orders', [TerminalDeploymentController::class, 'generateWorkOrders']);
-        Route::post('/deploy', [TerminalDeploymentController::class, 'deployAll']);
-        Route::get('/progress/{deployment}', [TerminalDeploymentController::class, 'getDeploymentProgress']);
-
-        // Draft management
-        Route::post('/drafts', [TerminalDeploymentController::class, 'saveAsDraft']);
-        Route::get('/drafts', [TerminalDeploymentController::class, 'getDrafts']);
-        Route::get('/drafts/{draft}', [TerminalDeploymentController::class, 'loadDraft']);
-        Route::delete('/drafts/{draft}', [TerminalDeploymentController::class, 'deleteDraft']);
-
-        // Statistics and reporting
-        Route::get('/statistics', [TerminalDeploymentController::class, 'getStatistics']);
-        Route::get('/technician-workload', [TerminalDeploymentController::class, 'getTechnicianWorkload']);
-        Route::get('/regional-summary', [TerminalDeploymentController::class, 'getRegionalSummary']);
-        Route::get('/export/{format}', [TerminalDeploymentController::class, 'exportAssignments']);
-
-        // Mobile and sync
-        Route::get('/mobile-sync', [TerminalDeploymentController::class, 'mobileSync']);
-    });
+});
 
     // ==============================================
     // REPORTS ROUTES - ENHANCED
@@ -500,14 +297,6 @@ Route::middleware('auth:sanctum')->prefix('jobs')->group(function () {
         Route::get('/performance-metrics', [ReportsController::class, 'getPerformanceMetrics']);
         Route::get('/trends-analysis', [ReportsController::class, 'getTrendsAnalysis']);
 
-        // Technician Visit Reports
-        Route::get('/technician-visits', [TechnicianReportsController::class, 'index']);
-        Route::get('/technician-visits/filter', [TechnicianReportsController::class, 'filter']);
-        Route::get('/technician-visits/{visit}', [TechnicianReportsController::class, 'show']);
-        Route::get('/technician-visits/{visit}/photos', [TechnicianReportsController::class, 'getPhotos']);
-        Route::get('/technician-visits/{visit}/pdf', [TechnicianReportsController::class, 'generatePDF']);
-        Route::get('/technician-visits/export', [TechnicianReportsController::class, 'export']);
-
         // Export capabilities
         Route::get('/export/{type}', [ReportsController::class, 'export']);
         Route::post('/custom-report', [ReportsController::class, 'generateCustomReport']);
@@ -515,62 +304,6 @@ Route::middleware('auth:sanctum')->prefix('jobs')->group(function () {
         // Report builder
         Route::get('/builder', [ReportsController::class, 'getBuilderData']);
         Route::post('/builder/generate', [ReportsController::class, 'generateBuilderReport']);
-    });
-
-    // ==============================================
-    // SETTINGS ROUTES - NEW
-    // ==============================================
-
-    Route::prefix('settings')->group(function () {
-        Route::get('/', [SettingsController::class, 'index']);
-        Route::get('/all', [SettingsController::class, 'getAllSettings']);
-        Route::post('/update', [SettingsController::class, 'updateSettings']);
-
-        // Category Management
-        Route::get('/categories/{type}', [SettingsController::class, 'getCategory']);
-        Route::post('/categories/{type}', [SettingsController::class, 'storeCategory']);
-        Route::put('/categories/{category}', [SettingsController::class, 'updateCategory']);
-        Route::delete('/categories/{category}', [SettingsController::class, 'deleteCategory']);
-        Route::post('/categories/reorder', [SettingsController::class, 'updateCategoryOrder']);
-
-        // System settings
-        Route::get('/system', [SettingsController::class, 'getSystemSettings']);
-        Route::post('/system', [SettingsController::class, 'updateSystemSettings']);
-
-        // User preferences
-        Route::get('/preferences', [SettingsController::class, 'getUserPreferences']);
-        Route::post('/preferences', [SettingsController::class, 'updateUserPreferences']);
-    });
-
-    // ==============================================
-    // DOCUMENT MANAGEMENT ROUTES - NEW
-    // ==============================================
-
-    Route::prefix('documents')->group(function () {
-        Route::get('/', [DocumentController::class, 'index']); // No pagination - return all
-        Route::post('/', [DocumentController::class, 'store']);
-        Route::get('/{document}', [DocumentController::class, 'show']);
-        Route::put('/{document}', [DocumentController::class, 'update']);
-        Route::delete('/{document}', [DocumentController::class, 'destroy']);
-
-        // Document actions
-        Route::post('/upload', [DocumentController::class, 'upload']);
-        Route::get('/{document}/download', [DocumentController::class, 'download']);
-        Route::post('/{document}/share', [DocumentController::class, 'share']);
-        Route::get('/{document}/versions', [DocumentController::class, 'getVersions']);
-
-        // Categories and folders
-        Route::get('/categories', [DocumentController::class, 'getCategories']);
-        Route::get('/by-category/{category}', [DocumentController::class, 'getByCategory']);
-        Route::get('/folders', [DocumentController::class, 'getFolders']);
-        Route::post('/folders', [DocumentController::class, 'createFolder']);
-        Route::get('/folders/{folder}', [DocumentController::class, 'getFolderContents']);
-
-        // Search and filters
-        Route::get('/search/{query}', [DocumentController::class, 'search']);
-        Route::get('/recent', [DocumentController::class, 'getRecent']);
-        Route::get('/my-documents', [DocumentController::class, 'getMyDocuments']);
-        Route::get('/shared-with-me', [DocumentController::class, 'getSharedWithMe']);
     });
 
     // ==============================================
@@ -582,7 +315,6 @@ Route::middleware('auth:sanctum')->prefix('jobs')->group(function () {
         Route::get('/terminals', [PosTerminalController::class, 'syncTerminals']);
         Route::get('/clients', [ClientController::class, 'syncClients']);
         Route::get('/assets', [AssetController::class, 'syncAssets']);
-        Route::get('/employees', [EmployeeController::class, 'syncEmployees']);
         Route::get('/tickets', [TicketController::class, 'syncTickets']);
 
         Route::post('/bulk-update', [JobAssignmentController::class, 'bulkUpdate']);
@@ -674,7 +406,7 @@ Route::middleware('auth:sanctum')->prefix('jobs')->group(function () {
     });
 
     Route::post('/upload/attachment', function(Request $request) {
-        $request->validate(['file' => 'required|file|max:10240']); // 10MB max
+        $request->validate(['file' => 'required|file|51200']); // 10MB max
 
         $path = $request->file('file')->store('uploads/attachments', 'public');
 
@@ -706,11 +438,6 @@ Route::middleware('auth:sanctum')->prefix('jobs')->group(function () {
             if ($type === 'all' || $type === 'clients') {
                 $clients = app(ClientController::class)->search($query);
                 $results['clients'] = $clients;
-            }
-
-            if ($type === 'all' || $type === 'employees') {
-                $employees = app(EmployeeController::class)->search($query);
-                $results['employees'] = $employees;
             }
 
             return response()->json($results);

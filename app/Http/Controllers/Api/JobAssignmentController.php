@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use App\Models\JobAssignment;
 use App\Models\PosTerminal;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class JobAssignmentController extends Controller
 {
@@ -487,7 +488,7 @@ class JobAssignmentController extends Controller
                 'client_id' => 'nullable|integer',
             ]);
 
-            \Log::info('Getting terminals for region', [
+            Log::info('Getting terminals for region', [
                 'region_id' => (int) $regionId,
                 'client_id' => $request->get('client_id')
             ]);
@@ -516,7 +517,7 @@ class JobAssignmentController extends Controller
                 ->orderBy('terminal_id')
                 ->get();
 
-            \Log::info('Terminals found', [
+            Log::info('Terminals found', [
                 'count' => $terminals->count(),
                 // avoid logging the whole payload in prod if large
             ]);
@@ -527,7 +528,7 @@ class JobAssignmentController extends Controller
                 'terminals' => $terminals,
             ]);
         } catch (\Throwable $e) {
-            \Log::error('Error loading terminals', [
+            Log::error('Error loading terminals', [
                 'region_id' => $regionId,
                 'error'     => $e->getMessage(),
             ]);

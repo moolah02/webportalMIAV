@@ -9,6 +9,7 @@ use App\Models\PosTerminal;
 use App\Models\Client;
 use App\Models\Ticket;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 
 class PosTerminalController extends Controller
@@ -331,7 +332,7 @@ public function bulkUpdateByTerminalId(Request $request)
                                       ];
                                   });
         } catch (\Exception $e) {
-            \Log::warning('Could not load tickets: ' . $e->getMessage());
+            Log::warning('Could not load tickets: ' . $e->getMessage());
         }
 
         // Get recent job assignments
@@ -357,7 +358,7 @@ public function bulkUpdateByTerminalId(Request $request)
                                       });
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not load job assignments: ' . $e->getMessage());
+            Log::warning('Could not load job assignments: ' . $e->getMessage());
         }
 
         $terminalData = [
@@ -461,7 +462,7 @@ public function bulkUpdateByTerminalId(Request $request)
             // Log the status change if notes provided
             if ($request->has('notes')) {
                 // You can add this to a status change log table if needed
-                \Log::info("Terminal {$terminal->terminal_id} status changed to {$request->status} by {$user->name}. Notes: {$request->notes}");
+                Log::info("Terminal {$terminal->terminal_id} status changed to {$request->status} by {$user->name}. Notes: {$request->notes}");
             }
 
             return response()->json([
@@ -475,7 +476,7 @@ public function bulkUpdateByTerminalId(Request $request)
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Terminal status update failed: ' . $e->getMessage());
+            Log::error('Terminal status update failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update terminal status'
@@ -550,7 +551,7 @@ public function bulkUpdateByTerminalId(Request $request)
             ]);
 
             // Log service report (you can save to database if you have a ServiceReport model)
-            \Log::info('Service report created', $reportData);
+            Log::info('Service report created', $reportData);
 
             return response()->json([
                 'success' => true,
@@ -562,7 +563,7 @@ public function bulkUpdateByTerminalId(Request $request)
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Service report creation failed: ' . $e->getMessage());
+            Log::error('Service report creation failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create service report'
@@ -603,7 +604,7 @@ public function bulkUpdateByTerminalId(Request $request)
                 }
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not load job assignments: ' . $e->getMessage());
+            Log::warning('Could not load job assignments: ' . $e->getMessage());
         }
 
         // Get tickets history
@@ -629,7 +630,7 @@ public function bulkUpdateByTerminalId(Request $request)
                 ]);
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not load tickets: ' . $e->getMessage());
+            Log::warning('Could not load tickets: ' . $e->getMessage());
         }
 
         // Sort by date descending
@@ -788,7 +789,7 @@ public function bulkUpdateByTerminalId(Request $request)
                                                                ->flatten()
                                                                ->unique();
             } catch (\Exception $e) {
-                \Log::warning('Could not load assigned terminals: ' . $e->getMessage());
+                Log::warning('Could not load assigned terminals: ' . $e->getMessage());
             }
 
             if ($assignedTerminalIds->isNotEmpty()) {

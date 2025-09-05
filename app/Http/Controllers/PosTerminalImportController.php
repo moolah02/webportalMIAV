@@ -9,339 +9,976 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Csv as CsvReader;
+use Illuminate\Support\Arr;
+
 
 class PosTerminalImportController extends Controller
 {
+    // Define your template - these are the fields your system recognizes
+    private const FIELD_TEMPLATE = [
+        // Required fields
+        'terminal_id' => ['required' => true, 'database_field' => 'terminal_id'],
+        'merchant_name' => ['required' => true, 'database_field' => 'merchant_name'],
+
+        // Standard optional fields
+        'merchant_id' => ['required' => false, 'database_field' => 'merchant_id'],
+        'client_id' => ['required' => false, 'database_field' => 'client_id'],
+        'legal_name' => ['required' => false, 'database_field' => 'legal_name'],
+        'merchant_contact_person' => ['required' => false, 'database_field' => 'merchant_contact_person'],
+        'merchant_phone' => ['required' => false, 'database_field' => 'merchant_phone'],
+        'merchant_email' => ['required' => false, 'database_field' => 'merchant_email'],
+        'physical_address' => ['required' => false, 'database_field' => 'physical_address'],
+        'city' => ['required' => false, 'database_field' => 'city'],
+        'province' => ['required' => false, 'database_field' => 'province'],
+        'area' => ['required' => false, 'database_field' => 'area'],
+        'region' => ['required' => false, 'database_field' => 'region'],
+        'business_type' => ['required' => false, 'database_field' => 'business_type'],
+        'installation_date' => ['required' => false, 'database_field' => 'installation_date'],
+        'terminal_model' => ['required' => false, 'database_field' => 'terminal_model'],
+        'serial_number' => ['required' => false, 'database_field' => 'serial_number'],
+        'contract_details' => ['required' => false, 'database_field' => 'contract_details'],
+        'status' => ['required' => false, 'database_field' => 'status'],
+        'current_status' => ['required' => false, 'database_field' => 'current_status'],
+        'deployment_status' => ['required' => false, 'database_field' => 'deployment_status'],
+        'condition_status' => ['required' => false, 'database_field' => 'condition_status'],
+        'issues_raised' => ['required' => false, 'database_field' => 'issues_raised'],
+        'corrective_action' => ['required' => false, 'database_field' => 'corrective_action'],
+        'site_contact_person' => ['required' => false, 'database_field' => 'site_contact_person'],
+        'site_contact_number' => ['required' => false, 'database_field' => 'site_contact_number'],
+        'last_service_date' => ['required' => false, 'database_field' => 'last_service_date'],
+        'next_service_due' => ['required' => false, 'database_field' => 'next_service_due'],
+        'last_visit_date' => ['required' => false, 'database_field' => 'last_visit_date'],
+    ];
+
+    // Header patterns for smart detection
+    private const HEADER_PATTERNS = [
+        'terminal_id' => [
+            'exact' => ['terminal_id', 'terminalid', 'terminal id', 'tid', 'terminal number', 'terminal no'],
+            'patterns' => ['/terminal.*id/i', '/^tid$/i', '/terminal.*number/i', '/terminal.*no/i'],
+            'validation' => 'terminal_id'
+        ],
+        'merchant_name' => [
+            'exact' => ['merchant_name', 'merchant name', 'business_name', 'business name', 'name', 'merchantname', 'company name', 'client full name'],
+            'patterns' => ['/merchant.*name/i', '/business.*name/i', '/company.*name/i', '/^name$/i', '/client.*name/i'],
+            'validation' => 'text'
+        ],
+        'merchant_id' => [
+            'exact' => ['merchant_id', 'merchant id', 'merchantid', 'merchant number'],
+            'patterns' => ['/merchant.*id/i', '/merchant.*number/i'],
+            'validation' => 'text'
+        ],
+        'legal_name' => [
+            'exact' => ['legal_name', 'legal name', 'legal business name', 'registered name'],
+            'patterns' => ['/legal.*name/i', '/registered.*name/i'],
+            'validation' => 'text'
+        ],
+        'merchant_contact_person' => [
+            'exact' => ['contact_person', 'contact person', 'merchant_contact_person', 'merchant contact person', 'contact name'],
+            'patterns' => ['/contact.*person/i', '/merchant.*contact/i', '/contact.*name/i'],
+            'validation' => 'text'
+        ],
+        'merchant_phone' => [
+            'exact' => ['phone', 'telephone', 'mobile', 'merchant_phone', 'contact_number', 'phone number from bank'],
+            'patterns' => ['/phone/i', '/telephone/i', '/mobile/i', '/contact.*number/i'],
+            'validation' => 'phone'
+        ],
+        'merchant_email' => [
+            'exact' => ['email', 'email_address', 'merchant_email', 'e-mail'],
+            'patterns' => ['/email/i', '/e-mail/i'],
+            'validation' => 'email'
+        ],
+        'physical_address' => [
+            'exact' => ['address', 'physical_address', 'location', 'street', 'street address'],
+            'patterns' => ['/address/i', '/location/i', '/street/i'],
+            'validation' => 'text'
+        ],
+        'city' => [
+            'exact' => ['city', 'town'],
+            'patterns' => ['/^city$/i', '/^town$/i'],
+            'validation' => 'text'
+        ],
+        'province' => [
+            'exact' => ['province', 'state'],
+            'patterns' => ['/province/i', '/state/i'],
+            'validation' => 'text'
+        ],
+        'region' => [
+            'exact' => ['region', 'area', 'zone'],
+            'patterns' => ['/region/i', '/area/i', '/zone/i'],
+            'validation' => 'text'
+        ],
+        'business_type' => [
+            'exact' => ['business_type', 'type', 'category', 'type from bank'],
+            'patterns' => ['/business.*type/i', '/^type$/i', '/category/i'],
+            'validation' => 'text'
+        ],
+        'installation_date' => [
+            'exact' => ['installation_date', 'install_date', 'date_installed', 'date', 'installation date'],
+            'patterns' => ['/installation.*date/i', '/install.*date/i', '/date.*install/i', '/^date$/i'],
+            'validation' => 'date'
+        ],
+        'terminal_model' => [
+            'exact' => ['terminal_model', 'model', 'device_model', 'device type'],
+            'patterns' => ['/terminal.*model/i', '/device.*model/i', '/^model$/i', '/device.*type/i'],
+            'validation' => 'text'
+        ],
+        'serial_number' => [
+            'exact' => ['serial_number', 'serial', 'sn', 'serial no'],
+            'patterns' => ['/serial.*number/i', '/^serial$/i', '/^sn$/i', '/serial.*no/i'],
+            'validation' => 'text'
+        ],
+        'status' => [
+            'exact' => ['status', 'state', 'condition', 'terminal status'],
+            'patterns' => ['/^status$/i', '/^state$/i', '/terminal.*status/i'],
+            'validation' => 'status'
+        ],
+        'current_status' => [
+            'exact' => ['current_status', 'current status'],
+            'patterns' => ['/current.*status/i'],
+            'validation' => 'status'
+        ],
+        'deployment_status' => [
+            'exact' => ['deployment_status', 'deployment status'],
+            'patterns' => ['/deployment.*status/i'],
+            'validation' => 'text'
+        ],
+        'condition_status' => [
+            'exact' => ['condition_status', 'condition status', 'condition'],
+            'patterns' => ['/condition.*status/i', '/^condition$/i'],
+            'validation' => 'text'
+        ],
+        'issues_raised' => [
+            'exact' => ['issues_raised', 'issues raised', 'issues', 'problems', 'issue raised'],
+            'patterns' => ['/issues.*raised/i', '/^issues$/i', '/problems/i', '/issue.*raised/i'],
+            'validation' => 'text'
+        ],
+        'corrective_action' => [
+            'exact' => ['corrective_action', 'corrective action', 'action', 'actions'],
+            'patterns' => ['/corrective.*action/i', '/^action$/i', '/^actions$/i'],
+            'validation' => 'text'
+        ],
+        'site_contact_person' => [
+            'exact' => ['site_contact_person', 'site contact person', 'site contact', 'contact person'],
+            'patterns' => ['/site.*contact.*person/i', '/site.*contact/i'],
+            'validation' => 'text'
+        ],
+        'site_contact_number' => [
+            'exact' => ['site_contact_number', 'site contact number', 'site phone', 'contact number'],
+            'patterns' => ['/site.*contact.*number/i', '/site.*phone/i'],
+            'validation' => 'phone'
+        ]
+    ];
 
 
-    /**
-     * Process the full file and write to DB (CSV, XLSX, XLS)
-     */
+
 public function import(Request $request)
 {
-    // Handle large files
-    set_time_limit(300);
-    ini_set('memory_limit', '1024M');
+    // Optimize for large files
+    set_time_limit(600); // 10 minutes
+    ini_set('memory_limit', '2048M');
+    ini_set('max_input_time', 600);
 
-    // STEP 1: Log everything that comes in
-    Log::info('=== IMPORT REQUEST RECEIVED ===', [
+    Log::info('=== SMART IMPORT STARTED ===', [
         'timestamp' => now(),
         'has_file' => $request->hasFile('file'),
         'client_id' => $request->input('client_id'),
         'mapping_id' => $request->input('mapping_id'),
-        'options' => $request->input('options'),
-        'request_size' => $request->header('Content-Length'),
-        'all_files' => $request->allFiles()
+        'request_size' => strlen(serialize($_REQUEST)),
+        'options' => $request->input('options', [])
     ]);
 
-    // STEP 2: Try validation and catch any errors
     try {
+        // Validation
         $request->validate([
-            'file'       => 'required|file|mimes:csv,txt,xlsx,xls',
-            'client_id'  => 'required|exists:clients,id',
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:102400', // 100MB max
+            'client_id' => 'required|exists:clients,id',
             'mapping_id' => 'nullable|exists:import_mappings,id',
-            'options'    => 'array',
-            'options.*'  => 'in:skip_duplicates,update_existing',
+            'options' => 'array',
+            'options.*' => 'in:skip_duplicates,update_existing',
         ]);
 
         Log::info('Validation passed');
 
+        if (!$request->hasFile('file') || !$request->file('file')->isValid()) {
+            Log::error('File validation failed');
+            return back()->with('error', 'Invalid file upload');
+        }
+
+        $file = $request->file('file');
+        $client = Client::findOrFail($request->client_id);
+        $mapping = $request->filled('mapping_id') ? ImportMapping::find($request->mapping_id) : null;
+        $skipDuplicates = in_array('skip_duplicates', $request->options ?? [], true);
+        $updateExisting = in_array('update_existing', $request->options ?? [], true);
+
+        Log::info('Import parameters', [
+            'client' => $client->company_name,
+            'mapping' => $mapping?->mapping_name ?? 'Smart Header Detection',
+            'file_size' => $file->getSize(),
+            'file_name' => $file->getClientOriginalName(),
+            'skip_duplicates' => $skipDuplicates,
+            'update_existing' => $updateExisting
+        ]);
+
+        // Read file with streaming for large files
+        try {
+            [$headers, $totalRows] = $this->readFileStream($file->getRealPath());
+
+            Log::info('File structure detected', [
+                'headers' => $headers,
+                'total_rows' => $totalRows,
+                'columns' => count($headers)
+            ]);
+
+            if (empty($headers)) {
+                throw new \Exception('No headers found in file');
+            }
+
+        } catch (\Throwable $e) {
+            Log::error('File reading failed', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Could not read file: ' . $e->getMessage());
+        }
+
+        // Detect column mapping
+        $columnMapping = $mapping ?
+            $this->useCustomMapping($mapping) :
+            $this->detectHeaderMapping($headers);
+
+        Log::info('Column mapping result', [
+            'mapped_fields' => array_keys($columnMapping['mapped']),
+            'extra_fields' => array_keys($columnMapping['extra']),
+            'missing_required' => $columnMapping['missing_required']
+        ]);
+
+        // Check for required fields
+        if (!empty($columnMapping['missing_required'])) {
+            $errorMessage = 'Missing required fields: ' . implode(', ', $columnMapping['missing_required']) .
+                '. Available columns: ' . implode(', ', $headers);
+            Log::error($errorMessage);
+            return back()->with('error', $errorMessage);
+        }
+
+        // Process with chunked reading for large files
+        $result = $this->processFileInChunks($file->getRealPath(), $columnMapping, $client->id, [
+            'skip_duplicates' => $skipDuplicates,
+            'update_existing' => $updateExisting
+        ]);
+
+        Log::info('Import completed successfully');
+        return $result;
+
     } catch (\Illuminate\Validation\ValidationException $e) {
         Log::error('Validation failed', ['errors' => $e->errors()]);
-        return back()->withErrors($e->errors())->with('error', 'Validation failed: ' . implode(', ', array_flatten($e->errors())));
-    }
+        return back()->withErrors($e->errors())->with('error', 'Validation failed');
 
-    // STEP 3: Check file upload
-    if (!$request->hasFile('file')) {
-        Log::error('No file in request');
-        return back()->with('error', 'No file was uploaded. Check file size limits (current: ' . ini_get('upload_max_filesize') . ')');
-    }
-
-    $file = $request->file('file');
-
-    Log::info('File details', [
-        'name' => $file->getClientOriginalName(),
-        'size' => $file->getSize(),
-        'error' => $file->getError(),
-        'is_valid' => $file->isValid(),
-        'mime_type' => $file->getMimeType()
-    ]);
-
-    if (!$file->isValid()) {
-        Log::error('Invalid file upload', ['error_code' => $file->getError()]);
-        return back()->with('error', 'File upload failed. Error code: ' . $file->getError() . '. Try a smaller file.');
-    }
-
-    // STEP 4: Get other parameters
-    $client = Client::findOrFail($request->client_id);
-    $mapping = $request->filled('mapping_id') ? ImportMapping::find($request->mapping_id) : null;
-    $skipDuplicates = in_array('skip_duplicates', $request->options ?? [], true);
-    $updateExisting = in_array('update_existing', $request->options ?? [], true);
-
-    Log::info('Import parameters', [
-        'client' => $client->company_name,
-        'mapping' => $mapping?->mapping_name ?? 'Default Fixed Mapping',
-        'skip_duplicates' => $skipDuplicates,
-        'update_existing' => $updateExisting
-    ]);
-
-    // STEP 5: Try to read the file
-    try {
-        [$headers, $rows] = $this->readSpreadsheetToArrays($file->getRealPath());
-
-        Log::info('File reading successful', [
-            'headers_count' => count($headers),
-            'rows_count' => count($rows),
-            'headers' => $headers,
-            'first_row_sample' => array_slice($rows[0] ?? [], 0, 5)
-        ]);
-
-        if (empty($headers) || empty($rows)) {
-            return back()->with('error', 'File appears to be empty or has no valid data.');
-        }
-
-    } catch (\Throwable $e) {
-        Log::error('File reading failed', [
+    } catch (\Exception $e) {
+        Log::error('Import failed', [
             'error' => $e->getMessage(),
-            'file' => $file->getClientOriginalName(),
-            'size' => $file->getSize()
-        ]);
-        return back()->with('error', 'Could not read file: ' . $e->getMessage() . '. Check if file is corrupted or too large.');
-    }
-
-    // STEP 6: Process rows
-    $created = 0; $updated = 0; $skipped = 0; $errors = 0;
-    $errorMsgs = [];
-
-    DB::beginTransaction();
-    try {
-        foreach ($rows as $i => $rawRow) {
-            try {
-                // Use the appropriate mapping method
-                if ($mapping) {
-                    $data = $this->mapRowDataDynamic($rawRow, $client->id, $mapping, $i + 2);
-                } else {
-                    $data = $this->mapRowDataFixed($rawRow, $client->id, $i + 2);
-                }
-
-                Log::debug("Row " . ($i + 2) . " mapped data", ['data' => $data]);
-
-                // Validate the mapped data
-                $validation = $this->validateTerminalData($data, $i + 2);
-                if (!$validation['valid']) {
-                    $errors++;
-                    $errorMsgs[] = $validation['error'];
-                    Log::warning("Row validation failed", [
-                        'row' => $i + 2,
-                        'error' => $validation['error'],
-                        'data' => $data
-                    ]);
-                    continue;
-                }
-
-                // Check for existing terminal
-                $existing = PosTerminal::where('terminal_id', $data['terminal_id'])->first();
-
-                if ($existing) {
-                    if ($skipDuplicates && !$updateExisting) {
-                        $skipped++;
-                        continue;
-                    }
-                    if ($updateExisting) {
-                        $existing->fill($data)->save();
-                        $updated++;
-                        Log::debug("Updated existing terminal", ['terminal_id' => $data['terminal_id']]);
-                    } else {
-                        $errors++;
-                        $errorMsgs[] = "Row " . ($i + 2) . ": Terminal {$data['terminal_id']} already exists";
-                    }
-                    continue;
-                }
-
-                // Create new terminal
-                PosTerminal::create($data);
-                $created++;
-                Log::debug("Created new terminal", ['terminal_id' => $data['terminal_id']]);
-
-            } catch (\Throwable $rowEx) {
-                $errors++;
-                $errorMsg = "Row " . ($i + 2) . ": " . $rowEx->getMessage();
-                $errorMsgs[] = $errorMsg;
-
-                Log::error('Row processing error', [
-                    'row' => $i + 2,
-                    'error' => $rowEx->getMessage(),
-                    'raw_row' => array_slice($rawRow, 0, 10),
-                    'stack_trace' => $rowEx->getTraceAsString()
-                ]);
-            }
-        }
-
-        DB::commit();
-
-        Log::info('Import completed successfully', [
-            'created' => $created,
-            'updated' => $updated,
-            'skipped' => $skipped,
-            'errors' => $errors,
-            'total_processed' => count($rows)
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
         ]);
 
-    } catch (\Throwable $e) {
-        DB::rollBack();
-        Log::error('Import transaction failed', [
-            'error' => $e->getMessage(),
-            'stack_trace' => $e->getTraceAsString()
-        ]);
-        return back()->with('error', 'Import failed during processing: ' . $e->getMessage());
-    }
-
-    // STEP 7: Build result message
-    $summary = "Import completed — Created: {$created}, Updated: {$updated}, Skipped: {$skipped}, Errors: {$errors}";
-
-    if ($errors > 0) {
-        $errorSample = implode(' | ', array_slice($errorMsgs, 0, 3));
-        if (count($errorMsgs) > 3) {
-            $errorSample .= " | +" . (count($errorMsgs) - 3) . " more errors";
-        }
-        $summary .= "\n\nError details: " . $errorSample;
-
-        if ($errors > 5) {
-            $summary .= "\n\nMany errors detected. Check Laravel logs (storage/logs/laravel.log) for full details.";
-        }
-    }
-
-    // Determine message type
-    if ($errors > 0 && $created == 0) {
-        return back()->with('error', $summary);
-    } elseif ($errors > $created) {
-        return back()->with('error', $summary);
-    } else {
-        return redirect()->route('pos-terminals.index')->with('success', $summary);
+        return back()->with('error', 'Import failed: ' . $e->getMessage());
     }
 }
 
-/**
- * Enhanced preview with better error handling
- */
+
+
 public function preview(Request $request)
 {
-    // Handle large files for preview
-    set_time_limit(120);
-    ini_set('memory_limit', '512M');
+    // Increase limits
+    set_time_limit(300);
+    ini_set('memory_limit', '1024M');
 
-    Log::info('=== PREVIEW REQUEST ===', [
+    // Log the start
+    Log::info('=== PREVIEW STARTED ===', [
+        'timestamp' => now(),
         'has_file' => $request->hasFile('file'),
-        'mapping_id' => $request->input('mapping_id'),
-        'preview_rows' => $request->input('preview_rows', 5)
+        'client_id' => $request->input('client_id'),
+        'file_size' => $request->hasFile('file') ? $request->file('file')->getSize() : 'no file',
     ]);
 
     try {
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt,xlsx,xls',
+        // Basic validation first
+        if (!$request->hasFile('file')) {
+            Log::error('No file in request');
+            return response()->json([
+                'success' => false,
+                'message' => 'No file uploaded'
+            ], 422);
+        }
+
+        $file = $request->file('file');
+
+        if (!$file->isValid()) {
+            Log::error('Invalid file upload', ['error' => $file->getError()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'File upload error: ' . $file->getErrorMessage()
+            ], 422);
+        }
+
+        Log::info('File validation passed', [
+            'name' => $file->getClientOriginalName(),
+            'size' => $file->getSize(),
+            'mime' => $file->getMimeType()
+        ]);
+
+        // Validate request data
+        $validated = $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:51200', // 50MB
+            'client_id' => 'required|exists:clients,id',
             'mapping_id' => 'nullable|exists:import_mappings,id',
             'preview_rows' => 'nullable|integer|min:1|max:10',
         ]);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        Log::error('Preview validation failed', ['errors' => $e->errors()]);
-        return response()->json([
-            'success' => false,
-            'message' => 'Validation failed: ' . implode(', ', array_flatten($e->errors()))
-        ], 422);
-    }
 
-    if (!$request->hasFile('file') || !$request->file('file')->isValid()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Invalid file upload. Check file size and format.'
-        ], 422);
-    }
+        Log::info('Request validation passed');
 
-    $file = $request->file('file');
-    $mapping = $request->filled('mapping_id') ? ImportMapping::find($request->mapping_id) : null;
-    $rowsToPreview = (int)($request->preview_rows ?? 5);
+        // Get the client
+        $client = Client::findOrFail($validated['client_id']);
+        $mapping = $request->filled('mapping_id') ? ImportMapping::find($validated['mapping_id']) : null;
+        $previewRows = (int)($validated['preview_rows'] ?? 5);
 
-    Log::info('Preview file details', [
-        'name' => $file->getClientOriginalName(),
-        'size' => $file->getSize(),
-        'mapping' => $mapping?->mapping_name ?? 'Fixed Default'
-    ]);
-
-    try {
-        [$headers, $rows] = $this->readSpreadsheetToArrays($file->getRealPath());
-
-        Log::info('Preview file structure', [
-            'headers' => $headers,
-            'total_rows' => count($rows),
-            'columns' => count($headers)
+        Log::info('Parameters loaded', [
+            'client' => $client->company_name,
+            'mapping' => $mapping?->mapping_name ?? 'Smart Detection',
+            'preview_rows' => $previewRows
         ]);
+
+        // Try to read the file
+        try {
+            $filePath = $file->getRealPath();
+
+            if (!file_exists($filePath) || !is_readable($filePath)) {
+                throw new \Exception('File not accessible at: ' . $filePath);
+            }
+
+            Log::info('Attempting to read file', ['path' => basename($filePath)]);
+
+            // Check if PhpSpreadsheet classes are available
+            if (!class_exists('\PhpOffice\PhpSpreadsheet\IOFactory')) {
+                throw new \Exception('PhpSpreadsheet library not found. Please install it with: composer require phpoffice/phpspreadsheet');
+            }
+
+            [$headers, $sampleRows] = $this->readSampleRows($filePath, $previewRows);
+
+            Log::info('File read successfully', [
+                'headers_count' => count($headers),
+                'sample_rows_count' => count($sampleRows),
+                'headers' => array_slice($headers, 0, 5) // Log first 5 headers
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('File reading failed', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Could not read file: ' . $e->getMessage()
+            ], 500);
+        }
 
         if (empty($headers)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No headers found in file. Check if file has proper structure.'
+                'message' => 'No headers found in file. Please ensure the first row contains column headers.'
             ], 422);
         }
 
-    } catch (\Throwable $e) {
-        Log::error('Preview file reading failed', ['error' => $e->getMessage()]);
-        return response()->json([
-            'success' => false,
-            'message' => 'Could not read file: ' . $e->getMessage()
-        ], 422);
-    }
-
-    // Generate preview data
-    $preview = [];
-    $previewCount = 0;
-
-    foreach ($rows as $i => $rawRow) {
-        if ($previewCount >= $rowsToPreview) break;
-
+        // Detect column mapping
         try {
-            // Use appropriate mapping
-            if ($mapping) {
-                $mapped = $this->mapRowDataDynamic($rawRow, 1, $mapping, $i + 2); // Use client_id = 1 for preview
-            } else {
-                $mapped = $this->mapRowDataFixed($rawRow, 1, $i + 2);
-            }
+            $columnMapping = $mapping ?
+                $this->useCustomMapping($mapping) :
+                $this->detectHeaderMapping($headers);
 
-            $validation = $this->validateTerminalData($mapped, $i + 2);
+            Log::info('Column mapping completed', [
+                'mapped_fields' => array_keys($columnMapping['mapped']),
+                'missing_required' => $columnMapping['missing_required']
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Column mapping failed', ['error' => $e->getMessage()]);
 
-            $preview[] = [
-                'row_number' => $i + 2,
-                'raw_data' => array_slice($rawRow, 0, 8), // Show first 8 columns
-                'mapped_data' => $mapped,
-                'validation_status' => $validation['valid'] ? 'valid' : 'error',
-                'validation_message' => $validation['valid'] ? 'OK' : $validation['error'],
-            ];
-
-        } catch (\Throwable $e) {
-            $preview[] = [
-                'row_number' => $i + 2,
-                'raw_data' => array_slice($rawRow, 0, 8),
-                'mapped_data' => [],
-                'validation_status' => 'error',
-                'validation_message' => 'Mapping error: ' . $e->getMessage(),
-            ];
+            return response()->json([
+                'success' => false,
+                'message' => 'Column mapping failed: ' . $e->getMessage()
+            ], 500);
         }
 
-        $previewCount++;
+        // Generate preview data
+        $preview = [];
+        foreach ($sampleRows as $i => $row) {
+            try {
+                $mapped = $this->mapSingleRow($row, $client->id, $columnMapping);
+                $validation = $this->validateRowData($mapped, $i + 2);
+
+                $preview[] = [
+                    'row_number' => $i + 2,
+                    'raw_data' => array_slice($row, 0, 8),
+                    'mapped_data' => $mapped,
+                    'validation_status' => $validation['valid'] ? 'valid' : 'error',
+                    'validation_message' => $validation['valid'] ? 'OK' : $validation['error'],
+                ];
+            } catch (\Exception $e) {
+                Log::warning('Row mapping error', [
+                    'row' => $i + 2,
+                    'error' => $e->getMessage()
+                ]);
+
+                $preview[] = [
+                    'row_number' => $i + 2,
+                    'raw_data' => array_slice($row, 0, 8),
+                    'mapped_data' => [],
+                    'validation_status' => 'error',
+                    'validation_message' => 'Mapping error: ' . $e->getMessage(),
+                ];
+            }
+        }
+
+        Log::info('Preview generated successfully', ['preview_count' => count($preview)]);
+
+        return response()->json([
+            'success' => true,
+            'mapping_name' => $mapping?->mapping_name ?? 'Smart Header Detection',
+            'headers' => $headers,
+            'preview_data' => $preview,
+            'column_mapping_info' => [
+                'mapped_fields' => array_keys($columnMapping['mapped']),
+                'extra_fields' => array_keys($columnMapping['extra']),
+                'missing_required' => $columnMapping['missing_required'] ?? []
+            ]
+        ]);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::error('Preview validation failed', ['errors' => $e->errors()]);
+        return response()->json([
+            'success' => false,
+          'message' => 'Validation failed: ' . implode(', ', Arr::flatten($e->errors()))
+
+        ], 422);
+
+    } catch (\Exception $e) {
+        Log::error('Preview failed with exception', [
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Preview failed: ' . $e->getMessage()
+        ], 500);
+    }
+}
+    /**
+     * Smart header detection - the core of the system
+     */
+    private function detectHeaderMapping(array $headers): array
+    {
+        $mapped = [];
+        $extra = [];
+        $usedIndices = [];
+
+        Log::info('Starting header detection', ['headers' => $headers]);
+
+        // First pass: exact matches
+        foreach ($headers as $index => $header) {
+            $normalizedHeader = $this->normalizeHeader($header);
+
+            foreach (self::HEADER_PATTERNS as $field => $patterns) {
+                if (in_array($normalizedHeader, $patterns['exact'])) {
+                    $mapped[$field] = $index;
+                    $usedIndices[] = $index;
+                    Log::debug("Exact match: '{$header}' -> {$field}");
+                    break;
+                }
+            }
+        }
+
+        // Second pass: pattern matches for unmapped headers
+        foreach ($headers as $index => $header) {
+            if (in_array($index, $usedIndices)) continue;
+
+            $normalizedHeader = $this->normalizeHeader($header);
+
+            foreach (self::HEADER_PATTERNS as $field => $patterns) {
+                if (isset($mapped[$field])) continue; // Already mapped
+
+                foreach ($patterns['patterns'] as $pattern) {
+                    if (preg_match($pattern, $normalizedHeader)) {
+                        $mapped[$field] = $index;
+                        $usedIndices[] = $index;
+                        Log::debug("Pattern match: '{$header}' -> {$field}");
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        // Third pass: Store unmapped columns as extra fields
+        foreach ($headers as $index => $header) {
+            if (!in_array($index, $usedIndices)) {
+                $fieldName = $this->sanitizeFieldName($header);
+                $extra[$fieldName] = $index;
+                Log::debug("Extra field: '{$header}' -> {$fieldName}");
+            }
+        }
+
+        // Check for missing required fields
+        $missingRequired = [];
+        foreach (self::FIELD_TEMPLATE as $field => $config) {
+            if ($config['required'] && !isset($mapped[$field])) {
+                $missingRequired[] = $field;
+            }
+        }
+
+        return [
+            'mapped' => $mapped,
+            'extra' => $extra,
+            'missing_required' => $missingRequired
+        ];
     }
 
-    return response()->json([
-        'success' => true,
-        'mapping_name' => $mapping?->mapping_name ?? 'Fixed Default Mapping',
-        'headers' => $headers,
-        'preview_data' => $preview,
-        'total_rows_in_file' => count($rows),
-        'file_analysis' => [
-            'columns' => count($headers),
-            'estimated_processing_time' => count($rows) > 1000 ? '2-5 minutes' : 'Under 1 minute',
-            'file_size' => $file->getSize()
-        ]
-    ]);
+    /**
+     * Process file in chunks for large files
+     */
+    private function processFileInChunks(string $filePath, array $columnMapping, int $clientId, array $options): \Illuminate\Http\RedirectResponse
+{
+    $chunkSize = 500;
+    $created = 0; $updated = 0; $skipped = 0; $errors = 0;
+    $errorMsgs = [];
+
+    try {
+        $reader = $this->createStreamReader($filePath);
+
+        // consume header row exactly once
+        $headerRow = $reader->getNextRow();
+
+        $rowCount = 0;
+        $chunk = [];
+
+        while (($row = $reader->getNextRow()) !== null) {
+            $rowCount++;
+
+            // REMOVE this (it was dropping your first data row):
+            // if ($rowCount === 1) continue;
+
+            $chunk[] = ['row' => $row, 'number' => $rowCount + 1]; // +1 to reflect actual CSV row number
+
+            if (count($chunk) >= $chunkSize || $reader->isEOF()) {
+                $chunkResult = $this->processChunk($chunk, $columnMapping, $clientId, $options);
+                $created += $chunkResult['created'];
+                $updated += $chunkResult['updated'];
+                $skipped += $chunkResult['skipped'];
+                $errors  += $chunkResult['errors'];
+                $errorMsgs = array_merge($errorMsgs, $chunkResult['errorMsgs']);
+                $chunk = [];
+                if ($rowCount % 2000 === 0) gc_collect_cycles();
+            }
+        }
+
+    } catch (\Throwable $e) {
+        Log::error('Chunked processing failed', ['error' => $e->getMessage()]);
+        return back()->with('error', 'Processing failed: ' . $e->getMessage());
+    }
+
+    $summary = "Import completed — Created: {$created}, Updated: {$updated}, Skipped: {$skipped}, Errors: {$errors}";
+    if ($errors > 0) {
+        $errorSample = implode(' | ', array_slice($errorMsgs, 0, 3));
+        $summary .= "\n\nError sample: " . $errorSample;
+    }
+    $messageType = ($errors > $created) ? 'error' : 'success';
+
+    return redirect()->route('pos-terminals.index')->with($messageType, $summary);
 }
+
+
+    /**
+     * Process a chunk of rows
+     */
+    private function processChunk(array $chunk, array $columnMapping, int $clientId, array $options): array
+    {
+        $created = 0; $updated = 0; $skipped = 0; $errors = 0; $errorMsgs = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($chunk as $item) {
+                $row = $item['row'];
+                $rowNumber = $item['number'];
+
+                try {
+                    $data = $this->mapSingleRow($row, $clientId, $columnMapping);
+                    $validation = $this->validateRowData($data, $rowNumber);
+
+                    if (!$validation['valid']) {
+                        $errors++;
+                        $errorMsgs[] = $validation['error'];
+                        continue;
+                    }
+
+                    $existing = PosTerminal::where('terminal_id', $data['terminal_id'])->first();
+
+                    if ($existing) {
+                        if ($options['skip_duplicates'] && !$options['update_existing']) {
+                            $skipped++;
+                        } elseif ($options['update_existing']) {
+                            $existing->fill($data)->save();
+                            $updated++;
+                        } else {
+                            $errors++;
+                            $errorMsgs[] = "Row {$rowNumber}: Terminal {$data['terminal_id']} already exists";
+                        }
+                        continue;
+                    }
+
+                    PosTerminal::create($data);
+                    $created++;
+
+                } catch (\Throwable $e) {
+                    $errors++;
+                    $errorMsgs[] = "Row {$rowNumber}: " . $e->getMessage();
+                }
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        return compact('created', 'updated', 'skipped', 'errors', 'errorMsgs');
+    }
+
+    /**
+     * Map a single row using the column mapping
+     */
+    private function mapSingleRow(array $row, int $clientId, array $columnMapping): array
+    {
+        $data = ['client_id' => $clientId];
+        $extraFields = [];
+
+        // Map standard fields
+        foreach ($columnMapping['mapped'] as $field => $columnIndex) {
+            if (isset($row[$columnIndex])) {
+                $value = $this->processFieldValue($row[$columnIndex], $field);
+                if ($value !== null) {
+                    $dbField = self::FIELD_TEMPLATE[$field]['database_field'];
+                    $data[$dbField] = $value;
+                }
+            }
+        }
+
+        // Map extra fields
+        foreach ($columnMapping['extra'] as $fieldName => $columnIndex) {
+            if (isset($row[$columnIndex])) {
+                $value = $this->cleanValue($row[$columnIndex]);
+                if ($value !== null) {
+                    $extraFields[$fieldName] = $value;
+                }
+            }
+        }
+
+        // Store extra fields as JSON
+        if (!empty($extraFields)) {
+            $data['extra_fields'] = json_encode($extraFields);
+        }
+
+        // Set defaults
+        if (empty($data['status'])) $data['status'] = 'active';
+        if (empty($data['current_status'])) $data['current_status'] = $data['status'];
+
+        return $data;
+    }
+
+    /**
+     * Process field values based on field type
+     */
+    private function processFieldValue($value, string $fieldType)
+    {
+        $value = $this->cleanValue($value);
+        if ($value === null) return null;
+
+        $patterns = self::HEADER_PATTERNS[$fieldType] ?? null;
+        if (!$patterns) return $value;
+
+        switch ($patterns['validation']) {
+            case 'phone':
+                return $this->cleanPhoneNumber($value);
+            case 'email':
+                return filter_var($value, FILTER_VALIDATE_EMAIL) ?: null;
+            case 'date':
+                return $this->parseDate($value);
+            case 'status':
+                return $this->mapStatus($value);
+            case 'terminal_id':
+                return strlen($value) >= 3 ? $value : null;
+            default:
+                return $value;
+        }
+    }
+
+    /**
+     * Stream reader for large files
+     */
+/**
+ * Stream reader for large files (CSV/XLSX/XLS)
+ */
+private function createStreamReader(string $filePath): object
+{
+    $type   = IOFactory::identify($filePath);
+    $reader = IOFactory::createReader($type);
+
+    if (method_exists($reader, 'setReadDataOnly')) {
+        $reader->setReadDataOnly(true);
+    }
+
+    if ($reader instanceof \PhpOffice\PhpSpreadsheet\Reader\Csv) {
+        $reader->setDelimiter(',');
+        $reader->setEnclosure('"');
+        if (method_exists($reader, 'setSheetIndex')) {
+            $reader->setSheetIndex(0);
+        }
+    }
+
+    // IMPORTANT: don't skip the first row here. Let callers decide.
+    return new class($reader, $filePath) {
+        private $reader;
+        private $spreadsheet;
+        private $worksheet;
+        private $rowIterator;
+
+        public function __construct($reader, $filePath)
+        {
+            $this->reader       = $reader;
+            $this->spreadsheet  = $reader->load($filePath);
+            $this->worksheet    = $this->spreadsheet->getActiveSheet();
+            $this->rowIterator  = $this->worksheet->getRowIterator();
+            $this->rowIterator->rewind(); // now current row is header
+        }
+
+        public function getNextRow(): ?array
+        {
+            if (!$this->rowIterator->valid()) {
+                return null;
+            }
+            $row   = $this->rowIterator->current();
+            $cells = [];
+            foreach ($row->getCellIterator() as $cell) {
+                $cells[] = $cell->getCalculatedValue();
+            }
+            $this->rowIterator->next();
+            return $cells;
+        }
+
+        public function isEOF(): bool
+        {
+            return !$this->rowIterator->valid();
+        }
+    };
+}
+
+
+
+private function readSampleRows(string $filePath, int $sampleSize = 5): array
+{
+    try {
+        if (!file_exists($filePath) || !is_readable($filePath)) {
+            throw new \Exception('File not found or not readable');
+        }
+
+        $type = IOFactory::identify($filePath);
+        Log::info('File type identified', ['type' => $type, 'file' => basename($filePath)]);
+
+        $reader = IOFactory::createReader($type);
+
+        // Configure reader
+        if (method_exists($reader, 'setReadDataOnly')) {
+            $reader->setReadDataOnly(true);
+        }
+
+        // CSV-specific settings
+        if ($reader instanceof \PhpOffice\PhpSpreadsheet\Reader\Csv) {
+            $reader->setDelimiter(',');
+            $reader->setEnclosure('"');
+            $reader->setEscapeCharacter('\\');
+
+            // Try to detect encoding
+            if (function_exists('mb_detect_encoding')) {
+                $content = file_get_contents($filePath, false, null, 0, 1024);
+                $encoding = mb_detect_encoding($content, ['UTF-8', 'UTF-16', 'Windows-1252', 'ISO-8859-1'], true);
+                if ($encoding && method_exists($reader, 'setInputEncoding')) {
+                    $reader->setInputEncoding($encoding);
+                }
+            }
+        }
+
+        $spreadsheet = $reader->load($filePath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Get all data as array
+        $allData = $sheet->toArray(null, true, true, false);
+
+        if (empty($allData)) {
+            throw new \Exception('File appears to be empty or contains no readable data');
+        }
+
+        // Clean and normalize headers
+        $headers = array_shift($allData);
+        $headers = array_map(function($header) {
+            return $this->normalizeHeader(trim((string)($header ?? '')));
+        }, $headers);
+
+        // Filter out completely empty headers
+        $headers = array_filter($headers, function($header) {
+            return !empty($header) && $header !== '';
+        });
+
+        if (empty($headers)) {
+            throw new \Exception('No valid column headers found in the first row');
+        }
+
+        // Get sample rows and clean them
+        $sampleRows = array_slice($allData, 0, $sampleSize);
+        $sampleRows = array_map(function($row) {
+            return array_map(function($cell) {
+                return is_string($cell) ? trim($cell) : $cell;
+            }, $row);
+        }, $sampleRows);
+
+        Log::info('Sample data read successfully', [
+            'headers_count' => count($headers),
+            'sample_rows' => count($sampleRows)
+        ]);
+
+        return [array_values($headers), $sampleRows];
+
+    } catch (\Exception $e) {
+        Log::error('Error reading sample rows', [
+            'error' => $e->getMessage(),
+            'file' => basename($filePath)
+        ]);
+        throw new \Exception('Could not read file: ' . $e->getMessage());
+    }
+}
+
+    private function readFileStream(string $filePath): array
+{
+    $reader = $this->createStreamReader($filePath);
+
+    // real header row
+    $headers = $reader->getNextRow();
+
+    $rowCount = 0;
+    while ($reader->getNextRow() !== null) {
+        $rowCount++;
+    }
+
+    $normalizedHeaders = array_map(fn($h) => $this->normalizeHeader((string)($h ?? '')), $headers ?? []);
+    return [$normalizedHeaders, $rowCount];
+}
+
+
+    // Helper methods
+    private function normalizeHeader(string $header): string
+    {
+        $header = mb_strtolower(trim($header));
+        $header = str_replace(['  ', '-', '/', '\\', '(', ')'], ' ', $header);
+        return preg_replace('/\s+/', ' ', trim($header));
+    }
+
+    private function sanitizeFieldName(string $name): string
+    {
+        $name = mb_strtolower(trim($name));
+        $name = preg_replace('/[^a-z0-9_]/', '_', $name);
+        return preg_replace('/_{2,}/', '_', trim($name, '_'));
+    }
+
+    private function cleanValue($value)
+    {
+        if ($value === null) return null;
+        $v = trim((string)$value);
+        if ($v === '') return null;
+        $nulls = ['null', 'n/a', 'na', '-', 'nil', 'none', 'empty'];
+        return in_array(mb_strtolower($v), $nulls, true) ? null : $v;
+    }
+
+    private function validateRowData(array $data, int $rowNumber): array
+    {
+        if (empty($data['terminal_id'])) {
+            return ['valid' => false, 'error' => "Row {$rowNumber}: Terminal ID is required"];
+        }
+        if (empty($data['merchant_name'])) {
+            return ['valid' => false, 'error' => "Row {$rowNumber}: Merchant name is required"];
+        }
+        if (!empty($data['merchant_email']) && !filter_var($data['merchant_email'], FILTER_VALIDATE_EMAIL)) {
+            return ['valid' => false, 'error' => "Row {$rowNumber}: Invalid email format"];
+        }
+        return ['valid' => true];
+    }
+
+    private function useCustomMapping(ImportMapping $mapping): array
+    {
+        $mappings = (array)($mapping->column_mappings ?? []);
+        return [
+            'mapped' => $mappings,
+            'extra' => [],
+            'missing_required' => []
+        ];
+    }
+
+    private function parseDate($value)
+    {
+        if ($value === null) return null;
+        $v = trim((string)$value);
+        if ($v === '' || in_array(mb_strtolower($v), ['null', 'n/a', 'na', '-'], true)) return null;
+
+        // Try common formats
+        $formats = ['Y-m-d', 'd/m/Y', 'm/d/Y', 'd-m-Y', 'm-d-Y', 'd-M-Y', 'd-M-y', 'd-M', 'j-M', 'M-d', 'Y/m/d', 'd.m.Y'];
+        foreach ($formats as $format) {
+            $date = \DateTime::createFromFormat($format, $v);
+            if ($date) {
+                // For formats without year, assume current year
+                if (!str_contains($format, 'Y') && !str_contains($format, 'y')) {
+                    $date->setDate((int)date('Y'), (int)$date->format('n'), (int)$date->format('j'));
+                }
+                return $date->format('Y-m-d');
+            }
+        }
+
+        $timestamp = strtotime($v);
+        return $timestamp ? date('Y-m-d', $timestamp) : null;
+    }
+
+    private function cleanPhoneNumber($phone)
+    {
+        if ($phone === null) return null;
+        $clean = preg_replace('/[^0-9+]/', '', (string)$phone);
+        return (strlen(str_replace('+', '', $clean)) >= 6) ? $clean : null;
+    }
+
+    private function mapStatus($status)
+    {
+        if ($status === null) return 'active';
+        $s = mb_strtolower(trim((string)$status));
+        if ($s === '' || in_array($s, ['null', 'n/a', 'na', '-'], true)) return 'active';
+
+        $statusMap = [
+            'active' => 'active', 'working' => 'active', 'online' => 'active', 'ok' => 'active',
+            'good' => 'active', 'operational' => 'active', 'up' => 'active', 'running' => 'active',
+            'offline' => 'offline', 'down' => 'offline', 'inactive' => 'offline', 'not working' => 'offline',
+            'not seen' => 'offline', 'disconnected' => 'offline',
+            'faulty' => 'faulty', 'broken' => 'faulty', 'error' => 'faulty', 'damaged' => 'faulty',
+            'defective' => 'faulty', 'failed' => 'faulty',
+            'maintenance' => 'maintenance', 'repair' => 'maintenance', 'service' => 'maintenance',
+            'servicing' => 'maintenance', 'under repair' => 'maintenance', 'in service' => 'maintenance'
+        ];
+
+        return $statusMap[$s] ?? 'active';
+    }
 
     /**
      * Download a CSV template
@@ -380,7 +1017,7 @@ public function preview(Request $request)
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, $headers);
 
-            // sample rows
+            // Sample rows
             fputcsv($out, [
                 '40103242444343','77202134','Verifone','SAMPLE BUSINESS LEGAL','SAMPLE BUSINESS',
                 '123 SAMPLE STREET','HARARE','Harare','263774033970','MT PLEASANT','19-Apr-2024','Team A',
@@ -401,352 +1038,5 @@ public function preview(Request $request)
             'Pragma'              => 'no-cache',
             'Expires'             => '0',
         ]);
-    }
-
-    /* ==================== Helpers ==================== */
-
-    /**
-     * Read CSV/XLSX/XLS to [headers, rows]
-     */
-    private function readSpreadsheetToArrays(string $path): array
-    {
-        $type   = IOFactory::identify($path);
-        $reader = IOFactory::createReader($type);
-
-        // Improve CSV handling
-        if ($type === 'Csv') {
-            $reader->setDelimiter(',');
-            $reader->setEnclosure('"');
-            $reader->setSheetIndex(0);
-            // Optional: $reader->setInputEncoding('UTF-8');
-        }
-
-        $spreadsheet = $reader->load($path);
-        $sheet       = $spreadsheet->getActiveSheet();
-        $all         = $sheet->toArray(null, false, false, false);
-
-        if (empty($all)) return [[], []];
-
-        $headers = array_map(fn($h) => $this->normalizeHeader((string)($h ?? '')), array_shift($all));
-        $rows    = array_map(function ($row) {
-            return array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
-        }, $all);
-
-        return [$headers, $rows];
-    }
-
-    private function normalizeHeader(string $h): string
-    {
-        $h = mb_strtolower(trim($h));
-        $h = str_replace(['  ', '-', '/', '\\'], ' ', $h);
-        $h = preg_replace('/\s+/', ' ', $h);
-        return $h;
-    }
-
-    /**
-     * Default fixed mapping (matches your bank template columns)
-     * Uses the same positions you had before.
-     */
-   /**
- * Flexible fixed mapping that detects CSV format
- */
-private function mapRowDataFixed(array $row, int $clientId, int $rowNumber = 0): array
-{
-    $row = array_pad($row, 50, null);
-
-    Log::debug("Mapping row {$rowNumber}", [
-        'row_length' => count($row),
-        'first_5_values' => array_slice($row, 0, 5),
-        'has_terminal_at_0' => !empty($row[0]),
-        'has_terminal_at_1' => !empty($row[1])
-    ]);
-
-    // Auto-detect format based on row length and content
-    if (count(array_filter($row)) == 17) {
-        // Zimbabwe format (17 columns)
-        return $this->mapZimbabweFormat($row, $clientId);
-    } elseif (count(array_filter($row)) >= 20) {
-        // Bank format (20+ columns)
-        return $this->mapBankFormat($row, $clientId);
-    } else {
-        // Try to intelligently map
-        return $this->mapIntelligentFormat($row, $clientId);
-    }
-}
-
-/**
- * Map Zimbabwe CSV format (17 columns)
- */
-private function mapZimbabweFormat(array $row, int $clientId): array
-{
-    Log::debug('Using Zimbabwe format mapping');
-
-    $data = [
-        'client_id'              => $clientId,
-        'terminal_id'            => $this->cleanValue($row[0]),   // Column 0
-        'merchant_name'          => $this->cleanValue($row[2]),   // Column 2
-        'merchant_contact_person'=> $this->cleanValue($row[3]),   // Column 3
-        'merchant_phone'         => $this->cleanPhoneNumber($row[4]),
-        'physical_address'       => $this->cleanValue($row[5]),
-        'city'                   => $this->cleanValue($row[6]),
-        'province'               => $this->cleanValue($row[7]),
-        'business_type'          => $this->cleanValue($row[8]),
-        'installation_date'      => $this->parseDate($row[9]),
-        'terminal_model'         => $this->cleanValue($row[10]),
-        'serial_number'          => $this->cleanValue($row[11]),
-        'status'                 => $this->mapStatus($row[12]) ?: 'active',
-        'current_status'         => $this->mapStatus($row[14]) ?: 'active',
-    ];
-
-    // Store extra Zimbabwe-specific fields
-    $extraFields = [];
-    if (!empty($this->cleanValue($row[13]))) {
-        $extraFields['deployment_status'] = $this->cleanValue($row[13]);
-    }
-    if (!empty($this->cleanValue($row[15]))) {
-        $extraFields['site_contact_person'] = $this->cleanValue($row[15]);
-    }
-    if (!empty($this->cleanValue($row[16]))) {
-        $extraFields['site_contact_number'] = $this->cleanValue($row[16]);
-    }
-
-    if (!empty($extraFields)) {
-        $data['extra_fields'] = $extraFields;
-    }
-
-    return array_filter($data, fn($v) => !is_null($v) && $v !== '');
-}
-
-/**
- * Map Bank CSV format (20+ columns)
- */
-private function mapBankFormat(array $row, int $clientId): array
-{
-    Log::debug('Using Bank format mapping');
-
-    $data = [
-        'client_id'              => $clientId,
-        'terminal_id'            => $this->cleanValue($row[1]),   // Column B
-        'merchant_name'          => $this->cleanValue($row[4]),   // Column E
-        'business_type'          => $this->cleanValue($row[2]),   // Column C
-        'physical_address'       => $this->cleanValue($row[5]),   // Column F
-        'city'                   => $this->cleanValue($row[6]),   // Column G
-        'province'               => $this->cleanValue($row[7]),   // Column H
-        'region'                 => $this->cleanValue($row[9]),   // Column J
-        'merchant_phone'         => $this->cleanPhoneNumber($row[8]),
-        'merchant_contact_person'=> $this->cleanValue($row[19]),  // Column T
-        'terminal_model'         => $this->cleanValue($row[12]),  // Column M
-        'serial_number'          => $this->cleanValue($row[13]),  // Column N
-        'installation_date'      => $this->parseDate($row[10]),   // Column K
-        'status'                 => $this->mapStatus($row[14]) ?: 'active',
-        'current_status'         => $this->mapStatus($row[14]) ?: 'active',
-        'contract_details'       => $this->buildContractDetailsFixed($row),
-    ];
-
-    return array_filter($data, fn($v) => !is_null($v) && $v !== '');
-}
-
-/**
- * Intelligent mapping - tries to find the right columns
- */
-private function mapIntelligentFormat(array $row, int $clientId): array
-{
-    Log::debug('Using intelligent format mapping');
-
-    // Look for terminal ID in first few columns
-    $terminalId = null;
-    $merchantName = null;
-
-    for ($i = 0; $i < min(5, count($row)); $i++) {
-        $value = $this->cleanValue($row[$i]);
-        if ($value && preg_match('/^[A-Z0-9]{5,}$/i', $value)) {
-            $terminalId = $value;
-            break;
-        }
-    }
-
-    // Look for merchant name (usually a longer text field)
-    for ($i = 1; $i < min(8, count($row)); $i++) {
-        $value = $this->cleanValue($row[$i]);
-        if ($value && strlen($value) > 3 && !preg_match('/^\d+$/', $value) && $value !== $terminalId) {
-            $merchantName = $value;
-            break;
-        }
-    }
-
-    $data = [
-        'client_id'      => $clientId,
-        'terminal_id'    => $terminalId,
-        'merchant_name'  => $merchantName,
-        'status'         => 'active',
-        'current_status' => 'active',
-    ];
-
-    // Try to map other common fields
-    for ($i = 0; $i < count($row); $i++) {
-        $value = $this->cleanValue($row[$i]);
-        if (!$value) continue;
-
-        // Skip already mapped values
-        if ($value === $terminalId || $value === $merchantName) continue;
-
-        // Try to identify other fields by patterns
-        if (preg_match('/^\d{10,}$/', $value)) {
-            $data['merchant_phone'] = $this->cleanPhoneNumber($value);
-        } elseif (preg_match('/\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/', $value)) {
-            $data['installation_date'] = $this->parseDate($value);
-        } elseif (in_array(strtolower($value), ['active', 'offline', 'faulty', 'maintenance'])) {
-            $data['status'] = $this->mapStatus($value) ?: 'active';
-            $data['current_status'] = $data['status'];
-        }
-    }
-
-    Log::debug('Intelligent mapping result', $data);
-
-    return array_filter($data, fn($v) => !is_null($v) && $v !== '');
-}
-
-    /**
-     * Dynamic mapping using ImportMapping::column_mappings (0-based indexes)
-     */
-    private function mapRowDataDynamic(array $row, int $clientId, ImportMapping $mapping, int $rowNumber = 0): array
-{
-    $row = array_pad($row, 50, null);
-    $m   = (array)($mapping->column_mappings ?? []);
-
-    // Your existing standard field mapping code stays the same...
-    $data = [
-        'client_id' => $clientId,
-        'terminal_id' => $this->getValue($row, $m, 'terminal_id'),
-        'merchant_name' => $this->getValue($row, $m, 'merchant_name'),
-        // ... all your existing fields
-    ];
-
-    // NEW: Capture any extra columns that weren't mapped to standard fields
-    $extraFields = [];
-    $standardFields = ['terminal_id', 'merchant_name', 'business_type', 'physical_address', 'city', 'province', 'region', 'merchant_phone', 'merchant_contact_person', 'terminal_model', 'serial_number', 'installation_date', 'status'];
-
-    foreach ($m as $fieldName => $columnIndex) {
-        if (!in_array($fieldName, $standardFields) && isset($row[$columnIndex])) {
-            $value = $this->cleanValue($row[$columnIndex]);
-            if ($value) {
-                $extraFields[$fieldName] = $value;
-            }
-        }
-    }
-
-    if (!empty($extraFields)) {
-        $data['extra_fields'] = $extraFields;
-    }
-
-    return array_filter($data, fn($v) => !is_null($v) && $v !== '');
-}
-
-private function getValue($row, $mappings, $field)
-{
-    $idx = $mappings[$field] ?? null;
-    return ($idx !== null && isset($row[$idx])) ? $this->cleanValue($row[$idx]) : null;
-}
-
-    private function buildDynamicContractDetails(array $row, array $mappings): ?string
-    {
-        $details = [];
-        $fields  = ['condition','issues','comments','corrective_action','site_contact','site_phone'];
-
-        foreach ($fields as $f) {
-            $idx = $mappings[$f] ?? null;
-            if ($idx !== null && isset($row[$idx])) {
-                $val = $this->cleanValue($row[$idx]);
-                if ($val) $details[] = ucfirst(str_replace('_', ' ', $f)).': '.$val;
-            }
-        }
-        return $details ? implode("\n", $details) : null;
-    }
-
-    private function buildContractDetailsFixed(array $row): ?string
-    {
-        $labels = [
-            15 => 'Condition',        // P
-            16 => 'Issues',           // Q
-            17 => 'Comments',         // R
-            18 => 'Corrective Action',// S
-            20 => 'Site Phone',       // U
-        ];
-        $details = [];
-        foreach ($labels as $idx => $label) {
-            $v = $this->cleanValue($row[$idx] ?? null);
-            if ($v) $details[] = "{$label}: {$v}";
-        }
-        return $details ? implode("\n", $details) : null;
-    }
-
-    private function validateTerminalData(array $data, int $rowNumber): array
-    {
-        if (empty($data['terminal_id'])) {
-            return ['valid' => false, 'error' => "Row {$rowNumber}: Terminal ID is required"];
-        }
-        if (empty($data['merchant_name'])) {
-            return ['valid' => false, 'error' => "Row {$rowNumber}: Merchant name is required"];
-        }
-        if (strlen((string)$data['terminal_id']) < 3) {
-            return ['valid' => false, 'error' => "Row {$rowNumber}: Terminal ID too short"];
-        }
-        if (!empty($data['merchant_email'] ?? null) && !filter_var($data['merchant_email'], FILTER_VALIDATE_EMAIL)) {
-            return ['valid' => false, 'error' => "Row {$rowNumber}: Invalid email"];
-        }
-        return ['valid' => true];
-    }
-
-    private function cleanValue($value)
-    {
-        if ($value === null) return null;
-        $v = trim((string)$value);
-        if ($v === '') return null;
-        $nulls = ['null','n/a','na','-','nil','none','empty'];
-        return in_array(mb_strtolower($v), $nulls, true) ? null : $v;
-    }
-
-    private function parseDate($v)
-    {
-        if ($v === null) return null;
-        $v = trim((string)$v);
-        if ($v === '' || in_array(mb_strtolower($v), ['null','n/a','na','-'], true)) return null;
-
-        // Try common formats
-        $fmts = ['Y-m-d','d/m/Y','m/d/Y','d-m-Y','m-d-Y','d-M-Y','d-M-y','d-M','j-M','M-d','Y/m/d','d.m.Y'];
-        foreach ($fmts as $fmt) {
-            $dt = \DateTime::createFromFormat($fmt, $v);
-            if ($dt) {
-                if (!str_contains($fmt, 'Y') && !str_contains($fmt, 'y')) {
-                    $dt->setDate((int)date('Y'), (int)$dt->format('n'), (int)$dt->format('j'));
-                }
-                return $dt->format('Y-m-d');
-            }
-        }
-        // Fallback
-        $ts = strtotime($v);
-        return $ts ? date('Y-m-d', $ts) : null;
-    }
-
-    private function cleanPhoneNumber($phone)
-    {
-        if ($phone === null) return null;
-        $clean = preg_replace('/[^0-9+]/', '', (string)$phone);
-        return (strlen(str_replace('+', '', $clean)) >= 6) ? $clean : null;
-    }
-
-    private function mapStatus($status)
-    {
-        if ($status === null) return 'active';
-        $s = mb_strtolower(trim((string)$status));
-        if ($s === '' || in_array($s, ['null','n/a','na','-'], true)) return 'active';
-
-        $map = [
-            'active' => 'active','working' => 'active','online' => 'active','ok' => 'active','good' => 'active','operational' => 'active','up' => 'active','running' => 'active',
-            'offline' => 'offline','down' => 'offline','not working' => 'offline','not seen' => 'offline','inactive' => 'offline','disconnected' => 'offline',
-            'faulty' => 'faulty','broken' => 'faulty','defective' => 'faulty','error' => 'faulty','damaged' => 'faulty','failed' => 'faulty',
-            'maintenance' => 'maintenance','repair' => 'maintenance','service' => 'maintenance','servicing' => 'maintenance','under repair' => 'maintenance','in service' => 'maintenance',
-        ];
-        return $map[$s] ?? 'active';
     }
 }

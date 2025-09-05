@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnviroGas Money-Constrained Route Optimizer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .control-panel h3 {
+            margin-bottom: 15px;
+            color: #495057;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group select, 
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+            background: white;
+        }
+
+        .form-group select:focus, 
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .exclude-sites-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: white;
+            padding: 10px;
+        }
+
+        .site-checkbox {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .site-checkbox:hover {
+            background-color: #f8f9fa;
+        }
+
+        .site-checkbox input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .money-input-section {
+            background: #fff3e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #ffcc02;
+        }
+
+        .money-input-section h3 {
+            margin-bottom: 15px;
+            color: #e65100;
+        }
+
+        .money-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .money-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .money-input label {
+            flex: 1;
+            font-size: 0.9em;
+            color: #495057;
+        }
+
+        .money-input input {
+            width: 100px;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            text-align: right;
+        }
+
+        .optimize-button {
+            width: 100%;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #ff6b35, #e55a2b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 30px;
+        }
+
+        .optimize-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .optimize-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #4CAF50;
+        }
+
+        .summary-card h4 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .summary-card .value {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .summary-card .description {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .route-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--route-color);
+        }
+
+        .route-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .route-header h4 {
+            color: var(--route-color);
+            font-size: 1.2em;
+        }
+
+        .route-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .route-stat {
+            text-align: center;
+        }
+
+        .route-stat .label {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .route-stat .value {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .route-sites {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .route-sites h5 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .sites-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .site-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+
+        .site-name {
+            font-weight: 500;
+        }
+
+        .site-money {
+            font-size: 0.9em;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .warning i {
+            margin-right: 8px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading i {
+            font-size: 2em;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .download-section {
+            text-align: center;
+            padding: 20px;
+            background: #e8f5e8;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0 10px;
+            transition: background-color 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .preset-btn:hover {
+            background: #138496;
+        }
+
+        @media (max-width: 768px) {
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .route-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .sites-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-route"></i> EnviroGas Money-Constrained Route Optimizer</h1>
+            <p>Optimize biker routes considering both distance efficiency and $5,000 per biker money limit</p>
+        </div>
+
+        <div class="controls-section">
+            <div class="control-panel">
+                <h3><i class="fas fa-cog"></i> Route Configuration</h3>
+                
+                <div class="form-group">
+                    <label for="citySelect">Select City:</label>
+                    <select id="citySelect">
+                        <option value="">Choose city to optimize routes for</option>
+                        <option value="harare">Harare (69 sites)</option>
+                        <option value="bulawayo">Bulawayo (41 sites)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="numBikers">Number of Bikers Available Today:</label>
+                    <input type="number" id="numBikers" min="1" max="15" value="3" placeholder="Enter number of bikers">
+                </div>
+
+                <div class="form-group">
+                    <label for="moneyLimit">Money Limit Per Biker (USD):</label>
+                    <input type="number" id="moneyLimit" min="1000" max="10000" step="100" value="5000" placeholder="5000">
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h3><i class="fas fa-ban"></i> Exclude Sites (Optional)</h3>
+                <p style="font-size: 0.9em; color: #6c757d; margin-bottom: 15px;">
+                    Check sites to exclude from today's collection route
+                </p>
+                
+                <div class="exclude-sites-container" id="excludeSitesContainer">
+                    <p style="color: #6c757d; text-align: center; padding: 20px;">
+                        Select a city first to see available sites
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="money-input-section">
+            <h3><i class="fas fa-dollar-sign"></i> Daily Collection Amounts per Site</h3>
+            <p style="font-size: 0.9em; color: #6c757d; margin-bottom: 15px;">
+                Enter the expected money collection amount for each site today (in USD)
+            </p>
+            
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="setPresetAmounts('low')">Low Day ($500-2000)</button>
+                <button class="preset-btn" onclick="setPresetAmounts('medium')">Medium Day ($1000-3500)</button>
+                <button class="preset-btn" onclick="setPresetAmounts('high')">High Day ($1500-4500)</button>
+                <button class="preset-btn" onclick="setPresetAmounts('random')">Random Amounts</button>
+                <button class="preset-btn" onclick="clearAllAmounts()">Clear All</button>
+            </div>
+            
+            <div class="money-grid" id="moneyGrid">
+                <p style="color: #6c757d; text-align: center; padding: 20px; grid-column: 1/-1;">
+                    Select a city first to enter money amounts
+                </p>
+            </div>
+        </div>
+
+        <button class="optimize-button" id="optimizeBtn" disabled>
+            <i class="fas fa-route"></i> Optimize Routes with Money Constraints
+        </button>
+
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner"></i>
+            <div>Optimizing routes considering money constraints and geographic efficiency...</div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <h2 style="margin-bottom: 20px; color: #333;">
+                <i class="fas fa-chart-line"></i> Optimization Results
+            </h2>
+            
+            <div class="summary-cards" id="summaryCards">
+                <!-- Summary cards will be populated by JavaScript -->
+            </div>
+            
+            <div id="routeCards">
+                <!-- Route cards will be populated by JavaScript -->
+            </div>
+            
+            <div class="download-section">
+                <h4 style="margin-bottom: 15px;">Export Results</h4>
+                <button class="download-btn" onclick="downloadRoutes()">
+                    <i class="fas fa-download"></i> Download Routes (CSV)
+                </button>
+                <button class="download-btn" onclick="downloadSummary()">
+                    <i class="fas fa-file-alt"></i> Download Summary Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Location data
+        const locations = {
+            harare: [
+                { name: "TAFARA", lat: -17.832416666666667, lng: 31.212944444444442 },
+                { name: "DERBYSHIRE", lat: -17.93963888888889, lng: 31.010166666666667 },
+                { name: "RUWA GEORGE", lat: -17.890333333333334, lng: 31.242805555555556 },
+                { name: "LUSAKA", lat: -17.900333333333332, lng: 30.988083333333336 },
+                { name: "MAVAMBO", lat: -17.897027777777776, lng: 31.238583333333334 },
+                { name: "GLEN VIEW", lat: -17.906, lng: 30.949055555555557 },
+                { name: "OK BUDIRIRO", lat: -17.882527777777778, lng: 30.933333333333334 },
+                { name: "ZIMRE PARK", lat: -17.87388888888889, lng: 31.2185 },
+                { name: "CURRENT", lat: -17.882055555555556, lng: 30.919611111111113 },
+                { name: "MARONDERA", lat: -18.189444444444444, lng: 31.551944444444445 },
+                { name: "EASTLEA", lat: -17.81975, lng: 31.075722222222222 },
+                { name: "UNIT L", lat: -18.031222222222222, lng: 31.076694444444446 },
+                { name: "KAMFINSA", lat: -17.805444444444444, lng: 31.126472222222223 },
+                { name: "C JUNCTION", lat: -18.025555555555556, lng: 31.08675 },
+                { name: "CHISIPITE", lat: -17.783722222222224, lng: 31.11802777777778 },
+                { name: "ST MARYS", lat: -17.995972222222225, lng: 31.045166666666667 },
+                { name: "NEWLANDS", lat: -17.80997222222222, lng: 31.075666666666667 },
+                { name: "GROOMBRIDGE", lat: -17.776138888888887, lng: 31.06447222222222 },
+                { name: "ZENGEZA 2", lat: -17.99938888888889, lng: 31.05913888888889 },
+                { name: "ASHBRITTLE", lat: -17.77063888888889, lng: 31.03466666666667 },
+                { name: "ZENGEZA 3 - TERMINUS", lat: -18.010527777777778, lng: 31.053194444444443 },
+                { name: "HELENSVALE", lat: -17.737361111111113, lng: 31.103555555555555 },
+                { name: "ZVIDO SHOPS UNIT N", lat: -18.027083333333334, lng: 31.09797222222222 },
+                { name: "VILLAGE", lat: -17.761305555555555, lng: 31.085833333333333 },
+                { name: "UNIT O SHOPS", lat: -18.024638888888887, lng: 31.114555555555558 },
+                { name: "CHADCOMBE", lat: -17.86002777777778, lng: 31.097027777777775 },
+                { name: "SOUTHLEA PARK", lat: -17.964333333333332, lng: 30.98766666666667 },
+                { name: "QUEENSDALE", lat: -17.855861111111114, lng: 31.087277777777775 },
+                { name: "MUFAKOSE", lat: -17.86411561776876, lng: 30.930147053461386 },
+                { name: "APEX MARONDERA", lat: -18.19022222222222, lng: 31.548194444444444 },
+                { name: "KENTUCKY", lat: -17.881527777777777, lng: 31.07011111111111 },
+                { name: "GREENCROFT", lat: -17.77611111111111, lng: 31.010638888888888 },
+                { name: "AVONDALE", lat: -17.802027777777777, lng: 31.037333333333336 },
+                { name: "KUWADZANA 2", lat: -17.82438888888889, lng: 30.937055555555556 },
+                { name: "MABELREIGN", lat: -17.79013888888889, lng: 30.998527777777777 },
+                { name: "DZ E EXTENSION", lat: -17.78477777777778, lng: 30.91433333333333 },
+                { name: "AVONLEA", lat: -17.77461111111111, lng: 31.01161111111111 },
+                { name: "TYNWALD", lat: -17.792527777777778, lng: 30.95536111111111 },
+                { name: "WESTGATE", lat: -17.763083333333334, lng: 30.979444444444443 },
+                { name: "ASPINDALE", lat: -17.867722222222223, lng: 30.9525 },
+                { name: "MARIMBA", lat: -17.830527777777778, lng: 31.008777777777777 },
+                { name: "MONTAGU", lat: -17.819416666666665, lng: 31.039472222222223 },
+                { name: "HOUGHTON PARK", lat: -17.881722222222223, lng: 31.016416666666668 },
+                { name: "GRANARY PHASE4", lat: -17.842305555555555, lng: 30.889916666666664 },
+                { name: "REDAN MBARE", lat: -17.863750000000003, lng: 31.03827777777778 },
+                { name: "GRANARY PHASE 1", lat: -17.86013888888889, lng: 30.895805555555555 },
+                { name: "MBARE OK", lat: -17.857525695818225, lng: 31.041128996383215 },
+                { name: "GRANARY PHASE2", lat: -17.849138888888888, lng: 30.887027777777778 },
+                { name: "MBARE STODAD", lat: -17.867583333333332, lng: 31.03175 },
+                { name: "GRANARY PHASE 3", lat: -17.848888888888887, lng: 30.872194444444446 },
+                { name: "BELVEDERE-DIVARIS", lat: -17.8195548, lng: 31.0236251 },
+                { name: "GLENVIEW 1", lat: -17.913916666666665, lng: 30.94263888888889 },
+                { name: "DAMAFALLS", lat: -17.86577777777778, lng: 31.239916666666666 },
+                { name: "GLENNORAH MASHWEDE", lat: -17.91333333333333, lng: 30.974249999999998 },
+                { name: "MAKONI", lat: -18.010555555555555, lng: 31.103166666666667 },
+                { name: "CROWBOROUGH PHASE 3", lat: -17.846963061347605, lng: 30.936056327345486 },
+                { name: "MABVUKU", lat: -17.8377219, lng: 31.195741 },
+                { name: "DZ EXTENSION TWO", lat: -17.7848078, lng: 30.9117647 },
+                { name: "CROWBOROUGH PHASE 2", lat: -17.839644296356695, lng: 30.936889313984146 },
+                { name: "GLENVIEW 3", lat: -17.901855, lng: 30.9389234 },
+                { name: "GLEN NORAH", lat: -17.913320, lng: 30.974196 },
+                { name: "BUDIRIRO 4", lat: -17.894939991650837, lng: 30.913696416735974 },
+                { name: "WILLOWVALE", lat: -17.8802923853732, lng: 30.9877874271744 },
+                { name: "NORTON", lat: -17.880988865312947, lng: 30.66366793472488 },
+                { name: "MAPURANGA", lat: -17.9022717, lng: 30.9784489 },
+                { name: "CHIGOVANYIKA", lat: -17.9946783, lng: 31.0342334 },
+                { name: "RUWA PIKNPAY", lat: -17.88406305787101, lng: 31.218924130637216 },
+                { name: "SUNWAY CITY", lat: -17.870504662331367, lng: 31.199112578423208 },
+                { name: "MBARE RUNYARARO", lat: -17.868330354041404, lng: 31.026892247797942 }
+            ],
+            bulawayo: [
+                { name: "COWDRY PARK ANTHERNS", lat: -20.083027777777776, lng: 28.504277777777776 },
+                { name: "COWDRY PARK PKNPAY", lat: -20.087999999999997, lng: 28.519027777777776 },
+                { name: "SOUTHERN CROSS", lat: -20.187638888888888, lng: 28.635805555555557 },
+                { name: "NKETA 9 ", lat: -20.2076066, lng: 28.5292196 },
+                { name: "LUVEVE 5", lat: -20.102861111111114, lng: 28.516305555555554 },
+                { name: "MORNING SIDE", lat: -20.19725, lng: 28.579833333333333 },
+                { name: "HILLSIDE", lat: -20.194222222222223, lng: 28.5965 },
+                { name: "OLD PUMULA", lat: -20.14377777777778, lng: 28.474277777777775 },
+                { name: "MPOPOMA OUTLET", lat: -20.1475, lng: 28.53375 },
+                { name: "OLD LUVEVE", lat: -20.112444444444446, lng: 28.513055555555557 },
+                { name: "MZILIKAZI", lat: -20.138055555555557, lng: 28.566 },
+                { name: "MAKONI", lat: -20.16247222222222, lng: 28.474083333333333 },
+                { name: "SOKUSILE", lat: -20.18636111111111, lng: 28.52025 },
+                { name: "ESIGAYWENI", lat: -20.07525, lng: 28.508555555555557 },
+                { name: "EMGWANWINI", lat: -20.21761111111111, lng: 28.510305555555554 },
+                { name: "BELLEVUE", lat: -20.200916666666664, lng: 28.550416666666667 },
+                { name: "3RD", lat: -20.14752777777778, lng: 28.582944444444443 },
+                { name: "NORTHEND", lat: -20.146333333333335, lng: 28.59058333333333 },
+                { name: "TERMINUS", lat: -20.081444444444443, lng: 28.511305555555555 },
+                { name: "MPOMPINI", lat: -20.07102777777778, lng: 28.486694444444446 },
+                { name: "PUMULA EAST", lat: -20.14452777777778, lng: 28.493694444444447 },
+                { name: "HYDE PARK", lat: -20.151944444444442, lng: 28.506444444444444 },
+                { name: "MAKOKOBA", lat: -20.143472222222222, lng: 28.571166666666667 },
+                { name: "CARAVAN", lat: -20.07925, lng: 28.494194444444446 },
+                { name: "REDAN BELLEVUE", lat: -20.201037, lng: 28.550278 },
+                { name: "ENTUMBANE HLALO", lat: -20.113510, lng: 28.541481 },
+                { name: "NJUBE 2", lat: -20.138456, lng: 28.521831 },
+                { name: "MAGWEGWE NORTH", lat: -20.121616, lng: 28.496177 },
+                { name: "NJUBE", lat: -20.135386, lng: 28.532068 },
+                { name: "NKETA 7", lat: -20.197457, lng: 28.538213 },
+                { name: "PUMULA OLD", lat: -20.143826, lng: 28.474247 },
+                { name: "PUMULA NORTH", lat: -20.133975, lng: 28.483600 },
+                { name: "BURNSIDE", lat: -20.201791, lng: 28.604710 },
+                { name: "MAGWEGWE OLD", lat: -20.137573, lng: 28.506303 },
+                { name: "GWABALANDA", lat: -20.1120289, lng: 28.4971004 },
+                { name: "ESIGODWENI", lat: -20.078316, lng: 28.483540 },
+                { name: "NKETA 8", lat: -20.201117, lng: 28.518009 },
+                { name: "EMAKHADENI SAI MART", lat: -20.1080383, lng: 28.5205381 },
+                { name: "MUNYORO", lat: -20.1887265, lng: 28.5117755 },
+                { name: "COWDRAY PARK DENVER", lat: -20.065237, lng: 28.5078068 },
+                { name: "EMAKHADENI WOZA WOZA", lat: -20.1214011, lng: 28.5288957 }
+            ]
+        };
+
+        // Depot coordinates
+        const depots = {
+            harare: { name: "Harare Depot", lat: -17.8651645, lng: 31.1437361 },
+            bulawayo: { name: "Bulawayo Depot", lat: -20.1753621, lng: 28.5573101 }
+        };
+
+        const routeColors = [
+            '#FF6B35', '#4CAF50', '#2196F3', '#9C27B0', '#FF9800', 
+            '#607D8B', '#795548', '#F44336', '#00BCD4', '#8BC34A',
+            '#FFC107', '#E91E63', '#3F51B5', '#009688', '#CDDC39'
+        ];
+
+        let currentCity = '';
+        let excludedSites = new Set();
+        let siteMoneyAmounts = {};
+        let optimizedRoutes = [];
+
+        // RouteOptimizer class (embedded from previous artifact)
+        class RouteOptimizer {
+            constructor(locations, depot, maxMoneyPerBiker = 5000) {
+                this.locations = locations;
+                this.depot = depot;
+                this.maxMoneyPerBiker = maxMoneyPerBiker;
+                this.routeColors = routeColors;
+            }
+
+            async optimizeRoutesWithMoney(sites, numBikers, siteMoneyAmounts) {
+                const clusters = await this.hybridClusteringWithMoney(sites, numBikers, siteMoneyAmounts);
+                const optimizedRoutes = [];
+                
+                for (let i = 0; i < clusters.length; i++) {
+                    const cluster = clusters[i];
+                    const route = this.optimizeClusterRoute(cluster.sites, this.depot);
+                    const totalDistance = await this.calculateRouteDistance(route);
+                    const totalMoney = cluster.totalMoney;
+                    
+                    optimizedRoutes.push({
+                        bikerId: i + 1,
+                        route: route,
+                        sites: cluster.sites,
+                        totalDistance: totalDistance,
+                        totalMoney: totalMoney,
+                        color: this.routeColors[i % this.routeColors.length],
+                        moneyPerSite: cluster.sites.map(site => ({
+                            name: site.name,
+                            amount: siteMoneyAmounts[site.name] || 0
+                        }))
+                    });
+                }
+                
+                return this.finalMoneyBalancing(optimizedRoutes, siteMoneyAmounts);
+            }
+
+            async hybridClusteringWithMoney(sites, k, siteMoneyAmounts) {
+                const totalMoney = sites.reduce((sum, site) => sum + (siteMoneyAmounts[site.name] || 0), 0);
+                const targetMoneyPerBiker = totalMoney / k;
+                
+                const moneyBalancedGroups = this.createMoneyBalancedGroups(sites, k, siteMoneyAmounts, targetMoneyPerBiker);
+                const finalClusters = [];
+                
+                for (let group of moneyBalancedGroups) {
+                    if (group.sites.length > 15) {
+                        const subClusters = await this.geographicClustering(group.sites, Math.ceil(group.sites.length / 10));
+                        for (let subCluster of subClusters) {
+                            const totalMoney = subCluster.reduce((sum, site) => sum + (siteMoneyAmounts[site.name] || 0), 0);
+                            finalClusters.push({
+                                sites: subCluster,
+                                totalMoney: totalMoney
+                            });
+                        }
+                    } else {
+                        finalClusters.push(group);
+                    }
+                }
+                
+                return finalClusters;
+            }
+
+            createMoneyBalancedGroups(sites, k, siteMoneyAmounts, targetMoney) {
+                const sortedSites = [...sites].sort((a, b) => 
+                    (siteMoneyAmounts[b.name] || 0) - (siteMoneyAmounts[a.name] || 0)
+                );
+                
+                const groups = Array(k).fill().map(() => ({
+                    sites: [],
+                    totalMoney: 0
+                }));
+                
+                for (const site of sortedSites) {
+                    const siteAmount = siteMoneyAmounts[site.name] || 0;
+                    
+                    let bestGroupIndex = 0;
+                    let minMoney = groups[0].totalMoney;
+                    
+                    for (let i = 1; i < groups.length; i++) {
+                        if (groups[i].totalMoney < minMoney && 
+                            groups[i].totalMoney + siteAmount <= this.maxMoneyPerBiker) {
+                            minMoney = groups[i].totalMoney;
+                            bestGroupIndex = i;
+                        }
+                    }
+                    
+                    groups[bestGroupIndex].sites.push(site);
+                    groups[bestGroupIndex].totalMoney += siteAmount;
+                }
+                
+                return groups;
+            }
+
+            async geographicClustering(sites, k) {
+                if (sites.length <= k) {
+                    return sites.map(site => [site]);
+                }
+
+                let centroids = [];
+                for (let i = 0; i < k; i++) {
+                    const randomIndex = Math.floor(Math.random() * sites.length);
+                    centroids.push({
+                        lat: sites[randomIndex].lat,
+                        lng: sites[randomIndex].lng
+                    });
+                }
+
+                let clusters = [];
+                let maxIterations = 20;
+                let iteration = 0;
+
+                while (iteration < maxIterations) {
+                    clusters = Array(k).fill().map(() => []);
+
+                    sites.forEach(site => {
+                        let minDistance = Infinity;
+                        let closestCluster = 0;
+
+                        centroids.forEach((centroid, i) => {
+                            const distance = this.calculateStraightDistance(
+                                site.lat, site.lng, centroid.lat, centroid.lng
+                            );
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                closestCluster = i;
+                            }
+                        });
+
+                        clusters[closestCluster].push(site);
+                    });
+
+                    let hasChanged = false;
+                    centroids.forEach((centroid, i) => {
+                        if (clusters[i].length > 0) {
+                            const newLat = clusters[i].reduce((sum, site) => sum + site.lat, 0) / clusters[i].length;
+                            const newLng = clusters[i].reduce((sum, site) => sum + site.lng, 0) / clusters[i].length;
+                            
+                            if (Math.abs(newLat - centroid.lat) > 0.001 || Math.abs(newLng - centroid.lng) > 0.001) {
+                                hasChanged = true;
+                            }
+                            
+                            centroid.lat = newLat;
+                            centroid.lng = newLng;
+                        }
+                    });
+
+                    if (!hasChanged) break;
+                    iteration++;
+                }
+
+                return clusters.filter(cluster => cluster.length > 0);
+            }
+
+            finalMoneyBalancing(routes, siteMoneyAmounts) {
+                const maxIterations = 10;
+                let iteration = 0;
+                
+                while (iteration < maxIterations) {
+                    let improved = false;
+                    
+                    for (let i = 0; i < routes.length; i++) {
+                        if (routes[i].totalMoney > this.maxMoneyPerBiker) {
+                            for (let j = 0; j < routes.length; j++) {
+                                if (i !== j && this.tryMoveHighValueSite(routes[i], routes[j], siteMoneyAmounts)) {
+                                    improved = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!improved) {
+                        const moneyAmounts = routes.map(r => r.totalMoney);
+                        const maxMoney = Math.max(...moneyAmounts);
+                        const minMoney = Math.min(...moneyAmounts);
+                        const avgMoney = moneyAmounts.reduce((a, b) => a + b) / routes.length;
+                        
+                        if (maxMoney - minMoney > avgMoney * 0.3) {
+                            const maxRoute = routes[moneyAmounts.indexOf(maxMoney)];
+                            const minRoute = routes[moneyAmounts.indexOf(minMoney)];
+                            
+                            if (this.tryBalanceMoney(maxRoute, minRoute, siteMoneyAmounts)) {
+                                improved = true;
+                            }
+                        }
+                    }
+                    
+                    if (!improved) break;
+                    iteration++;
+                }
+                
+                routes.forEach(route => {
+                    route.totalMoney = route.sites.reduce((sum, site) => 
+                        sum + (siteMoneyAmounts[site.name] || 0), 0
+                    );
+                });
+                
+                return routes;
+            }
+
+            tryMoveHighValueSite(fromRoute, toRoute, siteMoneyAmounts) {
+                const sortedSites = fromRoute.sites.sort((a, b) => 
+                    (siteMoneyAmounts[b.name] || 0) - (siteMoneyAmounts[a.name] || 0)
+                );
+                
+                for (const site of sortedSites) {
+                    const siteAmount = siteMoneyAmounts[site.name] || 0;
+                    
+                    if (toRoute.totalMoney + siteAmount <= this.maxMoneyPerBiker &&
+                        fromRoute.totalMoney - siteAmount >= toRoute.totalMoney + siteAmount) {
+                        
+                        if (this.isGeographicallyFeasible(site, toRoute.sites)) {
+                            fromRoute.sites = fromRoute.sites.filter(s => s.name !== site.name);
+                            toRoute.sites.push(site);
+                            fromRoute.totalMoney -= siteAmount;
+                            toRoute.totalMoney += siteAmount;
+                            
+                            fromRoute.route = this.optimizeClusterRoute(fromRoute.sites, this.depot);
+                            toRoute.route = this.optimizeClusterRoute(toRoute.sites, this.depot);
+                            
+                            return true;
+                        }
+                    }
+                }
+                
+                return false;
+            }
+
+            tryBalanceMoney(highRoute, lowRoute, siteMoneyAmounts) {
+                const targetDiff = (highRoute.totalMoney - lowRoute.totalMoney) / 2;
+                
+                for (const site of highRoute.sites) {
+                    const siteAmount = siteMoneyAmounts[site.name] || 0;
+                    
+                    if (Math.abs(siteAmount - targetDiff) < targetDiff * 0.3 &&
+                        lowRoute.totalMoney + siteAmount <= this.maxMoneyPerBiker &&
+                        this.isGeographicallyFeasible(site, lowRoute.sites)) {
+                        
+                        highRoute.sites = highRoute.sites.filter(s => s.name !== site.name);
+                        lowRoute.sites.push(site);
+                        highRoute.totalMoney -= siteAmount;
+                        lowRoute.totalMoney += siteAmount;
+                        
+                        highRoute.route = this.optimizeClusterRoute(highRoute.sites, this.depot);
+                        lowRoute.route = this.optimizeClusterRoute(lowRoute.sites, this.depot);
+                        
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+
+            isGeographicallyFeasible(newSite, existingSites) {
+                if (existingSites.length === 0) return true;
+                
+                const centroidLat = existingSites.reduce((sum, site) => sum + site.lat, 0) / existingSites.length;
+                const centroidLng = existingSites.reduce((sum, site) => sum + site.lng, 0) / existingSites.length;
+                
+                const distanceToCentroid = this.calculateStraightDistance(
+                    newSite.lat, newSite.lng, centroidLat, centroidLng
+                );
+                
+                const avgDistance = existingSites.reduce((sum, site) => 
+                    sum + this.calculateStraightDistance(site.lat, site.lng, centroidLat, centroidLng), 0
+                ) / existingSites.length;
+                
+                return distanceToCentroid <= avgDistance * 1.5;
+            }
+
+            optimizeClusterRoute(cluster, depot) {
+                if (cluster.length === 0) return [depot];
+                if (cluster.length === 1) return [depot, cluster[0], depot];
+
+                let route = [depot];
+                let unvisited = [...cluster];
+                let current = depot;
+
+                while (unvisited.length > 0) {
+                    let nearestIndex = 0;
+                    let minDistance = Infinity;
+
+                    unvisited.forEach((site, index) => {
+                        const distance = this.calculateStraightDistance(
+                            current.lat, current.lng, site.lat, site.lng
+                        );
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestIndex = index;
+                        }
+                    });
+
+                    const nearest = unvisited.splice(nearestIndex, 1)[0];
+                    route.push(nearest);
+                    current = nearest;
+                }
+
+                route.push(depot);
+                return this.improve2Opt(route);
+            }
+
+            improve2Opt(route) {
+                if (route.length < 4) return route;
+
+                let improved = true;
+                let bestRoute = [...route];
+
+                while (improved) {
+                    improved = false;
+                    
+                    for (let i = 1; i < route.length - 2; i++) {
+                        for (let j = i + 1; j < route.length - 1; j++) {
+                            const newRoute = [...route];
+                            
+                            const segment = newRoute.slice(i, j + 1).reverse();
+                            newRoute.splice(i, j - i + 1, ...segment);
+
+                            const currentDistance = this.calculateRouteDistance2Opt(route);
+                            const newDistance = this.calculateRouteDistance2Opt(newRoute);
+
+                            if (newDistance < currentDistance) {
+                                route = newRoute;
+                                bestRoute = [...newRoute];
+                                improved = true;
+                            }
+                        }
+                    }
+                }
+
+                return bestRoute;
+            }
+
+            calculateRouteDistance2Opt(route) {
+                let totalDistance = 0;
+                for (let i = 0; i < route.length - 1; i++) {
+                    totalDistance += this.calculateStraightDistance(
+                        route[i].lat, route[i].lng,
+                        route[i + 1].lat, route[i + 1].lng
+                    );
+                }
+                return totalDistance;
+            }
+
+            calculateStraightDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371;
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLon = (lon2 - lon1) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                          Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            }
+
+            async calculateRouteDistance(route) {
+                let totalDistance = 0;
+                
+                for (let i = 0; i < route.length - 1; i++) {
+                    const distance = this.calculateStraightDistance(
+                        route[i].lat, route[i].lng,
+                        route[i + 1].lat, route[i + 1].lng
+                    );
+                    totalDistance += distance * 1.3;
+                }
+                
+                return totalDistance;
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('citySelect').addEventListener('change', handleCityChange);
+            document.getElementById('numBikers').addEventListener('input', validateInputs);
+            document.getElementById('moneyLimit').addEventListener('input', validateInputs);
+            document.getElementById('optimizeBtn').addEventListener('click', optimizeRoutes);
+        });
+
+        function handleCityChange() {
+            const citySelect = document.getElementById('citySelect');
+            const city = citySelect.value;
+            currentCity = city;
+            
+            if (city) {
+                populateExcludeSites(city);
+                populateMoneyInputs(city);
+                excludedSites.clear();
+                siteMoneyAmounts = {};
+            } else {
+                document.getElementById('excludeSitesContainer').innerHTML = 
+                    '<p style="color: #6c757d; text-align: center; padding: 20px;">Select a city first to see available sites</p>';
+                document.getElementById('moneyGrid').innerHTML = 
+                    '<p style="color: #6c757d; text-align: center; padding: 20px; grid-column: 1/-1;">Select a city first to enter money amounts</p>';
+            }
+            
+            validateInputs();
+        }
+
+        function populateExcludeSites(city) {
+            const container = document.getElementById('excludeSitesContainer');
+            const cityLocations = locations[city];
+            
+            let html = '';
+            cityLocations.forEach(site => {
+                html += `
+                    <div class="site-checkbox">
+                        <input type="checkbox" id="exclude_${site.name}" 
+                               onchange="toggleSiteExclusion('${site.name}', this.checked)">
+                        <label for="exclude_${site.name}">${site.name}</label>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function populateMoneyInputs(city) {
+            const container = document.getElementById('moneyGrid');
+            const cityLocations = locations[city];
+            
+            let html = '';
+            cityLocations.forEach(site => {
+                html += `
+                    <div class="money-input">
+                        <label for="money_${site.name}">${site.name}:</label>
+                        <input type="number" id="money_${site.name}" min="0" max="10000" 
+                               placeholder="0" onchange="updateSiteMoneyAmount('${site.name}', this.value)">
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function toggleSiteExclusion(siteName, isExcluded) {
+            if (isExcluded) {
+                excludedSites.add(siteName);
+            } else {
+                excludedSites.delete(siteName);
+            }
+            validateInputs();
+        }
+
+        function updateSiteMoneyAmount(siteName, amount) {
+            const value = parseFloat(amount) || 0;
+            siteMoneyAmounts[siteName] = value;
+            validateInputs();
+        }
+
+        function setPresetAmounts(preset) {
+            if (!currentCity) return;
+            
+            const cityLocations = locations[currentCity];
+            
+            cityLocations.forEach(site => {
+                let amount = 0;
+                
+                switch(preset) {
+                    case 'low':
+                        amount = Math.floor(Math.random() * 1500) + 500; // 500-2000
+                        break;
+                    case 'medium':
+                        amount = Math.floor(Math.random() * 2500) + 1000; // 1000-3500
+                        break;
+                    case 'high':
+                        amount = Math.floor(Math.random() * 3000) + 1500; // 1500-4500
+                        break;
+                    case 'random':
+                        amount = Math.floor(Math.random() * 4000) + 500; // 500-4500
+                        break;
+                }
+                
+                siteMoneyAmounts[site.name] = amount;
+                const input = document.getElementById(`money_${site.name}`);
+                if (input) {
+                    input.value = amount;
+                }
+            });
+            
+            validateInputs();
+        }
+
+        function clearAllAmounts() {
+            if (!currentCity) return;
+            
+            const cityLocations = locations[currentCity];
+            
+            cityLocations.forEach(site => {
+                siteMoneyAmounts[site.name] = 0;
+                const input = document.getElementById(`money_${site.name}`);
+                if (input) {
+                    input.value = '';
+                }
+            });
+            
+            validateInputs();
+        }
+
+        function validateInputs() {
+            const city = document.getElementById('citySelect').value;
+            const numBikers = parseInt(document.getElementById('numBikers').value);
+            const moneyLimit = parseInt(document.getElementById('moneyLimit').value);
+            
+            const hasMoneyAmounts = Object.values(siteMoneyAmounts).some(amount => amount > 0);
+            
+            const isValid = city && 
+                           numBikers >= 1 && numBikers <= 15 &&
+                           moneyLimit >= 1000 &&
+                           hasMoneyAmounts;
+            
+            document.getElementById('optimizeBtn').disabled = !isValid;
+        }
+
+        async function optimizeRoutes() {
+            const city = document.getElementById('citySelect').value;
+            const numBikers = parseInt(document.getElementById('numBikers').value);
+            const moneyLimit = parseInt(document.getElementById('moneyLimit').value);
+            
+            if (!city || !numBikers || !moneyLimit) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Filter out excluded sites
+            const availableSites = locations[city].filter(site => !excludedSites.has(site.name));
+            
+            if (availableSites.length === 0) {
+                alert('No sites available for optimization. Please check your exclusions.');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('resultsSection').classList.remove('show');
+            
+            try {
+                // Create optimizer
+                const optimizer = new RouteOptimizer(availableSites, depots[city], moneyLimit);
+                
+                // Run optimization
+                optimizedRoutes = await optimizer.optimizeRoutesWithMoney(
+                    availableSites,
+                    numBikers,
+                    siteMoneyAmounts
+                );
+                
+                // Display results
+                displayResults(optimizedRoutes);
+                
+            } catch (error) {
+                console.error('Optimization failed:', error);
+                alert('Route optimization failed. Please try again.');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        function displayResults(routes) {
+            displaySummaryCards(routes);
+            displayRouteCards(routes);
+            document.getElementById('resultsSection').classList.add('show');
+        }
+
+        function displaySummaryCards(routes) {
+            const totalSites = routes.reduce((sum, route) => sum + route.sites.length, 0);
+            const totalMoney = routes.reduce((sum, route) => sum + route.totalMoney, 0);
+            const totalDistance = routes.reduce((sum, route) => sum + route.totalDistance, 0);
+            const moneyLimit = parseInt(document.getElementById('moneyLimit').value);
+            
+            const moneyAmounts = routes.map(r => r.totalMoney);
+            const maxMoney = Math.max(...moneyAmounts);
+            const minMoney = Math.min(...moneyAmounts);
+            const violatingRoutes = routes.filter(r => r.totalMoney > moneyLimit);
+            
+            const summaryCards = document.getElementById('summaryCards');
+            summaryCards.innerHTML = `
+                <div class="summary-card">
+                    <h4>Total Bikers</h4>
+                    <div class="value">${routes.length}</div>
+                    <div class="description">Routes optimized</div>
+                </div>
+                
+                <div class="summary-card">
+                    <h4>Total Sites</h4>
+                    <div class="value">${totalSites}</div>
+                    <div class="description">Sites to collect from</div>
+                </div>
+                
+                <div class="summary-card">
+                    <h4>Total Money</h4>
+                    <div class="value">$${totalMoney.toLocaleString()}</div>
+                    <div class="description">Total collections expected</div>
+                </div>
+                
+                <div class="summary-card">
+                    <h4>Total Distance</h4>
+                    <div class="value">${totalDistance.toFixed(1)} km</div>
+                    <div class="description">Combined route distance</div>
+                </div>
+                
+                <div class="summary-card" style="border-left-color: ${violatingRoutes.length > 0 ? '#dc3545' : '#28a745'}">
+                    <h4>Money Balance</h4>
+                    <div class="value">$${minMoney.toFixed(0)} - $${maxMoney.toFixed(0)}</div>
+                    <div class="description">${violatingRoutes.length} routes exceed limit</div>
+                </div>
+                
+                <div class="summary-card">
+                    <h4>Avg per Biker</h4>
+                    <div class="value">${(totalSites / routes.length).toFixed(1)} sites</div>
+                    <div class="description">$${(totalMoney / routes.length).toFixed(0)} average</div>
+                </div>
+            `;
+        }
+
+        function displayRouteCards(routes) {
+            const moneyLimit = parseInt(document.getElementById('moneyLimit').value);
+            const routeCards = document.getElementById('routeCards');
+            
+            let html = '';
+            
+            routes.forEach(route => {
+                const exceedsLimit = route.totalMoney > moneyLimit;
+                const warningHtml = exceedsLimit ? 
+                    `<div class="warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        This route exceeds the $${moneyLimit} limit by $${(route.totalMoney - moneyLimit).toFixed(2)}
+                     </div>` : '';
+                
+                html += `
+                    <div class="route-card" style="--route-color: ${route.color}">
+                        ${warningHtml}
+                        
+                        <div class="route-header">
+                            <h4>BIKER ${route.bikerId}</h4>
+                        </div>
+                        
+                        <div class="route-stats">
+                            <div class="route-stat">
+                                <div class="label">Sites</div>
+                                <div class="value">${route.sites.length}</div>
+                            </div>
+                            <div class="route-stat">
+                                <div class="label">Total Money</div>
+                                <div class="value">$${route.totalMoney.toFixed(2)}</div>
+                            </div>
+                            <div class="route-stat">
+                                <div class="label">Distance</div>
+                                <div class="value">${route.totalDistance.toFixed(1)} km</div>
+                            </div>
+                            <div class="route-stat">
+                                <div class="label">Avg per Site</div>
+                                <div class="value">$${(route.totalMoney / route.sites.length).toFixed(0)}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="route-sites">
+                            <h5>Sites to Visit (in order):</h5>
+                            <div class="sites-list">
+                                ${route.moneyPerSite.map(site => `
+                                    <div class="site-item">
+                                        <span class="site-name">${site.name}</span>
+                                        <span class="site-money">$${site.amount.toFixed(2)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            routeCards.innerHTML = html;
+        }
+
+        function downloadRoutes() {
+            if (optimizedRoutes.length === 0) {
+                alert('No routes to download. Please optimize routes first.');
+                return;
+            }
+
+            let csvContent = 'Biker ID,Site Order,Site Name,Collection Amount (USD),Total Route Money (USD),Total Route Distance (km)\n';
+            
+            optimizedRoutes.forEach(routeData => {
+                const { bikerId, sites, totalMoney, totalDistance } = routeData;
+                
+                sites.forEach((site, index) => {
+                    const siteAmount = siteMoneyAmounts[site.name] || 0;
+                    csvContent += `${bikerId},${index + 1},"${site.name}",${siteAmount.toFixed(2)},${totalMoney.toFixed(2)},${totalDistance.toFixed(1)}\n`;
+                });
+            });
+
+            downloadFile(csvContent, `envirogas_routes_${currentCity}_${optimizedRoutes.length}bikers.csv`, 'text/csv');
+        }
+
+        function downloadSummary() {
+            if (optimizedRoutes.length === 0) {
+                alert('No summary to download. Please optimize routes first.');
+                return;
+            }
+
+            const totalSites = optimizedRoutes.reduce((sum, route) => sum + route.sites.length, 0);
+            const totalMoney = optimizedRoutes.reduce((sum, route) => sum + route.totalMoney, 0);
+            const totalDistance = optimizedRoutes.reduce((sum, route) => sum + route.totalDistance, 0);
+            const moneyLimit = parseInt(document.getElementById('moneyLimit').value);
+            const violatingRoutes = optimizedRoutes.filter(r => r.totalMoney > moneyLimit);
+            
+            let summaryContent = `EnviroGas Route Optimization Summary Report
+Generated: ${new Date().toLocaleString()}
+City: ${currentCity.charAt(0).toUpperCase() + currentCity.slice(1)}
+
+OVERVIEW:
+- Total Bikers: ${optimizedRoutes.length}
+- Total Sites: ${totalSites}
+- Excluded Sites: ${excludedSites.size}
+- Total Expected Collections: $${totalMoney.toLocaleString()}
+- Total Route Distance: ${totalDistance.toFixed(1)} km
+- Money Limit per Biker: $${moneyLimit.toLocaleString()}
+
+BALANCE ANALYSIS:
+- Routes Exceeding Limit: ${violatingRoutes.length}
+- Average Money per Biker: $${(totalMoney / optimizedRoutes.length).toFixed(2)}
+- Average Sites per Biker: ${(totalSites / optimizedRoutes.length).toFixed(1)}
+- Average Distance per Biker: ${(totalDistance / optimizedRoutes.length).toFixed(1)} km
+
+ROUTE DETAILS:
+`;
+
+            optimizedRoutes.forEach(route => {
+                const exceedsLimit = route.totalMoney > moneyLimit ? ' (EXCEEDS LIMIT)' : '';
+                summaryContent += `
+Biker ${route.bikerId}${exceedsLimit}:
+  - Sites: ${route.sites.length}
+  - Total Money: $${route.totalMoney.toFixed(2)}
+  - Distance: ${route.totalDistance.toFixed(1)} km
+  - Sites: ${route.sites.map(s => s.name).join(', ')}
+`;
+            });
+
+            downloadFile(summaryContent, `envirogas_summary_${currentCity}_${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
+        }
+
+        function downloadFile(content, fileName, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

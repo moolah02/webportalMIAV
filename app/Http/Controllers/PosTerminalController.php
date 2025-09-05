@@ -9,6 +9,11 @@ use App\Models\ImportMapping;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\Auth;  // ← Add this
+use Illuminate\Pagination\LengthAwarePaginator;  // ← Add this
+use Illuminate\Support\Facades\DB;
+
 
 class PosTerminalController extends Controller
 {
@@ -80,7 +85,7 @@ class PosTerminalController extends Controller
                 $posTerminal->load(['regionModel']);
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not load regionModel: ' . $e->getMessage());
+            Log::warning('Could not load regionModel: ' . $e->getMessage());
         }
 
         try {
@@ -88,7 +93,7 @@ class PosTerminalController extends Controller
                 $posTerminal->load(['jobAssignments']);
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not load jobAssignments: ' . $e->getMessage());
+            Log::warning('Could not load jobAssignments: ' . $e->getMessage());
         }
 
         try {
@@ -96,7 +101,7 @@ class PosTerminalController extends Controller
                 $posTerminal->load(['tickets']);
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not load tickets: ' . $e->getMessage());
+            Log::warning('Could not load tickets: ' . $e->getMessage());
         }
 
         // Get related categories for display - handle if Category model doesn't exist
@@ -109,7 +114,7 @@ class PosTerminalController extends Controller
                 $serviceTypes = Category::getServiceTypes();
             }
         } catch (\Exception $e) {
-            \Log::warning('Category model not available: ' . $e->getMessage());
+            Log::warning('Category model not available: ' . $e->getMessage());
         }
 
         return view('pos-terminals.show', compact(
@@ -118,7 +123,51 @@ class PosTerminalController extends Controller
             'serviceTypes'
         ));
     }
+// In PosTerminalController.php, update the getFilteredStats method:
 
+public function getFilteredStats(Request $request)
+{
+    $query = PosTerminal::query();
+
+    // Apply same filters as index method - ADD proper table prefixes
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('pos_terminals.terminal_id', 'like', "%{$search}%")
+              ->orWhere('pos_terminals.merchant_name', 'like', "%{$search}%")
+              ->orWhere('pos_terminals.merchant_contact_person', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('client')) {
+        $query->where('pos_terminals.client_id', $request->client);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('pos_terminals.status', $request->status);
+    }
+
+    if ($request->filled('region')) {
+        $query->where('pos_terminals.region', $request->region);
+    }
+
+    if ($request->filled('city')) {
+        $query->where('pos_terminals.city', $request->city);
+    }
+
+    if ($request->filled('province')) {
+        $query->where('pos_terminals.province', $request->province);
+    }
+
+    $stats = $this->calculateFilteredStats($query);
+    $chartData = $this->generateChartData($query->get());
+
+    return response()->json([
+        'success' => true,
+        'stats' => $stats,
+        'chartData' => $chartData
+    ]);
+}
     public function edit(PosTerminal $posTerminal)
     {
         $clients = Client::orderBy('company_name')->get();
@@ -394,31 +443,35 @@ class PosTerminalController extends Controller
     /**
      * Store new column mapping
      */
-    public function storeColumnMapping(Request $request)
-    {
-        $validated = $request->validate([
-            'mapping_name' => 'required|string|unique:import_mappings,mapping_name',
-            'client_id' => 'nullable|exists:clients,id',
-            'description' => 'nullable|string',
-            'column_mappings' => 'required|array',
-            'column_mappings.*' => 'nullable|integer|min:0|max:50'
-        ]);
+    // In PosTerminalController.php, update the storeColumnMapping method:
 
-        $validated['created_by'] = auth()->id();
-        $validated['is_active'] = true;
+public function storeColumnMapping(Request $request)
+{
+    $validated = $request->validate([
+        'mapping_name' => 'required|string|unique:import_mappings,mapping_name',
+        'client_id' => 'nullable|exists:clients,id',
+        'description' => 'nullable|string',
+        'column_mappings' => 'required|array',
+        'column_mappings.*' => 'nullable|integer|min:0|max:50'
+    ]);
 
-        try {
-            if (class_exists('App\Models\ImportMapping')) {
-                ImportMapping::create($validated);
-                return redirect()->back()->with('success', 'Column mapping saved successfully!');
-            } else {
-                return redirect()->back()->with('error', 'ImportMapping model not available. Please create the model first.');
-            }
-        } catch (\Exception $e) {
-            Log::error('Error saving column mapping: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error saving column mapping: ' . $e->getMessage());
+    // Fix the auth()->id() error:
+    $validated['created_by'] = Auth::check() ? Auth::user()->id : null;
+    $validated['is_active'] = true;
+
+    try {
+        if (class_exists('App\Models\ImportMapping')) {
+            ImportMapping::create($validated);
+            return redirect()->back()->with('success', 'Column mapping saved successfully!');
+        } else {
+            return redirect()->back()->with('error', 'ImportMapping model not available. Please create the model first.');
         }
+    } catch (\Exception $e) {
+        Log::error('Error saving column mapping: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Error saving column mapping: ' . $e->getMessage());
     }
+}
+
 
     public function index(Request $request)
     {
@@ -590,49 +643,7 @@ class PosTerminalController extends Controller
     /**
      * Get filtered statistics endpoint
      */
-    public function getFilteredStats(Request $request)
-    {
-        $query = PosTerminal::query();
 
-        // Apply same filters as index method
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('terminal_id', 'like', "%{$search}%")
-                  ->orWhere('merchant_name', 'like', "%{$search}%")
-                  ->orWhere('merchant_contact_person', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('client')) {
-            $query->where('client_id', $request->client);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('region')) {
-            $query->where('region', $request->region);
-        }
-
-        if ($request->filled('city')) {
-            $query->where('city', $request->city);
-        }
-
-        if ($request->filled('province')) {
-            $query->where('province', $request->province);
-        }
-
-        $stats = $this->calculateFilteredStats($query);
-        $chartData = $this->generateChartData($query->get());
-
-        return response()->json([
-            'success' => true,
-            'stats' => $stats,
-            'chartData' => $chartData
-        ]);
-    }
 
     public function createTicket(Request $request, PosTerminal $posTerminal)
     {

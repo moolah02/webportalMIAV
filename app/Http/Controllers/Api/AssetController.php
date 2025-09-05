@@ -9,168 +9,109 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Asset;
 use App\Models\AssetRequest;
 use App\Models\AssetAssignment;
-use App\Models\Employee;
+use Illuminate\Support\Facades\Log;
+
 
 class AssetController extends Controller
 {
     /**
-     * Get paginated list of assets with filtering
+     * GET /assets
+     * List assets for users (read-only).
+     * Filters: search, category, status, stock_status (in_stock|low_stock|out_of_stock), requestable_only=1
+     * Returns ALL (no pagination) as requested.
      */
     public function index(Request $request)
     {
-        $query = Asset::query();
+        $q = Asset::query();
 
-        // Apply filters
+        // Optional: limit to active
+        if (!$request->filled('include_inactive')) {
+            $q->where('status', 'asset-active');
+        }
+
+        if ($request->boolean('requestable_only')) {
+            $q->where('is_requestable', true);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $q->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%")
                   ->orWhere('brand', 'like', "%{$search}%")
                   ->orWhere('model', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('barcode', 'like', "%{$search}%");
             });
         }
 
-        if ($request->filled('category')) {
-            $query->where('category', $request->category);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+        if ($request->filled('category')) $q->where('category', $request->category);
+        if ($request->filled('status'))   $q->where('status', $request->status);
 
         if ($request->filled('stock_status')) {
-            switch ($request->stock_status) {
-                case 'in_stock':
-                    $query->where('stock_quantity', '>', 0)
+            $q->where(function($s) use ($request) {
+                $s->when($request->stock_status === 'in_stock', function($x) {
+                        $x->where('stock_quantity', '>', 0)
                           ->whereColumn('stock_quantity', '>', 'min_stock_level');
-                    break;
-                case 'low_stock':
-                    $query->where('stock_quantity', '>', 0)
+                    })
+                  ->when($request->stock_status === 'low_stock', function($x) {
+                        $x->where('stock_quantity', '>', 0)
                           ->whereColumn('stock_quantity', '<=', 'min_stock_level');
-                    break;
-                case 'out_of_stock':
-                    $query->where('stock_quantity', '<=', 0);
-                    break;
-            }
+                    })
+                  ->when($request->stock_status === 'out_of_stock', function($x) {
+                        $x->where('stock_quantity', '<=', 0);
+                    });
+            });
         }
 
-        if ($request->filled('requestable_only')) {
-            $query->where('is_requestable', true)
-                  ->where('status', 'asset-active');
-        }
+        $assets = $q->latest('id')->get()->map(function ($a) {
+            $assigned = (int)($a->assigned_quantity ?? 0);
+            $available = $a->available_quantity ?? max(0, (int)$a->stock_quantity - $assigned);
+            $stock_status = $a->stock_quantity <= 0 ? 'out_of_stock'
+                          : ($a->stock_quantity <= ($a->min_stock_level ?? 0) ? 'low_stock' : 'in_stock');
 
-        $assets = $query->latest()->paginate($request->get('per_page', 15));
-
-        // Transform the data for API response
-        $assets->getCollection()->transform(function ($asset) {
             return [
-                'id' => $asset->id,
-                'name' => $asset->name,
-                'description' => $asset->description,
-                'category' => $asset->category,
-                'brand' => $asset->brand,
-                'model' => $asset->model,
-                'sku' => $asset->sku,
-                'barcode' => $asset->barcode,
-                'unit_price' => $asset->unit_price,
-                'formatted_price' => $asset->formatted_price,
-                'currency' => $asset->currency,
-                'stock_quantity' => $asset->stock_quantity,
-                'assigned_quantity' => $asset->assigned_quantity ?? 0,
-                'available_quantity' => $asset->stock_quantity - ($asset->assigned_quantity ?? 0),
-                'min_stock_level' => $asset->min_stock_level,
-                'status' => $asset->status,
-                'stock_status' => $asset->stock_status,
-                'is_requestable' => $asset->is_requestable,
-                'requires_approval' => $asset->requires_approval,
-                'image_url' => $asset->image_url,
-                'specifications' => $asset->specifications,
-                'notes' => $asset->notes,
-                'stock_info' => [
-                    'is_in_stock' => $asset->isInStock(),
-                    'is_low_stock' => $asset->isLowStock(),
-                    'can_be_requested' => $asset->canBeRequested(),
-                ],
-                'created_at' => $asset->created_at,
-                'updated_at' => $asset->updated_at,
+                'id' => $a->id,
+                'name' => $a->name,
+                'description' => $a->description,
+                'category' => $a->category,
+                'brand' => $a->brand,
+                'model' => $a->model,
+                'sku' => $a->sku,
+                'barcode' => $a->barcode,
+                'unit_price' => $a->unit_price,
+                'currency' => $a->currency,
+                'stock_quantity' => (int)$a->stock_quantity,
+                'assigned_quantity' => $assigned,
+                'available_quantity' => $available,
+                'min_stock_level' => (int)($a->min_stock_level ?? 0),
+                'status' => $a->status,
+                'stock_status' => $stock_status,
+                'is_requestable' => (bool)$a->is_requestable,
+                'requires_approval' => (bool)$a->requires_approval,
+                'image_url' => $a->image_url,
+                'specifications' => $a->specifications,
+                'notes' => $a->notes,
+                'created_at' => $a->created_at,
+                'updated_at' => $a->updated_at,
             ];
         });
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'assets' => $assets->items(),
-                'pagination' => [
-                    'current_page' => $assets->currentPage(),
-                    'last_page' => $assets->lastPage(),
-                    'per_page' => $assets->perPage(),
-                    'total' => $assets->total(),
-                ]
-            ]
-        ]);
+        return response()->json(['success' => true, 'data' => ['assets' => $assets]]);
     }
 
     /**
-     * Get single asset details
+     * GET /assets/{asset}
+     * Asset details (read-only)
      */
-    public function show($id)
+    public function show(Asset $asset)
     {
-        $asset = Asset::findOrFail($id);
+        $assigned = (int)($asset->assigned_quantity ?? 0);
+        $available = $asset->available_quantity ?? max(0, (int)$asset->stock_quantity - $assigned);
+        $stock_status = $asset->stock_quantity <= 0 ? 'out_of_stock'
+                      : ($asset->stock_quantity <= ($asset->min_stock_level ?? 0) ? 'low_stock' : 'in_stock');
 
-        // Get current assignments
-        $currentAssignments = [];
-        try {
-            if (method_exists($asset, 'activeAssignments')) {
-                $currentAssignments = $asset->activeAssignments()
-                                           ->with('employee:id,first_name,last_name,employee_number')
-                                           ->get()
-                                           ->map(function($assignment) {
-                                               return [
-                                                   'id' => $assignment->id,
-                                                   'employee' => [
-                                                       'id' => $assignment->employee->id,
-                                                       'name' => $assignment->employee->first_name . ' ' . $assignment->employee->last_name,
-                                                       'employee_number' => $assignment->employee->employee_number,
-                                                   ],
-                                                   'quantity_assigned' => $assignment->quantity_assigned,
-                                                   'assignment_date' => $assignment->assignment_date,
-                                                   'expected_return_date' => $assignment->expected_return_date,
-                                                   'condition' => $assignment->condition_when_assigned,
-                                               ];
-                                           });
-            }
-        } catch (\Exception $e) {
-            \Log::warning('Could not load asset assignments: ' . $e->getMessage());
-        }
-
-        // Get recent requests
-        $recentRequests = [];
-        try {
-            if (method_exists($asset, 'requestItems')) {
-                $recentRequests = $asset->requestItems()
-                                        ->with(['assetRequest.employee:id,first_name,last_name'])
-                                        ->latest()
-                                        ->limit(5)
-                                        ->get()
-                                        ->map(function($item) {
-                                            return [
-                                                'id' => $item->assetRequest->id,
-                                                'request_number' => $item->assetRequest->request_number,
-                                                'employee_name' => $item->assetRequest->employee ? 
-                                                    $item->assetRequest->employee->first_name . ' ' . $item->assetRequest->employee->last_name : 'Unknown',
-                                                'quantity_requested' => $item->quantity_requested,
-                                                'status' => $item->assetRequest->status,
-                                                'requested_at' => $item->assetRequest->created_at,
-                                            ];
-                                        });
-            }
-        } catch (\Exception $e) {
-            \Log::warning('Could not load asset requests: ' . $e->getMessage());
-        }
-
-        $assetData = [
+        $data = [
             'id' => $asset->id,
             'name' => $asset->name,
             'description' => $asset->description,
@@ -180,335 +121,174 @@ class AssetController extends Controller
             'sku' => $asset->sku,
             'barcode' => $asset->barcode,
             'unit_price' => $asset->unit_price,
-            'formatted_price' => $asset->formatted_price,
             'currency' => $asset->currency,
-            'stock_quantity' => $asset->stock_quantity,
-            'assigned_quantity' => $asset->assigned_quantity ?? 0,
-            'available_quantity' => $asset->stock_quantity - ($asset->assigned_quantity ?? 0),
-            'min_stock_level' => $asset->min_stock_level,
+            'stock_quantity' => (int)$asset->stock_quantity,
+            'assigned_quantity' => $assigned,
+            'available_quantity' => $available,
+            'min_stock_level' => (int)($asset->min_stock_level ?? 0),
             'status' => $asset->status,
-            'stock_status' => $asset->stock_status,
-            'is_requestable' => $asset->is_requestable,
-            'requires_approval' => $asset->requires_approval,
+            'stock_status' => $stock_status,
+            'is_requestable' => (bool)$asset->is_requestable,
+            'requires_approval' => (bool)$asset->requires_approval,
             'image_url' => $asset->image_url,
             'specifications' => $asset->specifications,
             'notes' => $asset->notes,
-            'stock_info' => [
-                'is_in_stock' => $asset->isInStock(),
-                'is_low_stock' => $asset->isLowStock(),
-                'can_be_requested' => $asset->canBeRequested(),
-            ],
-            'current_assignments' => $currentAssignments,
-            'recent_requests' => $recentRequests,
             'created_at' => $asset->created_at,
             'updated_at' => $asset->updated_at,
         ];
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'asset' => $assetData
-            ]
-        ]);
+        return response()->json(['success' => true, 'data' => ['asset' => $data]]);
     }
 
     /**
-     * Request an asset
+     * POST /assets/{asset}/request
+     * Create (or append to) a pending request for this user with a single item.
+     * Uses your schema: asset_requests + asset_request_items
      */
-    public function requestAsset(Request $request, $id)
+    public function requestAsset(Request $request, Asset $asset)
     {
-        $validator = Validator::make($request->all(), [
+        $v = Validator::make($request->all(), [
             'quantity' => 'required|integer|min:1',
             'justification' => 'required|string|max:500',
             'priority' => 'sometimes|in:low,medium,high,urgent',
-            'expected_usage_date' => 'sometimes|date|after:today',
+            'needed_by_date' => 'sometimes|date|after:today',
+            'delivery_instructions' => 'sometimes|string|max:500',
+            'department' => 'sometimes|string|max:100',
+            'business_justification' => 'sometimes|string|max:500',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+        if ($v->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validation failed', 'errors' => $v->errors()], 422);
         }
 
-        $asset = Asset::findOrFail($id);
+        if (!$asset->is_requestable || $asset->status !== 'asset-active') {
+            return response()->json(['success' => false, 'message' => 'Asset is not requestable'], 422);
+        }
+
+        $assigned = (int)($asset->assigned_quantity ?? 0);
+        $available = $asset->available_quantity ?? max(0, (int)$asset->stock_quantity - $assigned);
+        if ($available < (int)$request->quantity) {
+            return response()->json(['success' => false, 'message' => 'Insufficient stock available'], 422);
+        }
+
         $user = $request->user();
-
-        // Check if asset can be requested
-        if (!$asset->canBeRequested($request->quantity)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Asset cannot be requested in the specified quantity'
-            ], 422);
-        }
 
         try {
             DB::beginTransaction();
 
-            // Create or get existing pending request for this user
-            $assetRequest = AssetRequest::firstOrCreate([
-                'employee_id' => $user->id,
-                'status' => 'pending'
-            ], [
-                'request_number' => 'REQ-' . now()->format('Ymd') . '-' . str_pad(AssetRequest::count() + 1, 4, '0', STR_PAD_LEFT),
-                'requested_date' => now(),
-                'status' => 'pending',
-                'total_value' => 0,
+            // Create a fresh request (clearer than firstOrCreate, and matches your richer schema)
+            $req = AssetRequest::create([
+                'request_number'        => 'REQ-' . now()->format('Ymd') . '-' . str_pad((string)(AssetRequest::count() + 1), 4, '0', STR_PAD_LEFT),
+                'employee_id'           => $user->id,
+                'status'                => 'pending',
+                'priority'              => $request->priority ?? 'medium',
+                'business_justification'=> $request->business_justification ?? $request->justification,
+                'needed_by_date'        => $request->needed_by_date,
+                'delivery_instructions' => $request->delivery_instructions,
+                'department'            => $request->department,
+                'total_estimated_cost'  => 0,
             ]);
 
-            // Add item to request
-            $requestItem = $assetRequest->items()->create([
-                'asset_id' => $asset->id,
-                'quantity_requested' => $request->quantity,
-                'unit_price' => $asset->unit_price,
-                'total_price' => $asset->unit_price * $request->quantity,
-                'justification' => $request->justification,
-                'priority' => $request->priority ?? 'medium',
-                'expected_usage_date' => $request->expected_usage_date,
+            $itemTotal = (float)$asset->unit_price * (int)$request->quantity;
+
+            $req->items()->create([
+                'asset_id'               => $asset->id,
+                'quantity_requested'     => (int)$request->quantity,
+                'quantity_approved'      => 0,
+                'quantity_fulfilled'     => 0,
+                'unit_price_at_request'  => (float)$asset->unit_price,
+                'total_price'            => $itemTotal,
+                'item_status'            => 'pending',
+                'notes'                  => $request->justification,
+                'assignment_created'     => false,
             ]);
 
-            // Update request total value
-            $assetRequest->update([
-                'total_value' => $assetRequest->items()->sum('total_price')
-            ]);
+            $req->update(['total_estimated_cost' => $req->items()->sum('total_price')]);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Asset request submitted successfully',
-                'data' => [
+                'message' => 'Asset request submitted',
+                'data'    => [
                     'request' => [
-                        'id' => $assetRequest->id,
-                        'request_number' => $assetRequest->request_number,
-                        'status' => $assetRequest->status,
+                        'id' => $req->id,
+                        'request_number' => $req->request_number,
+                        'status' => $req->status,
+                        'total_estimated_cost' => $req->total_estimated_cost,
                     ],
-                    'item' => [
-                        'id' => $requestItem->id,
-                        'asset_name' => $asset->name,
-                        'quantity_requested' => $requestItem->quantity_requested,
-                        'total_price' => $requestItem->total_price,
-                    ]
                 ]
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollback();
-            \Log::error('Asset request failed: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to submit asset request'
-            ], 500);
+            ], 201);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('requestAsset error: '.$e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to submit request'], 500);
         }
     }
 
     /**
-     * Get user's asset assignments
-     */
-    public function myAssignments(Request $request)
-    {
-        $user = $request->user();
-
-        $assignments = [];
-        try {
-            if (method_exists($user, 'currentAssetAssignments')) {
-                $assignments = $user->currentAssetAssignments()
-                                   ->with('asset:id,name,category,brand,model,sku')
-                                   ->get()
-                                   ->map(function($assignment) {
-                                       return [
-                                           'id' => $assignment->id,
-                                           'asset' => [
-                                               'id' => $assignment->asset->id,
-                                               'name' => $assignment->asset->name,
-                                               'category' => $assignment->asset->category,
-                                               'brand' => $assignment->asset->brand,
-                                               'model' => $assignment->asset->model,
-                                               'sku' => $assignment->asset->sku,
-                                           ],
-                                           'quantity_assigned' => $assignment->quantity_assigned,
-                                           'assignment_date' => $assignment->assignment_date,
-                                           'expected_return_date' => $assignment->expected_return_date,
-                                           'condition_when_assigned' => $assignment->condition_when_assigned,
-                                           'assignment_notes' => $assignment->assignment_notes,
-                                           'is_overdue' => $assignment->expected_return_date && 
-                                                          $assignment->expected_return_date->isPast(),
-                                           'days_assigned' => $assignment->assignment_date ? 
-                                               $assignment->assignment_date->diffInDays(now()) : 0,
-                                       ];
-                                   });
-            }
-        } catch (\Exception $e) {
-            \Log::warning('Could not load user assignments: ' . $e->getMessage());
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'assignments' => $assignments,
-                'summary' => [
-                    'total_assigned' => count($assignments),
-                    'overdue_count' => collect($assignments)->where('is_overdue', true)->count(),
-                ]
-            ]
-        ]);
-    }
-
-    /**
-     * Return assigned asset
-     */
-    public function returnAsset(Request $request, $assignmentId)
-    {
-        $validator = Validator::make($request->all(), [
-            'condition_when_returned' => 'required|in:new,good,fair,poor',
-            'return_notes' => 'sometimes|string|max:500',
-            'return_date' => 'sometimes|date',
-            'photos' => 'sometimes|array',
-            'photos.*' => 'image|max:2048',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $user = $request->user();
-
-        try {
-            $assignment = AssetAssignment::where('id', $assignmentId)
-                                        ->where('employee_id', $user->id)
-                                        ->where('status', 'assigned')
-                                        ->firstOrFail();
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Assignment not found or cannot be returned'
-            ], 404);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            // Handle photo uploads
-            $photos = [];
-            if ($request->hasFile('photos')) {
-                foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('asset-returns', 'public');
-                    $photos[] = [
-                        'path' => $path,
-                        'url' => asset('storage/' . $path),
-                        'uploaded_at' => now()->toISOString()
-                    ];
-                }
-            }
-
-            // Update assignment
-            $assignment->update([
-                'status' => 'returned',
-                'actual_return_date' => $request->return_date ?? now(),
-                'condition_when_returned' => $request->condition_when_returned,
-                'return_notes' => $request->return_notes,
-                'return_photos' => $photos,
-                'returned_to' => null, // Will be handled by admin
-            ]);
-
-            // Update asset assigned quantity
-            $assignment->asset->decrement('assigned_quantity', $assignment->quantity_assigned);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Asset return request submitted successfully',
-                'data' => [
-                    'assignment_id' => $assignment->id,
-                    'return_date' => $assignment->actual_return_date,
-                    'status' => $assignment->status,
-                ]
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollback();
-            \Log::error('Asset return failed: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to process asset return'
-            ], 500);
-        }
-    }
-
-    /**
-     * Get user's asset requests
+     * GET /assets/requests
+     * List the current user's requests (no pagination).
      */
     public function getRequests(Request $request)
     {
         $user = $request->user();
 
-        $requests = AssetRequest::where('employee_id', $user->id)
-                               ->with(['items.asset:id,name,category,brand'])
-                               ->latest()
-                               ->paginate($request->get('per_page', 10));
+        $reqs = AssetRequest::where('employee_id', $user->id)
+            ->with(['items.asset:id,name,category,brand,model'])
+            ->latest('id')
+            ->get()
+            ->map(function($r) {
+                return [
+                    'id' => $r->id,
+                    'request_number' => $r->request_number,
+                    'status' => $r->status,
+                    'priority' => $r->priority,
+                    'business_justification' => $r->business_justification,
+                    'needed_by_date' => $r->needed_by_date,
+                    'total_estimated_cost' => $r->total_estimated_cost,
+                    'items_count' => $r->items->count(),
+                    'items' => $r->items->map(function($it) {
+                        return [
+                            'asset_id' => $it->asset_id,
+                            'asset_name' => $it->asset?->name,
+                            'category' => $it->asset?->category,
+                            'quantity_requested' => $it->quantity_requested,
+                            'quantity_approved' => $it->quantity_approved,
+                            'quantity_fulfilled' => $it->quantity_fulfilled,
+                            'unit_price_at_request' => $it->unit_price_at_request,
+                            'total_price' => $it->total_price,
+                            'item_status' => $it->item_status,
+                            'notes' => $it->notes,
+                        ];
+                    }),
+                    'created_at' => $r->created_at,
+                ];
+            });
 
-        $requests->getCollection()->transform(function($assetRequest) {
-            return [
-                'id' => $assetRequest->id,
-                'request_number' => $assetRequest->request_number,
-                'status' => $assetRequest->status,
-                'requested_date' => $assetRequest->requested_date,
-                'total_value' => $assetRequest->total_value,
-                'items_count' => $assetRequest->items->count(),
-                'items' => $assetRequest->items->map(function($item) {
-                    return [
-                        'asset_name' => $item->asset->name,
-                        'category' => $item->asset->category,
-                        'quantity_requested' => $item->quantity_requested,
-                        'total_price' => $item->total_price,
-                        'priority' => $item->priority,
-                        'justification' => $item->justification,
-                    ];
-                }),
-                'created_at' => $assetRequest->created_at,
-            ];
-        });
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'requests' => $requests->items(),
-                'pagination' => [
-                    'current_page' => $requests->currentPage(),
-                    'last_page' => $requests->lastPage(),
-                    'per_page' => $requests->perPage(),
-                    'total' => $requests->total(),
-                ]
-            ]
-        ]);
+        return response()->json(['success' => true, 'data' => ['requests' => $reqs]]);
     }
 
     /**
-     * Create new asset request
+     * POST /assets/requests
+     * Create a multi-item request in one go (user-only).
+     * Body: { items: [{asset_id, quantity, justification, priority?}], needed_by_date?, delivery_instructions?, department?, business_justification? }
      */
     public function createRequest(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'items' => 'required|array|min:1',
-            'items.*.asset_id' => 'required|exists:assets,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.justification' => 'required|string|max:500',
-            'items.*.priority' => 'sometimes|in:low,medium,high,urgent',
-            'expected_usage_date' => 'sometimes|date|after:today',
+        $v = Validator::make($request->all(), [
+            'items'                         => 'required|array|min:1',
+            'items.*.asset_id'              => 'required|exists:assets,id',
+            'items.*.quantity'              => 'required|integer|min:1',
+            'items.*.justification'         => 'required|string|max:500',
+            'items.*.priority'              => 'sometimes|in:low,medium,high,urgent',
+            'needed_by_date'                => 'sometimes|date|after:today',
+            'delivery_instructions'         => 'sometimes|string|max:500',
+            'department'                    => 'sometimes|string|max:100',
+            'business_justification'        => 'sometimes|string|max:500',
+            'priority'                      => 'sometimes|in:low,medium,high,urgent', // optional overall priority
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+        if ($v->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validation failed', 'errors' => $v->errors()], 422);
         }
 
         $user = $request->user();
@@ -516,125 +296,253 @@ class AssetController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create request
-            $assetRequest = AssetRequest::create([
-                'employee_id' => $user->id,
-                'request_number' => 'REQ-' . now()->format('Ymd') . '-' . str_pad(AssetRequest::count() + 1, 4, '0', STR_PAD_LEFT),
-                'requested_date' => now(),
-                'status' => 'pending',
-                'total_value' => 0,
+            $req = AssetRequest::create([
+                'request_number'        => 'REQ-' . now()->format('Ymd') . '-' . str_pad((string)(AssetRequest::count() + 1), 4, '0', STR_PAD_LEFT),
+                'employee_id'           => $user->id,
+                'status'                => 'pending',
+                'priority'              => $request->priority ?? 'medium',
+                'business_justification'=> $request->business_justification,
+                'needed_by_date'        => $request->needed_by_date,
+                'delivery_instructions' => $request->delivery_instructions,
+                'department'            => $request->department,
+                'total_estimated_cost'  => 0,
             ]);
 
-            $totalValue = 0;
+            $total = 0;
 
-            // Add items
-            foreach ($request->items as $itemData) {
-                $asset = Asset::findOrFail($itemData['asset_id']);
+            foreach ($request->items as $row) {
+                /** @var Asset $asset */
+                $asset = Asset::findOrFail($row['asset_id']);
 
-                // Check availability
-                if (!$asset->canBeRequested($itemData['quantity'])) {
-                    throw new \Exception("Asset '{$asset->name}' cannot be requested in quantity {$itemData['quantity']}");
+                if (!$asset->is_requestable || $asset->status !== 'asset-active') {
+                    throw new \Exception("Asset '{$asset->name}' is not requestable.");
                 }
 
-                $itemPrice = $asset->unit_price * $itemData['quantity'];
-                $totalValue += $itemPrice;
+                $assigned = (int)($asset->assigned_quantity ?? 0);
+                $available = $asset->available_quantity ?? max(0, (int)$asset->stock_quantity - $assigned);
+                if ($available < (int)$row['quantity']) {
+                    throw new \Exception("Insufficient stock for '{$asset->name}'.");
+                }
 
-                $assetRequest->items()->create([
-                    'asset_id' => $asset->id,
-                    'quantity_requested' => $itemData['quantity'],
-                    'unit_price' => $asset->unit_price,
-                    'total_price' => $itemPrice,
-                    'justification' => $itemData['justification'],
-                    'priority' => $itemData['priority'] ?? 'medium',
-                    'expected_usage_date' => $request->expected_usage_date,
+                $itemTotal = (float)$asset->unit_price * (int)$row['quantity'];
+                $total += $itemTotal;
+
+                $req->items()->create([
+                    'asset_id'               => $asset->id,
+                    'quantity_requested'     => (int)$row['quantity'],
+                    'quantity_approved'      => 0,
+                    'quantity_fulfilled'     => 0,
+                    'unit_price_at_request'  => (float)$asset->unit_price,
+                    'total_price'            => $itemTotal,
+                    'item_status'            => 'pending',
+                    'notes'                  => $row['justification'],
+                    'assignment_created'     => false,
                 ]);
             }
 
-            // Update total value
-            $assetRequest->update(['total_value' => $totalValue]);
+            $req->update(['total_estimated_cost' => $total]);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Asset request created successfully',
+                'message' => 'Asset request created',
                 'data' => [
                     'request' => [
-                        'id' => $assetRequest->id,
-                        'request_number' => $assetRequest->request_number,
-                        'status' => $assetRequest->status,
-                        'total_value' => $assetRequest->total_value,
+                        'id' => $req->id,
+                        'request_number' => $req->request_number,
+                        'status' => $req->status,
+                        'total_estimated_cost' => $req->total_estimated_cost,
                         'items_count' => count($request->items),
                     ]
                 ]
-            ]);
+            ], 201);
 
-        } catch (\Exception $e) {
-            DB::rollback();
-            \Log::error('Asset request creation failed: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create asset request: ' . $e->getMessage()
-            ], 500);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('createRequest error: '.$e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to create asset request'], 500);
         }
     }
 
     /**
-     * Update asset request status (for managers/approvers)
+     * GET /assets/my-assignments
+     * The current user's active assignments (no pagination)
      */
-    public function updateRequestStatus(Request $request, $requestId)
+    public function myAssignments(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|in:pending,approved,rejected',
-            'notes' => 'sometimes|string|max:500',
-        ]);
+        $user = $request->user();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+        $rows = AssetAssignment::where('employee_id', $user->id)
+            ->where('status', 'assigned')
+            ->with('asset:id,name,category,brand,model,sku')
+            ->latest('id')
+            ->get()
+            ->map(function($a) {
+                return [
+                    'id' => $a->id,
+                    'asset' => [
+                        'id' => $a->asset->id,
+                        'name' => $a->asset->name,
+                        'category' => $a->asset->category,
+                        'brand' => $a->asset->brand,
+                        'model' => $a->asset->model,
+                        'sku' => $a->asset->sku,
+                    ],
+                    'quantity_assigned' => (int)$a->quantity_assigned,
+                    'assignment_date' => $a->assignment_date,
+                    'expected_return_date' => $a->expected_return_date,
+                    'condition_when_assigned' => $a->condition_when_assigned,
+                    'assignment_notes' => $a->assignment_notes,
+                    'is_overdue' => $a->expected_return_date ? $a->expected_return_date->isPast() : false,
+                    'days_assigned' => $a->assignment_date ? $a->assignment_date->diffInDays(now()) : 0,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'assignments' => $rows,
+                'summary' => [
+                    'total_assigned' => $rows->count(),
+                    'overdue_count'  => $rows->where('is_overdue', true)->count(),
+                ]
+            ]
+        ]);
+    }
+
+    /**
+     * POST /assets/assignments/{assignment}/return
+     * Mark a user’s own assignment as returned (user-scoped).
+     */
+    public function returnAsset(Request $request, $assignmentId)
+    {
+        $v = Validator::make($request->all(), [
+            'condition_when_returned' => 'required|in:new,good,fair,poor',
+            'return_notes' => 'sometimes|string|max:500',
+            'return_date'  => 'sometimes|date',
+        ]);
+        if ($v->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validation failed', 'errors' => $v->errors()], 422);
         }
 
         $user = $request->user();
 
-        // Check permissions
-        if (!$user->hasPermission('manage_assets') && 
-            !$user->hasPermission('approve_requests') && 
-            !$user->hasPermission('all')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized to update request status'
-            ], 403);
+        /** @var AssetAssignment $as */
+        $as = AssetAssignment::where('id', $assignmentId)
+            ->where('employee_id', $user->id)
+            ->where('status', 'assigned')
+            ->with('asset')
+            ->first();
+
+        if (!$as) {
+            return response()->json(['success' => false, 'message' => 'Assignment not found or not returnable'], 404);
         }
 
         try {
-            $assetRequest = AssetRequest::findOrFail($requestId);
+            DB::beginTransaction();
 
-            $assetRequest->update([
-                'status' => $request->status,
-                'approved_by' => $user->id,
-                'approved_at' => now(),
-                'approval_notes' => $request->notes,
+            // Update assignment
+            $as->update([
+                'status' => 'returned',
+                'actual_return_date' => $request->return_date ?? now(),
+                'condition_when_returned' => $request->condition_when_returned,
+                'return_notes' => $request->return_notes,
+                // 'returned_to' left null for backoffice to fill if needed
             ]);
+
+            // Adjust asset counters
+            if ($as->asset) {
+                $as->asset->decrement('assigned_quantity', (int)$as->quantity_assigned);
+                // If you maintain available_quantity as a stored column, uncomment:
+                // $as->asset->increment('available_quantity', (int)$as->quantity_assigned);
+            }
+
+            // Optional: write assignment history
+            DB::table('asset_assignment_histories')->insert([
+                'assignment_id'   => $as->id,
+                'action'          => 'return',
+                'from_employee_id'=> $user->id,
+                'to_employee_id'  => null,
+                'action_date'     => now(),
+                'performed_by'    => $user->id,
+                'notes'           => $request->return_notes,
+                'old_status'      => 'assigned',
+                'new_status'      => 'returned',
+                'created_at'      => now(),
+            ]);
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Request status updated successfully',
+                'message' => 'Return submitted',
                 'data' => [
-                    'request_id' => $assetRequest->id,
-                    'new_status' => $assetRequest->status,
-                    'approved_by' => $user->name,
+                    'assignment_id' => $as->id,
+                    'status' => $as->status,
+                    'return_date' => $as->actual_return_date,
                 ]
             ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Request status update failed: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update request status'
-            ], 500);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('returnAsset error: '.$e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to process return'], 500);
         }
+    }
+
+    /**
+     * GET /assets/categories
+     * Distinct categories for browsing requestable, active assets
+     */
+    public function getCategories(Request $request)
+    {
+        $cats = Asset::query()
+            ->when(!$request->boolean('include_inactive'), fn($q) => $q->where('status', 'asset-active'))
+            ->where('is_requestable', true)
+            ->whereNotNull('category')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category')
+            ->values();
+
+        return response()->json(['success' => true, 'data' => ['categories' => $cats]]);
+    }
+
+    /**
+     * GET /assets/statistics
+     * User-scoped quick stats (no admin/global data)
+     */
+    public function statistics(Request $request)
+    {
+        $user = $request->user();
+
+        $activeAssigned = AssetAssignment::where('employee_id', $user->id)
+            ->where('status', 'assigned')
+            ->count();
+
+        $overdue = AssetAssignment::where('employee_id', $user->id)
+            ->where('status', 'assigned')
+            ->whereNotNull('expected_return_date')
+            ->whereDate('expected_return_date', '<', now()->toDateString())
+            ->count();
+
+        $pendingReqs = AssetRequest::where('employee_id', $user->id)->where('status', 'pending')->count();
+        $approvedReqs = AssetRequest::where('employee_id', $user->id)->where('status', 'approved')->count();
+        $rejectedReqs = AssetRequest::where('employee_id', $user->id)->where('status', 'rejected')->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'assignments' => [
+                    'active'  => $activeAssigned,
+                    'overdue' => $overdue,
+                ],
+                'requests' => [
+                    'pending'  => $pendingReqs,
+                    'approved' => $approvedReqs,
+                    'rejected' => $rejectedReqs,
+                ]
+            ]
+        ]);
     }
 }

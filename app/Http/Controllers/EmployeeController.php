@@ -7,6 +7,13 @@ use App\Models\Role;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+ use Illuminate\Support\Arr;
+ use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 
 
 class EmployeeController extends Controller
@@ -47,7 +54,7 @@ class EmployeeController extends Controller
         }
 
         $employees = $query->latest()->paginate(15);
-        
+
         $departments = Department::orderBy('name')->get();
         $roles = Role::orderBy('name')->get();
 
@@ -60,129 +67,167 @@ class EmployeeController extends Controller
 
         return view('employees.index', compact('employees', 'departments', 'roles', 'stats'));
     }
+private function filterExistingColumns(string $table, array $data): array
+{
+    $existing = Schema::getColumnListing($table);           // ['id','first_name',...]
+    return array_intersect_key($data, array_flip($existing)); // keep only existing keys
+}
 
-    public function create()
-    {
-        $managers = Employee::managers()->active()->get();
+
+public function create()
+{
+    try {
+        // Fix: Get managers without using scopes that don't exist
+        $managers = Employee::where('status', 'active')
+            ->whereHas('role', function($query) {
+                $query->where('name', 'like', '%manager%')
+                      ->orWhere('name', 'like', '%admin%')
+                      ->orWhereJsonContains('permissions', 'manage_team')
+                      ->orWhereJsonContains('permissions', 'all');
+            })
+            ->get();
+
+        // Get all roles
         $roles = Role::orderBy('name')->get();
+
+        // Get departments, create basic ones if none exist
         $departments = Department::orderBy('name')->get();
 
-        return view('employees.create', compact('managers', 'roles', 'departments'));
-    }
+        if ($departments->count() === 0) {
+            $basicDepartments = ['IT', 'HR', 'Sales', 'Marketing', 'Finance', 'Operations'];
+            foreach ($basicDepartments as $deptName) {
+                Department::create(['name' => $deptName]);
+            }
+            $departments = Department::orderBy('name')->get();
+        }
 
-    public function store(Request $request)
-    {
-        \Log::info('Employee creation attempt:', $request->all());
-        
-        $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email',
-            'password' => ['required', 'confirmed'],
-            'role_id' => 'required|exists:roles,id',
-            'department_id' => 'required|exists:departments,id',
-            'hire_date' => 'required|date',
-            'status' => 'required|in:active,inactive,pending',
-            'phone' => 'nullable|string|max:20',
-            'manager_id' => 'nullable|exists:employees,id',
-            'position' => 'nullable|string|max:255',
-            'salary' => 'nullable|numeric|min:0',
-            'address' => 'nullable|string|max:500',
-            'city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:20',
-            'emergency_contact_name' => 'nullable|string|max:255',
-            'emergency_contact_phone' => 'nullable|string|max:20',
-            'notes' => 'nullable|string|max:1000',
-            'time_zone' => 'nullable|string|max:255',
-            'language' => 'nullable|string|max:10',
-            'two_factor_enabled' => 'boolean',
+        return view('employees.create', compact('managers', 'roles', 'departments'));
+
+    } catch (\Exception $e) {
+        Log::error('Error loading employee create form:', ['error' => $e->getMessage()]);
+
+        // Fallback: return with empty collections if there's an error
+        return view('employees.create', [
+            'managers' => collect([]),
+            'roles' => Role::all(),
+            'departments' => Department::all()
+        ]);
+    }
+}
+// ENHANCED STORE METHOD - Replace your existing store() method
+public function store(Request $request)
+{
+    Log::info('Employee creation attempt started:', [
+        'request_data' => $request->except(['password', 'password_confirmation']),
+        'has_password' => $request->filled('password'),
+        'has_password_confirmation' => $request->filled('password_confirmation')
+    ]);
+
+    $validatedData = $request->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name'  => 'required|string|max:255',
+        'email'      => 'required|email|unique:employees,email',
+        'password'   => 'required|string|min:6|confirmed',
+        'role_id'    => 'required|exists:roles,id',
+        'department_id' => 'required|exists:departments,id',
+        'hire_date'  => 'required|date',
+        'status'     => 'required|in:active,inactive,pending',
+        'phone'      => 'nullable|string|max:20',
+        'manager_id' => 'nullable|exists:employees,id',
+        'position'   => 'nullable|string|max:255',
+        'salary'     => 'nullable|numeric|min:0',
+        'address'    => 'nullable|string|max:500',
+        'city'       => 'nullable|string|max:255',
+        'state'      => 'nullable|string|max:255',
+        'country'    => 'nullable|string|max:255',
+        'postal_code'=> 'nullable|string|max:20',
+        'emergency_contact_name'  => 'nullable|string|max:255',
+        'emergency_contact_phone' => 'nullable|string|max:20',
+        'notes'      => 'nullable|string|max:1000',
+        'time_zone'  => 'nullable|string|max:255',
+        'language'   => 'nullable|string|max:10',
+        'two_factor_enabled' => 'nullable|boolean',
+    ]);
+
+    return DB::transaction(function () use ($validatedData) {
+
+        // Generate a fresh, unique employee number INSIDE the transaction
+        $employeeNumber = $this->generateEmployeeNumber($validatedData['department_id']);
+
+        $employeeData = [
+            'employee_number' => $employeeNumber,
+            'first_name'  => $validatedData['first_name'],
+            'last_name'   => $validatedData['last_name'],
+            'email'       => $validatedData['email'],
+            'password'    => Hash::make($validatedData['password']),
+            'role_id'     => $validatedData['role_id'],
+            'department_id'=> $validatedData['department_id'],
+            'status'      => $validatedData['status'] ?? 'active',
+            'hire_date'   => $validatedData['hire_date'] ?? now(),
+            'phone'       => $validatedData['phone'] ?? null,
+            'manager_id'  => $validatedData['manager_id'] ?? null,
+            'position'    => $validatedData['position'] ?? null,
+            'salary'      => $validatedData['salary'] ?? null,
+            'address'     => $validatedData['address'] ?? null,
+            'city'        => $validatedData['city'] ?? null,
+            'state'       => $validatedData['state'] ?? null,
+            'country'     => $validatedData['country'] ?? null,
+            'postal_code' => $validatedData['postal_code'] ?? null,
+            'emergency_contact_name'  => $validatedData['emergency_contact_name'] ?? null,
+            'emergency_contact_phone' => $validatedData['emergency_contact_phone'] ?? null,
+            'notes'       => $validatedData['notes'] ?? null,
+            'time_zone'   => $validatedData['time_zone'] ?? 'UTC',
+            'language'    => $validatedData['language'] ?? 'en',
+            'two_factor_enabled' => isset($validatedData['two_factor_enabled']) ? (bool)$validatedData['two_factor_enabled'] : false,
+        ];
+
+        // Keep only columns that actually exist
+        $employeeData = $this->filterExistingColumns('employees', $employeeData);
+
+        $logData = $employeeData; unset($logData['password']);
+        Log::info('Creating employee with data:', $logData);
+
+        // ✅ CREATE ONCE
+        $employee = Employee::create($employeeData);
+
+
+
+        Log::info('Employee created & role synced:', [
+            'id' => $employee->id,
+            'email' => $employee->email,
+            'employee_number' => $employee->employee_number,
+            'spatie_roles' => $employee->getRoleNames()->toArray()
         ]);
 
-        try {
-            $employeeNumber = $this->generateEmployeeNumber($request->department_id);
-            
-            // Simple creation - role handles all the logic automatically
-            $employee = Employee::create([
-                'employee_number' => $employeeNumber,
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role_id' => $request->role_id, // This is all we need!
-                'department_id' => $request->department_id,
-                'status' => $request->status ?? 'active',
-                'hire_date' => $request->hire_date ?? now(),
-                'phone' => $request->phone,
-                'manager_id' => $request->manager_id,
-                'position' => $request->position,
-                'salary' => $request->salary,
-                'address' => $request->address,
-                'city' => $request->city,
-                'state' => $request->state,
-                'country' => $request->country,
-                'postal_code' => $request->postal_code,
-                'emergency_contact_name' => $request->emergency_contact_name,
-                'emergency_contact_phone' => $request->emergency_contact_phone,
-                'notes' => $request->notes,
-                'time_zone' => $request->time_zone ?? 'UTC',
-                'language' => $request->language ?? 'en',
-                'two_factor_enabled' => $request->has('two_factor_enabled'),
-            ]);
+        return redirect()
+            ->route('employees.index')
+            ->with('success', "Employee created successfully! Employee Number: {$employeeNumber}");
+    });
+}
 
-            // Load role to get computed properties
-            $employee->load('role');
 
-            \Log::info('Employee created successfully:', [
-                'id' => $employee->id, 
-                'email' => $employee->email,
-                'role' => $employee->role->name,
-                'is_technician' => $employee->isFieldTechnician(),
-                'specialization' => $employee->getSpecialization()
-            ]);
 
-            $message = 'Employee onboarded successfully! Employee Number: ' . $employeeNumber;
-            if ($employee->isFieldTechnician()) {
-                $message .= ' (Field Technician: ' . $employee->getSpecialization() . ')';
-            }
 
-            return redirect()->route('employees.index')->with('success', $message);
 
-        } catch (\Exception $e) {
-            \Log::error('Employee creation failed:', ['error' => $e->getMessage(), 'data' => $request->all()]);
-            
-            return back()
-                ->with('error', 'Failed to create employee: ' . $e->getMessage())
-                ->withInput();
-        }
-    }
+   private function generateEmployeeNumber($departmentId): string
+{
+    // Use the department name to form a 3-letter prefix (fallback EMP)
+    $department = Department::find($departmentId);
+    $prefix = strtoupper(substr(($department->name ?? 'EMP'), 0, 3)); // e.g. HR
+    $year   = now()->format('y');                                     // e.g. 25
+    $base   = $prefix.$year;                                          // e.g. HR25
 
-    private function generateEmployeeNumber($departmentId)
-    {
-        try {
-            $department = Department::find($departmentId);
-            $prefix = $department ? strtoupper(substr($department->name, 0, 3)) : 'EMP';
-            $year = date('y');
-            
-            $lastEmployee = Employee::where('employee_number', 'like', $prefix . $year . '%')
-                ->orderBy('employee_number', 'desc')
-                ->first();
+    // Ask MySQL for the largest 4-digit suffix already used for this base
+    $max = Employee::where('employee_number', 'like', $base.'%')
+        ->selectRaw("MAX(CAST(RIGHT(employee_number, 4) AS UNSIGNED)) as max_suffix")
+        ->value('max_suffix');
 
-            if ($lastEmployee) {
-                $lastNumber = (int) substr($lastEmployee->employee_number, -4);
-                $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-            } else {
-                $newNumber = '0001';
-            }
+    // Next available number: 0001, 0002, ...
+    $next = str_pad((int)($max ?? 0) + 1, 4, '0', STR_PAD_LEFT);
 
-            return $prefix . $year . $newNumber;
-            
-        } catch (\Exception $e) {
-            \Log::error('Error generating employee number:', ['department_id' => $departmentId, 'error' => $e->getMessage()]);
-            return 'EMP' . date('y') . '0001';
-        }
-    }
+    return $base.$next; // e.g. HR250001
+}
+
 
     public function show(Employee $employee)
     {
@@ -202,57 +247,62 @@ class EmployeeController extends Controller
         return view('employees.edit', compact('employee', 'managers', 'roles', 'departments'));
     }
 
-    public function update(Request $request, Employee $employee)
-    {
-        $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email,' . $employee->id,
-            'phone' => 'nullable|string|max:20',
-            'department_id' => 'required|exists:departments,id',
-            'role_id' => 'required|exists:roles,id',
-            'manager_id' => 'nullable|exists:employees,id',
-            'status' => 'required|in:active,inactive,pending',
-            'hire_date' => 'required|date',
-            'time_zone' => 'nullable|string|max:255',
-            'language' => 'nullable|string|max:10',
-            'two_factor_enabled' => 'boolean',
-            'position' => 'nullable|string|max:255',
-            'salary' => 'nullable|numeric|min:0',
-        ]);
+public function update(Request $request, Employee $employee)
+{
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name'  => 'required|string|max:255',
+        'email'      => 'required|email|unique:employees,email,' . $employee->id,
+        'phone'      => 'nullable|string|max:20',
+        'department_id' => 'required|exists:departments,id',
+        'role_id'    => 'required|exists:roles,id',
+        'manager_id' => 'nullable|exists:employees,id',
+        'status'     => 'required|in:active,inactive,pending',
+        'hire_date'  => 'required|date',
+        'time_zone'  => 'nullable|string|max:255',
+        'language'   => 'nullable|string|max:10',
+        'two_factor_enabled' => 'boolean',
+        'position'   => 'nullable|string|max:255',
+        'salary'     => 'nullable|numeric|min:0',
+        'password'   => 'nullable|string|min:6|confirmed',
+    ]);
 
-        try {
-            // Simple update - role handles everything automatically
-            $employee->update([
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'department_id' => $request->department_id,
-                'role_id' => $request->role_id, // Role change automatically updates technician status
-                'manager_id' => $request->manager_id,
-                'status' => $request->status,
-                'hire_date' => $request->hire_date,
-                'time_zone' => $request->time_zone ?? 'UTC',
-                'language' => $request->language ?? 'en',
-                'two_factor_enabled' => $request->has('two_factor_enabled'),
-                'position' => $request->position,
-                'salary' => $request->salary,
-            ]);
+    return DB::transaction(function () use ($validated, $employee) {
 
-            $message = 'Employee updated successfully!';
-            if ($employee->isFieldTechnician()) {
-                $message .= ' (Field Technician: ' . $employee->getSpecialization() . ')';
-            }
+        $payload = [
+            'first_name' => $validated['first_name'],
+            'last_name'  => $validated['last_name'],
+            'email'      => $validated['email'],
+            'phone'      => $validated['phone'] ?? null,
+            'department_id' => $validated['department_id'],
+            'role_id'    => $validated['role_id'],
+            'manager_id' => $validated['manager_id'] ?? null,
+            'status'     => $validated['status'],
+            'hire_date'  => $validated['hire_date'],
+            'time_zone'  => $validated['time_zone'] ?? 'UTC',
+            'language'   => $validated['language'] ?? 'en',
+            'two_factor_enabled' => isset($validated['two_factor_enabled']) ? (bool)$validated['two_factor_enabled'] : false,
+            'position'   => $validated['position'] ?? null,
+            'salary'     => $validated['salary'] ?? null,
+        ];
 
-            return redirect()->route('employees.index')->with('success', $message);
-
-        } catch (\Exception $e) {
-            return back()
-                ->with('error', 'Failed to update employee: ' . $e->getMessage())
-                ->withInput();
+        if (!empty($validated['password'])) {
+            $payload['password'] = Hash::make($validated['password']);
         }
-    }
+
+        // Keep only columns that exist
+        $payload = $this->filterExistingColumns('employees', $payload);
+
+        // ✅ UPDATE ONCE
+        $employee->update($payload);
+
+
+
+        return redirect()->route('employees.index')->with('success', 'Employee updated successfully!');
+    });
+}
+
+
 
     public function updateRole(Request $request, Employee $employee)
     {
@@ -264,7 +314,7 @@ class EmployeeController extends Controller
         $employee->load('role'); // Reload to get updated computed properties
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'message' => 'Role updated successfully!' . ($employee->isFieldTechnician() ? ' (Field Technician)' : ''),
             'role_name' => $employee->role->name,
             'is_technician' => $employee->isFieldTechnician(),
@@ -287,9 +337,9 @@ class EmployeeController extends Controller
      */
     public function profile()
     {
-        $employee = auth()->user()->load([
-            'role', 
-            'department', 
+         $employee = Auth::user()->load([
+            'role',
+            'department',
             'manager.department',
             'subordinates.role',
             'currentAssetAssignments.asset',
@@ -315,8 +365,8 @@ class EmployeeController extends Controller
      */
     public function editProfile()
     {
-        $employee = auth()->user()->load(['role', 'department']);
-        
+        $employee = Auth::user()->load(['role', 'department']);
+
         return view('employee.edit-profile', compact('employee'));
     }
 
@@ -325,7 +375,7 @@ class EmployeeController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $employee = auth()->user();
+        $employee = Auth::user();
 
         $request->validate([
             'first_name' => 'required|string|max:255',
@@ -337,7 +387,7 @@ class EmployeeController extends Controller
 
         $employee->update($request->only([
             'first_name',
-            'last_name', 
+            'last_name',
             'phone',
             'time_zone',
             'language'
@@ -357,7 +407,7 @@ class EmployeeController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $employee = auth()->user();
+        $employee = Auth::user();
 
         if (!Hash::check($request->current_password, $employee->password)) {
             return back()->withErrors(['current_password' => 'Current password is incorrect.']);

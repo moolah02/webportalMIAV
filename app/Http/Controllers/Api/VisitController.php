@@ -15,36 +15,20 @@ class VisitController extends Controller
     // GET /api/visits
     public function index(Request $request)
     {
-        $q = Visit::query()
-            ->withoutGlobalScopes()
-            ->with('visitTerminal') // single terminal commonly used now
-            ->orderByDesc('id');
+        $visits = Visit::with(['visitTerminals', 'employee'])
+            ->orderByDesc('completed_at')
+            ->limit(50) // Limit for performance
+            ->get();
 
-        if (in_array(SoftDeletes::class, class_uses_recursive(Visit::class))) {
-            $q->withTrashed();
-        }
+        // Get filter options
+        $technicians = \App\Models\Employee::where('is_active', true)->get();
+        $regions = \App\Models\Region::all(); // Assuming you have regions
+        $clients = \App\Models\Client::all();
 
-        $visits = $q->get();
-
-        $totalDb = Visit::withoutGlobalScopes()->when(
-            in_array(SoftDeletes::class, class_uses_recursive(Visit::class)),
-            fn($qq) => $qq->withTrashed()
-        )->count();
-
-        return response()->json([
-            'success'        => true,
-            'count_returned' => $visits->count(),
-            'total_in_db'    => $totalDb,
-            'data'           => $visits,
-        ]);
+        return view('reports.technician-visits', compact('visits', 'technicians', 'regions', 'clients'));
     }
 
-    // GET /api/visits/{visit}
-    public function show(Visit $visit)
-    {
-        $visit->load('visitTerminal');
-        return response()->json(['success' => true, 'data' => $visit]);
-    }
+
 
     // GET /api/assignments/{assignmentId}/visits
     public function indexByAssignment($assignmentId)
@@ -143,27 +127,204 @@ class VisitController extends Controller
         });
     }
 
-    // POST /api/visits/{visit}/evidence
-    public function uploadEvidence(Request $request, Visit $visit)
-    {
-        $request->validate([
-            'files'   => ['required','array','min:1'],
-            'files.*' => ['file','max:10240','mimes:jpg,jpeg,png,webp,pdf'],
-        ]);
 
-        $stored = [];
-        foreach ($request->file('files', []) as $file) {
-            $path = $file->store('visits/evidence', 'public');
-            $stored[] = Storage::disk('public')->url($path);
+    /**
+     * Filter visits based on request parameters
+     */
+    public function filter(Request $request)
+    {
+        $query = Visit::with(['visitTerminals', 'employee']);
+
+        // Date range filtering
+        if ($request->filled('date_range')) {
+            switch ($request->date_range) {
+                case 'today':
+                    $query->whereDate('completed_at', today());
+                    break;
+                case 'yesterday':
+                    $query->whereDate('completed_at', today()->subDay());
+                    break;
+                case 'last_7_days':
+                    $query->whereDate('completed_at', '>=', today()->subDays(7));
+                    break;
+                case 'last_30_days':
+                    $query->whereDate('completed_at', '>=', today()->subDays(30));
+                    break;
+                case 'this_month':
+                    $query->whereMonth('completed_at', now()->month)
+                          ->whereYear('completed_at', now()->year);
+                    break;
+                case 'custom':
+                    if ($request->filled('start_date')) {
+                        $query->whereDate('completed_at', '>=', $request->start_date);
+                    }
+                    if ($request->filled('end_date')) {
+                        $query->whereDate('completed_at', '<=', $request->end_date);
+                    }
+                    break;
+            }
         }
 
-        $current = $visit->evidence ?? [];
-        $visit->evidence = array_values(array_merge($current, $stored));
-        $visit->save();
+        // Technician filter
+        if ($request->filled('technician_id')) {
+            $query->where('employee_id', $request->technician_id);
+        }
+
+        // Region filter (assuming you have a region relationship)
+        if ($request->filled('region_id')) {
+            $query->whereHas('visitTerminals.posTerminal', function($q) use ($request) {
+                $q->where('region_id', $request->region_id);
+            });
+        }
+
+        // Status filter (you might need to adjust this based on your Visit model)
+        if ($request->filled('terminal_status')) {
+            $query->where('visit_status', $request->terminal_status);
+        }
+
+        // Client filter
+        if ($request->filled('client_id')) {
+            $query->whereHas('visitTerminals.posTerminal', function($q) use ($request) {
+                $q->where('client_id', $request->client_id);
+            });
+        }
+
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('merchant_name', 'like', "%{$search}%")
+                  ->orWhere('visit_summary', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%");
+            });
+        }
+
+        $visits = $query->orderByDesc('completed_at')->get();
+
+        // Calculate stats
+        $stats = [
+            'today_visits' => Visit::whereDate('completed_at', today())->count(),
+            'working_terminals' => $visits->where('visit_status', 'completed')->count(),
+            'issues_found' => $visits->where('visit_status', 'issues_found')->count(),
+            'not_seen' => $visits->where('visit_status', 'not_completed')->count(),
+        ];
 
         return response()->json([
-            'success'  => true,
-            'evidence' => $visit->evidence,
+            'success' => true,
+            'visits' => $visits,
+            'stats' => $stats,
+            'total' => $visits->count()
         ]);
+    }
+
+    /**
+     * Show a specific visit
+     */
+    public function show(Visit $visit)
+    {
+        $visit->load(['visitTerminals', 'employee']);
+
+        $html = view('reports.partials.visit-details', compact('visit'))->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'visit' => $visit
+        ]);
+    }
+
+    /**
+     * Get photos for a specific visit
+     */
+    public function getPhotos(Visit $visit)
+    {
+        // Assuming you store photos in a JSON field or separate table
+        $photos = [];
+
+        // If photos are stored as JSON in the visit record
+        if ($visit->photos) {
+            $photoData = json_decode($visit->photos, true);
+            foreach ($photoData as $photo) {
+                $photos[] = [
+                    'url' => asset('storage/' . $photo['path']),
+                    'caption' => $photo['caption'] ?? ''
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'photos' => $photos
+        ]);
+    }
+
+    /**
+     * Generate PDF report for a visit
+     */
+    public function generatePDF(Visit $visit)
+    {
+        $visit->load(['visitTerminals', 'employee']);
+
+        // You'll need to install a PDF library like barryvdh/laravel-dompdf
+        // composer require barryvdh/laravel-dompdf
+
+        $pdf = \PDF::loadView('reports.pdf.visit-report', compact('visit'));
+
+        return $pdf->download("visit-report-{$visit->id}.pdf");
+    }
+
+    /**
+     * Export filtered visits
+     */
+    public function export(Request $request)
+    {
+        // Apply the same filters as the filter method
+        $query = Visit::with(['visitTerminals', 'employee']);
+
+        // Copy filtering logic from filter() method here...
+        // (Same filtering code as above)
+
+        $visits = $query->orderByDesc('completed_at')->get();
+
+        $filename = 'technician-visits-' . now()->format('Y-m-d-H-i-s') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function() use ($visits) {
+            $file = fopen('php://output', 'w');
+
+            // CSV headers
+            fputcsv($file, [
+                'Visit ID',
+                'Date',
+                'Technician',
+                'Merchant',
+                'Terminal Count',
+                'Status',
+                'Duration',
+                'Summary'
+            ]);
+
+            // CSV data
+            foreach ($visits as $visit) {
+                fputcsv($file, [
+                    $visit->id,
+                    $visit->completed_at->format('Y-m-d H:i:s'),
+                    $visit->employee ? $visit->employee->first_name . ' ' . $visit->employee->last_name : 'N/A',
+                    $visit->merchant_name,
+                    $visit->visitTerminals->count(),
+                    $visit->visit_status ?? 'N/A',
+                    $visit->duration_minutes ? "{$visit->duration_minutes} minutes" : 'N/A',
+                    $visit->visit_summary
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return Response::stream($callback, 200, $headers);
     }
 }

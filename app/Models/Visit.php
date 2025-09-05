@@ -29,6 +29,7 @@ class Visit extends Model
         'terminal'              => 'array',   // <-- singular
         'evidence'              => 'array',
         'other_terminals_found' => 'array',
+
     ];
 
     public function visitTerminals()

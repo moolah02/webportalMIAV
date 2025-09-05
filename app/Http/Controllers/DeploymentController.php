@@ -23,10 +23,10 @@ class DeploymentController extends Controller
             ->with('cities')
             ->orderBy('name')
             ->get();
-            
+
         // Get all clients for the import process
         $clients = Client::orderBy('company_name')->get();
-        
+
         // Get technicians for job assignment (employees with technician role)
         $technicians = Employee::where(function($query) {
                 $query->whereHas('role', function($q) {
@@ -46,7 +46,7 @@ class DeploymentController extends Controller
                     'phone' => $technician->phone
                 ];
             });
-        
+
         // Get deployment statistics using existing columns
         $stats = [
             'total_regions' => Region::count(),
@@ -73,7 +73,7 @@ class DeploymentController extends Controller
             ],
             (object)[
                 'id' => 2,
-                'assignment_id' => 'ASG-0002', 
+                'assignment_id' => 'ASG-0002',
                 'technician' => (object)['name' => 'Sarah Moyo'],
                 'region' => (object)['name' => 'Bulawayo Central'],
                 'scheduled_date' => now(),
@@ -90,13 +90,13 @@ class DeploymentController extends Controller
         $completedToday = 0;
 
         return view('deployment.planning', compact(
-            'regions', 
-            'clients', 
-            'stats', 
+            'regions',
+            'clients',
+            'stats',
             'technicians',
             'assignments',
             'todayAssignments',
-            'pendingAssignments', 
+            'pendingAssignments',
             'inProgressAssignments',
             'completedToday'
         ));
@@ -196,7 +196,7 @@ class DeploymentController extends Controller
             DB::beginTransaction();
 
             $region = Region::findOrFail($regionId);
-            
+
             // Update region details
             $region->update([
                 'name' => $request->name,
@@ -210,7 +210,7 @@ class DeploymentController extends Controller
             // Update cities - remove old ones and add new ones
             if ($request->has('cities')) {
                 $region->cities()->delete(); // Remove existing cities
-                
+
                 if (is_array($request->cities)) {
                     foreach ($request->cities as $cityName) {
                         if (!empty(trim($cityName))) {
@@ -248,10 +248,10 @@ class DeploymentController extends Controller
     {
         try {
             $region = Region::findOrFail($regionId);
-            
+
             // Check if region has terminals
             $terminalsCount = PosTerminal::where('region_id', $regionId)->count();
-            
+
             if ($terminalsCount > 0) {
                 return response()->json([
                     'success' => false,
@@ -261,7 +261,7 @@ class DeploymentController extends Controller
 
             // Delete cities associated with this region
             $region->cities()->delete();
-            
+
             // Delete the region
             $region->delete();
 
@@ -311,7 +311,7 @@ class DeploymentController extends Controller
     public function importTerminals(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'file' => 'required|file|mimes:csv,xlsx,xls|max:10240', // 10MB max
+            'file' => 'required|file|mimes:csv,xlsx,xls|max:51200', // 10MB max
             'client_id' => 'required|exists:clients,id',
             'auto_assign_regions' => 'boolean'
         ]);
@@ -328,10 +328,10 @@ class DeploymentController extends Controller
             $file = $request->file('file');
             $clientId = $request->client_id;
             $autoAssignRegions = $request->boolean('auto_assign_regions', true);
-            
+
             // Parse the Excel file
             $data = Excel::toArray([], $file)[0]; // Get first sheet
-            
+
             if (empty($data)) {
                 return response()->json([
                     'success' => false,
@@ -345,7 +345,7 @@ class DeploymentController extends Controller
 
             // Expected columns mapping
             $columnMapping = $this->getColumnMapping($headers);
-            
+
             if (!$columnMapping) {
                 return response()->json([
                     'success' => false,
@@ -365,11 +365,11 @@ class DeploymentController extends Controller
 
             foreach ($rows as $index => $row) {
                 $rowNumber = $index + 2; // Excel row number (accounting for header)
-                
+
                 try {
                     // Extract data from row
                     $terminalData = $this->extractTerminalData($row, $columnMapping, $clientId);
-                    
+
                     if (!$terminalData) {
                         $importResults['failed_imports']++;
                         $importResults['errors'][] = "Row {$rowNumber}: Missing required data";
@@ -423,7 +423,7 @@ class DeploymentController extends Controller
     private function getColumnMapping($headers)
     {
         $mapping = [];
-        
+
         // Define possible column name variations
         $columnVariations = [
             'terminal_id' => ['terminal_id', 'terminal id', 'id', 'terminal', 'pos_id'],
@@ -454,7 +454,7 @@ class DeploymentController extends Controller
     {
         $terminalId = trim($row[$mapping['terminal_id']] ?? '');
         $merchantName = trim($row[$mapping['merchant_name']] ?? '');
-        
+
         if (empty($terminalId) || empty($merchantName)) {
             return false;
         }
@@ -481,13 +481,13 @@ class DeploymentController extends Controller
     private function findRegionByCity($cityName)
     {
         $cityName = strtolower(trim($cityName));
-        
+
         // First try exact match with cities
         $city = DB::table('cities')
             ->whereRaw('LOWER(name) = ?', [$cityName])
             ->where('is_active', true)
             ->first();
-            
+
         if ($city) {
             return $city->region_id;
         }
@@ -496,7 +496,7 @@ class DeploymentController extends Controller
         $region = Region::whereRaw('LOWER(name) LIKE ?', ["%{$cityName}%"])
             ->where('is_active', true)
             ->first();
-            
+
         return $region ? $region->id : null;
     }
 
@@ -643,7 +643,7 @@ class DeploymentController extends Controller
 
         try {
             $terminal = PosTerminal::findOrFail($terminalId);
-            
+
             $terminal->update([
                 'current_status' => $request->status,
                 'status' => $request->status,

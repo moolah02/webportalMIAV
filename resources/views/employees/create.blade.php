@@ -1,4 +1,4 @@
-{{-- 
+{{--
 ==============================================
 EMPLOYEE ONBOARDING FORM (For Your System)
 File: resources/views/employees/create.blade.php
@@ -19,14 +19,14 @@ File: resources/views/employees/create.blade.php
 
     <form action="{{ route('employees.store') }}" method="POST" id="employeeForm">
         @csrf
-        
+
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
             <!-- Main Form -->
             <div>
                 <!-- Personal Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">👤 Personal Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">First Name *</label>
@@ -37,7 +37,7 @@ File: resources/views/employees/create.blade.php
                                 <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Last Name *</label>
                             <input type="text" name="last_name" value="{{ old('last_name') }}" required
@@ -92,7 +92,7 @@ File: resources/views/employees/create.blade.php
                 <!-- Employment Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">🏢 Employment Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Department *</label>
@@ -180,7 +180,7 @@ File: resources/views/employees/create.blade.php
                 <!-- Additional Information -->
                 <div class="content-card">
                     <h4 style="margin-block-end: 20px; color: #333;">📝 Additional Information</h4>
-                    
+
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Position/Title</label>
                         <input type="text" name="position" value="{{ old('position') }}"
@@ -260,7 +260,7 @@ File: resources/views/employees/create.blade.php
                 <!-- Employee Status -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 15px; color: #333;">⚙️ Employee Status</h4>
-                    
+
                     <div style="margin-block-end: 15px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status *</label>
                         <select name="status" required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
@@ -283,7 +283,7 @@ File: resources/views/employees/create.blade.php
                 <!-- Role Permissions Preview -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 15px; color: #333;">🔑 Role Permissions</h4>
-                    
+
                     <div id="role-permissions" style="font-size: 14px; color: #666;">
                         Select a role to see permissions
                     </div>
@@ -355,83 +355,60 @@ File: resources/views/employees/create.blade.php
 </style>
 
 <script>
-// Show role permissions when role is selected
-function showRolePermissions(roleId) {
-    const roleSelect = document.querySelector('select[name="role_id"]');
-    const permissionsDiv = document.getElementById('role-permissions');
-    
-    if (!roleId) {
-        permissionsDiv.innerHTML = 'Select a role to see permissions';
-        return;
-    }
-    
-    const selectedOption = roleSelect.querySelector(`option[value="${roleId}"]`);
-    const permissions = JSON.parse(selectedOption.dataset.permissions || '[]');
-    
-    if (permissions.length === 0) {
-        permissionsDiv.innerHTML = '<span style="color: #f44336;">No permissions assigned</span>';
-        return;
-    }
-    
-    let permissionList = permissions.map(permission => {
-        const displayName = permission.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        const color = permission === 'all' ? '#f44336' : '#4caf50';
-        return `<span style="background: ${color}20; color: ${color}; padding: 2px 6px; border-radius: 8px; font-size: 11px; margin: 2px; display: inline-block;">${displayName}</span>`;
-    }).join('');
-    
-    permissionsDiv.innerHTML = permissionList;
-}
-
-// Update employee number preview when department changes
-document.querySelector('select[name="department_id"]').addEventListener('change', function() {
-    const preview = document.getElementById('employee-number-preview');
-    const departmentSelect = this;
-    const selectedOption = departmentSelect.options[departmentSelect.selectedIndex];
-    
-    if (departmentSelect.value) {
-        const departmentName = selectedOption.text;
-        const prefix = departmentName.substring(0, 3).toUpperCase();
-        const year = new Date().getFullYear().toString().slice(-2);
-        preview.textContent = `${prefix}${year}XXXX`;
-    } else {
-        preview.textContent = 'Select department first';
-    }
-});
-
-// Form validation and UX improvements
+// Enhanced debugging
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('employeeForm');
-    
-    // Auto-generate preview on page load if department is selected
-    const departmentSelect = document.querySelector('select[name="department_id"]');
-    if (departmentSelect.value) {
-        departmentSelect.dispatchEvent(new Event('change'));
-    }
-    
-    // Auto-show permissions on page load if role is selected
-    const roleSelect = document.querySelector('select[name="role_id"]');
-    if (roleSelect.value) {
-        showRolePermissions(roleSelect.value);
-    }
-    
-    // Form submission
+
+    console.log('Form loaded:', form);
+    console.log('Form action:', form.action);
+    console.log('Form method:', form.method);
+
     form.addEventListener('submit', function(e) {
-        const firstName = document.querySelector('input[name="first_name"]').value;
-        const lastName = document.querySelector('input[name="last_name"]').value;
-        const email = document.querySelector('input[name="email"]').value;
-        const departmentId = document.querySelector('select[name="department_id"]').value;
-        const roleId = document.querySelector('select[name="role_id"]').value;
-        
-        if (!firstName || !lastName || !email || !departmentId || !roleId) {
+        console.log('Form submission started');
+
+        // Check required fields
+        const requiredFields = ['first_name', 'last_name', 'email', 'password', 'password_confirmation', 'department_id', 'role_id', 'hire_date'];
+        const missingFields = [];
+
+        requiredFields.forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (!field || !field.value.trim()) {
+                missingFields.push(fieldName);
+            }
+        });
+
+        if (missingFields.length > 0) {
             e.preventDefault();
-            alert('Please fill in all required fields (marked with *)');
-            return;
+            alert('Missing required fields: ' + missingFields.join(', '));
+            console.log('Missing fields:', missingFields);
+            return false;
         }
-        
+
+        // Check password confirmation
+        const password = document.querySelector('[name="password"]').value;
+        const passwordConfirm = document.querySelector('[name="password_confirmation"]').value;
+
+        if (password !== passwordConfirm) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return false;
+        }
+
+        console.log('All validations passed, submitting form...');
+
         // Show loading state
         const submitBtn = document.querySelector('button[type="submit"]');
         submitBtn.innerHTML = '⏳ Creating Employee...';
         submitBtn.disabled = true;
+
+        // Log form data
+        const formData = new FormData(form);
+        console.log('Form data being submitted:');
+        for (let [key, value] of formData.entries()) {
+            if (key !== 'password' && key !== 'password_confirmation') {
+                console.log(key + ':', value);
+            }
+        }
     });
 });
 </script>
