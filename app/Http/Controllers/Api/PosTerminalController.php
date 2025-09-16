@@ -198,107 +198,100 @@ public function bulkUpdateByTerminalId(Request $request)
 
 
     /**
-     * Get paginated list of POS terminals with filtering
-     */
-    public function index(Request $request)
-    {
-        $query = PosTerminal::with(['client:id,company_name,contact_person,phone']);
+ * Get list of ALL POS terminals with filtering (no pagination)
+ */
+public function index(Request $request)
+{
+    $query = PosTerminal::with(['client:id,company_name,contact_person,phone']);
 
-        // Apply filters
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('terminal_id', 'like', "%{$search}%")
-                  ->orWhere('merchant_name', 'like', "%{$search}%")
-                  ->orWhere('merchant_contact_person', 'like', "%{$search}%")
-                  ->orWhere('physical_address', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('client_id')) {
-            $query->where('client_id', $request->client_id);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('region')) {
-            $query->where('region', $request->region);
-        }
-
-        if ($request->filled('city')) {
-            $query->where('city', $request->city);
-        }
-
-        // Apply technician-specific filtering (if user is a technician)
-        $user = $request->user();
-        if ($user && $user->isFieldTechnician() && $request->get('my_assignments_only', false)) {
-            $query->whereHas('jobAssignments', function($q) use ($user) {
-                $q->where('technician_id', $user->id)
-                  ->whereIn('status', ['assigned', 'in_progress']);
-            });
-        }
-
-        $terminals = $query->orderBy('created_at', 'desc')
-                          ->paginate($request->get('per_page', 15));
-
-        // Transform the data for API response
-        $terminals->getCollection()->transform(function ($terminal) {
-            return [
-                'id' => $terminal->id,
-                'terminal_id' => $terminal->terminal_id,
-                'merchant_name' => $terminal->merchant_name,
-                'merchant_contact_person' => $terminal->merchant_contact_person,
-                'merchant_phone' => $terminal->merchant_phone,
-                'merchant_email' => $terminal->merchant_email,
-                'physical_address' => $terminal->physical_address,
-                'region' => $terminal->region,
-                'city' => $terminal->city,
-                'province' => $terminal->province,
-                'business_type' => $terminal->business_type,
-                'terminal_model' => $terminal->terminal_model,
-                'serial_number' => $terminal->serial_number,
-                'status' => $terminal->status,
-                'current_status' => $terminal->current_status,
-                'installation_date' => $terminal->installation_date,
-                'last_service_date' => $terminal->last_service_date,
-                'next_service_due' => $terminal->next_service_due,
-                'client' => $terminal->client ? [
-                    'id' => $terminal->client->id,
-                    'name' => $terminal->client->company_name,
-                    'contact_person' => $terminal->client->contact_person,
-                    'phone' => $terminal->client->phone,
-                ] : null,
-                'status_info' => [
-                    'is_active' => $terminal->isActive(),
-                    'is_faulty' => $terminal->isFaulty(),
-                    'needs_service' => $terminal->needsService(),
-                ],
-                'coordinates' => [
-                    'latitude' => $terminal->latitude ?? null,
-                    'longitude' => $terminal->longitude ?? null,
-                ],
-                'created_at' => $terminal->created_at,
-                'updated_at' => $terminal->updated_at,
-            ];
+    // Apply filters
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('terminal_id', 'like', "%{$search}%")
+              ->orWhere('merchant_name', 'like', "%{$search}%")
+              ->orWhere('merchant_contact_person', 'like', "%{$search}%")
+              ->orWhere('physical_address', 'like', "%{$search}%");
         });
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'terminals' => $terminals->items(),
-                'pagination' => [
-                    'current_page' => $terminals->currentPage(),
-                    'last_page' => $terminals->lastPage(),
-                    'per_page' => $terminals->perPage(),
-                    'total' => $terminals->total(),
-                    'from' => $terminals->firstItem(),
-                    'to' => $terminals->lastItem(),
-                ]
-            ]
-        ]);
     }
+
+    if ($request->filled('client_id')) {
+        $query->where('client_id', $request->client_id);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('region')) {
+        $query->where('region', $request->region);
+    }
+
+    if ($request->filled('city')) {
+        $query->where('city', $request->city);
+    }
+
+    // Technician-specific filtering
+    $user = $request->user();
+    if ($user && $user->isFieldTechnician() && $request->get('my_assignments_only', false)) {
+        $query->whereHas('jobAssignments', function($q) use ($user) {
+            $q->where('technician_id', $user->id)
+              ->whereIn('status', ['assigned', 'in_progress']);
+        });
+    }
+
+    // NO PAGINATION: fetch everything
+    $terminals = $query->orderBy('created_at', 'desc')->get();
+
+    // Transform for API response
+    $terminals = $terminals->map(function ($terminal) {
+        return [
+            'id' => $terminal->id,
+            'terminal_id' => $terminal->terminal_id,
+            'merchant_name' => $terminal->merchant_name,
+            'merchant_contact_person' => $terminal->merchant_contact_person,
+            'merchant_phone' => $terminal->merchant_phone,
+            'merchant_email' => $terminal->merchant_email,
+            'physical_address' => $terminal->physical_address,
+            'region' => $terminal->region,
+            'city' => $terminal->city,
+            'province' => $terminal->province,
+            'business_type' => $terminal->business_type,
+            'terminal_model' => $terminal->terminal_model,
+            'serial_number' => $terminal->serial_number,
+            'status' => $terminal->status,
+            'current_status' => $terminal->current_status,
+            'installation_date' => $terminal->installation_date,
+            'last_service_date' => $terminal->last_service_date,
+            'next_service_due' => $terminal->next_service_due,
+            'client' => $terminal->client ? [
+                'id' => $terminal->client->id,
+                'name' => $terminal->client->company_name,
+                'contact_person' => $terminal->client->contact_person,
+                'phone' => $terminal->client->phone,
+            ] : null,
+            'status_info' => [
+                'is_active' => $terminal->isActive(),
+                'is_faulty' => $terminal->isFaulty(),
+                'needs_service' => $terminal->needsService(),
+            ],
+            'coordinates' => [
+                'latitude' => $terminal->latitude ?? null,
+                'longitude' => $terminal->longitude ?? null,
+            ],
+            'created_at' => $terminal->created_at,
+            'updated_at' => $terminal->updated_at,
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'terminals' => $terminals,
+            'count' => $terminals->count(),
+        ],
+    ]);
+}
 
     /**
      * Get single terminal details

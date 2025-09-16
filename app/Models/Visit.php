@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
 class Visit extends Model
@@ -30,6 +30,7 @@ class Visit extends Model
         'evidence'              => 'array',
         'other_terminals_found' => 'array',
 
+
     ];
 
     public function visitTerminals()
@@ -37,6 +38,16 @@ class Visit extends Model
         return $this->hasMany(VisitTerminal::class);
     }
 
+
+    public function hasTerminal(): bool
+{
+    return !empty($this->terminal) && !empty($this->terminal['terminal_id']);
+}
+
+public function getTerminalId(): ?string
+{
+    return $this->terminal['terminal_id'] ?? null;
+}
     // Convenience when storing only one terminal per visit
     public function visitTerminal()
     {
@@ -100,5 +111,36 @@ class Visit extends Model
               ->whereIn('terminal_id', $terminalIds);
         })->get();
     }
+    public function getCompleteTerminalInfo(): ?array
+{
+    if (empty($this->terminal) || !is_array($this->terminal)) {
+        return null; // No data to display
+    }
+
+    $data = $this->terminal; // JSON column already cast to array
+
+    // Try to fetch extra info from pos_terminals table if terminal_id exists
+    if (!empty($data['terminal_id'])) {
+        $posTerminal = DB::table('pos_terminals')
+            ->where('id', $data['terminal_id'])  // use 'id' if that's the real column
+    ->first();;
+
+        if ($posTerminal) {
+            $data = array_merge($data, [
+                'found_in_pos_terminals' => true,
+                'terminal_model' => $posTerminal->model ?? null,
+                'condition_status' => $posTerminal->condition ?? null,
+                'serial_number' => $posTerminal->serial_number ?? null,
+                'last_service_date' => $posTerminal->last_service_date ?? null,
+                'next_service_due' => $posTerminal->next_service_due ?? null,
+            ]);
+        } else {
+            $data['found_in_pos_terminals'] = false;
+        }
+    }
+
+    return $data;
+}
+
 }
 

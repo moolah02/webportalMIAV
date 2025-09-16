@@ -484,7 +484,21 @@
   </a>
 </div>
 
-
+<!-- Project Management -->
+<div class="nav-section" onclick="toggleMenu(this)">
+  <span class="nav-icon">📋</span> Project Management
+</div>
+<div class="submenu {{ request()->routeIs('projects.*') ? 'show' : '' }}">
+  <a href="{{ route('projects.index') }}" class="nav-sub {{ request()->routeIs('projects.index','projects.show','projects.edit','projects.create') ? 'active' : '' }}">
+    <span class="nav-icon">📊</span> Projects
+  </a>
+  <a href="{{ route('projects.create') }}" class="nav-sub {{ request()->routeIs('projects.create') ? 'active' : '' }}">
+    <span class="nav-icon">➕</span> New Project
+  </a>
+  <a href="{{ route('projects.completion-reports') }}" class="nav-sub {{ request()->routeIs('projects.completion-reports') ? 'active' : '' }}">
+    <span class="nav-icon">📄</span> Project Closure and Reports
+  </a>
+</div>
        <!-- Client Management -->
 <div class="nav-section" onclick="toggleMenu(this)">
   <span class="nav-icon">👥</span> Client Management

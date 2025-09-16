@@ -28,6 +28,39 @@ class VisitController extends Controller
         return view('reports.technician-visits', compact('visits', 'technicians', 'regions', 'clients'));
     }
 
+    public function myVisits(Request $request)
+{
+    $user = $request->user();
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthenticated.',
+        ], 401);
+    }
+
+    // Resolve the employee id linked to this user
+    $employeeId = $user->id;
+
+    if (!$employeeId) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No employee profile linked to this user.',
+        ], 422);
+    }
+
+    $visits = \App\Models\Visit::with(['visitTerminals', 'employee'])
+        ->where('employee_id', $employeeId)
+        ->orderByDesc('completed_at')
+        ->get(); // ← no pagination
+
+    return response()->json([
+        'success' => true,
+        'count'   => $visits->count(),
+        'data'    => $visits,
+    ]);
+}
+
+
 
 
     // GET /api/assignments/{assignmentId}/visits

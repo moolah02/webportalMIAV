@@ -9,7 +9,7 @@
       <p class="text-muted mb-0 small">Manage and track field visit records</p>
     </div>
     <a href="{{ url()->previous() }}"
-       class="btn btn-outline-secondary btn-sm px-3">
+      class="btn btn-outline-secondary btn-sm px-3">
       ← Back
     </a>
   </div>
@@ -25,12 +25,12 @@
               Merchant
             </label>
             <input id="merchant"
-                   name="merchant"
-                   value="{{ request('merchant') }}"
-                   class="form-control form-control-sm"
-                   placeholder="Start typing…"
-                   list="merchant-list"
-                   autocomplete="off">
+                  name="merchant"
+                  value="{{ request('merchant') }}"
+                  class="form-control form-control-sm"
+                  placeholder="Start typing…"
+                  list="merchant-list"
+                  autocomplete="off">
             <datalist id="merchant-list"></datalist>
           </div>
 
@@ -40,12 +40,12 @@
               Employee
             </label>
             <input id="employee"
-                   name="employee"
-                   value="{{ request('employee') }}"
-                   class="form-control form-control-sm"
-                   placeholder="Start typing…"
-                   list="employee-list"
-                   autocomplete="off">
+                  name="employee"
+                  value="{{ request('employee') }}"
+                  class="form-control form-control-sm"
+                  placeholder="Start typing…"
+                  list="employee-list"
+                  autocomplete="off">
             <datalist id="employee-list"></datalist>
           </div>
 
@@ -54,9 +54,9 @@
               From Date
             </label>
             <input type="date"
-                   name="dateFrom"
-                   value="{{ request('dateFrom') }}"
-                   class="form-control form-control-sm">
+                  name="dateFrom"
+                  value="{{ request('dateFrom') }}"
+                  class="form-control form-control-sm">
           </div>
 
           <div class="col-md-2">
@@ -64,9 +64,9 @@
               To Date
             </label>
             <input type="date"
-                   name="dateTo"
-                   value="{{ request('dateTo') }}"
-                   class="form-control form-control-sm">
+                  name="dateTo"
+                  value="{{ request('dateTo') }}"
+                  class="form-control form-control-sm">
           </div>
 
           <div class="col-md-2">
@@ -74,10 +74,10 @@
               Search
             </label>
             <input type="text"
-                   name="q"
-                   value="{{ request('q') }}"
-                   class="form-control form-control-sm"
-                   placeholder="merchant, summary, action...">
+                  name="q"
+                  value="{{ request('q') }}"
+                  class="form-control form-control-sm"
+                  placeholder="merchant, summary, action...">
           </div>
         </div>
 
@@ -111,7 +111,7 @@
               <th class="fw-medium text-muted small px-3 py-3">Merchant</th>
               <th class="fw-medium text-muted small px-3 py-3">Employee</th>
               <th class="fw-medium text-muted small px-3 py-3">Assignment</th>
-              <th class="fw-medium text-muted small px-3 py-3">Terminals</th>
+              <th class="fw-medium text-muted small px-3 py-3">Terminal</th>
               <th class="fw-medium text-muted small px-3 py-3">Summary</th>
               <th class="fw-medium text-muted small px-3 py-3">Evidence</th>
               <th class="fw-medium text-muted small px-3 py-3"></th>
@@ -120,8 +120,9 @@
           <tbody>
             @foreach($visits as $v)
               @php
-                $terminals = is_array($v->terminals) ? $v->terminals : [];
+                $terminal = is_array($v->terminal) ? $v->terminal : [];
                 $evidence = is_array($v->evidence) ? $v->evidence : [];
+                $otherTerminals = is_array($v->other_terminals_found) ? $v->other_terminals_found : [];
               @endphp
               <tr class="border-bottom border-light">
                 <td class="px-3 py-3">
@@ -145,14 +146,12 @@
                   <div class="fw-medium small">
                     {{ $v->merchant_name ?? '—' }}
                   </div>
-                  {{-- Keep the ID in tiny text if you still want it; remove if not needed --}}
                   <div class="small text-muted">
                     ID: {{ $v->merchant_id }}
                   </div>
                 </td>
 
                 <td class="px-3 py-3">
-                  {{-- Show employee full name instead of ID --}}
                   <span class="small">
                     {{ optional($v->employee)->full_name ?? $v->employee_id }}
                   </span>
@@ -164,39 +163,44 @@
 
                 <td class="px-3 py-3">
                   <div class="d-flex align-items-center">
-                    <span class="badge bg-secondary small">
-                      {{ count($terminals) }}
-                    </span>
-
-                    @if(count($terminals))
+                    @php $completeTerminal = $v->getCompleteTerminalInfo(); @endphp
+                    @if(!empty($completeTerminal))
+                      <span class="badge bg-success small">1</span>
                       <details class="ms-2">
                         <summary class="small text-muted text-decoration-none"
                                 style="cursor: pointer;">
                           details
                         </summary>
                         <div class="mt-2 p-2 bg-light rounded-1">
-                          @foreach($terminals as $t)
-                            <div class="small mb-2 pb-2 border-bottom border-light last-child-no-border">
-                              <div class="fw-medium">
-                                Terminal: {{ $t['terminalId'] ?? '—' }}
-                              </div>
-                              <div class="text-muted">
-                                Status: {{ $t['status'] ?? '—' }} •
-                                Condition: {{ $t['condition'] ?? '—' }}
-                              </div>
-                              <div class="text-muted">
-                                Device: {{ $t['deviceType'] ?? '—' }} •
-                                Serial: {{ $t['serialNumber'] ?? '—' }}
-                              </div>
-                              @if(!empty($t['comments']))
-                                <div class="text-muted fst-italic mt-1">
-                                  {{ $t['comments'] }}
-                                </div>
-                              @endif
+                          <div class="small mb-2 pb-2">
+                            <div class="fw-medium">
+                              Terminal: {{ $completeTerminal['terminal_id'] ?? '—' }}
                             </div>
-                          @endforeach
+                            <div class="text-muted">
+                              Status: {{ $completeTerminal['status'] ?? ($completeTerminal['current_status'] ?? '—') }} •
+                              Condition: {{ $completeTerminal['condition_status'] ?? $completeTerminal['condition'] ?? '—' }}
+                            </div>
+                            <div class="text-muted">
+                              Model: {{ $completeTerminal['terminal_model'] ?? '—' }} •
+                              Serial: {{ $completeTerminal['serial_number'] ?? '—' }}
+                            </div>
+                            @if(!empty($completeTerminal['issues']))
+                              <div class="text-muted fst-italic mt-1">
+                                Issues: {{ $completeTerminal['issues'] }}
+                              </div>
+                            @endif
+                          </div>
                         </div>
                       </details>
+                    @else
+                      <span class="badge bg-secondary small">0</span>
+                    @endif
+
+                    {{-- Show other terminals found if any --}}
+                    @if(count($otherTerminals) > 0)
+                      <span class="badge bg-warning small ms-1">
+                        +{{ count($otherTerminals) }} other
+                      </span>
                     @endif
                   </div>
                 </td>
@@ -226,9 +230,9 @@
                           <div class="small mb-1">
                             @if(\Illuminate\Support\Str::startsWith($item, ['http://', 'https://', '/storage/']))
                               <a href="{{ $item }}"
-                                 target="_blank"
-                                 rel="noopener"
-                                 class="text-decoration-none">
+                                target="_blank"
+                                rel="noopener"
+                                class="text-decoration-none">
                                 Evidence {{ $idx + 1 }}
                               </a>
                             @else
@@ -248,7 +252,7 @@
 
                 <td class="px-3 py-3">
                   <a href="{{ route('visits.show', $v) }}"
-                     class="btn btn-outline-secondary btn-sm">
+                    class="btn btn-outline-secondary btn-sm">
                     View
                   </a>
                 </td>

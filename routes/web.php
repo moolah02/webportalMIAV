@@ -15,7 +15,7 @@ use App\Http\Controllers\BusinessLicenseController;
 use App\Http\Controllers\JobAssignmentController;
 use App\Http\Controllers\TechnicianReportsController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\DeploymentPlanningController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TerminalDeploymentController;
 use App\Http\Controllers\SiteVisitController;
@@ -25,26 +25,32 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\PosTerminalImportController;
 use App\Http\Controllers\SystemReportsController;
+use Illuminate\Support\Facades\Auth;
+
 
 // ==============================================
 // ROOT ROUTE - REDIRECT TO DASHBOARD
 // ==============================================
 
 Route::get('/', function () {
-    if (auth()->check()) {
-        $employee = auth()->user();
+    if (Auth::check()) {
+        $employee = Auth::user();
 
-        if (!$employee->isActive()) {
-            auth()->logout();
-            return redirect('/login')->withErrors(['email' => 'Your account has been deactivated.']);
+        // If you don't have isActive(), use the column directly:
+        // if (! $employee->is_active) { ... }
+        if (method_exists($employee, 'isActive') ? ! $employee->isActive() : !($employee->is_active ?? true)) {
+            Auth::logout();
+
+            return redirect('/login')->withErrors([
+                'email' => 'Your account has been deactivated.',
+            ]);
         }
 
         return redirect('/dashboard');
     }
 
     return redirect('/login');
-})->name('home');
-
+});
 // ==============================================
 // GUEST ROUTES (Login/Register)
 // ==============================================
@@ -68,7 +74,7 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
     // ==============================================
 
     Route::get('/dashboard', function () {
-        $employee = auth()->user();
+        $employee = Auth::user();
 
         // Check permissions and redirect to appropriate dashboard
         if ($employee->hasPermission('all') || $employee->hasPermission('view_dashboard')) {
@@ -338,7 +344,7 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
 
         // Legacy routes for compatibility
         Route::get('/internal', function () {
-            if (auth()->user()->hasPermission('manage_assets') || auth()->user()->hasPermission('all')) {
+            if (Auth::user()->hasPermission('manage_assets') || Auth::user()->hasPermission('all')) {
                 return redirect()->route('assets.index');
             } else {
                 return redirect()->route('asset-requests.catalog');
@@ -965,4 +971,93 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             'max_execution_time' => ini_get('max_execution_time'),
         ]);
     });
+
+
+// ==============================================
+// PROJECT MANAGEMENT ROUTES
+// ==============================================
+Route::prefix('projects')->name('projects.')->middleware('permission:manage_projects,view_projects,all')->group(function () {
+    // Basic CRUD routes
+    Route::get('/', [App\Http\Controllers\ProjectController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\ProjectController::class, 'create'])
+        ->middleware('permission:manage_projects,all')
+        ->name('create');
+    Route::post('/', [App\Http\Controllers\ProjectController::class, 'store'])
+        ->middleware('permission:manage_projects,all')
+        ->name('store');
+
+    // Completion reports routes (no {project} parameter needed)
+    Route::get('/completion-reports', [App\Http\Controllers\ProjectController::class, 'completionReports'])
+        ->middleware('permission:manage_projects,all')
+        ->name('completion-reports');
+
+    Route::post('/completion-reports/generate', [App\Http\Controllers\ProjectController::class, 'generateCompletionReport'])
+        ->middleware('permission:manage_projects,all')
+        ->name('generate-completion-report');
+
+    // SPECIFIC ROUTES MUST COME BEFORE GENERIC {project} ROUTE
+    Route::get('/{project}/completion-wizard', [App\Http\Controllers\ProjectController::class, 'completionWizard'])
+        ->middleware('permission:manage_projects,all')
+        ->name('completion-wizard');
+
+    Route::get('/{project}/completion-success', [App\Http\Controllers\ProjectController::class, 'completionSuccess'])
+        ->middleware('permission:manage_projects,all')
+        ->name('completion-success');
+
+    Route::get('/{project}/edit', [App\Http\Controllers\ProjectController::class, 'edit'])
+        ->middleware('permission:manage_projects,all')
+        ->name('edit');
+
+    Route::get('/{project}/download-report', [App\Http\Controllers\ProjectController::class, 'downloadReport'])
+        ->name('download-report');
+
+    // MANUAL REPORT GENERATION ROUTES - ADD THESE BEFORE GENERIC {project} ROUTE
+    Route::get('/{project}/report-generator', [App\Http\Controllers\ProjectController::class, 'showReportGenerator'])
+        ->middleware('permission:manage_projects,all')
+        ->name('report-generator');
+
+    Route::post('/{project}/generate-reports', [App\Http\Controllers\ProjectController::class, 'generateReports'])
+        ->middleware('permission:manage_projects,all')
+        ->name('generate-reports');
+
+    // POST routes
+    Route::post('/{project}/complete', [App\Http\Controllers\ProjectController::class, 'complete'])
+        ->middleware('permission:manage_projects,all')
+        ->name('complete');
+
+    Route::post('/{project}/regenerate-report', [App\Http\Controllers\ProjectController::class, 'regenerateReport'])
+        ->middleware('permission:manage_projects,all')
+        ->name('regenerate-report');
+
+    Route::post('/{project}/email-report', [App\Http\Controllers\ProjectController::class, 'emailReport'])
+        ->middleware('permission:manage_projects,all')
+        ->name('email-report');
+
+    // PUT routes
+    Route::put('/{project}', [App\Http\Controllers\ProjectController::class, 'update'])
+        ->middleware('permission:manage_projects,all')
+        ->name('update');
+
+    // PATCH routes
+    Route::patch('/{project}/status', [App\Http\Controllers\ProjectController::class, 'updateStatus'])
+        ->middleware('permission:manage_projects,all')
+        ->name('update-status');
+
+    // AJAX/API routes
+    Route::get('/client/{client}/terminals', [App\Http\Controllers\ProjectController::class, 'getAvailableTerminals'])
+        ->name('client.terminals');
+
+    // Bulk operations
+    Route::post('/bulk/complete', [App\Http\Controllers\ProjectController::class, 'bulkComplete'])
+        ->middleware('permission:manage_projects,all')
+        ->name('bulk.complete');
+    Route::post('/bulk/export', [App\Http\Controllers\ProjectController::class, 'bulkExport'])
+        ->name('bulk.export');
+
+    // GENERIC {project} ROUTE MUST BE LAST!!!
+    Route::get('/{project}', [App\Http\Controllers\ProjectController::class, 'show'])->name('show');
 });
+});
+
+
+

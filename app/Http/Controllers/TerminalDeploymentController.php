@@ -14,7 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Auth;
 
 
 class TerminalDeploymentController extends Controller
@@ -26,22 +26,22 @@ class TerminalDeploymentController extends Controller
 {
     try {
         // Debug step by step
-        \Log::info('=== DEPLOYMENT CONTROLLER DEBUG START ===');
+        Log::info('=== DEPLOYMENT CONTROLLER DEBUG START ===');
 
         // Test basic database connection
         $totalClients = Client::count();
-        \Log::info('Total clients in database: ' . $totalClients);
+        Log::info('Total clients in database: ' . $totalClients);
 
         // Test active clients query
         $activeClients = Client::where('status', 'active')->get();
-        \Log::info('Active clients found: ' . $activeClients->count());
-        \Log::info('Active clients data: ', $activeClients->toArray());
+        Log::info('Active clients found: ' . $activeClients->count());
+        Log::info('Active clients data: ', $activeClients->toArray());
 
         // Test relationship
         $clientsWithCount = Client::where('status', 'active')
             ->withCount('posTerminals')
             ->get();
-        \Log::info('Clients with terminal count: ', $clientsWithCount->toArray());
+        Log::info('Clients with terminal count: ', $clientsWithCount->toArray());
 
         // Your original mapping
        $clients = Client::withCount('posTerminals')
@@ -56,7 +56,7 @@ class TerminalDeploymentController extends Controller
                 ];
             });
 
-        \Log::info('Final clients array: ', $clients->toArray());
+        Log::info('Final clients array: ', $clients->toArray());
 
         // Test technicians
         $technicians = Employee::active()
@@ -64,7 +64,7 @@ class TerminalDeploymentController extends Controller
             ->with('role')
             ->get();
 
-        \Log::info('Technicians found: ' . $technicians->count());
+        Log::info('Technicians found: ' . $technicians->count());
 
         // Simple stats for now
         $stats = [
@@ -72,14 +72,14 @@ class TerminalDeploymentController extends Controller
             'active_clients' => Client::where('status', 'active')->count(),
         ];
 
-        \Log::info('Stats: ', $stats);
-        \Log::info('=== DEPLOYMENT CONTROLLER DEBUG END ===');
+        Log::info('Stats: ', $stats);
+        Log::info('=== DEPLOYMENT CONTROLLER DEBUG END ===');
 
         return view('deployment.hierarchical', compact('stats', 'clients', 'technicians'));
 
     } catch (\Exception $e) {
-        \Log::error('Error in deployment controller: ' . $e->getMessage());
-        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        Log::error('Error in deployment controller: ' . $e->getMessage());
+        Log::error('Stack trace: ' . $e->getTraceAsString());
 
         // Return a simple debug view
         return response()->json([
@@ -181,7 +181,7 @@ class TerminalDeploymentController extends Controller
                 'priority' => $request->priority ?? 'normal',
                 'status' => 'assigned',
                 'notes' => 'Quick assignment via drag & drop',
-                'created_by' => auth()->id()
+                'created_by' => Auth::id()
             ]);
 
             DB::commit();
@@ -288,7 +288,7 @@ class TerminalDeploymentController extends Controller
                         'priority' => 'normal',
                         'status' => 'assigned',
                         'notes' => 'Auto-assigned by system based on location optimization',
-                        'created_by' => auth()->id()
+                       'created_by' => Auth::id()
                     ]);
 
                     $assignmentsCreated++;
@@ -718,7 +718,7 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
 
         if (!isset($hierarchy[$province]['children'][$city])) {
             $hierarchy[$province]['children'][$city] = [
-                'id' => 'city-' . \Str::slug($city . '-' . $province),
+                'id' => 'city-' . Str::slug($city . '-' . $province),
                 'name' => $city,
                 'type' => 'city',
                 'terminal_count' => 0,
@@ -730,7 +730,7 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
 
         if (!isset($hierarchy[$province]['children'][$city]['children'][$region])) {
             $hierarchy[$province]['children'][$city]['children'][$region] = [
-                'id' => 'region-' . \Str::slug($region . '-' . $city),
+                'id' => 'region-' . Str::slug($region . '-' . $city),
                 'name' => $region,
                 'type' => 'region',
                 'terminal_count' => 0,
@@ -944,7 +944,7 @@ public function createProject(Request $request)
             'status' => 'active',
             'start_date' => now(),
             'expected_duration_months' => $request->duration,
-            'created_by' => auth()->id()
+            'created_by' => Auth::id()
         ]);
 
         DB::commit();
@@ -989,7 +989,7 @@ private function getOrCreateRegionId($terminal)
             'name' => $regionName,
             'province' => $terminal->province ?: 'Unknown Province',
             'status' => 'active',
-            'created_by' => auth()->id()
+            'created_by' => Auth::id()
         ]);
     }
 
@@ -1059,7 +1059,7 @@ public function createAssignment(Request $request)
             'priority'       => $request->priority,
             'status'         => 'assigned',
             'notes'          => trim(($request->notes ?? 'Assignment with possible reassignments')),
-            'created_by'     => auth()->id(),
+            'created_by' => Auth::id(),
             // Store assignment history as JSON
             'assignment_history' => $assignmentHistory
         ]);
@@ -1094,7 +1094,7 @@ public function createAssignment(Request $request)
 
     } catch (\Throwable $e) {
         DB::rollBack();
-        \Log::error('Error creating assignment with history tracking', [
+        Log::error('Error creating assignment with history tracking', [
             'error' => $e->getMessage(),
             'request' => $request->all()
         ]);

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
+
 class SettingsController extends Controller
 {
     public function index()
@@ -40,7 +41,7 @@ class SettingsController extends Controller
     public function manageCategory($type)
     {
         $categoryTypes = Category::getTypes();
-        
+
         if (!array_key_exists($type, $categoryTypes)) {
             abort(404);
         }
@@ -84,7 +85,7 @@ class SettingsController extends Controller
         ]);
 
         $updateData = $request->only(['name', 'description', 'color', 'icon', 'is_active']);
-        
+
         // Update slug if name changed
         if ($category->name !== $request->name) {
             $updateData['slug'] = $category->type . '-' . Str::slug($request->name);
@@ -98,7 +99,7 @@ class SettingsController extends Controller
     public function deleteCategory(Category $category)
     {
         $canDelete = $this->canDeleteCategory($category);
-        
+
         if (!$canDelete['can_delete']) {
             return redirect()->back()->with('error', $canDelete['message']);
         }
@@ -126,7 +127,7 @@ class SettingsController extends Controller
     {
         $roles = Role::orderBy('name')->get();
         $availablePermissions = $this->getAvailablePermissions();
-        
+
         return view('settings.manage-roles', compact('roles', 'availablePermissions'));
     }
 
@@ -198,7 +199,7 @@ class SettingsController extends Controller
     public function deleteRole(Role $role)
     {
         $employeeCount = $role->employees()->count();
-        
+
         if ($employeeCount > 0) {
             return redirect()->back()->with('error', "Cannot delete role. It's being used by {$employeeCount} employee(s).");
         }
@@ -216,7 +217,7 @@ class SettingsController extends Controller
                     'can_delete' => $count === 0,
                     'message' => $count > 0 ? "Cannot delete category. It's being used by {$count} asset(s)." : ''
                 ];
-            
+
             case Category::TYPE_TERMINAL_STATUS:
                 $count = PosTerminal::where('status', $category->slug)
                     ->orWhere('current_status', $category->slug)
@@ -225,7 +226,7 @@ class SettingsController extends Controller
                     'can_delete' => $count === 0,
                     'message' => $count > 0 ? "Cannot delete status. It's being used by {$count} terminal(s)." : ''
                 ];
-            
+
             case Category::TYPE_SERVICE_TYPE:
                 // Check if job_assignments table exists
                 if (Schema::hasTable('job_assignments')) {
@@ -236,7 +237,7 @@ class SettingsController extends Controller
                     ];
                 }
                 return ['can_delete' => true, 'message' => ''];
-            
+
             default:
                 return ['can_delete' => true, 'message' => ''];
         }
