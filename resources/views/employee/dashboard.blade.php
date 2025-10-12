@@ -129,7 +129,7 @@
   <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-block-start: 32px;">
     {{-- Main Content Area --}}
     <div style="display: flex; flex-direction: column; gap: 24px;">
-      
+
       {{-- Upcoming Assignments --}}
       @if(isset($upcomingAssignments) && $upcomingAssignments->isNotEmpty())
       <div class="content-card">
@@ -139,7 +139,7 @@
           <a href="{{ route('jobs.mine') }}" class="btn-small">View All Jobs</a>
           @endif
         </div>
-        
+
         <div style="display: flex; flex-direction: column; gap: 12px;">
           @foreach($upcomingAssignments->take(5) as $assignment)
           <div style="display: flex; align-items: center; gap: 15px; padding: 16px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #2196f3;">
@@ -214,10 +214,7 @@
             <div style="font-size: 24px; font-weight: bold; color: #2196f3;">{{ $stats['performance']['avg_response_time'] ?? 'N/A' }}</div>
             <div style="font-size: 13px; color: #666; margin-top: 4px;">Avg Response Time</div>
           </div>
-          <div style="text-align: center; padding: 16px; background: #f8f9fa; border-radius: 8px;">
-            <div style="font-size: 24px; font-weight: bold; color: #ff9800;">{{ $stats['performance']['quality_score'] ?? 'N/A' }}</div>
-            <div style="font-size: 13px; color: #666; margin-top: 4px;">Quality Score</div>
-          </div>
+
         </div>
       </div>
       @endif
@@ -225,7 +222,7 @@
 
     {{-- Sidebar --}}
     <div style="display: flex; flex-direction: column; gap: 20px;">
-      
+
       {{-- Quick Actions --}}
       <div class="content-card">
         <h4 style="margin-block-end: 16px; color: #333; font-weight: 600;">⚡ Quick Actions</h4>
@@ -267,23 +264,23 @@
             <span style="font-size: 14px; color: #666;">Total Assigned</span>
             <span style="font-weight: 600; color: #333;">{{ $stats['jobs']['assigned'] ?? 0 }}</span>
           </div>
-          
+
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 14px; color: #666;">In Progress</span>
             <span style="font-weight: 600; color: #ff9800;">{{ $stats['jobs']['in_progress'] ?? 0 }}</span>
           </div>
-          
+
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 14px; color: #666;">Completed</span>
             <span style="font-weight: 600; color: #4caf50;">{{ $stats['jobs']['completed'] ?? 0 }}</span>
           </div>
-          
+
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 14px; color: #666;">Due Today</span>
             <span style="font-weight: 600; color: #2196f3;">{{ $stats['jobs']['today'] ?? 0 }}</span>
           </div>
         </div>
-        
+
         {{-- Progress Bar --}}
         @if(($stats['jobs']['assigned'] ?? 0) > 0)
         <div style="margin-top: 16px;">
@@ -308,12 +305,12 @@
             <span style="font-size: 14px; color: #666;">Total Requests</span>
             <span style="font-weight: 600; color: #333;">{{ $stats['my_requests'] ?? 0 }}</span>
           </div>
-          
+
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 14px; color: #666;">Pending Approval</span>
             <span style="font-weight: 600; color: #ff9800;">{{ $stats['pending_approvals'] ?? 0 }}</span>
           </div>
-          
+
           @if(isset($stats['approved_requests']))
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 14px; color: #666;">Approved</span>
@@ -331,12 +328,12 @@
             <div style="font-size: 13px; color: #1976d2; font-weight: 500;">Pro Tip</div>
             <div style="font-size: 12px; color: #1565c0; margin-top: 2px;">Update job status promptly to keep your completion rate high</div>
           </div>
-          
+
           <div style="padding: 12px; background: #f3e5f5; border-radius: 6px; border-left: 3px solid #9c27b0;">
             <div style="font-size: 13px; color: #7b1fa2; font-weight: 500;">Remember</div>
             <div style="font-size: 12px; color: #6a1b9a; margin-top: 2px;">Check equipment before starting each job</div>
           </div>
-          
+
           @if(($stats['pending_approvals'] ?? 0) > 0)
           <div style="padding: 12px; background: #fff3e0; border-radius: 6px; border-left: 3px solid #ff9800;">
             <div style="font-size: 13px; color: #f57c00; font-weight: 500;">Action Needed</div>
@@ -516,15 +513,15 @@
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .metric-card-subtle {
     padding: 20px;
   }
-  
+
   .metric-number-subtle {
     font-size: 28px;
   }
-  
+
   .content-card {
     padding: 20px;
   }
@@ -536,7 +533,7 @@
     text-align: center;
     gap: 12px;
   }
-  
+
   .metric-icon-subtle {
     width: 40px;
     height: 40px;

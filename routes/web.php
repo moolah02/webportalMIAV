@@ -662,7 +662,9 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         Route::get('/export/{format}', [TerminalDeploymentController::class, 'exportAssignments'])->name('export');
         Route::post('/work-orders', [TerminalDeploymentController::class, 'generateWorkOrders'])->name('work-orders');
         Route::get('/mobile-sync', [TerminalDeploymentController::class, 'mobileSync'])->name('mobile-sync');
-
+// Add this route inside your deployment routes group
+Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'downloadWorkOrder'])
+    ->name('download-work-order');
         // Assignment management
         Route::get('/assignments/{assignment}', [TerminalDeploymentController::class, 'getAssignmentDetails'])->name('assignments.show');
         Route::patch('/assignments/{assignment}', [TerminalDeploymentController::class, 'updateAssignment'])->name('assignments.update');
@@ -685,6 +687,33 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         Route::get('/stats', [TerminalDeploymentController::class, 'getStatistics'])->name('stats');
         Route::get('/technician-workload', [TerminalDeploymentController::class, 'getTechnicianWorkload'])->name('technician-workload');
         Route::get('/regional-summary', [TerminalDeploymentController::class, 'getRegionalSummary'])->name('regional-summary');
+    // Add these routes to your existing deployment routes group in web.php
+
+
+
+    // Work Orders
+    Route::post('/generate-work-orders', [TerminalDeploymentController::class, 'generateWorkOrders'])
+        ->name('generate-work-orders');
+    Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'downloadWorkOrder'])
+        ->name('download-work-order');
+
+    // Deployment Finalization
+    Route::post('/deploy-all', [TerminalDeploymentController::class, 'deployAllAssignments'])
+        ->name('deploy-all');
+    Route::post('/finalize-deployment', [TerminalDeploymentController::class, 'finalizeDeployment'])
+        ->name('finalize-deployment');
+
+// Add this route in your deployment routes group (around line 380 in your routes file)
+Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'downloadWorkOrder'])
+    ->name('download-work-order');
+    // Export
+    Route::post('/export-assignments', [TerminalDeploymentController::class, 'exportAssignments'])
+        ->name('export-assignments');
+    Route::get('/download-export/{filename}', [TerminalDeploymentController::class, 'downloadExport'])
+        ->name('download-export');
+
+
+
     });
 
     // ==============================================
@@ -974,7 +1003,7 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
 
 
 // ==============================================
-// PROJECT MANAGEMENT ROUTES
+// PROJECT MANAGEMENT ROUTES (UPDATED FOR CLOSURE SYSTEM)
 // ==============================================
 Route::prefix('projects')->name('projects.')->middleware('permission:manage_projects,view_projects,all')->group(function () {
     // Basic CRUD routes
@@ -986,23 +1015,25 @@ Route::prefix('projects')->name('projects.')->middleware('permission:manage_proj
         ->middleware('permission:manage_projects,all')
         ->name('store');
 
-    // Completion reports routes (no {project} parameter needed)
-    Route::get('/completion-reports', [App\Http\Controllers\ProjectController::class, 'completionReports'])
+    // UPDATED: Closure reports routes (renamed from completion-reports)
+    Route::get('/closure-reports', [App\Http\Controllers\ProjectController::class, 'closureReports'])
         ->middleware('permission:manage_projects,all')
-        ->name('completion-reports');
+        ->name('closure-reports');
 
-    Route::post('/completion-reports/generate', [App\Http\Controllers\ProjectController::class, 'generateCompletionReport'])
+    // UPDATED: Generate closure report (renamed from generate-completion-report)
+    Route::post('/closure-reports/generate', [App\Http\Controllers\ProjectController::class, 'generateClosureReport'])
         ->middleware('permission:manage_projects,all')
-        ->name('generate-completion-report');
+        ->name('generate-closure-report');
 
     // SPECIFIC ROUTES MUST COME BEFORE GENERIC {project} ROUTE
-    Route::get('/{project}/completion-wizard', [App\Http\Controllers\ProjectController::class, 'completionWizard'])
-        ->middleware('permission:manage_projects,all')
-        ->name('completion-wizard');
 
-    Route::get('/{project}/completion-success', [App\Http\Controllers\ProjectController::class, 'completionSuccess'])
+    // UPDATED: Closure wizard (renamed from completion-wizard)
+    Route::get('/{project}/closure-wizard', [App\Http\Controllers\ProjectController::class, 'closureWizard'])
         ->middleware('permission:manage_projects,all')
-        ->name('completion-success');
+        ->name('closure-wizard');
+
+    // REMOVED: completion-success (no longer needed in closure flow)
+    // Route::get('/{project}/completion-success'...
 
     Route::get('/{project}/edit', [App\Http\Controllers\ProjectController::class, 'edit'])
         ->middleware('permission:manage_projects,all')
@@ -1011,7 +1042,7 @@ Route::prefix('projects')->name('projects.')->middleware('permission:manage_proj
     Route::get('/{project}/download-report', [App\Http\Controllers\ProjectController::class, 'downloadReport'])
         ->name('download-report');
 
-    // MANUAL REPORT GENERATION ROUTES - ADD THESE BEFORE GENERIC {project} ROUTE
+    // MANUAL REPORT GENERATION ROUTES
     Route::get('/{project}/report-generator', [App\Http\Controllers\ProjectController::class, 'showReportGenerator'])
         ->middleware('permission:manage_projects,all')
         ->name('report-generator');
@@ -1021,9 +1052,11 @@ Route::prefix('projects')->name('projects.')->middleware('permission:manage_proj
         ->name('generate-reports');
 
     // POST routes
-    Route::post('/{project}/complete', [App\Http\Controllers\ProjectController::class, 'complete'])
+
+    // UPDATED: Close project (renamed from complete)
+    Route::post('/{project}/close', [App\Http\Controllers\ProjectController::class, 'close'])
         ->middleware('permission:manage_projects,all')
-        ->name('complete');
+        ->name('close');
 
     Route::post('/{project}/regenerate-report', [App\Http\Controllers\ProjectController::class, 'regenerateReport'])
         ->middleware('permission:manage_projects,all')

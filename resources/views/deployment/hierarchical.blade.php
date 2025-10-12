@@ -11,14 +11,6 @@
             <h2 style="margin: 0; color: #333;">🚀 POS Terminal Deployment</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Deploy technicians to terminals across regions • Hierarchical assignment management</p>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <button type="button" class="btn" style="background: #ff9800; color: white; border-color: #ff9800;" onclick="generateWorkOrders()">
-                📋 Generate Work Orders
-            </button>
-            <button type="button" class="btn" style="background: #4caf50; color: white; border-color: #4caf50;" onclick="exportDeployment()">
-                📊 Export Deployment
-            </button>
-        </div>
     </div>
 
     <!-- Success/Error Messages -->
@@ -56,7 +48,7 @@
                 </div>
                 <div class="step-item" id="step4">
                     <div class="step-circle">4</div>
-                    <div>Assign & Deploy</div>
+                    <div>Assign Terminals</div>
                 </div>
             </div>
         </div>
@@ -441,10 +433,10 @@
         </div>
     </div>
 
-    <!-- Review & Deploy Section - Hidden Initially -->
-    <div class="content-card review-section" style="margin-top: 20px; display: none;" id="reviewSection">
+    <!-- Assignment Success Section - Hidden Initially -->
+    <div class="content-card assignment-success-section" style="margin-top: 20px; display: none;" id="assignmentSuccessSection">
         <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
-            📋 Review & Deploy
+            🎉 Assignment Complete!
         </h4>
 
         <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 20px;">
@@ -472,23 +464,23 @@
                 </div>
             </div>
 
-            <!-- Deploy Actions -->
+            <!-- Export Actions -->
             <div>
                 <div style="display: grid; gap: 12px;">
-                    <button type="button" class="btn btn-primary" onclick="generateWorkOrders()" id="generateWorkOrdersBtn" disabled style="width: 100%;">
-                        📋 Generate Work Orders
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="deployAll()" id="deployAllBtn" disabled style="width: 100%;">
-                        🚀 Deploy All Assignments
+                    <button type="button" class="btn btn-success" onclick="exportDeployment()" id="exportDeploymentBtn" disabled style="width: 100%;">
+                        📊 Export Assignment Data
                     </button>
                     <button type="button" class="btn" onclick="saveAsDraft()" id="saveDraftBtn" disabled style="width: 100%;">
                         💾 Save as Draft
                     </button>
+                    <button type="button" class="btn btn-primary" onclick="viewAllAssignments()" style="width: 100%;">
+                        👁️ View All Assignments
+                    </button>
                 </div>
 
-                <!-- Deployment Stats -->
+                <!-- Assignment Stats -->
                 <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <h6 style="margin: 0 0 10px 0; color: #333;">Deployment Summary</h6>
+                    <h6 style="margin: 0 0 10px 0; color: #333;">Assignment Summary</h6>
                     <div style="display: grid; gap: 5px; font-size: 14px;">
                         <div style="display: flex; justify-content: space-between;">
                             <span>Total Technicians:</span>
@@ -585,39 +577,6 @@
     </div>
 </div>
 
-<!-- Assignment Success Modal -->
-<div id="assignmentSuccessModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-width: 600px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>🎉</span>
-                <span>Deployment Successful</span>
-            </h3>
-            <button onclick="closeSuccessModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
-        </div>
-
-        <!-- Modal Body -->
-        <div style="padding: 20px;">
-            <div id="successModalContent">
-                <!-- Content will be populated here -->
-            </div>
-
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button type="button" class="btn btn-primary" onclick="viewAssignments()" style="flex: 1;">
-                    👁️ View All Assignments
-                </button>
-                <button type="button" class="btn" onclick="createNewDeployment()">
-                    🆕 New Deployment
-                </button>
-                <button type="button" class="btn" onclick="closeSuccessModal()">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
 .metric-card {
     padding: 15px;
@@ -687,7 +646,7 @@
 }
 
 /* Progressive Disclosure */
-.progress-section, .main-content-section, .assignment-section, .review-section {
+.progress-section, .main-content-section, .assignment-section, .assignment-success-section {
     transition: all 0.3s ease;
 }
 
@@ -1156,6 +1115,32 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Available clients:', @json($clients));
     console.log('Available technicians:', @json($technicians));
 
+    // Handle pre-selections from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const preSelectedProjectId = urlParams.get('project_id') || @json($preSelectedProjectId ?? null);
+    const preSelectedClientId = urlParams.get('client_id') || @json($preSelectedClientId ?? null);
+
+    // Pre-select client if provided
+    if (preSelectedClientId) {
+        const clientCheckbox = document.querySelector(`#clientOptions input[value="${preSelectedClientId}"]`);
+        if (clientCheckbox) {
+            clientCheckbox.checked = true;
+            updateClientSelection();
+
+            // Load projects for this client and then pre-select the project
+            setTimeout(() => {
+                if (preSelectedProjectId) {
+                    loadProjectsAndSelect(preSelectedProjectId);
+                }
+            }, 500);
+        }
+    }
+
+    // Show helpful message if coming from project creation
+    if (preSelectedProjectId) {
+        showProjectSelectionMessage();
+    }
+
     setupEventListeners();
     updateLoadButton();
     updateProgressiveVisibility();
@@ -1183,9 +1168,48 @@ function setupEventListeners() {
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeProjectModal();
-            closeSuccessModal();
         }
     });
+}
+
+function loadProjectsAndSelect(projectId) {
+    // Wait for projects to load, then select the specified project
+    const checkForProject = setInterval(() => {
+        const projectCheckbox = document.querySelector(`#projectOptionsList input[value="${projectId}"]`);
+        if (projectCheckbox) {
+            clearInterval(checkForProject);
+            projectCheckbox.checked = true;
+            updateProjectSelection();
+
+            // Show next step guidance
+            showAlert('Project pre-selected! Click "Load Client Terminals" to continue with terminal assignment.');
+        }
+    }, 100);
+
+    // Stop checking after 5 seconds
+    setTimeout(() => clearInterval(checkForProject), 5000);
+}
+
+function showProjectSelectionMessage() {
+    const messageHtml = `
+        <div class="alert alert-info" style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-info-circle" style="color: #2196f3; font-size: 18px;"></i>
+                <div>
+                    <strong>Project Ready for Terminal Assignment</strong>
+                    <p style="margin: 5px 0 0 0; color: #666;">
+                        Your project has been created successfully. Follow the steps below to assign terminals and technicians to this project.
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Insert the message at the top of the page
+    const container = document.querySelector('.container-fluid') || document.querySelector('div');
+    if (container) {
+        container.insertAdjacentHTML('afterbegin', messageHtml);
+    }
 }
 
 // =====================
@@ -1202,7 +1226,7 @@ function updateProgressiveVisibility() {
     // Show/hide sections progressively
     toggleSection('progressStats', hasHierarchy);
     toggleSection('mainContentArea', hasClients && hasProjects);
-    toggleSection('reviewSection', hasAssignments);
+    toggleSection('assignmentSuccessSection', hasAssignments);
 
     // Update button states
     updateButtonStates(hasClients, hasProjects, hasHierarchy, hasTechnicians, hasAssignments, hasSelections);
@@ -1251,8 +1275,8 @@ function updateButtonStates(hasClients, hasProjects, hasHierarchy, hasTechnician
         if (btn) btn.disabled = !hasHierarchy;
     });
 
-    // Review Section Buttons
-    ['generateWorkOrdersBtn', 'deployAllBtn', 'saveDraftBtn'].forEach(id => {
+    // Export Section Buttons (moved to assignment success section)
+    ['exportDeploymentBtn', 'saveDraftBtn'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) btn.disabled = !hasAssignments;
     });
@@ -1289,9 +1313,11 @@ function updateStepIndicators(hasClients, hasProjects, hasHierarchy, hasTechnici
         step3.classList.remove('completed');
     }
 
-    // Step 4: Deploy
+    // Step 4: Assign
     const step4 = document.getElementById('step4');
     if (hasAssignments) {
+        step4.classList.add('completed');
+    } else if (hasTechnicians) {
         step4.classList.add('active');
     }
 }
@@ -1301,17 +1327,19 @@ function updateHelpfulHints(hasClients, hasProjects, hasHierarchy, hasTechnician
     const treeContainer = document.getElementById('hierarchyTree');
 
     if (!hasClients || !hasProjects) {
-        treeContainer.innerHTML = `
-            <div style="text-align: center; padding: 60px 20px; color: #666;">
-                <div style="font-size: 64px; margin-block-end: 20px;">👈</div>
-                <h5>Step 1: Configure Deployment Setup</h5>
-                <p>Select clients and projects to continue</p>
-                <div style="margin-top: 20px; font-size: 14px; color: #999;">
-                    ${!hasClients ? '• Choose one or more clients' : '✅ Clients selected'}<br>
-                    ${!hasProjects ? '• Select associated projects' : '✅ Projects selected'}
+        if (treeContainer) {
+            treeContainer.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; color: #666;">
+                    <div style="font-size: 64px; margin-block-end: 20px;">👈</div>
+                    <h5>Step 1: Configure Deployment Setup</h5>
+                    <p>Select clients and projects to continue</p>
+                    <div style="margin-top: 20px; font-size: 14px; color: #999;">
+                        ${!hasClients ? '• Choose one or more clients' : '✅ Clients selected'}<br>
+                        ${!hasProjects ? '• Select associated projects' : '✅ Projects selected'}
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     }
 
     // Update technician workload placeholder
@@ -1982,109 +2010,6 @@ function showEmptyTable() {
     `;
 }
 
-function renderNode(node, level) {
-    const isTerminal = node.type === 'terminal';
-    const hasChildren = node.children && node.children.length > 0;
-    const hasTerminals = node.terminals && node.terminals.length > 0;
-
-    if (isTerminal) {
-        return renderTerminalNode(node);
-    } else {
-        return renderContainerNode(node, hasChildren, hasTerminals, level);
-    }
-}
-
-function renderContainerNode(node, hasChildren, hasTerminals, level) {
-    const terminalIds = getTerminalIdsInNode(node.id);
-    const allSelected = terminalIds.length > 0 && terminalIds.every(id => deploymentState.selectedTerminals.has(id));
-    const someSelected = terminalIds.some(id => deploymentState.selectedTerminals.has(id));
-
-    const expandIcon = (hasChildren || hasTerminals) ?
-        (node.collapsed ? '▶️' : '▼️') : '📁';
-
-    let html = `
-        <div class="tree-node" data-id="${node.id}" data-type="${node.type}">
-            <div class="node-header ${allSelected ? 'selected' : ''}" onclick="toggleNodeSelection('${node.id}')">
-                <input type="checkbox"
-                       ${allSelected ? 'checked' : ''}
-                       ${someSelected && !allSelected ? 'data-indeterminate="true"' : ''}
-                       onchange="toggleNodeSelection('${node.id}')" onclick="event.stopPropagation()">
-                <div onclick="toggleNodeExpansion('${node.id}'); event.stopPropagation();" style="cursor: pointer; margin-right: 8px;">
-                    ${expandIcon}
-                </div>
-                <div class="node-content">
-                    <div>
-                        <span class="node-name">${node.name}</span>
-                        <span class="node-count">${node.terminal_count || 0}</span>
-                    </div>
-                    <div class="node-actions">
-                        <button class="btn btn-small" onclick="assignAllInNode('${node.id}'); event.stopPropagation();" style="background: #4caf50; color: white; padding: 3px 6px;">
-                            Assign All
-                        </button>
-                    </div>
-                </div>
-            </div>
-    `;
-
-    if (!node.collapsed && (hasChildren || hasTerminals)) {
-        html += '<div class="node-children">';
-
-        if (hasChildren) {
-            node.children.forEach(child => {
-                html += renderNode(child, level + 1);
-            });
-        }
-
-        if (hasTerminals) {
-            node.terminals.forEach(terminal => {
-                html += renderNode(terminal, level + 1);
-            });
-        }
-
-        html += '</div>';
-    }
-
-    html += '</div>';
-    return html;
-}
-
-function renderTerminalNode(node) {
-    const terminalId = node.id.replace('terminal-', '');
-    const isSelected = deploymentState.selectedTerminals.has(terminalId);
-
-    // Get project badges
-    let projectBadges = '';
-    if (node.projects && node.projects.length > 0) {
-        node.projects.forEach(project => {
-            projectBadges += `<span class="project-badge project-${project.type}">${project.name}</span>`;
-        });
-    }
-
-    return `
-        <div class="tree-node" data-id="${node.id}" data-type="terminal">
-            <div class="terminal-node ${isSelected ? 'selected' : ''}" onclick="toggleTerminalSelection('${terminalId}')">
-                <input type="checkbox" ${isSelected ? 'checked' : ''}
-                       onchange="toggleTerminalSelection('${terminalId}')" onclick="event.stopPropagation()">
-                <div class="terminal-info">
-                    <div class="terminal-name" title="${node.merchant_name}">🏢 ${node.merchant_name}</div>
-                    <div class="terminal-id">${node.terminal_id}</div>
-                    ${projectBadges}
-                    <div class="terminal-actions">
-                        <button class="btn btn-small" onclick="assignSingleTerminal('${terminalId}'); event.stopPropagation();" style="background: #2196f3; color: white; padding: 2px 6px;">
-                            Assign
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// Remove old hierarchical functions - no longer needed
-// These functions were for the tree view: renderNode, renderContainerNode, renderTerminalNode,
-// toggleNodeSelection, toggleNodeExpansion, getTerminalIdsInNode, findNodeById,
-// expandAll, collapseAll, assignAllInNode
-
 function assignSingleTerminal(terminalId) {
     // Quick assign single terminal
     if (deploymentState.selectedTechnicians.size === 0) {
@@ -2283,7 +2208,7 @@ function addToLocalAssignments(technicianId, technician, terminalIds) {
     });
 
     updateProgressStats();
-    showReviewSection();
+    showAssignmentSuccessSection();
 }
 
 // =====================
@@ -2319,6 +2244,11 @@ function updateAssignmentButtons() {
     document.getElementById('assignSelectedBtn').disabled = !(hasSelections && hasTechnicians);
     document.getElementById('assignAllBtn').disabled = !(deploymentState.allTerminals.size > 0 && hasTechnicians);
     document.getElementById('clearAssignmentsBtn').disabled = !hasAssignments;
+}
+
+function showAssignmentSuccessSection() {
+    updateAssignmentSummary();
+    updateProgressiveVisibility();
 }
 
 function updateAssignmentSummary() {
@@ -2381,8 +2311,8 @@ function updateAssignmentSummary() {
     document.getElementById('summaryTerminals').textContent = totalTerminals;
     document.getElementById('summaryTime').textContent = `${estimatedTime} hours`;
 
-    // Enable deploy buttons
-    ['generateWorkOrdersBtn', 'deployAllBtn', 'saveDraftBtn'].forEach(id => {
+    // Enable export buttons
+    ['exportDeploymentBtn', 'saveDraftBtn'].forEach(id => {
         document.getElementById(id).disabled = totalTechnicians === 0;
     });
 }
@@ -2441,10 +2371,6 @@ function updateUnassignedList() {
     }
 
     container.innerHTML = html;
-}
-
-function showReviewSection() {
-    updateProgressiveVisibility();
 }
 
 // =====================
@@ -2677,7 +2603,7 @@ function exportTableData() {
     const csvContent = [
         headers.join(','),
         ...data.map(row => headers.map(header => `"${row[header]}"`).join(','))
-    ].join('\\n');
+    ].join('\n');
 
     // Download
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -2783,43 +2709,9 @@ function setLoading(element, isLoading) {
     }
 }
 
-// No longer needed for table view
-// function setIndeterminateCheckboxes() {
-//     document.querySelectorAll('input[data-indeterminate="true"]').forEach(checkbox => {
-//         checkbox.indeterminate = true;
-//     });
-// }
-
-// Remove old functions that are no longer needed for table view
-// The following functions have been removed as they were specific to the hierarchical tree view:
-// - renderNode, renderContainerNode, renderTerminalNode
-// - toggleNodeSelection, toggleNodeExpansion, getTerminalIdsInNode, findNodeById
-// - expandAll, collapseAll, assignAllInNode
-// - setIndeterminateCheckboxes
-
 // =====================
 // ACTION FUNCTIONS (Updated for Table)
 // =====================
-
-function assignSingleTerminal(terminalId) {
-    // Quick assign single terminal
-    if (deploymentState.selectedTechnicians.size === 0) {
-        showAlert('Please select a technician first', 'danger');
-        return;
-    }
-
-    deploymentState.selectedTerminals.clear();
-    deploymentState.selectedTerminals.add(terminalId);
-    assignSelected();
-}
-
-function assignAll() {
-    deploymentState.allTerminals.forEach((terminal, id) => {
-        deploymentState.selectedTerminals.add(id);
-    });
-    assignSelected();
-}
-
 function clearAssignments() {
     deploymentState.assignments = {};
     updateProgressStats();
@@ -2854,102 +2746,213 @@ function updateAssignmentMode() {
     updateAssignmentButtons();
 }
 
-function generateWorkOrders() {
-    if (Object.keys(deploymentState.assignments).length === 0) {
-        showAlert('No assignments to generate work orders for', 'danger');
-        return;
-    }
-
-    showAlert('Generating work orders...', 'info');
-
-    // Simulate work order generation
-    setTimeout(() => {
-        showAlert('Work orders generated successfully!');
-    }, 2000);
-}
-
-function deployAll() {
-    if (Object.keys(deploymentState.assignments).length === 0) {
-        showAlert('No assignments to deploy', 'danger');
-        return;
-    }
-
-    const assignmentCount = Object.keys(deploymentState.assignments).length;
-    const terminalCount = Object.values(deploymentState.assignments).reduce((sum, a) => sum + a.terminals.length, 0);
-
-    // Show success modal
-    document.getElementById('successModalContent').innerHTML = `
-        <div style="text-align: center; margin: 20px 0;">
-            <div style="font-size: 64px; margin-block-end: 20px;">🎉</div>
-            <h4>Deployment Successful!</h4>
-            <p style="color: #666; margin: 15px 0;">
-                Successfully deployed <strong>${terminalCount} terminals</strong> to <strong>${assignmentCount} technician(s)</strong>
-            </p>
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <div style="display: grid; gap: 8px; font-size: 14px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Deployment Date:</span>
-                        <strong>${deploymentState.deploymentDate || 'Today'}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Total Assignments:</span>
-                        <strong>${assignmentCount}</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Estimated Completion:</span>
-                        <strong>${terminalCount * 1.5} hours</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('assignmentSuccessModal').style.display = 'flex';
-
-    // Clear state after successful deployment
-    setTimeout(() => {
-        clearAssignments();
-    }, 500);
-}
-
-function saveAsDraft() {
-    showAlert('Deployment saved as draft');
-}
-
 function exportDeployment() {
     if (Object.keys(deploymentState.assignments).length === 0) {
         showAlert('No assignments to export', 'danger');
         return;
     }
 
-    // Export logic here
-    showAlert('Export completed!');
+    // Show export options modal
+    showExportModal();
 }
 
-function closeSuccessModal() {
-    document.getElementById('assignmentSuccessModal').style.display = 'none';
+function showExportModal() {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+        background: rgba(0,0,0,0.5); z-index: 10000;
+        display: flex; justify-content: center; align-items: center;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 0; max-width: 400px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <div style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <span>📊</span>
+                    <span>Export Assignment Data</span>
+                </h3>
+                <button onclick="closeModal(this)"
+                        style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">×</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="margin: 0 0 20px 0; color: #666;">Choose export format for your assignment data:</p>
+                <div style="display: grid; gap: 10px;">
+                    <button onclick="exportAssignments('csv')" class="btn btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
+                        <span>📊</span>
+                        <span>CSV Spreadsheet</span>
+                    </button>
+                    <button onclick="exportAssignments('excel')" class="btn btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
+                        <span>📈</span>
+                        <span>Excel Workbook</span>
+                    </button>
+                    <button onclick="exportAssignments('pdf')" class="btn btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
+                        <span>📄</span>
+                        <span>PDF Report</span>
+                    </button>
+                    <button onclick="exportAssignments('mobile')" class="btn btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
+                        <span>📱</span>
+                        <span>Mobile Sync JSON</span>
+                    </button>
+                </div>
+                <div style="margin-top: 15px; text-align: center;">
+                    <button onclick="closeModal(this)" class="btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close on backdrop click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
 }
 
-function viewAssignments() {
-    closeSuccessModal();
-    window.location.href = '/job-assignments';
+function exportAssignments(format) {
+    // Close the modal
+    document.querySelector('[style*="position: fixed"]')?.remove();
+
+    // Show loading
+    showAlert('Preparing export...', 'info');
+
+    // Collect assignment data to send
+    const exportData = {
+        format: format,
+        client_ids: Array.from(deploymentState.selectedClients),
+        project_ids: Array.from(deploymentState.selectedProjects),
+        assignments: Object.values(deploymentState.assignments).map(assignment => ({
+            technician_id: assignment.technician.id,
+            technician_name: assignment.technician.name,
+            terminal_ids: assignment.terminals,
+            regions: Array.from(assignment.regions),
+            priority: assignment.priority
+        }))
+    };
+
+    fetch('{{ route("deployment.export-assignments") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': window.csrfToken
+        },
+        body: JSON.stringify(exportData)
+    })
+    .then(response => {
+        if (response.ok) {
+            // Check if it's a file download
+            const contentType = response.headers.get('content-type');
+            if (contentType && (contentType.includes('application/') || contentType.includes('text/csv'))) {
+                return response.blob().then(blob => {
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `assignment_${format}_${new Date().toISOString().split('T')[0]}.${format === 'csv' ? 'csv' : format === 'excel' ? 'xlsx' : format === 'pdf' ? 'pdf' : 'json'}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    showAlert(`Export completed! File downloaded as ${a.download}`);
+                });
+            } else {
+                return response.json();
+            }
+        } else {
+            throw new Error(`Export failed: ${response.status}`);
+        }
+    })
+    .then(data => {
+        if (data && data.success) {
+            showAlert(data.message || 'Export completed successfully!');
+        }
+    })
+    .catch(error => {
+        console.error('Export error:', error);
+        showAlert('Export failed: ' + error.message, 'danger');
+    });
 }
 
-function createNewDeployment() {
-    closeSuccessModal();
-    window.location.reload();
+function saveAsDraft() {
+    if (Object.keys(deploymentState.assignments).length === 0) {
+        showAlert('No assignments to save', 'danger');
+        return;
+    }
+
+    showAlert('Saving assignment as draft...', 'info');
+
+    const draftData = {
+        name: `Assignment Draft - ${new Date().toLocaleDateString()}`,
+        client_ids: Array.from(deploymentState.selectedClients),
+        project_ids: Array.from(deploymentState.selectedProjects),
+        scheduled_date: deploymentState.deploymentDate || document.getElementById('deploymentDate').value,
+        assignments: Object.values(deploymentState.assignments).map(assignment => ({
+            technician_id: assignment.technician.id,
+            terminal_ids: assignment.terminals,
+            priority: assignment.priority
+        })),
+        deployment_status: 'draft'
+    };
+
+    fetch('{{ route("deployment.drafts.store") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': window.csrfToken
+        },
+        body: JSON.stringify(draftData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`Draft saved successfully! Draft ID: ${data.draft_id}`);
+        } else {
+            showAlert('Failed to save draft: ' + (data.message || 'Unknown error'), 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Save draft error:', error);
+        showAlert('Error saving draft: ' + error.message, 'danger');
+    });
 }
 
-// Close modals when clicking outside
+function viewAllAssignments() {
+    window.location.href = '{{ route("jobs.index") }}';
+}
+
+// Universal modal close function
+function closeModal(button) {
+    // Try different ways to find the modal
+    let modal = null;
+
+    if (button && typeof button.closest === 'function') {
+        modal = button.closest('[style*="position: fixed"]');
+    }
+
+    if (!modal) {
+        modal = document.querySelector('[style*="position: fixed"]');
+    }
+
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Override the existing modal close handlers
 document.addEventListener('click', function(event) {
+    // Close any modal when clicking the backdrop
+    if (event.target.style && event.target.style.position === 'fixed') {
+        event.target.remove();
+    }
+
+    // Close project modal specifically
     const projectModal = document.getElementById('createProjectModal');
-    const successModal = document.getElementById('assignmentSuccessModal');
 
     if (event.target === projectModal) {
         closeProjectModal();
-    }
-    if (event.target === successModal) {
-        closeSuccessModal();
     }
 });
 </script>

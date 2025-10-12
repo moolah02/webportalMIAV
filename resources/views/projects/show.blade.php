@@ -60,6 +60,46 @@
         </div>
     </div>
 
+    {{-- Terminal Assignment Section --}}
+    @if($project->status === 'active')
+        <div class="card mb-4" style="border-left: 4px solid #2196f3; background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);">
+            <div class="card-header" style="background: transparent; border-bottom: 1px solid #e5e7eb;">
+                <h6 class="card-title" style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-users-cog" style="color: #2196f3;"></i>
+                    Terminal Assignment
+                </h6>
+            </div>
+            <div class="card-body">
+                @if(($progressData['total_terminals'] ?? 0) > 0)
+                    <p style="color: #666; margin-bottom: 15px;">
+                        This project currently has <strong>{{ $progressData['total_terminals'] }}</strong> terminals assigned.
+                        You can modify assignments or add more terminals using the deployment page.
+                    </p>
+                @else
+                    <p style="color: #666; margin-bottom: 15px;">
+                        This project doesn't have any terminals assigned yet. Use the deployment page to assign terminals and technicians to this project.
+                    </p>
+                @endif
+
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="{{ route('deployment.index', ['project_id' => $project->id, 'client_id' => $project->client_id]) }}"
+                       class="btn btn-primary" style="background: #2196f3; color: white; border: none; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                        <i class="fas fa-map-marked-alt me-2"></i>
+                        {{ ($progressData['total_terminals'] ?? 0) > 0 ? 'Manage Terminal Assignments' : 'Assign Terminals to Project' }}
+                    </a>
+
+                    @if(($progressData['total_terminals'] ?? 0) > 0)
+                        <a href="{{ route('jobs.index', ['project_id' => $project->id]) }}"
+                           class="btn" style="background: #4caf50; color: white; border: none; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                            <i class="fas fa-tasks me-2"></i>
+                            View Job Assignments
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Project Actions --}}
     <div class="card mb-4">
         <div class="card-header">
@@ -73,11 +113,8 @@
                 </a>
 
                 @if ($project->status === 'active')
-                    <a href="{{ route('deployment.index') }}?project_id={{ $project->id }}" class="btn btn-primary">
-                        <i class="fas fa-tasks"></i> Assign Terminals
-                    </a>
-                    <a href="{{ route('projects.completion-wizard', $project) }}" class="btn btn-secondary">
-                        <i class="fas fa-magic"></i> Complete Project
+                    <a href="{{ route('projects.closure-wizard', $project) }}" class="btn btn-secondary">
+                        <i class="fas fa-magic"></i> Close Project
                     </a>
                 @endif
 
@@ -466,6 +503,8 @@
 .btn-primary:hover {
     background: #2563eb;
     border-color: #2563eb;
+    color: #ffffff;
+    text-decoration: none;
 }
 
 .btn-secondary {
@@ -477,6 +516,8 @@
 .btn-secondary:hover {
     background: #f3f4f6;
     border-color: #9ca3af;
+    color: #374151;
+    text-decoration: none;
 }
 
 .btn-outline {
@@ -488,6 +529,8 @@
 .btn-outline:hover {
     background: #f9fafb;
     border-color: #9ca3af;
+    color: #374151;
+    text-decoration: none;
 }
 
 .btn-sm {

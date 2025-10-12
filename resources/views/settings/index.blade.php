@@ -11,12 +11,12 @@
     transition: all 0.3s ease;
     height: 100%;
   }
-  
+
   .settings-card:hover {
     box-shadow: 0 8px 30px rgba(0,0,0,0.12);
     transform: translateY(-3px);
   }
-  
+
   .settings-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -26,17 +26,17 @@
     font-weight: 600;
     font-size: 16px;
   }
-  
+
   .settings-list {
     list-style: none;
     padding: 0;
     margin: 0;
   }
-  
+
   .settings-list li {
     margin-block-end: 12px;
   }
-  
+
   .settings-list a {
     display: flex;
     justify-content: space-between;
@@ -49,13 +49,13 @@
     transition: all 0.3s ease;
     font-weight: 500;
   }
-  
+
   .settings-list a:hover {
     background: #e9ecef;
     color: #000;
     transform: translateX(5px);
   }
-  
+
   .badge {
     background: #6c757d;
     color: white;
@@ -64,14 +64,14 @@
     font-size: 12px;
     font-weight: 600;
   }
-  
+
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     margin-block-end: 30px;
   }
-  
+
   .stat-card {
     background: #fff;
     border-radius: 12px;
@@ -80,14 +80,14 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     border: 1px solid rgba(0,0,0,0.05);
   }
-  
+
   .stat-number {
     font-size: 36px;
     font-weight: 800;
     color: #2196f3;
     margin-block-end: 10px;
   }
-  
+
   .stat-label {
     color: #666;
     font-size: 14px;
@@ -95,7 +95,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  
+
   .settings-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -107,7 +107,7 @@
   <!-- Page Header -->
   <div style="background: #fff; padding: 25px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
     <h1 style="margin: 0; color: #2c3e50; font-weight: 700;">⚙️ Settings & Configuration</h1>
-    <p style="margin: 8px 0 0 0; color: #666;">Manage system categories, roles, and configurations</p>
+    <p style="margin: 8px 0 0 0; color: #666;">Manage system categories and configurations</p>
   </div>
 
   <!-- Stats Overview -->
@@ -119,14 +119,6 @@
     <div class="stat-card">
       <div class="stat-number">{{ $stats['asset_categories'] }}</div>
       <div class="stat-label">Asset Categories</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number">{{ $stats['roles_count'] }}</div>
-      <div class="stat-label">System Roles</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number">{{ $stats['active_roles'] }}</div>
-      <div class="stat-label">Active Roles</div>
     </div>
   </div>
 
@@ -145,26 +137,6 @@
             </a>
           </li>
         @endforeach
-      </ul>
-    </div>
-
-    <!-- Role Management -->
-    <div class="settings-card">
-      <div class="settings-header">👥 Role Management</div>
-      <p style="color: #666; margin-block-end: 20px;">Configure user roles and permissions</p>
-      <ul class="settings-list">
-        <li>
-          <a href="{{ route('settings.roles.manage') }}">
-            <span>🔐 User Roles</span>
-            <span class="badge">{{ $stats['roles_count'] }}</span>
-          </a>
-        </li>
-        <li>
-          <a href="{{ route('settings.roles.manage') }}">
-            <span>🛡️ Permissions</span>
-            <span class="badge">Active</span>
-          </a>
-        </li>
       </ul>
     </div>
 

@@ -35,6 +35,10 @@ class Project extends Model
         'created_by',
         'completed_at',
         'completed_by',
+        // NEW: Add closure fields
+        'closed_at',
+        'closed_by',
+        'closure_reason',
         'report_generated_at',
         'report_path',
     ];
@@ -43,6 +47,7 @@ class Project extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'completed_at' => 'datetime',
+        'closed_at' => 'datetime', // NEW: Add cast for closed_at
         'report_generated_at' => 'datetime',
         'terminal_selection_criteria' => 'array',
         'budget' => 'decimal:2',
@@ -92,6 +97,15 @@ class Project extends Model
         return $this->belongsTo(Employee::class, 'completed_by');
     }
 
+    // NEW: Add closedBy relationship
+    /**
+     * Project was closed by an employee
+     */
+    public function closedBy(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'closed_by');
+    }
+
     /**
      * Project can reference a previous project for insights
      */
@@ -108,8 +122,6 @@ class Project extends Model
         return $this->hasMany(Project::class, 'previous_project_id');
     }
 
-
-
     /**
      * Project has many POS terminals through project_terminals pivot
      */
@@ -121,10 +133,11 @@ class Project extends Model
             ->wherePivot('is_active', true);
     }
 
-public function completion()
-{
-    return $this->hasOne(ProjectCompletion::class);
-}
+    public function completion()
+    {
+        return $this->hasOne(ProjectCompletion::class);
+    }
+
     /**
      * Project has many visits through job assignments
      */
@@ -133,10 +146,10 @@ public function completion()
         return $this->hasManyThrough(
             Visit::class,
             JobAssignment::class,
-            'project_id',     // Foreign key on job_assignments table
-            'job_assignment_id', // Foreign key on visits table
-            'id',             // Local key on projects table
-            'id'              // Local key on job_assignments table
+            'project_id',
+            'job_assignment_id',
+            'id',
+            'id'
         );
     }
 
@@ -176,6 +189,15 @@ public function completion()
         return $query->where('status', 'completed');
     }
 
+    // NEW: Add scope for closed projects
+    /**
+     * Scope for closed projects (all closure types)
+     */
+    public function scopeClosed($query)
+    {
+        return $query->whereIn('status', ['completed', 'closed', 'cancelled', 'on_hold']);
+    }
+
     /**
      * Scope for projects by client
      */
@@ -198,7 +220,7 @@ public function completion()
     public function scopeOverdue($query)
     {
         return $query->where('end_date', '<', now())
-            ->whereNotIn('status', ['completed', 'cancelled']);
+            ->whereNotIn('status', ['completed', 'cancelled', 'closed', 'on_hold']);
     }
 
     /**
@@ -227,6 +249,8 @@ public function completion()
             'completed' => 'bg-primary',
             'paused' => 'bg-warning',
             'cancelled' => 'bg-secondary',
+            'closed' => 'bg-info', // NEW: Add closed status
+            'on_hold' => 'bg-warning', // NEW: Add on_hold status
             default => 'bg-secondary',
         };
     }
@@ -252,7 +276,7 @@ public function completion()
     {
         return $this->end_date &&
             $this->end_date->isPast() &&
-            !in_array($this->status, ['completed', 'cancelled']);
+            !in_array($this->status, ['completed', 'cancelled', 'closed', 'on_hold']);
     }
 
     /**
@@ -264,7 +288,7 @@ public function completion()
             return null;
         }
 
-        $endDate = $this->completed_at ?: ($this->end_date ?: now());
+        $endDate = $this->closed_at ?: ($this->completed_at ?: ($this->end_date ?: now()));
         return $this->start_date->diffInDays($endDate);
     }
 
@@ -274,6 +298,25 @@ public function completion()
     public function getFormattedBudgetAttribute(): string
     {
         return $this->budget ? '$' . number_format($this->budget, 2) : 'Not set';
+    }
+
+    // NEW: Add closure reason accessor
+    /**
+     * Get formatted closure reason
+     */
+    public function getFormattedClosureReasonAttribute(): string
+    {
+        if (!$this->closure_reason) {
+            return 'N/A';
+        }
+
+        return match ($this->closure_reason) {
+            'completed' => 'Completed Successfully',
+            'cancelled' => 'Cancelled',
+            'on_hold' => 'On Hold',
+            'client_request' => 'Client Request',
+            default => ucfirst(str_replace('_', ' ', $this->closure_reason)),
+        };
     }
 
     // ==============================================
@@ -313,8 +356,17 @@ public function completion()
         $this->update(['completion_percentage' => $this->calculateCompletionPercentage()]);
     }
 
+    // UPDATED: Check if project can be closed (more flexible than completion)
     /**
-     * Check if project can be completed
+     * Check if project can be closed
+     */
+    public function canBeClosed(): bool
+    {
+        return !in_array($this->status, ['completed', 'closed', 'cancelled', 'on_hold']);
+    }
+
+    /**
+     * Check if project can be completed (strict requirements)
      */
     public function canBeCompleted(): bool
     {
@@ -401,19 +453,19 @@ public function completion()
 
         static::updated(function ($project) {
             // Auto-update completion percentage when project is updated
-            if ($project->isDirty(['status']) && $project->status !== 'completed') {
+            if ($project->isDirty(['status']) && !in_array($project->status, ['completed', 'closed', 'cancelled'])) {
                 $project->updateCompletionPercentage();
             }
         });
     }
+
     public function projectTerminals()
-{
-    return $this->hasMany(ProjectTerminal::class); // or appropriate relationship
-}
+    {
+        return $this->hasMany(ProjectTerminal::class);
+    }
 
-public function jobAssignments()
-{
-    return $this->hasMany(JobAssignment::class);
-}
-
+    public function jobAssignments()
+    {
+        return $this->hasMany(JobAssignment::class);
+    }
 }

@@ -495,7 +495,7 @@
   <a href="{{ route('projects.create') }}" class="nav-sub {{ request()->routeIs('projects.create') ? 'active' : '' }}">
     <span class="nav-icon">➕</span> New Project
   </a>
-  <a href="{{ route('projects.completion-reports') }}" class="nav-sub {{ request()->routeIs('projects.completion-reports') ? 'active' : '' }}">
+  <a href="{{ route('projects.closure-reports') }}" class="nav-sub {{ request()->routeIs('projects.completion-reports') ? 'active' : '' }}">
     <span class="nav-icon">📄</span> Project Closure and Reports
   </a>
 </div>

@@ -42,7 +42,7 @@
                                 data-project-id="{{ $project->id }}"
                                 data-project-name="{{ $project->project_name }}"
                                 data-client-name="{{ $project->client->company_name }}">
-                            <i class="fas fa-check-circle me-1"></i>Complete Project
+                            <i class="fas fa-check-circle me-1"></i>Close Project
                         </button>
 
                         <div class="d-flex gap-2">

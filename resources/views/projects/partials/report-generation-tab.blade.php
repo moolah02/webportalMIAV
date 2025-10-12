@@ -323,6 +323,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('reportProjectName').textContent = projectName;
             document.getElementById('reportClientName').textContent = clientName;
 
+            // Set the form action URL dynamically
+            const form = document.getElementById('reportGenerationForm');
+            form.action = `/projects/${projectId}/generate-reports`;
+
             const modal = new bootstrap.Modal(document.getElementById('generateReportModal'));
             modal.show();
         });
@@ -337,48 +341,159 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('emailProjectId').value = projectId;
             document.getElementById('recipient_email').value = clientEmail;
 
+            // Set the form action URL dynamically
+            const form = document.getElementById('emailReportForm');
+            form.action = `/projects/${projectId}/email-report`;
+
             const modal = new bootstrap.Modal(document.getElementById('emailReportModal'));
             modal.show();
         });
     });
 
-    // Report Generation Form Submit
+    // FIXED: Report Generation Form Submit - ACTUALLY SUBMIT TO BACKEND
     document.getElementById('reportGenerationForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const formData = new FormData(this);
-        const submitBtn = this.querySelector('button[type="submit"]');
+        const form = this;
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
 
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+        // Show loading state
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating Reports...';
         submitBtn.disabled = true;
 
-        // Here you would make an AJAX call to generate reports
-        // For now, just simulate the process
-        setTimeout(function() {
-            submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Generated!';
-            setTimeout(function() {
-                location.reload(); // Refresh to show new reports
-            }, 1000);
-        }, 3000);
+        // ACTUALLY MAKE THE AJAX CALL TO YOUR BACKEND
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Success
+                submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Reports Generated!';
+                submitBtn.classList.remove('btn-primary');
+                submitBtn.classList.add('btn-success');
+
+                // Show success message
+                showAlert('Reports generated successfully!', 'success');
+
+                // Close modal and reload page after 2 seconds
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('generateReportModal')).hide();
+                    location.reload();
+                }, 2000);
+            } else {
+                throw new Error(data.message || 'Report generation failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+
+            // Show error state
+            submitBtn.innerHTML = '<i class="fas fa-times me-2"></i>Generation Failed';
+            submitBtn.classList.remove('btn-primary');
+            submitBtn.classList.add('btn-danger');
+
+            showAlert('Error generating reports: ' + error.message, 'danger');
+
+            // Reset button after 3 seconds
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.classList.remove('btn-danger', 'btn-success');
+                submitBtn.classList.add('btn-primary');
+                submitBtn.disabled = false;
+            }, 3000);
+        });
     });
 
-    // Email Form Submit
+    // FIXED: Email Form Submit - ACTUALLY SUBMIT TO BACKEND
     document.getElementById('emailReportForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const submitBtn = this.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        const form = this;
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending Email...';
         submitBtn.disabled = true;
 
-        // Simulate email sending
-        setTimeout(function() {
-            submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Sent!';
-            setTimeout(function() {
-                bootstrap.Modal.getInstance(document.getElementById('emailReportModal')).hide();
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send Email';
+        // ACTUALLY MAKE THE AJAX CALL
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Email Sent!';
+                submitBtn.classList.remove('btn-success');
+                submitBtn.classList.add('btn-success');
+
+                showAlert('Email sent successfully!', 'success');
+
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('emailReportModal')).hide();
+                    form.reset();
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 2000);
+            } else {
+                throw new Error(data.message || 'Email sending failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            submitBtn.innerHTML = '<i class="fas fa-times me-2"></i>Send Failed';
+            submitBtn.classList.add('btn-danger');
+            showAlert('Error sending email: ' + error.message, 'danger');
+
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.classList.remove('btn-danger');
+                submitBtn.classList.add('btn-success');
                 submitBtn.disabled = false;
-            }, 1000);
-        }, 2000);
+            }, 3000);
+        });
     });
 });
+
+// Helper function to show alerts
+function showAlert(message, type = 'info') {
+    const alertId = 'alert-' + Date.now();
+    const alertClass = type === 'success' ? 'alert-success' : type === 'danger' ? 'alert-danger' : 'alert-info';
+    const icon = type === 'success' ? 'fas fa-check-circle' : type === 'danger' ? 'fas fa-exclamation-triangle' : 'fas fa-info-circle';
+
+    const alertHtml = `
+        <div id="${alertId}" class="alert ${alertClass} alert-dismissible fade show position-fixed"
+             style="top: 20px; right: 20px; z-index: 9999; max-width: 400px;">
+            <i class="${icon} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', alertHtml);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        const alert = document.getElementById(alertId);
+        if (alert) {
+            alert.remove();
+        }
+    }, 5000);
+}
 </script>

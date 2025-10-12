@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class TerminalDeploymentController extends Controller
@@ -22,30 +23,15 @@ class TerminalDeploymentController extends Controller
     /**
      * Display the hierarchical terminal deployment page
      */
-    public function index()
+public function index(Request $request)
 {
     try {
-        // Debug step by step
-        Log::info('=== DEPLOYMENT CONTROLLER DEBUG START ===');
+        // Get pre-selection parameters from URL
+        $preSelectedProjectId = $request->get('project_id');
+        $preSelectedClientId = $request->get('client_id');
 
-        // Test basic database connection
-        $totalClients = Client::count();
-        Log::info('Total clients in database: ' . $totalClients);
-
-        // Test active clients query
-        $activeClients = Client::where('status', 'active')->get();
-        Log::info('Active clients found: ' . $activeClients->count());
-        Log::info('Active clients data: ', $activeClients->toArray());
-
-        // Test relationship
-        $clientsWithCount = Client::where('status', 'active')
-            ->withCount('posTerminals')
-            ->get();
-        Log::info('Clients with terminal count: ', $clientsWithCount->toArray());
-
-        // Your original mapping
-       $clients = Client::withCount('posTerminals')
-            ->withCount('posTerminals')
+        // Get clients data
+        $clients = Client::withCount('posTerminals')
             ->orderBy('company_name')
             ->get()
             ->map(function($client) {
@@ -56,39 +42,55 @@ class TerminalDeploymentController extends Controller
                 ];
             });
 
-        Log::info('Final clients array: ', $clients->toArray());
-
-        // Test technicians
+        // Get technicians data
         $technicians = Employee::active()
             ->fieldTechnicians()
             ->with('role')
-            ->get();
+            ->get()
+            ->map(function($technician) {
+                return [
+                    'id' => $technician->id,
+                    'name' => $technician->full_name,
+                    'specialization' => $technician->getSpecialization() ?? 'General',
+                    'availability_status' => $this->getTechnicianAvailability($technician),
+                    'current_workload' => $this->getCurrentWorkload($technician)
+                ];
+            });
 
-        Log::info('Technicians found: ' . $technicians->count());
+        // Get pre-selected project data if provided
+        $preSelectedProject = null;
+        if ($preSelectedProjectId) {
+            $preSelectedProject = Project::with('client')->find($preSelectedProjectId);
+        }
 
-        // Simple stats for now
         $stats = [
             'total_terminals' => PosTerminal::count(),
             'active_clients' => Client::where('status', 'active')->count(),
+            'active_projects' => Project::where('status', 'active')->count(),
+            'available_technicians' => $technicians->where('availability_status', 'available')->count()
         ];
 
-        Log::info('Stats: ', $stats);
-        Log::info('=== DEPLOYMENT CONTROLLER DEBUG END ===');
-
-        return view('deployment.hierarchical', compact('stats', 'clients', 'technicians'));
+        return view('deployment.hierarchical', compact(
+            'stats',
+            'clients',
+            'technicians',
+            'preSelectedProject',
+            'preSelectedProjectId',
+            'preSelectedClientId'
+        ));
 
     } catch (\Exception $e) {
         Log::error('Error in deployment controller: ' . $e->getMessage());
-        Log::error('Stack trace: ' . $e->getTraceAsString());
-
-        // Return a simple debug view
-        return response()->json([
-            'error' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => $e->getTraceAsString()
-        ]);
+        return back()->withErrors(['error' => 'Error loading deployment page: ' . $e->getMessage()]);
     }
+}
+
+private function getCurrentWorkload($technician)
+{
+    return $technician->jobAssignments()
+        ->whereIn('status', ['assigned', 'in_progress'])
+        ->whereDate('scheduled_date', '>=', today())
+        ->count();
 }
 
     private function convertHierarchyToArray($hierarchy)
@@ -321,45 +323,7 @@ $workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk-
         }
     }
 
-    /**
-     * Export assignments in various formats
-     */
-    public function exportAssignments(Request $request, $format)
-    {
-        try {
-            $clientIds = $request->get('client_ids', []);
-            $projectIds = $request->get('project_ids', []);
 
-            // Get assignments based on filters
-            $query = JobAssignment::with(['technician', 'client', 'project'])
-                ->where('status', '!=', 'cancelled');
-
-            if (!empty($clientIds)) {
-                $query->whereIn('client_id', $clientIds);
-            }
-
-            if (!empty($projectIds)) {
-                $query->whereIn('project_id', $projectIds);
-            }
-
-            $assignments = $query->get();
-
-            switch ($format) {
-                case 'pdf':
-                    return $this->exportToPDF($assignments);
-                case 'excel':
-                    return $this->exportToExcel($assignments);
-                case 'mobile':
-                    return $this->exportForMobile($assignments);
-                default:
-                    return response()->json(['error' => 'Invalid export format'], 400);
-            }
-
-        } catch (\Exception $e) {
-            Log::error('Export error: ' . $e->getMessage());
-            return response()->json(['error' => 'Export failed'], 500);
-        }
-    }
 
     /**
      * Bulk assign multiple selections
@@ -584,53 +548,6 @@ $workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk-
             'needs_service' => 0
         ];
     }
-
-    /**
-     * Export to PDF format
-     */
-    private function exportToPDF($assignments)
-    {
-        // Implementation for PDF export
-        // You can use libraries like DomPDF or similar
-        return response()->json(['message' => 'PDF export feature coming soon']);
-    }
-
-    /**
-     * Export to Excel format
-     */
-    private function exportToExcel($assignments)
-    {
-        // Implementation for Excel export
-        // You can use libraries like Laravel Excel
-        return response()->json(['message' => 'Excel export feature coming soon']);
-    }
-
-    /**
-     * Export for mobile sync
-     */
-    private function exportForMobile($assignments)
-    {
-        // Return JSON format suitable for mobile app sync
-        return response()->json([
-            'assignments' => $assignments->map(function($assignment) {
-                return [
-                    'id' => $assignment->assignment_id,
-                    'technician' => $assignment->technician->full_name,
-                    'client' => $assignment->client->company_name,
-                    'project' => $assignment->project?->project_name,
-                    'terminals' => $assignment->pos_terminals,
-                    'scheduled_date' => $assignment->scheduled_date,
-                    'service_type' => $assignment->service_type,
-                    'priority' => $assignment->priority,
-                    'status' => $assignment->status,
-                    'notes' => $assignment->notes
-                ];
-            }),
-            'exported_at' => now()->toISOString()
-        ]);
-    }
-
-
 
 public function getHierarchicalTerminals(Request $request)
 {
@@ -998,6 +915,7 @@ private function getOrCreateRegionId($terminal)
 
     return $region->id;
 }
+
 // app/Http/Controllers/TerminalDeploymentController.php
 
 public function createAssignment(Request $request)
@@ -1137,6 +1055,7 @@ public function getAssignedTerminals()
         ], 500);
     }
 }
+
 // SiteVisitController.php
 public function editTerminal($assignmentId, $terminalId)
 {
@@ -1145,7 +1064,7 @@ public function editTerminal($assignmentId, $terminalId)
 
     $terminal   = PosTerminal::with('client')->findOrFail($terminalId);
 
-    // If there’s an open/in_progress visit for this assignment+terminal, load it, else null
+    // If there's an open/in_progress visit for this assignment+terminal, load it, else null
     $visit = \App\Models\TechnicianVisit::where('job_assignment_id', $assignment->id)
         ->where('pos_terminal_id', $terminal->id)
         ->latest('started_at')
@@ -1155,4 +1074,261 @@ public function editTerminal($assignmentId, $terminalId)
     return view('site_visits.edit', compact('assignment','terminal','visit'));
 }
 
+/**
+ * Export assignments in various formats
+ */
+public function exportAssignments(Request $request)
+{
+    $request->validate([
+        'format' => 'required|in:csv,excel,pdf,mobile',
+        'client_ids' => 'array',
+        'project_ids' => 'array',
+        'assignments' => 'required|array'
+    ]);
+
+    try {
+        // PREPARE THE ASSIGNMENTS DATA FIRST
+        $assignments = $this->prepareAssignmentData($request);
+
+        // FIX: Use $request->get('format') instead of $request->format
+        switch ($request->get('format')) {
+            case 'csv':
+                return $this->exportToCsv($assignments);
+            case 'excel':
+                return $this->exportToExcel($assignments);
+            case 'pdf':
+                return $this->exportToPdf($assignments);
+            case 'mobile':
+                return $this->exportForMobile($assignments);
+            default:
+                throw new \Exception('Invalid export format');
+        }
+
+    } catch (\Exception $e) {
+        Log::error('Export error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Export failed: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+private function prepareAssignmentData($request)
+{
+    $data = [];
+
+    foreach ($request->assignments as $assignment) {
+        $technician = Employee::find($assignment['technician_id']);
+        $terminals = PosTerminal::whereIn('id', $assignment['terminal_ids'])->with('client')->get();
+
+        foreach ($terminals as $terminal) {
+            $data[] = [
+                'technician_name' => $assignment['technician_name'],
+                'technician_id' => $assignment['technician_id'],
+                'terminal_id' => $terminal->terminal_id,
+                'merchant_name' => $terminal->merchant_name,
+                'client_name' => $terminal->client->company_name ?? 'Unknown',
+                'province' => $terminal->province,
+                'city' => $terminal->city,
+                'area' => $terminal->area,
+                'address' => $terminal->physical_address,
+                'phone' => $terminal->merchant_phone,
+                'priority' => $assignment['priority'],
+                'regions' => implode(', ', $assignment['regions'] ?? []),
+                'scheduled_date' => $request->get('scheduled_date', now()->format('Y-m-d')),
+                'export_date' => now()->format('Y-m-d H:i:s')
+            ];
+        }
+    }
+
+    return collect($data);
+}
+
+/**
+ * Save deployment as draft
+ */
+public function saveAsDraft(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'client_ids' => 'required|array',
+        'project_ids' => 'array',
+        'scheduled_date' => 'required|date',
+        'assignments' => 'required|array'
+    ]);
+
+    try {
+        $draftId = 'DRAFT-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+
+        // Store draft data (you might want to create a DeploymentDraft model)
+        $draftData = [
+            'draft_id' => $draftId,
+            'name' => $request->name,
+            'client_ids' => $request->client_ids,
+            'project_ids' => $request->project_ids ?? [],
+            'scheduled_date' => $request->scheduled_date,
+            'assignments' => $request->assignments,
+            'created_by' => Auth::id(),
+            'created_at' => now()
+        ];
+
+        // For now, store in session or cache (implement proper storage as needed)
+        cache()->put("deployment_draft_{$draftId}", $draftData, now()->addDays(30));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Draft saved successfully',
+            'draft_id' => $draftId
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error saving draft: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error saving draft: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+// =====================
+// PRIVATE HELPER METHODS
+// =====================
+
+private function exportToCsv($assignments)
+{
+    $filename = 'deployment_assignments_' . date('Y-m-d') . '.csv';
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+    ];
+
+    $callback = function() use ($assignments) {
+        $file = fopen('php://output', 'w');
+
+        // CSV Headers
+        fputcsv($file, [
+            'Technician Name',
+            'Terminal ID',
+            'Merchant Name',
+            'Client Name',
+            'Province',
+            'City',
+            'Area',
+            'Address',
+            'Phone',
+            'Priority',
+            'Regions',
+            'Scheduled Date'
+        ]);
+
+        foreach ($assignments as $assignment) {
+            fputcsv($file, [
+                $assignment['technician_name'],
+                $assignment['terminal_id'],
+                $assignment['merchant_name'],
+                $assignment['client_name'],
+                $assignment['province'],
+                $assignment['city'],
+                $assignment['area'],
+                $assignment['address'],
+                $assignment['phone'],
+                $assignment['priority'],
+                $assignment['regions'],
+                $assignment['scheduled_date']
+            ]);
+        }
+
+        fclose($file);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
+
+
+
+/**
+ * Export for mobile sync
+ */
+private function exportForMobile($assignments)
+{
+    $mobileData = [
+        'deployment_id' => 'DEP-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+        'export_timestamp' => now()->toISOString(),
+        'total_assignments' => $assignments->groupBy('technician_id')->count(),
+        'total_terminals' => $assignments->count(),
+        'assignments' => $assignments->groupBy('technician_id')->map(function($techAssignments, $technicianId) {
+            $first = $techAssignments->first();
+            return [
+                'technician_id' => $technicianId,
+                'technician_name' => $first['technician_name'],
+                'terminals' => $techAssignments->map(function($assignment) {
+                    return [
+                        'terminal_id' => $assignment['terminal_id'],
+                        'merchant_name' => $assignment['merchant_name'],
+                        'address' => $assignment['address'],
+                        'phone' => $assignment['phone'],
+                        'priority' => $assignment['priority']
+                    ];
+                })->values(),
+                'scheduled_date' => $first['scheduled_date']
+            ];
+        })->values()
+    ];
+
+    return response()->json($mobileData);
+}
+
+/**
+ * Export to Excel format (simplified - you might want to use Laravel Excel)
+ */
+private function exportToExcel($assignments)
+{
+    // For now, return CSV with Excel MIME type
+    // You should implement proper Excel export using Laravel Excel package
+    $filename = 'deployment_assignments_' . date('Y-m-d') . '.xlsx';
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Excel export feature coming soon. Use CSV for now.',
+        'download_url' => route('deployment.export-assignments') . '?format=csv'
+    ]);
+}
+// Add this to your composer.json and run composer install
+// "barryvdh/laravel-dompdf": "^2.0"
+
+// Then add this to your TerminalDeploymentController.php
+
+
+
+// Replace the existing exportToPdf method with this:
+private function exportToPdf($assignments)
+{
+    try {
+        // Prepare data for PDF
+        $data = [
+            'assignments' => $assignments,
+            'export_date' => now()->format('Y-m-d H:i:s'),
+            'total_assignments' => $assignments->groupBy('technician_id')->count(),
+            'total_terminals' => $assignments->count(),
+        ];
+
+        // Generate PDF using a view
+        $pdf = Pdf::loadView('exports.assignment_pdf', $data);
+
+        // Set paper size and orientation
+        $pdf->setPaper('A4', 'landscape');
+
+        $filename = 'assignment_export_' . date('Y-m-d_H-i-s') . '.pdf';
+
+        return $pdf->download($filename);
+
+    } catch (\Exception $e) {
+        Log::error('PDF Export Error: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Error generating PDF: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

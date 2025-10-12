@@ -1,12 +1,12 @@
-{{-- resources/views/projects/completion-reports.blade.php --}}
+{{-- resources/views/projects/closure-reports.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
 
 <div class="container-fluid py-4">
     {{-- Page Header --}}
-    <h2 class="page-title mb-4">Project Completion & Reports</h2>
-    <p class="page-subtitle">Manage project completions and generate reports</p>
+    <h2 class="page-title mb-4">Project Closure & Reports</h2>
+    <p class="page-subtitle">Manage project closures and generate reports</p>
 
     {{-- Statistics Cards --}}
     <div class="stats-grid mb-4">
@@ -28,8 +28,8 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ $completedProjects->count() }}</div>
-                    <div class="stat-label">Completed Projects</div>
+                    <div class="stat-number">{{ $closedProjects->count() }}</div>
+                    <div class="stat-label">Closed Projects</div>
                 </div>
             </div>
         </div>
@@ -40,7 +40,7 @@
                     <i class="fas fa-file-pdf"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ $completedProjects->where('report_path')->count() }}</div>
+                    <div class="stat-number">{{ $closedProjects->where('report_path')->count() }}</div>
                     <div class="stat-label">Reports Generated</div>
                 </div>
             </div>
@@ -69,8 +69,8 @@
                 <button class="btn btn-primary active" onclick="showTab('active-projects')">
                     <i class="fas fa-play-circle"></i> Active Projects
                 </button>
-                <button class="btn btn-secondary" onclick="showTab('completed-projects')">
-                    <i class="fas fa-check-circle"></i> Completed Projects
+                <button class="btn btn-secondary" onclick="showTab('closed-projects')">
+                    <i class="fas fa-check-circle"></i> Closed Projects
                 </button>
                 <button class="btn btn-secondary" onclick="showTab('analytics')">
                     <i class="fas fa-chart-bar"></i> Analytics
@@ -149,7 +149,7 @@
                                             <i class="fas fa-eye"></i> View
                                         </a>
                                         <a href="{{ route('projects.closure-wizard', $project) }}" class="btn btn-primary">
-                                            <i class="fas fa-flag-checkered"></i> Complete
+                                            <i class="fas fa-flag-checkered"></i> Close
                                         </a>
                                     </div>
                                 </td>
@@ -161,28 +161,28 @@
             @else
                 <div class="empty-state">
                     <h5>No active projects</h5>
-                    <p>All projects are completed or there are no projects to show.</p>
+                    <p>All projects are closed or there are no projects to show.</p>
                 </div>
             @endif
         </div>
     </div>
 
-    {{-- Completed Projects Tab --}}
-    <div id="completed-projects" class="tab-content">
+    {{-- Closed Projects Tab --}}
+    <div id="closed-projects" class="tab-content">
         <div class="card">
             <div class="card-header">
-                <h6 class="card-title">Completed Projects</h6>
-                <span class="badge">{{ $completedProjects->count() }}</span>
+                <h6 class="card-title">Closed Projects</h6>
+                <span class="badge">{{ $closedProjects->count() }}</span>
             </div>
 
-            @if($completedProjects->count() > 0)
+            @if($closedProjects->count() > 0)
                 <div class="table-responsive">
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Project</th>
                                 <th>Client</th>
-                                <th>Completion Date</th>
+                                <th>Closure Date</th>
                                 <th>Duration</th>
                                 <th>Quality Rating</th>
                                 <th>Report Status</th>
@@ -190,7 +190,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($completedProjects as $project)
+                            @foreach($closedProjects as $project)
                             <tr>
                                 <td>
                                     <div class="item-title">{{ $project->project_name }}</div>
@@ -198,35 +198,22 @@
                                 </td>
                                 <td>{{ $project->client->company_name }}</td>
                                 <td>
-                                    <div class="completion-date">
-                                        {{ $project->completed_at ? $project->completed_at->format('M j, Y') : 'N/A' }}
+                                    <div class="closure-date">
+                                        {{ $project->closed_at ? $project->closed_at->format('M j, Y') : 'N/A' }}
                                     </div>
-                                    <div class="completion-relative">{{ $project->completed_at?->diffForHumans() }}</div>
+                                    <div class="closure-relative">{{ $project->closed_at?->diffForHumans() }}</div>
                                 </td>
                                 <td>
-                                    @if($project->start_date && $project->completed_at)
-                                        {{ $project->start_date->diffInDays($project->completed_at) }} days
+                                    @if($project->start_date && $project->closed_at)
+                                        {{ $project->start_date->diffInDays($project->closed_at) }} days
                                     @else
                                         N/A
                                     @endif
                                 </td>
-                                <td>
-                                    @if($project->completion)
-                                    <div class="rating-display">
-                                        <div class="rating-stars">
-                                            @for($i = 1; $i <= 5; $i++)
-                                            <i class="fas fa-star {{ $i <= $project->completion->quality_score ? 'text-warning' : 'text-muted' }}"></i>
-                                            @endfor
-                                        </div>
-                                        <small class="text-muted">{{ $project->completion->quality_score }}/5</small>
-                                    </div>
-                                    @else
-                                    <span class="text-muted">Not rated</span>
-                                    @endif
-                                </td>
+
                                 <td>
                                     @if($project->report_path)
-                                        <span class="badge badge-status-completed">Generated</span>
+                                        <span class="badge badge-status-closed">Generated</span>
                                     @else
                                         <span class="badge badge-status-assigned">Pending</span>
                                     @endif
@@ -236,8 +223,8 @@
                                         <a href="{{ route('projects.show', $project) }}" class="btn btn-outline">
                                             <i class="fas fa-eye"></i> View
                                         </a>
-                                        @if($project->completion)
-                                        <button class="btn btn-secondary" onclick="showCompletionDetails('{{ $project->id }}')">
+                                        @if($project->closure)
+                                        <button class="btn btn-secondary" onclick="showClosureDetails('{{ $project->id }}')">
                                             <i class="fas fa-info-circle"></i> Details
                                         </button>
                                         @endif
@@ -250,8 +237,8 @@
                 </div>
             @else
                 <div class="empty-state">
-                    <h5>No completed projects</h5>
-                    <p>No projects have been completed yet.</p>
+                    <h5>No closed projects</h5>
+                    <p>No projects have been closed yet.</p>
                 </div>
             @endif
         </div>
@@ -273,15 +260,7 @@
             </div>
 
             <div class="stat-card">
-                <div class="stat-card-body">
-                    <div class="stat-icon stat-icon-success">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number">{{ $completedProjects->where('completion')->avg('completion.quality_score') ? number_format($completedProjects->where('completion')->avg('completion.quality_score'), 1) : '0' }}</div>
-                        <div class="stat-label">Avg. Quality Score</div>
-                    </div>
-                </div>
+
             </div>
 
             <div class="stat-card">
@@ -290,7 +269,7 @@
                         <i class="fas fa-heart"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-number">{{ $completedProjects->where('completion')->avg('completion.client_satisfaction') ? number_format($completedProjects->where('completion')->avg('completion.client_satisfaction'), 1) : '0' }}</div>
+                        <div class="stat-number">{{ $closedProjects->where('closure')->avg('closure.client_satisfaction') ? number_format($closedProjects->where('closure')->avg('closure.client_satisfaction'), 1) : '0' }}</div>
                         <div class="stat-label">Avg. Client Satisfaction</div>
                     </div>
                 </div>
@@ -304,10 +283,10 @@
                     <div class="stat-content">
                         <div class="stat-number">
                             @php
-                            $avgDuration = $completedProjects->filter(function($project) {
-                                return $project->start_date && $project->completed_at;
+                            $avgDuration = $closedProjects->filter(function($project) {
+                                return $project->start_date && $project->closed_at;
                             })->map(function($project) {
-                                return $project->start_date->diffInDays($project->completed_at);
+                                return $project->start_date->diffInDays($project->closed_at);
                             })->avg();
                             @endphp
                             {{ $avgDuration ? number_format($avgDuration, 0) : '0' }}
@@ -324,10 +303,10 @@
         <div class="card">
             <div class="card-header">
                 <h6 class="card-title">Generated Reports</h6>
-                <span class="badge">{{ $completedProjects->where('report_path')->count() }}</span>
+                <span class="badge">{{ $closedProjects->where('report_path')->count() }}</span>
             </div>
 
-            @if($completedProjects->where('report_path')->count() > 0)
+            @if($closedProjects->where('report_path')->count() > 0)
                 <div class="table-responsive">
                     <table class="data-table">
                         <thead>
@@ -340,14 +319,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($completedProjects->where('report_path') as $project)
+                            @foreach($closedProjects->where('report_path') as $project)
                             <tr>
                                 <td>
                                     <div class="item-title">{{ $project->project_name }}</div>
                                     <div class="item-subtitle">{{ $project->project_code }}</div>
                                 </td>
                                 <td>{{ $project->client->company_name }}</td>
-                                <td>{{ $project->completed_at ? $project->completed_at->format('M j, Y') : 'N/A' }}</td>
+                                <td>{{ $project->closed_at ? $project->closed_at->format('M j, Y') : 'N/A' }}</td>
                                 <td>
                                     @if($project->report_path && file_exists(storage_path('app/public/' . $project->report_path)))
                                         {{ number_format(filesize(storage_path('app/public/' . $project->report_path)) / 1024, 1) }} KB
@@ -370,7 +349,7 @@
             @else
                 <div class="empty-state">
                     <h5>No reports generated</h5>
-                    <p>Complete projects to generate reports.</p>
+                    <p>Close projects to generate reports.</p>
                 </div>
             @endif
         </div>
@@ -378,7 +357,7 @@
 
     {{-- Manual Reports Tab --}}
     <div id="manual-reports" class="tab-content">
-        @if($completedProjects->count() > 0)
+        @if($closedProjects->count() > 0)
             <div class="card mb-4">
                 <div class="card-header">
                     <h6 class="card-title">Select Project for Report Generation</h6>
@@ -386,8 +365,8 @@
                 <div class="card-body">
                     <div class="form-group">
                         <select id="projectSelector" class="form-control">
-                            <option value="">Choose a completed project...</option>
-                            @foreach($completedProjects as $project)
+                            <option value="">Choose a closed project...</option>
+                            @foreach($closedProjects as $project)
                                 <option value="{{ $project->id }}">{{ $project->project_name }} - {{ $project->client->company_name }}</option>
                             @endforeach
                         </select>
@@ -402,8 +381,8 @@
             <div class="card">
                 <div class="card-body">
                     <div class="empty-state">
-                        <h5>No completed projects</h5>
-                        <p>Complete some projects first to generate reports.</p>
+                        <h5>No closed projects</h5>
+                        <p>Close some projects first to generate reports.</p>
                     </div>
                 </div>
             </div>
@@ -630,13 +609,13 @@
     display: inline-block;
 }
 
-.completion-date {
+.closure-date {
     font-weight: 500;
     color: #111827;
     margin-bottom: 0.25rem;
 }
 
-.completion-relative {
+.closure-relative {
     color: #6b7280;
     font-size: 0.8125rem;
 }
@@ -681,7 +660,7 @@
     color: #166534;
 }
 
-.badge-status-completed {
+.badge-status-closed {
     background: #dbeafe;
     color: #1d4ed8;
 }
@@ -808,8 +787,8 @@ function showTab(tabName) {
     event.target.classList.add('btn-primary', 'active');
 }
 
-function showCompletionDetails(projectId) {
-    window.location.href = `/projects/${projectId}/completion-details`;
+function showClosureDetails(projectId) {
+    window.location.href = `/projects/${projectId}/closure-details`;
 }
 
 // Project selector for manual reports

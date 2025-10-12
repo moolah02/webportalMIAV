@@ -102,75 +102,74 @@ class ProjectController extends Controller
         return view('projects.create', compact('clients', 'projectManagers', 'recentProjects'));
     }
 
-    /**
-     * Store a newly created project in storage
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'project_name' => 'required|string|max:255',
-            'client_id' => 'required|exists:clients,id',
-            'project_type' => 'required|in:discovery,servicing,support,maintenance,installation,upgrade,decommission',
-            'priority' => 'required|in:low,normal,high,emergency',
-            'description' => 'nullable|string',
-            'start_date' => 'nullable|date|after_or_equal:today',
-            'end_date' => 'nullable|date|after:start_date',
-            'project_manager_id' => 'nullable|exists:employees,id',
-            'estimated_terminals_count' => 'nullable|integer|min:0',
-            'budget' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string',
-            'previous_project_id' => 'nullable|exists:projects,id',
-            'insights_from_previous' => 'nullable|string',
-            'terminal_selection_method' => 'required|in:all,status_based,manual',
-            'terminal_status_filter' => 'nullable|array',
-            'manual_terminal_ids' => 'nullable|array',
+
+
+/**
+ * Store a newly created project in storage
+ * UPDATED: Made terminal assignment optional during project creation
+ */
+public function store(Request $request)
+{
+    $request->validate([
+        'project_name' => 'required|string|max:255',
+        'client_id' => 'required|exists:clients,id',
+        'project_type' => 'required|in:discovery,servicing,support,maintenance,installation,upgrade,decommission',
+        'priority' => 'required|in:low,normal,high,emergency',
+        'description' => 'nullable|string',
+        'start_date' => 'nullable|date|after_or_equal:today',
+        'end_date' => 'nullable|date|after:start_date',
+        'project_manager_id' => 'nullable|exists:employees,id',
+        'estimated_terminals_count' => 'nullable|integer|min:0',
+        'budget' => 'nullable|numeric|min:0',
+        'notes' => 'nullable|string',
+        'previous_project_id' => 'nullable|exists:projects,id',
+        'insights_from_previous' => 'nullable|string',
+        // CHANGED: Made these optional instead of required
+        'terminal_selection_method' => 'nullable|in:all,status_based,manual',
+        'terminal_status_filter' => 'nullable|array',
+        'manual_terminal_ids' => 'nullable|array',
+    ]);
+
+    DB::beginTransaction();
+    try {
+        // Generate unique project code
+        $client = Client::find($request->client_id);
+        $projectCode = $this->generateProjectCode($client->client_code, $request->project_type);
+
+        // Create project
+        $project = Project::create([
+            'project_code' => $projectCode,
+            'project_name' => $request->project_name,
+            'client_id' => $request->client_id,
+            'project_type' => $request->project_type,
+            'description' => $request->description,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'status' => 'active',
+            'priority' => $request->priority,
+            'budget' => $request->budget,
+            'estimated_terminals_count' => $request->estimated_terminals_count ?? 0,
+            'project_manager_id' => $request->project_manager_id,
+            'previous_project_id' => $request->previous_project_id,
+            'insights_from_previous' => $request->insights_from_previous,
+            'notes' => $request->notes,
+            'created_by' => Auth::id(),
         ]);
 
-        DB::beginTransaction();
-        try {
-            // Generate unique project code
-            $client = Client::find($request->client_id);
-            $projectCode = $this->generateProjectCode($client->client_code, $request->project_type);
+        DB::commit();
 
-            // Create project
-            $project = Project::create([
-                'project_code' => $projectCode,
-                'project_name' => $request->project_name,
-                'client_id' => $request->client_id,
-                'project_type' => $request->project_type,
-                'description' => $request->description,
-                'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
-                'status' => 'active',
-                'priority' => $request->priority,
-                'budget' => $request->budget,
-                'estimated_terminals_count' => $request->estimated_terminals_count,
-                'project_manager_id' => $request->project_manager_id,
-                'previous_project_id' => $request->previous_project_id,
-                'insights_from_previous' => $request->insights_from_previous,
-                'terminal_selection_criteria' => [
-                    'method' => $request->terminal_selection_method,
-                    'status_filter' => $request->terminal_status_filter,
-                    'manual_ids' => $request->manual_terminal_ids,
-                ],
-                'notes' => $request->notes,
-                'created_by' => Auth::id(),
-            ]);
+        $successMessage = 'Project created successfully! You can assign terminals using the Job Assignment system.';
 
-            // Assign terminals based on selection method
-            $this->assignTerminalsToProject($project, $request);
+        return redirect()->route('projects.show', $project)
+    ->with('success', 'Project created successfully!')
+    ->with('show_deployment_link', true);
 
-            DB::commit();
-
-            return redirect()->route('projects.show', $project)
-                ->with('success', 'Project created successfully!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()
-                ->withErrors(['error' => 'Error creating project: ' . $e->getMessage()]);
-        }
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withInput()
+            ->withErrors(['error' => 'Error creating project: ' . $e->getMessage()]);
     }
+}
 
 
     public function edit(Project $project)
@@ -643,14 +642,12 @@ public function completionWizard(Project $project)
     $progressData['regional_performance'] = $this->calculateRegionalPerformance($project);
     $progressData['team_metrics'] = $this->calculateTeamMetrics($project);
 
-    return view('projects.completion-wizard', compact('project', 'progressData'));
+    return view('projects.closure-wizard', compact('project', 'progressData'));
 }
 
 
 
-/**
- * FIXED: Complete project method - replace your existing complete method
- */
+
 public function complete(Request $request, Project $project)
 {
     try {
@@ -658,8 +655,7 @@ public function complete(Request $request, Project $project)
         $request->validate([
             'executive_summary' => 'required|string|min:10',
             'key_achievements' => 'required|string|min:10',
-            'quality_score' => 'required|integer|between:1,5',
-            'client_satisfaction' => 'required|integer|between:1,5',
+
             'challenges_overcome' => 'nullable|string',
             'lessons_learned' => 'nullable|string',
             'issues_found' => 'nullable|string',
@@ -683,8 +679,7 @@ public function complete(Request $request, Project $project)
             'key_achievements' => $request->key_achievements,
             'challenges_overcome' => $request->challenges_overcome,
             'lessons_learned' => $request->lessons_learned,
-            'quality_score' => $request->quality_score,
-            'client_satisfaction' => $request->client_satisfaction,
+
             'issues_found' => $request->issues_found,
             'recommendations' => $request->recommendations,
             'additional_notes' => $request->additional_notes,
@@ -713,7 +708,7 @@ public function complete(Request $request, Project $project)
         Log::info('Project completion successful', ['project_id' => $project->id]);
 
         // Redirect with success message
-        return redirect()->route('projects.completion-reports')
+      return redirect()->route('projects.closure-reports')
             ->with('success', "Project '{$project->project_name}' has been completed successfully!");
 
     } catch (ValidationException $e) {
@@ -731,7 +726,7 @@ public function complete(Request $request, Project $project)
         ]);
 
         return back()
-            ->with('error', 'Failed to complete project: ' . $e->getMessage())
+            ->with('error', 'Failed to close project: ' . $e->getMessage())
             ->withInput();
     }
 }
@@ -805,8 +800,7 @@ public function completionSuccess(Project $project)
             'total_terminals' => $project->actual_terminals_count ?? 0,
             'completion_percentage' => $project->completion_percentage ?? 100,
             'project_duration_days' => $project->start_date ? $project->start_date->diffInDays($project->completed_at) : null,
-            'quality_score' => $completion->quality_score,
-            'client_satisfaction' => $completion->client_satisfaction,
+
         ],
         'technical_analysis' => [
             'recommendations' => $completion->recommendations,
@@ -1014,8 +1008,7 @@ private function generateReportContent($reportData, $reportType)
     $content .= "-------------------\n";
     $content .= "Total Terminals: " . $completionData['performance_metrics']['total_terminals'] . "\n";
     $content .= "Completion Rate: " . $completionData['performance_metrics']['completion_percentage'] . "%\n";
-    $content .= "Quality Score: " . $completionData['performance_metrics']['quality_score'] . "/5\n";
-    $content .= "Client Satisfaction: " . $completionData['performance_metrics']['client_satisfaction'] . "/5\n\n";
+
 
     if ($completionData['technical_analysis']['recommendations']) {
         $content .= "RECOMMENDATIONS\n";
@@ -1222,8 +1215,7 @@ private function generateSimpleReportContent($project, $completion)
     $content .= "-------------------\n";
     $content .= "Total Terminals: " . $progressData['total_terminals'] . "\n";
     $content .= "Completion Rate: " . $progressData['completion_percentage'] . "%\n";
-    $content .= "Quality Score: " . $completion->quality_score . "/5\n";
-    $content .= "Client Satisfaction: " . $completion->client_satisfaction . "/5\n\n";
+
 
     if ($completion->recommendations) {
         $content .= "RECOMMENDATIONS\n";
@@ -1294,8 +1286,7 @@ public function completionReports()
                     'executive_summary' => $completion->executive_summary ?? 'Project completed successfully',
                     'key_achievements' => $completion->key_achievements ?? 'All objectives met',
                     'challenges_overcome' => $completion->challenges_overcome,
-                    'quality_score' => $completion->quality_score ?? 4,
-                    'client_satisfaction' => $completion->client_satisfaction ?? 4,
+
                     'recommendations' => $completion->recommendations,
                 ];
             } else {
@@ -1304,8 +1295,7 @@ public function completionReports()
                     'executive_summary' => 'Project completed successfully',
                     'key_achievements' => 'All objectives met',
                     'challenges_overcome' => null,
-                    'quality_score' => 4,
-                    'client_satisfaction' => 4,
+
                     'recommendations' => null,
                 ];
             }
@@ -1335,8 +1325,7 @@ public function generateCompletionReport(Request $request)
         'key_achievements' => 'required|string|min:10',
         'challenges_overcome' => 'nullable|string',
         'lessons_learned' => 'nullable|string',
-        'quality_score' => 'required|integer|between:1,5',
-        'client_satisfaction' => 'required|integer|between:1,5',
+
         'issues_found' => 'nullable|string',
         'recommendations' => 'nullable|string',
         'additional_notes' => 'nullable|string',
@@ -1365,8 +1354,7 @@ public function generateCompletionReport(Request $request)
                 'key_achievements' => $request->key_achievements,
                 'challenges_overcome' => $request->challenges_overcome,
                 'lessons_learned' => $request->lessons_learned,
-                'quality_score' => $request->quality_score,
-                'client_satisfaction' => $request->client_satisfaction,
+
                 'issues_found' => $request->issues_found,
                 'recommendations' => $request->recommendations,
                 'additional_notes' => $request->additional_notes,
@@ -1393,8 +1381,7 @@ public function generateCompletionReport(Request $request)
         $reportContent = $this->generateSimpleReportContent($project, (object)[
             'executive_summary' => $request->executive_summary,
             'key_achievements' => $request->key_achievements,
-            'quality_score' => $request->quality_score,
-            'client_satisfaction' => $request->client_satisfaction,
+
             'recommendations' => $request->recommendations,
         ]);
 
@@ -1432,8 +1419,7 @@ public function createCompletionTable()
             $table->text('key_achievements');
             $table->text('challenges_overcome')->nullable();
             $table->text('lessons_learned')->nullable();
-            $table->integer('quality_score');
-            $table->integer('client_satisfaction');
+
             $table->text('issues_found')->nullable();
             $table->text('recommendations')->nullable();
             $table->text('additional_notes')->nullable();
@@ -1603,8 +1589,7 @@ private function generateSpecificReportForManual($project, $reportType, $request
             $completion = (object)[
                 'executive_summary' => 'Project completed successfully.',
                 'key_achievements' => 'All project objectives were met.',
-                'quality_score' => 4,
-                'client_satisfaction' => 4,
+
             ];
         }
 
@@ -1657,9 +1642,6 @@ private function generateManualReportContent($project, $completion, $reportType,
             $content .= $completion->executive_summary . "\n\n";
     }
 
-    $content .= "Quality Score: " . ($completion->quality_score ?? '4') . "/5\n";
-    $content .= "Client Satisfaction: " . ($completion->client_satisfaction ?? '4') . "/5\n\n";
-
     if ($request->custom_notes) {
         $content .= "NOTES\n-----\n" . $request->custom_notes . "\n\n";
     }
@@ -1669,68 +1651,6 @@ private function generateManualReportContent($project, $completion, $reportType,
     return $content;
 }
 
-/**
- * Generate reports manually for completed project - FIXED VERSION
- */
-public function generateReports(Request $request, Project $project)
-{
-    $request->validate([
-        'report_types' => 'required|array|min:1',
-        'report_types.*' => 'in:executive,detailed,client,simple',
-        'custom_notes' => 'nullable|string',
-        'include_raw_data' => 'boolean',
-    ]);
-
-    if ($project->status !== 'completed') {
-        return back()->withErrors(['error' => 'Project must be completed before generating reports.']);
-    }
-
-    try {
-        Log::info('Starting manual report generation', [
-            'project_id' => $project->id,
-            'report_types' => $request->report_types
-        ]);
-
-        $reportPaths = [];
-
-        foreach ($request->report_types as $reportType) {
-            try {
-                if ($reportType === 'simple') {
-                    // Generate simple text report
-                    $reportPath = $this->generateTextReport($project, $request);
-                } else {
-                    // Generate PDF report
-                    $reportPath = $this->generatePDFReport($project, $reportType, $request);
-                }
-
-                if ($reportPath) {
-                    $reportPaths[$reportType] = $reportPath;
-                    Log::info("Generated {$reportType} report: {$reportPath}");
-                }
-            } catch (\Exception $e) {
-                Log::error("Failed to generate {$reportType} report: " . $e->getMessage());
-                // Continue with other reports
-            }
-        }
-
-        if (empty($reportPaths)) {
-            throw new \Exception('No reports were generated successfully.');
-        }
-
-        // Update project with the primary report path
-        $primaryReport = $reportPaths['executive'] ?? $reportPaths[array_key_first($reportPaths)];
-        $project->update([
-            'report_path' => $primaryReport,
-            'report_generated_at' => now(),
-        ]);
-
-        return back()->with('success', 'Reports generated successfully! Generated: ' . implode(', ', array_keys($reportPaths)));
-
-    } catch (\Exception $e) {
-        Log::error('Manual report generation failed: ' . $e->getMessage());
-        return back()->withErrors(['error' => 'Failed to generate reports: ' . $e->getMessage()]);
-    }
-}
 
 /**
  * Generate simple text report
@@ -1745,8 +1665,7 @@ private function generateTextReport($project, $request)
             $completion = (object)[
                 'executive_summary' => 'Project completed successfully.',
                 'key_achievements' => 'All project objectives were met.',
-                'quality_score' => 4,
-                'client_satisfaction' => 4,
+
             ];
         }
 
@@ -1767,8 +1686,7 @@ private function generateTextReport($project, $request)
 
         $content .= "PERFORMANCE METRICS\n";
         $content .= "-------------------\n";
-        $content .= "Quality Score: " . ($completion->quality_score ?? '4') . "/5\n";
-        $content .= "Client Satisfaction: " . ($completion->client_satisfaction ?? '4') . "/5\n\n";
+
 
         if ($completion->recommendations ?? null) {
             $content .= "RECOMMENDATIONS\n";
@@ -1848,6 +1766,330 @@ private function generatePDFReport($project, $reportType, $request)
     } catch (\Exception $e) {
         Log::error("PDF report generation failed for {$reportType}: " . $e->getMessage());
         return null;
+    }
+}
+/**
+ * Generate reports manually for completed project - UPDATED FOR AJAX
+ */
+public function generateReports(Request $request, Project $project)
+{
+    $request->validate([
+        'report_types' => 'required|array|min:1',
+        'report_types.*' => 'in:executive,detailed,client,simple',
+        'report_notes' => 'nullable|string',
+        'include_charts' => 'boolean',
+        'include_photos' => 'boolean',
+        'include_recommendations' => 'boolean',
+        'branded_template' => 'boolean',
+    ]);
+
+    if ($project->status !== 'completed') {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project must be completed before generating reports.'
+            ], 400);
+        }
+        return back()->withErrors(['error' => 'Project must be completed before generating reports.']);
+    }
+
+    try {
+        Log::info('Starting manual report generation', [
+            'project_id' => $project->id,
+            'report_types' => $request->report_types
+        ]);
+
+        $reportPaths = [];
+        $errors = [];
+
+        foreach ($request->report_types as $reportType) {
+            try {
+                if ($reportType === 'simple') {
+                    // Generate simple text report
+                    $reportPath = $this->generateTextReport($project, $request);
+                } else {
+                    // Generate PDF report
+                    $reportPath = $this->generatePDFReport($project, $reportType, $request);
+                }
+
+                if ($reportPath) {
+                    $reportPaths[$reportType] = $reportPath;
+                    Log::info("Generated {$reportType} report: {$reportPath}");
+                } else {
+                    $errors[] = "Failed to generate {$reportType} report";
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to generate {$reportType} report: " . $e->getMessage());
+                $errors[] = "Failed to generate {$reportType} report: " . $e->getMessage();
+            }
+        }
+
+        if (empty($reportPaths)) {
+            throw new \Exception('No reports were generated successfully. Errors: ' . implode(', ', $errors));
+        }
+
+        // Update project with the primary report path
+        $primaryReport = $reportPaths['executive'] ?? $reportPaths[array_key_first($reportPaths)];
+        $project->update([
+            'report_path' => $primaryReport,
+            'report_generated_at' => now(),
+        ]);
+
+        $message = 'Reports generated successfully! Generated: ' . implode(', ', array_keys($reportPaths));
+
+        if (!empty($errors)) {
+            $message .= ' (Some reports failed: ' . implode(', ', $errors) . ')';
+        }
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'generated_reports' => array_keys($reportPaths),
+                'report_paths' => $reportPaths,
+                'errors' => $errors
+            ]);
+        }
+
+        // Regular form submission
+        return back()->with('success', $message);
+
+    } catch (\Exception $e) {
+        Log::error('Manual report generation failed: ' . $e->getMessage());
+        Log::error('Stack trace: ' . $e->getTraceAsString());
+
+        $errorMessage = 'Failed to generate reports: ' . $e->getMessage();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], 500);
+        }
+
+        return back()->withErrors(['error' => $errorMessage]);
+    }
+}
+
+/**
+ * Show the project closure wizard (replaces completionWizard)
+ */
+public function closureWizard(Project $project)
+{
+    // Allow closure of any active project (removed completion requirements)
+    if (in_array($project->status, ['completed', 'closed', 'cancelled'])) {
+        return redirect()->route('projects.show', $project)
+            ->with('info', 'This project has already been closed.');
+    }
+
+    $project->load(['client', 'projectManager', 'createdBy']);
+    $progressData = $this->calculateDetailedProgress($project);
+    $progressData['regional_performance'] = $this->calculateRegionalPerformance($project);
+    $progressData['team_metrics'] = $this->calculateTeamMetrics($project);
+
+    return view('projects.closure-wizard', compact('project', 'progressData'));
+}
+private function generateClosureReport($project, $request)
+{
+    try {
+        $content = "PROJECT CLOSURE REPORT\n======================\n\n";
+        $content .= "Project: {$project->project_name}\n";
+        $content .= "Client: {$project->client->company_name}\n";
+        $content .= "Closure Reason: " . ucfirst(str_replace('_', ' ', $request->closure_reason)) . "\n";
+        $content .= "Closed: " . now()->format('F j, Y g:i A') . "\n\n";
+        $content .= "EXECUTIVE SUMMARY\n-----------------\n{$request->executive_summary}\n\n";
+        $content .= "KEY ACHIEVEMENTS\n----------------\n{$request->key_achievements}\n\n";
+
+        $fileName = 'project_closure_' . $project->project_code . '_' . date('Y-m-d') . '.txt';
+        $filePath = 'reports/projects/' . $fileName;
+        Storage::makeDirectory('public/reports/projects');
+        Storage::put('public/' . $filePath, $content);
+        $project->update(['report_path' => $filePath]);
+    } catch (\Exception $e) {
+        Log::error('Closure report generation failed', ['error' => $e->getMessage()]);
+    }
+}
+/**
+ * Close project method (replaces complete)
+ */
+/**
+ * ENHANCED Close method with extensive debugging
+ */
+public function close(Request $request, Project $project)
+{
+    Log::info('=== PROJECT CLOSURE STARTED ===', [
+        'project_id' => $project->id,
+        'project_name' => $project->project_name,
+        'current_status' => $project->status,
+        'user_id' => Auth::id(),
+        'request_data' => $request->all()
+    ]);
+
+    try {
+        // Log validation attempt
+        Log::info('Starting validation...');
+
+        $request->validate([
+            'executive_summary' => 'required|string|min:10',
+            'key_achievements' => 'required|string|min:10',
+            'challenges_overcome' => 'nullable|string',
+            'lessons_learned' => 'nullable|string',
+            'issues_found' => 'nullable|string',
+            'recommendations' => 'nullable|string',
+            'additional_notes' => 'nullable|string',
+            'closure_reason' => 'required|in:completed,cancelled,on_hold,client_request',
+        ]);
+
+        Log::info('Validation passed successfully');
+
+        // Check if already closed
+        if (in_array($project->status, ['completed', 'closed', 'cancelled', 'on_hold'])) {
+            Log::warning('Project already closed', [
+                'current_status' => $project->status
+            ]);
+            return back()->with('error', 'Project is already closed.');
+        }
+
+        Log::info('Starting database transaction...');
+        DB::beginTransaction();
+
+        // Create completion record
+        Log::info('Creating completion record...');
+        $completionId = DB::table('project_completions')->insertGetId([
+            'project_id' => $project->id,
+            'executive_summary' => $request->executive_summary,
+            'key_achievements' => $request->key_achievements,
+            'challenges_overcome' => $request->challenges_overcome,
+            'lessons_learned' => $request->lessons_learned,
+            'closure_reason' => $request->closure_reason,
+            'issues_found' => $request->issues_found,
+            'recommendations' => $request->recommendations,
+            'additional_notes' => $request->additional_notes,
+            'completed_by' => Auth::id(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::info('Completion record created', ['completion_id' => $completionId]);
+
+        // Determine new status
+        $newStatus = match($request->closure_reason) {
+            'completed' => 'completed',
+            'cancelled' => 'cancelled',
+            'on_hold' => 'on_hold',
+            'client_request' => 'closed',
+            default => 'closed'
+        };
+
+        Log::info('Calculated new status', [
+            'closure_reason' => $request->closure_reason,
+            'new_status' => $newStatus
+        ]);
+
+        // Update project - using direct DB query for more reliable update
+        Log::info('Updating project status...');
+        $updateResult = DB::table('projects')
+            ->where('id', $project->id)
+            ->update([
+                'status' => $newStatus,
+                'closed_at' => now(),
+                'closed_by' => Auth::id(),
+                'closure_reason' => $request->closure_reason,
+                'updated_at' => now(),
+            ]);
+
+        Log::info('Project update result', [
+            'update_result' => $updateResult,
+            'rows_affected' => $updateResult
+        ]);
+
+        if ($updateResult === 0) {
+            throw new \Exception('Project update failed - no rows affected');
+        }
+
+        // Verify the update worked
+        $updatedProject = DB::table('projects')->where('id', $project->id)->first();
+        Log::info('Project after update', [
+            'id' => $updatedProject->id,
+            'status' => $updatedProject->status,
+            'closed_at' => $updatedProject->closed_at,
+            'closure_reason' => $updatedProject->closure_reason
+        ]);
+
+        if ($updatedProject->status !== $newStatus) {
+            throw new \Exception("Status update verification failed. Expected: {$newStatus}, Actual: {$updatedProject->status}");
+        }
+
+        // Generate closure report
+        Log::info('Generating closure report...');
+        $this->generateClosureReport($project, $request);
+
+        Log::info('Committing transaction...');
+        DB::commit();
+
+        Log::info('=== PROJECT CLOSURE COMPLETED SUCCESSFULLY ===', [
+            'project_id' => $project->id,
+            'final_status' => $updatedProject->status
+        ]);
+
+        return redirect()->route('projects.closure-reports')
+            ->with('success', "Project '{$project->project_name}' has been closed successfully with status: {$updatedProject->status}!");
+
+    } catch (ValidationException $e) {
+        DB::rollBack();
+        Log::error('=== PROJECT CLOSURE FAILED - VALIDATION ===', [
+            'project_id' => $project->id,
+            'validation_errors' => $e->errors()
+        ]);
+        return back()->withErrors($e->errors())->withInput();
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('=== PROJECT CLOSURE FAILED - EXCEPTION ===', [
+            'project_id' => $project->id,
+            'error_message' => $e->getMessage(),
+            'error_file' => $e->getFile(),
+            'error_line' => $e->getLine(),
+            'stack_trace' => $e->getTraceAsString()
+        ]);
+
+        return back()
+            ->with('error', 'Failed to close project: ' . $e->getMessage())
+            ->withInput();
+    }
+}
+
+/**
+ * Show closure reports page (replaces completionReports)
+ */
+public function closureReports()
+{
+    try {
+        $activeProjects = Project::with(['client', 'projectManager'])
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $closedProjects = Project::with(['client', 'projectManager'])
+            ->whereIn('status', ['completed', 'closed', 'cancelled', 'on_hold'])
+            ->orderBy('closed_at', 'desc')
+            ->limit(20)
+            ->get();
+
+        // Load closure data
+        foreach ($closedProjects as $project) {
+            $closure = DB::table('project_completions')->where('project_id', $project->id)->first();
+            $project->closure = $closure ? (object)[
+                'executive_summary' => $closure->executive_summary,
+                'key_achievements' => $closure->key_achievements,
+                'closure_reason' => $closure->closure_reason ?? 'completed',
+            ] : (object)['executive_summary' => 'Project closed', 'key_achievements' => 'Objectives met', 'closure_reason' => 'completed'];
+        }
+
+        return view('projects.closure-reports', compact('activeProjects', 'closedProjects'));
+    } catch (\Exception $e) {
+        return view('projects.closure-reports', ['activeProjects' => collect(), 'closedProjects' => collect()]);
     }
 }
 }

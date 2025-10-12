@@ -1,27 +1,27 @@
-{{-- resources/views/projects/completion-wizard.blade.php --}}
+{{-- resources/views/projects/closure-wizard.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Complete Project - ' . $project->project_name)
+@section('title', 'Close Project - ' . $project->project_name)
 
 @section('content')
 <div class="container-fluid py-4">
     {{-- Page Header --}}
     <h2 class="page-title mb-4">
-        <i class="fas fa-flag-checkered"></i>
-        Project Completion Wizard - {{ $project->project_name }}
+        <i class="fas fa-archive"></i>
+        Project Closure Wizard - {{ $project->project_name }}
     </h2>
     <p class="page-subtitle">{{ $project->project_code }} • {{ $project->client->company_name }}</p>
 
     {{-- Progress Steps --}}
     <div class="card mb-4">
         <div class="card-header">
-            <h6 class="card-title">Completion Progress</h6>
+            <h6 class="card-title">Closure Progress</h6>
         </div>
         <div class="card-body">
             <div class="progress-steps">
                 <div class="step-item active" data-step="1">
                     <div class="step-circle">1</div>
-                    <span class="step-label">Validation</span>
+                    <span class="step-label">Status Review</span>
                 </div>
                 <div class="step-item" data-step="2">
                     <div class="step-circle">2</div>
@@ -33,16 +33,16 @@
                 </div>
                 <div class="step-item" data-step="4">
                     <div class="step-circle">4</div>
-                    <span class="step-label">Reports</span>
+                    <span class="step-label">Closure</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <form action="{{ route('projects.complete', $project) }}" method="POST" id="completionWizard">
+    <form action="{{ route('projects.close', $project) }}" method="POST" id="closureWizard">
         @csrf
 
-        {{-- Step 1: Project Validation --}}
+        {{-- Step 1: Project Status Review --}}
         <div class="wizard-step active" id="step1">
             {{-- Statistics Cards --}}
             <div class="stats-grid mb-4">
@@ -89,7 +89,7 @@
                         </div>
                         <div class="stat-content">
                             <div class="stat-number">{{ number_format($progressData['completion_percentage'] ?? 0, 1) }}%</div>
-                            <div class="stat-label">Complete</div>
+                            <div class="stat-label">Progress</div>
                         </div>
                     </div>
                 </div>
@@ -121,51 +121,36 @@
                     </div>
                 </div>
 
-                {{-- Completion Requirements --}}
+                {{-- Closure Reason Selection --}}
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h6 class="card-title">Completion Requirements</h6>
+                            <h6 class="card-title">Closure Reason</h6>
                         </div>
                         <div class="card-body">
-                            <div class="requirement-item">
-                                <input class="form-check-input" type="checkbox" id="check1"
-                                       {{ ($progressData['total_terminals'] ?? 0) > 0 ? 'checked' : '' }}>
-                                <label class="form-check-label" for="check1">
-                                    Terminals have been assigned to project
-                                </label>
+                            <div class="form-group">
+                                <label class="form-label">Why are you closing this project? *</label>
+                                <select class="form-control" name="closure_reason" required>
+                                    <option value="">Select closure reason...</option>
+                                    <option value="completed">Project Completed Successfully</option>
+                                    <option value="cancelled">Project Cancelled</option>
+                                    <option value="on_hold">Project On Hold</option>
+                                    <option value="client_request">Closed at Client Request</option>
+                                </select>
                             </div>
-                            <div class="requirement-item">
-                                <input class="form-check-input" type="checkbox" id="check2"
-                                       {{ ($progressData['completed_visits'] ?? 0) >= ($progressData['total_terminals'] ?? 0) && ($progressData['total_terminals'] ?? 0) > 0 ? 'checked' : '' }}>
-                                <label class="form-check-label" for="check2">
-                                    All terminals have been visited
-                                </label>
+
+                            {{-- Status indicators --}}
+                            <div class="status-item">
+                                <i class="fas fa-info-circle text-info"></i>
+                                <span>Current Progress: {{ number_format($progressData['completion_percentage'] ?? 0, 1) }}%</span>
                             </div>
-                            <div class="requirement-item">
-                                <input class="form-check-input" type="checkbox" id="check3"
-                                       {{ ($progressData['assignments_by_status']['completed'] ?? 0) == ($progressData['total_assignments'] ?? 0) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="check3">
-                                    All job assignments completed
-                                </label>
+                            <div class="status-item">
+                                <i class="fas fa-{{ ($progressData['total_terminals'] ?? 0) > 0 ? 'check-circle text-success' : 'info-circle text-muted' }}"></i>
+                                <span>Terminals Assigned: {{ $progressData['total_terminals'] ?? 0 }}</span>
                             </div>
-                            <div class="requirement-item">
-                                <input class="form-check-input" type="checkbox" id="check4">
-                                <label class="form-check-label" for="check4">
-                                    Client deliverables have been provided
-                                </label>
-                            </div>
-                            <div class="requirement-item">
-                                <input class="form-check-input" type="checkbox" id="check5">
-                                <label class="form-check-label" for="check5">
-                                    Quality assurance review completed
-                                </label>
-                            </div>
-                            <div class="requirement-item">
-                                <input class="form-check-input" type="checkbox" id="check6">
-                                <label class="form-check-label" for="check6">
-                                    Project documentation is complete
-                                </label>
+                            <div class="status-item">
+                                <i class="fas fa-{{ ($progressData['completed_visits'] ?? 0) > 0 ? 'check-circle text-success' : 'info-circle text-muted' }}"></i>
+                                <span>Terminals Visited: {{ $progressData['completed_visits'] ?? 0 }}</span>
                             </div>
                         </div>
                     </div>
@@ -177,27 +162,27 @@
         <div class="wizard-step" id="step2">
             <div class="card">
                 <div class="card-header">
-                    <h6 class="card-title">Project Summary & Analysis</h6>
+                    <h6 class="card-title">Project Summary & Outcomes</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-8">
+                        <div class="col-md-12">
                             <div class="form-group">
-                                <label for="executive_summary" class="form-label">Executive Summary</label>
-                                <textarea class="form-control" id="executive_summary" name="executive_summary" rows="4"
-                                          placeholder="Provide a high-level summary of project objectives, outcomes, and key achievements..."></textarea>
+                                <label for="executive_summary" class="form-label">Executive Summary *</label>
+                                <textarea class="form-control" id="executive_summary" name="executive_summary" rows="4" required
+                                          placeholder="Provide a summary of what was accomplished, current status, and any important outcomes..."></textarea>
                             </div>
 
                             <div class="form-group">
-                                <label for="key_achievements" class="form-label">Key Achievements</label>
-                                <textarea class="form-control" id="key_achievements" name="key_achievements" rows="3"
+                                <label for="key_achievements" class="form-label">Key Achievements *</label>
+                                <textarea class="form-control" id="key_achievements" name="key_achievements" rows="3" required
                                           placeholder="List the major accomplishments and milestones reached during this project..."></textarea>
                             </div>
 
                             <div class="form-group">
                                 <label for="challenges_overcome" class="form-label">Challenges & Solutions</label>
                                 <textarea class="form-control" id="challenges_overcome" name="challenges_overcome" rows="3"
-                                          placeholder="Describe any significant challenges encountered and how they were resolved..."></textarea>
+                                          placeholder="Describe any significant challenges encountered and how they were addressed..."></textarea>
                             </div>
 
                             <div class="form-group">
@@ -206,53 +191,12 @@
                                           placeholder="What insights or lessons can be applied to future projects?"></textarea>
                             </div>
                         </div>
-
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="card-title">Performance Metrics</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="metric-item">
-                                        <span class="metric-label">Schedule Performance</span>
-                                        <span class="badge badge-status-completed">{{ $project->end_date && $project->end_date->isFuture() ? '100%' : '95%' }}</span>
-                                    </div>
-
-                                    <div class="metric-item">
-                                        <span class="metric-label">Budget Utilization</span>
-                                        <span class="badge badge-priority-normal">{{ $project->budget ? '87%' : 'N/A' }}</span>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label class="form-label">Quality Score</label>
-                                        <select class="form-control" name="quality_score">
-                                            <option value="5">Excellent (5/5)</option>
-                                            <option value="4" selected>Good (4/5)</option>
-                                            <option value="3">Average (3/5)</option>
-                                            <option value="2">Below Average (2/5)</option>
-                                            <option value="1">Poor (1/5)</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label class="form-label">Client Satisfaction</label>
-                                        <select class="form-control" name="client_satisfaction">
-                                            <option value="5">Very Satisfied</option>
-                                            <option value="4" selected>Satisfied</option>
-                                            <option value="3">Neutral</option>
-                                            <option value="2">Dissatisfied</option>
-                                            <option value="1">Very Dissatisfied</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Step 3: Detailed Analytics --}}
+        {{-- Step 3: Analytics --}}
         <div class="wizard-step" id="step3">
             <div class="row">
                 {{-- Regional Performance Analysis --}}
@@ -268,7 +212,7 @@
                                         <tr>
                                             <th>Region</th>
                                             <th>Terminals</th>
-                                            <th>Completion</th>
+                                            <th>Progress</th>
                                             <th>Avg Time</th>
                                         </tr>
                                     </thead>
@@ -289,7 +233,7 @@
                                         @else
                                             <tr>
                                                 <td colspan="4" class="text-center text-muted">
-                                                    <i class="fas fa-info-circle"></i> Regional data will be calculated from actual terminal locations
+                                                    <i class="fas fa-info-circle"></i> Regional data calculated from terminal locations
                                                 </td>
                                             </tr>
                                         @endif
@@ -317,7 +261,7 @@
                                 <span class="metric-value">{{ $progressData['team_metrics']['completed_assignments'] ?? 0 }}</span>
                             </div>
                             <div class="metric-item">
-                                <span class="metric-label">Team Completion Rate</span>
+                                <span class="metric-label">Team Progress Rate</span>
                                 <span class="badge badge-status-{{ ($progressData['team_metrics']['completion_rate'] ?? 0) >= 90 ? 'completed' : 'in_progress' }}">
                                     {{ $progressData['team_metrics']['completion_rate'] ?? 0 }}%
                                 </span>
@@ -326,14 +270,10 @@
                                 <span class="metric-label">Unique Technicians</span>
                                 <span class="metric-value">{{ $progressData['team_metrics']['unique_technicians'] ?? 0 }} technicians</span>
                             </div>
-                            <div class="metric-item">
-                                <span class="metric-label">Average Assignment Duration</span>
-                                <span class="metric-value">{{ number_format($progressData['team_metrics']['avg_assignment_duration'] ?? 0, 1) }} hours</span>
-                            </div>
                             @else
                             <p class="text-muted">
                                 <i class="fas fa-info-circle"></i>
-                                Team metrics will be calculated from actual job assignments and visit data.
+                                Team metrics calculated from job assignments and visit data.
                             </p>
                             @endif
                         </div>
@@ -341,10 +281,10 @@
                 </div>
             </div>
 
-            {{-- Issues & Resolutions --}}
+            {{-- Issues & Recommendations --}}
             <div class="card mt-4">
                 <div class="card-header">
-                    <h6 class="card-title">Issues Identified & Resolution Status</h6>
+                    <h6 class="card-title">Issues & Recommendations</h6>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
@@ -361,43 +301,53 @@
             </div>
         </div>
 
-        {{-- Step 4: Report Generation --}}
+        {{-- Step 4: Closure Finalization --}}
         <div class="wizard-step" id="step4">
             <div class="row">
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-header">
-                            <h6 class="card-title">Report Configuration</h6>
+                            <h6 class="card-title">Closure Confirmation</h6>
                         </div>
                         <div class="card-body">
-                            <div class="form-group">
-                                <label class="form-label">Report Types to Generate</label>
-                                <div class="report-options">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="report_types[]" value="executive" id="report1" checked>
-                                        <label class="form-check-label" for="report1">
-                                            <strong>Executive Summary Report</strong> - High-level overview for management
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="report_types[]" value="detailed" id="report2" checked>
-                                        <label class="form-check-label" for="report2">
-                                            <strong>Detailed Technical Report</strong> - Comprehensive analysis with all metrics
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="report_types[]" value="client" id="report3" checked>
-                                        <label class="form-check-label" for="report3">
-                                            <strong>Client Presentation</strong> - Professional presentation format
-                                        </label>
-                                    </div>
-                                </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Project Closure</strong><br>
+                                You are about to close this project. This action will:
+                                <ul class="mt-2 mb-0">
+                                    <li>Change the project status based on your selected reason</li>
+                                    <li>Generate a closure report with your summary and findings</li>
+                                    <li>Archive the project for future reference</li>
+                                    <li>Preserve all assignment and visit data</li>
+                                </ul>
                             </div>
 
                             <div class="form-group">
                                 <label for="additional_notes" class="form-label">Additional Notes for Report</label>
                                 <textarea class="form-control" id="additional_notes" name="additional_notes" rows="3"
-                                          placeholder="Any additional information to include in the final reports..."></textarea>
+                                          placeholder="Any additional information to include in the closure documentation..."></textarea>
+                            </div>
+
+                            <div class="closure-checklist">
+                                <h6>Please confirm:</h6>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="confirm1" required>
+                                    <label class="form-check-label" for="confirm1">
+                                        I have reviewed the project status and outcomes
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="confirm2" required>
+                                    <label class="form-check-label" for="confirm2">
+                                        All relevant information has been documented
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="confirm3" required>
+                                    <label class="form-check-label" for="confirm3">
+                                        I understand this action will close the project
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -406,7 +356,7 @@
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header">
-                            <h6 class="card-title">Project Completion Summary</h6>
+                            <h6 class="card-title">Project Closure Summary</h6>
                         </div>
                         <div class="card-body">
                             <div class="metric-item">
@@ -414,21 +364,23 @@
                                 <span class="metric-value">{{ $project->start_date ? $project->start_date->diffInDays(now()) : 'N/A' }} days</span>
                             </div>
                             <div class="metric-item">
-                                <span class="metric-label">Total Terminals Processed</span>
+                                <span class="metric-label">Total Terminals</span>
                                 <span class="metric-value">{{ $progressData['total_terminals'] ?? 0 }}</span>
                             </div>
                             <div class="metric-item">
-                                <span class="metric-label">Completion Rate</span>
+                                <span class="metric-label">Progress Made</span>
                                 <span class="metric-value">{{ number_format($progressData['completion_percentage'] ?? 0, 1) }}%</span>
                             </div>
                             <div class="metric-item">
+                                <span class="metric-label">Total Assignments</span>
+                                <span class="metric-value">{{ $progressData['total_assignments'] ?? 0 }}</span>
+                            </div>
+                            <div class="metric-item">
                                 <span class="metric-label">Final Status</span>
-                                <span class="badge badge-status-completed">Ready for Completion</span>
+                                <span class="badge badge-status-in_progress">Ready for Closure</span>
                             </div>
                         </div>
                     </div>
-
-
                 </div>
             </div>
         </div>
@@ -442,8 +394,8 @@
             <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">
                 Next <i class="fas fa-arrow-right"></i>
             </button>
-            <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">
-                <i class="fas fa-flag-checkered"></i> Complete Project
+            <button type="submit" class="btn btn-danger" id="submitBtn" style="display: none;">
+                <i class="fas fa-archive"></i> Close Project
             </button>
         </div>
     </form>
@@ -679,16 +631,17 @@
     line-height: 1.5;
 }
 
-/* Requirements */
-.requirement-item {
+/* Status Items */
+.status-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 0;
+    padding: 0.5rem 0;
     border-bottom: 1px solid #f3f4f6;
+    font-size: 0.875rem;
 }
 
-.requirement-item:last-child {
+.status-item:last-child {
     border-bottom: none;
 }
 
@@ -824,6 +777,17 @@
     border-color: #9ca3af;
 }
 
+.btn-danger {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+
 /* Navigation */
 .navigation {
     display: flex;
@@ -848,14 +812,24 @@
     color: #1e40af;
 }
 
-/* Report Options */
-.report-options .form-check {
-    margin-bottom: 1.5rem;
+/* Closure Checklist */
+.closure-checklist {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.closure-checklist h6 {
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 1rem;
 }
 
 /* Utility Classes */
 .text-center { text-align: center; }
 .text-muted { color: #6b7280; }
+.text-info { color: #3b82f6; }
+.text-success { color: #16a34a; }
 .table-responsive { overflow-x: auto; }
 
 /* Responsive Design */
@@ -889,6 +863,7 @@
 </style>
 @endpush
 
+@push('scripts')
 <script>
 // Initialize variables
 let currentStep = 1;
@@ -928,7 +903,7 @@ function changeStep(direction) {
 }
 
 // Form submission
-document.getElementById('completionWizard').addEventListener('submit', function(e) {
+document.getElementById('closureWizard').addEventListener('submit', function(e) {
     const submitBtn = document.getElementById('submitBtn');
     if (!submitBtn) return;
 
@@ -936,3 +911,4 @@ document.getElementById('completionWizard').addEventListener('submit', function(
     submitBtn.disabled = true;
 });
 </script>
+@endpush

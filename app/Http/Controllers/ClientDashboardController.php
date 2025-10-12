@@ -17,36 +17,61 @@ use Illuminate\Support\Facades\Response;
 
 class ClientDashboardController extends Controller
 {
-    public function index()
-    {
-        $clients = Client::with(['posTerminals'])
-            ->withCount(['posTerminals'])
-            ->orderBy('company_name')
-            ->get()
-            ->map(function ($client) {
-                // Get terminal status breakdown
-                $statusBreakdown = $client->posTerminals()
-                    ->select('current_status', DB::raw('count(*) as count'))
-                    ->groupBy('current_status')
-                    ->pluck('count', 'current_status')
-                    ->toArray();
+    public function index(Request $request)
+{
+    // Calculate statistics
+    $stats = [
+        'total_clients' => Client::count(),
+        'active_clients' => Client::where('status', 'active')->count(),
+        'prospects' => Client::where('status', 'prospect')->count(),
+        'under_contract' => Client::whereNotNull('contract_start_date')
+            ->where(function($query) {
+                $query->whereNull('contract_end_date')
+                      ->orWhere('contract_end_date', '>=', now());
+            })->count(),
+    ];
 
-                // Get recent activity count (last 30 days)
-                $recentActivity = TechnicianVisit::where('client_id', $client->id)
-                    ->where('visit_date', '>=', Carbon::now()->subDays(30))
-                    ->count();
+    // Get regions for filter
+    $regions = Client::select('region')
+        ->distinct()
+        ->whereNotNull('region')
+        ->orderBy('region')
+        ->pluck('region');
 
-                $client->status_breakdown = $statusBreakdown;
-                $client->recent_activity_count = $recentActivity;
+    // Build query with filters
+    $query = Client::with(['posTerminals'])
+        ->withCount(['posTerminals']);
 
-                return $client;
-            });
-
-        return view('client-dashboards.index', [
-            'title' => 'Client Dashboards',
-            'clients' => $clients
-        ]);
+    // Apply search filter
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('company_name', 'like', "%{$search}%")
+              ->orWhere('contact_person', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%");
+        });
     }
+
+    // Apply status filter
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    // Apply region filter
+    if ($request->filled('region')) {
+        $query->where('region', $request->region);
+    }
+
+    // Get clients with pagination
+    $clients = $query->orderBy('company_name')->paginate(15);
+
+    return view('client-dashboards.index', [
+        'title' => 'Client Dashboards',
+        'clients' => $clients,
+        'stats' => $stats,
+        'regions' => $regions,
+    ]);
+}
 
     public function show(Client $client, Request $request)
     {
