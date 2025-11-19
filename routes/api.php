@@ -314,7 +314,7 @@ Route::middleware(['auth:sanctum'])->prefix('assets')->group(function () {
         Route::get('/assignments', [JobAssignmentController::class, 'syncAssignments']);
         Route::get('/terminals', [PosTerminalController::class, 'syncTerminals']);
         Route::get('/clients', [ClientController::class, 'syncClients']);
-        Route::get('/assets', [AssetController::class, 'syncAssets']);
+    Route::get('/assets', [AssetApi::class, 'syncAssets']);
         Route::get('/tickets', [TicketController::class, 'syncTickets']);
 
         Route::post('/bulk-update', [JobAssignmentController::class, 'bulkUpdate']);
@@ -335,7 +335,7 @@ Route::middleware(['auth:sanctum'])->prefix('assets')->group(function () {
                 'assignments' => app(JobAssignmentController::class)->syncAssignments($request),
                 'terminals' => app(PosTerminalController::class)->syncTerminals($request),
                 'clients' => app(ClientController::class)->syncClients($request),
-                'assets' => app(AssetController::class)->syncAssets($request),
+                'assets' => app(AssetApi::class)->syncAssets($request),
                 'timestamp' => now()->toISOString()
             ]);
         });

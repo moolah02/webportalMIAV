@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Safely create the `regions` table only if it does not already exist.
-        if (!Schema::hasTable('regions')) {
-            Schema::create('regions', function (Blueprint $table) {
-                $table->id();
-                $table->timestamps();
-            });
-        }
+        Schema::table('roles', function (Blueprint $table) {
+            $table->json('permissions')->nullable()->after('description');
+        });
     }
 
     /**
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('regions');
+        Schema::table('roles', function (Blueprint $table) {
+            $table->dropColumn('permissions');
+        });
     }
 };
