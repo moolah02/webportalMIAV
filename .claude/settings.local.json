@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan cache:clear:*)",
+      "Bash(php artisan:*)",
+      "Bash(ssh:*)",
+      "Bash(rsync:*)",
+      "Bash(scp:*)",
+      "Bash(tar:*)",
+      "Bash(del revival_project.tar.gz)",
+      "Bash(rm:*)",
+      "Bash(c:xampp4mysqlbinmysqldump.exe -u root miav_system)",
+      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysqldump.exe\" -u root miav_system)",
+      "Bash(cmd //c \"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysqldump.exe -u root miav_system > miav_system_backup.sql\")",
+      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysqldump.exe\" -u root miav_system --result-file=miav_backup.sql)",
+      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysql.exe\" -u root -e \"SELECT ''MySQL is running'' AS status;\")",
+      "Bash(ls:*)",
+      "Bash(net start)",
+      "Bash(findstr:*)",
+      "Bash(cmd //c \"net start mysql\")",
+      "Bash(grep:*)",
+      "Bash(php --version:*)",
+      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysql.exe\" -u root miav_system -e \"SELECT name FROM permissions;\")",
+      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysql.exe\" -u root miav_system -e \"SELECT r.name as role, p.name as permission FROM roles r LEFT JOIN role_has_permissions rp ON r.id = rp.role_id LEFT JOIN permissions p ON rp.permission_id = p.id ORDER BY r.name;\")",
+      "Bash(curl:*)",
+      "Bash(ping:*)",
+      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysql.exe\" -u root miav_system -e \"ALTER TABLE job_assignments ADD COLUMN IF NOT EXISTS status ENUM\\(''assigned'', ''in_progress'', ''completed'', ''cancelled''\\) DEFAULT ''assigned'' AFTER technician_id;\")",
+      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysql.exe\" -u root miav_system -e \"SHOW COLUMNS FROM job_assignments LIKE ''status'';\")",
+      "Bash(copy \"C:\\\\Users\\\\hp\\\\AppData\\\\Local\\\\Temp\\\\app_fix.blade.php\" \"c:\\\\xampp4\\\\htdocs\\\\dashboard\\\\Revival_Technologies\\\\resources\\\\views\\\\layouts\\\\app.blade.php\")",
+      "Bash(cmd //c copy \"C:\\\\Users\\\\hp\\\\AppData\\\\Local\\\\Temp\\\\app_fix.blade.php\" \"c:\\\\xampp4\\\\htdocs\\\\dashboard\\\\Revival_Technologies\\\\resources\\\\views\\\\layouts\\\\app.blade.php\")",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix grey overlay issue and add missing job_assignments status column\n\n- Fixed JavaScript event propagation in user dropdown menu\n- Added event parameter to toggleUserDropdown function\n- Changed button type to prevent form submission  \n- Updated event listener to prevent blocking page clicks\n- Added status column migration for job_assignments table\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(cmd //c mkdir \"c:\\\\xampp4\\\\htdocs\\\\dashboard\\\\Revival_Technologies\\\\database\\\\backups\")",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

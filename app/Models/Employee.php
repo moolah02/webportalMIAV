@@ -17,6 +17,7 @@ class Employee extends Authenticatable
     protected string $guard_name = 'web';
 
     protected $fillable = [
+        'employee_id',
         'employee_number',
         'first_name',
         'last_name',
@@ -235,5 +236,33 @@ class Employee extends Authenticatable
               ->where('expected_return_date', '<', now())
               ->whereNull('actual_return_date');
         });
+    }
+
+    /**
+     * Check if employee can access a specific module
+     */
+    public function canAccessModule(string $module): bool
+    {
+        $modulePermissions = [
+            'dashboard' => ['all', 'view_dashboard', 'manage_team'],
+            'assets' => ['all', 'manage_assets', 'view_own_data'],
+            'terminals' => ['all', 'view_terminals', 'update_terminals'],
+            'technicians' => ['all', 'manage_team', 'view_jobs'],
+            'reports' => ['all', 'view_reports'],
+            'employees' => ['all', 'manage_team'],
+            'clients' => ['all', 'view_clients'],
+        ];
+
+        if (!isset($modulePermissions[$module])) {
+            return false;
+        }
+
+        foreach ($modulePermissions[$module] as $permission) {
+            if ($this->hasPermissionTo($permission)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

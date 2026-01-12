@@ -57,6 +57,10 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
+            if (!isset($role['display_name'])) {
+                $role['display_name'] = $role['name'];
+            }
+
             Role::create($role);
         }
     }

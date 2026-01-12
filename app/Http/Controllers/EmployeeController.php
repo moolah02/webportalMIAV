@@ -155,6 +155,7 @@ public function store(Request $request)
         $employeeNumber = $this->generateEmployeeNumber($validatedData['department_id']);
 
         $employeeData = [
+            'employee_id'     => $employeeNumber, // Same as employee_number for consistency
             'employee_number' => $employeeNumber,
             'first_name'  => $validatedData['first_name'],
             'last_name'   => $validatedData['last_name'],

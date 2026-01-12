@@ -36,8 +36,8 @@ class AuthenticatedSessionController extends Controller
         // IMPORTANT: Ignore any previously intended URL
         $request->session()->forget('url.intended');
 
-        // Send EVERYONE to the employee dashboard
-        return redirect()->route('employee.dashboard');
+        // Send EVERYONE to the main dashboard (which has permission-based routing)
+        return redirect()->route('dashboard');
     }
 
     /**

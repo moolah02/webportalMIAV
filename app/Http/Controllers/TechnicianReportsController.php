@@ -19,22 +19,40 @@ class TechnicianReportsController extends Controller
      */
     public function index(Request $request)
     {
-        // Get filter parameters
-        $dateRange = $request->get('date_range', 'last_7_days');
-        $technicianId = $request->get('technician_id');
-        $regionId = $request->get('region_id');
-        $terminalStatus = $request->get('terminal_status');
-        $clientId = $request->get('client_id');
-        $search = $request->get('search');
+        // Check if TechnicianVisit table exists
+        if (!class_exists(\App\Models\TechnicianVisit::class)) {
+            return view('technician-reports.index', [
+                'visits' => collect([]),
+                'technicians' => Employee::select('id', 'first_name', 'last_name')->get(),
+                'regions' => Region::where('is_active', true)->get(),
+                'clients' => Client::orderBy('name', 'asc')->get(),
+                'stats' => [
+                    'total_visits' => 0,
+                    'completed_visits' => 0,
+                    'pending_visits' => 0,
+                    'total_terminals' => 0,
+                ],
+                'message' => 'Technician visits data is not available'
+            ]);
+        }
 
-        // Build query with proper relationships
-        $query = TechnicianVisit::with([
-            'technician:id,first_name,last_name,phone',
-            'posTerminal:id,terminal_id,merchant_name,physical_address,region_id,client_id',
-            'posTerminal.region:id,name',
-            'posTerminal.client:id,company_name'
+        try {
+            // Get filter parameters
+            $dateRange = $request->get('date_range', 'last_7_days');
+            $technicianId = $request->get('technician_id');
+            $regionId = $request->get('region_id');
+            $terminalStatus = $request->get('terminal_status');
+            $clientId = $request->get('client_id');
+            $search = $request->get('search');
 
-        ]);
+            // Build query with proper relationships
+            $query = TechnicianVisit::with([
+                'technician:id,first_name,last_name,phone',
+                'posTerminal:id,terminal_id,merchant_name,physical_address,region_id,client_id',
+                'posTerminal.region:id,name',
+                'posTerminal.client:id,company_name'
+
+            ]);
 
         // Apply date range filter
         $this->applyDateRangeFilter($query, $dateRange, $request);
@@ -95,12 +113,28 @@ class TechnicianReportsController extends Controller
         // This will work with your current database structure
 $clients = Client::orderBy('company_name', 'asc')->get();
 
-        // Calculate stats
-        $stats = $this->calculateStats($dateRange, $request);
+            // Calculate stats
+            $stats = $this->calculateStats($dateRange, $request);
 
-        return view('reports.technician-visits', compact(
-            'visits', 'technicians', 'regions', 'clients', 'stats'
-        ));
+            return view('reports.technician-visits', compact(
+                'visits', 'technicians', 'regions', 'clients', 'stats'
+            ));
+        } catch (\Exception $e) {
+            // TechnicianVisit table doesn't exist or has issues
+            return view('technician-reports.index', [
+                'visits' => collect([]),
+                'technicians' => Employee::select('id', 'first_name', 'last_name')->get(),
+                'regions' => Region::where('is_active', true)->get(),
+                'clients' => Client::orderBy('name', 'asc')->get(),
+                'stats' => [
+                    'total_visits' => 0,
+                    'completed_visits' => 0,
+                    'pending_visits' => 0,
+                    'total_terminals' => 0,
+                ],
+                'error' => 'Unable to load technician visits: ' . $e->getMessage()
+            ]);
+        }
     }
 
     /**
