@@ -88,6 +88,7 @@ class ClientController extends Controller
 
             Client::create([
                 'client_code' => $clientCode,
+                'name' => $request->company_name, // Use company_name as name
                 'company_name' => $request->company_name,
                 'contact_person' => $request->contact_person,
                 'email' => $request->email,
