@@ -24,6 +24,7 @@ class Employee extends Authenticatable
         'email',
         'password',
         'phone',
+        'department',
         'department_id',
         'role_id',
         'manager_id',

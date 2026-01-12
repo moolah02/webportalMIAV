@@ -154,6 +154,10 @@ public function store(Request $request)
         // Generate a fresh, unique employee number INSIDE the transaction
         $employeeNumber = $this->generateEmployeeNumber($validatedData['department_id']);
 
+        // Get department name for the department field
+        $department = \App\Models\Department::find($validatedData['department_id']);
+        $departmentName = $department ? $department->name : null;
+
         $employeeData = [
             'employee_id'     => $employeeNumber, // Same as employee_number for consistency
             'employee_number' => $employeeNumber,
@@ -162,6 +166,7 @@ public function store(Request $request)
             'email'       => $validatedData['email'],
             'password'    => Hash::make($validatedData['password']),
             'role_id'     => $validatedData['role_id'],
+            'department'  => $departmentName,
             'department_id'=> $validatedData['department_id'],
             'status'      => $validatedData['status'] ?? 'active',
             'hire_date'   => $validatedData['hire_date'] ?? now(),
