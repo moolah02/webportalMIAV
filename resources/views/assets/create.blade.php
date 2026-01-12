@@ -11,9 +11,33 @@
         <a href="{{ route('assets.index') }}" class="btn">← Back to Assets</a>
     </div>
 
+    <!-- Error/Success Messages -->
+    @if(session('error'))
+        <div style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #c62828;">
+            <strong>Error:</strong> {{ session('error') }}
+        </div>
+    @endif
+
+    @if(session('success'))
+        <div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2e7d32;">
+            <strong>Success:</strong> {{ session('success') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #c62828;">
+            <strong>Validation Errors:</strong>
+            <ul style="margin: 10px 0 0 20px;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="{{ route('assets.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        
+
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
             <!-- Main Form -->
             <div>

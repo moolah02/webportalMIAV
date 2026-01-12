@@ -104,8 +104,13 @@ class ClientController extends Controller
                 ->with('success', 'Client created successfully!');
 
         } catch (\Exception $e) {
+            \Log::error('Client creation failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return back()
-                ->with('error', 'Failed to create client. Please try again.')
+                ->with('error', 'Failed to create client: ' . $e->getMessage())
                 ->withInput();
         }
     }
