@@ -57,10 +57,20 @@ class AssetCategorySeeder extends Seeder
                 'color' => '#607d8b',
                 'sort_order' => 6,
             ],
+            [
+                'name' => 'Vehicles',
+                'description' => 'Company vehicles, cars, trucks, motorcycles',
+                'icon' => '🚗',
+                'color' => '#f44336',
+                'sort_order' => 7,
+            ],
         ];
 
         foreach ($categories as $category) {
-            AssetCategory::create($category);
+            AssetCategory::updateOrCreate(
+                ['name' => $category['name']],
+                $category
+            );
         }
     }
 }
