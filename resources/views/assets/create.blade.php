@@ -260,103 +260,27 @@
                     </div>
                 </div>
 
-                <!-- Pricing & Inventory -->
+                <!-- Status Only -->
                 <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">💰 Pricing & Inventory</h4>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-block-end: 20px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Unit Price *</label>
-                            <input type="number" name="unit_price" value="{{ old('unit_price') }}" step="0.01" min="0" required
-                                   placeholder="0.00"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('unit_price')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <h4 style="margin-block-end: 20px; color: #333;">📋 Asset Status</h4>
 
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Currency *</label>
-                            <select name="currency" required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                                <option value="USD" {{ old('currency', 'USD') == 'USD' ? 'selected' : '' }}>USD - US Dollar</option>
-                                <option value="EUR" {{ old('currency') == 'EUR' ? 'selected' : '' }}>EUR - Euro</option>
-                                <option value="GBP" {{ old('currency') == 'GBP' ? 'selected' : '' }}>GBP - British Pound</option>
-                                <option value="ZWL" {{ old('currency') == 'ZWL' ? 'selected' : '' }}>ZWL - Zimbabwe Dollar</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status *</label>
-                            <select name="status" required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                                @foreach($assetStatuses as $status)
-                                    <option value="{{ $status->slug }}" {{ old('status', 'asset-active') == $status->slug ? 'selected' : '' }}>
-                                        {{ $status->icon }} {{ $status->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Stock Quantity *</label>
-                            <input type="number" name="stock_quantity" value="{{ old('stock_quantity', 1) }}" min="0" required
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('stock_quantity')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Min Stock Level *</label>
-                            <input type="number" name="min_stock_level" value="{{ old('min_stock_level', 0) }}" min="0" required
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('min_stock_level')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">SKU</label>
-                            <input type="text" name="sku" value="{{ old('sku') }}"
-                                   placeholder="e.g., VEH-TOY-COR-001"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('sku')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Barcode</label>
-                            <input type="text" name="barcode" value="{{ old('barcode') }}"
-                                   placeholder="Barcode number"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        </div>
+                    <div>
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status *</label>
+                        <select name="status" required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                            @foreach($assetStatuses as $status)
+                                <option value="{{ $status->slug }}" {{ old('status', 'asset-active') == $status->slug ? 'selected' : '' }}>
+                                    {{ $status->icon }} {{ $status->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
-                <!-- Additional Information -->
-                <div class="content-card">
-                    <h4 style="margin-block-end: 20px; color: #333;">📝 Additional Information</h4>
-                    
-                    <div style="margin-block-end: 20px;">
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Image URL</label>
-                        <input type="url" name="image_url" value="{{ old('image_url') }}"
-                               placeholder="https://example.com/image.jpg"
-                               style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        @error('image_url')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div style="margin-block-end: 20px;">
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Notes</label>
-                        <textarea name="notes" rows="3" placeholder="Any additional notes about this asset..."
-                                  style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">{{ old('notes') }}</textarea>
-                    </div>
-                </div>
+                <!-- Hidden fields with default values -->
+                <input type="hidden" name="unit_price" value="0">
+                <input type="hidden" name="currency" value="USD">
+                <input type="hidden" name="stock_quantity" value="1">
+                <input type="hidden" name="min_stock_level" value="0">
             </div>
 
             <!-- Settings Sidebar -->
