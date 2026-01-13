@@ -100,7 +100,7 @@
                 <!-- Vehicle-Specific Fields (Hidden by default) -->
                 <div id="vehicleFields" class="content-card" style="margin-block-end: 20px; display: none;">
                     <h4 style="margin-block-end: 20px; color: #333;">🚗 Vehicle Details</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Plate *</label>
@@ -120,23 +120,9 @@
                         </div>
 
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Engine Number</label>
-                            <input type="text" name="engine_number" value="{{ old('engine_number') }}"
-                                   placeholder="Engine serial number"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        </div>
-
-                        <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Year</label>
                             <input type="number" name="vehicle_year" value="{{ old('vehicle_year') }}" min="1900" max="{{ date('Y') + 1 }}"
                                    placeholder="Manufacturing year"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Color</label>
-                            <input type="text" name="vehicle_color" value="{{ old('vehicle_color') }}"
-                                   placeholder="e.g., White, Blue"
                                    style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                         </div>
 
@@ -260,9 +246,31 @@
                     </div>
                 </div>
 
-                <!-- Status Only -->
+                <!-- Inventory & Status -->
                 <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📋 Asset Status</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;">📋 Inventory & Status</h4>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
+                        <div>
+                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Stock Quantity *</label>
+                            <input type="number" name="stock_quantity" value="{{ old('stock_quantity', 1) }}" required min="0"
+                                   placeholder="e.g., 1"
+                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                            @error('stock_quantity')
+                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Min Stock Level *</label>
+                            <input type="number" name="min_stock_level" value="{{ old('min_stock_level', 0) }}" required min="0"
+                                   placeholder="e.g., 0"
+                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                            @error('min_stock_level')
+                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
 
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status *</label>
@@ -279,8 +287,6 @@
                 <!-- Hidden fields with default values -->
                 <input type="hidden" name="unit_price" value="0">
                 <input type="hidden" name="currency" value="USD">
-                <input type="hidden" name="stock_quantity" value="1">
-                <input type="hidden" name="min_stock_level" value="0">
             </div>
 
             <!-- Settings Sidebar -->

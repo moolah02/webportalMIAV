@@ -61,27 +61,19 @@ class AssetCategoryFieldSeeder extends Seeder
                     'display_order' => 4,
                 ],
                 [
-                    'field_name' => 'color',
-                    'field_label' => 'Color',
-                    'field_type' => 'text',
-                    'is_required' => false,
-                    'placeholder_text' => 'e.g., White, Black',
-                    'display_order' => 5,
-                ],
-                [
                     'field_name' => 'fuel_type',
                     'field_label' => 'Fuel Type',
                     'field_type' => 'select',
                     'is_required' => false,
                     'options' => json_encode(['Petrol', 'Diesel', 'Electric', 'Hybrid']),
-                    'display_order' => 6,
+                    'display_order' => 5,
                 ],
                 [
                     'field_name' => 'registration_date',
                     'field_label' => 'Registration Date',
                     'field_type' => 'date',
                     'is_required' => false,
-                    'display_order' => 7,
+                    'display_order' => 6,
                 ],
                 [
                     'field_name' => 'insurance_expiry',
@@ -89,7 +81,7 @@ class AssetCategoryFieldSeeder extends Seeder
                     'field_type' => 'date',
                     'is_required' => false,
                     'help_text' => 'When insurance expires',
-                    'display_order' => 8,
+                    'display_order' => 7,
                 ],
                 [
                     'field_name' => 'insurance_provider',
@@ -97,7 +89,7 @@ class AssetCategoryFieldSeeder extends Seeder
                     'field_type' => 'text',
                     'is_required' => false,
                     'placeholder_text' => 'e.g., Jubilee Insurance',
-                    'display_order' => 9,
+                    'display_order' => 8,
                 ],
             ];
 
