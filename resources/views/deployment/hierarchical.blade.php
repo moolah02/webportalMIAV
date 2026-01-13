@@ -125,9 +125,11 @@
                 <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Deployment Date</label>
                 <input type="date" id="deploymentDate" value="{{ date('Y-m-d', strtotime('+1 day')) }}"
                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px;">
-                <button type="button" class="btn btn-success" onclick="loadHierarchy()" id="loadHierarchyBtn" disabled style="margin-top: 8px; width: 100%;">
-                    🔒 Select Clients & Projects First
-                </button>
+                <!-- Loading indicator (shown when auto-loading terminals) -->
+                <div id="autoLoadIndicator" style="display: none; margin-top: 12px; padding: 12px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 8px; text-align: center;">
+                    <i class="fas fa-spinner fa-spin" style="color: #1976d2; margin-right: 8px;"></i>
+                    <span style="color: #1565c0; font-weight: 500;">Loading terminals automatically...</span>
+                </div>
             </div>
         </div>
     </div>
@@ -1585,18 +1587,38 @@ function updateProjectSelection() {
     });
 
     console.log('Selected projects:', Array.from(deploymentState.selectedProjects));
-    updateLoadButton();
     updateProgressiveVisibility();
 
     // Auto-close dropdown after selection
     setTimeout(() => closeDropdown('projectDropdown'), 300);
+
+    // Auto-load terminals when both clients and projects are selected
+    autoLoadTerminalsIfReady();
 }
 
-function updateLoadButton() {
+function autoLoadTerminalsIfReady() {
     const hasClients = deploymentState.selectedClients.size > 0;
     const hasProjects = deploymentState.selectedProjects.size > 0;
 
-    document.getElementById('loadHierarchyBtn').disabled = !(hasClients && hasProjects);
+    // If both clients and projects are selected, automatically load terminals
+    if (hasClients && hasProjects) {
+        // Show loading indicator
+        const indicator = document.getElementById('autoLoadIndicator');
+        if (indicator) {
+            indicator.style.display = 'block';
+        }
+
+        // Small delay to show the indicator and close dropdowns
+        setTimeout(() => {
+            loadHierarchy();
+        }, 500);
+    }
+}
+
+// Legacy function kept for compatibility (no longer needed for button)
+function updateLoadButton() {
+    // This function is no longer needed but kept to avoid breaking existing code
+    console.log('updateLoadButton called (legacy - no button to update)');
 }
 
 // =====================
@@ -1650,9 +1672,22 @@ function loadHierarchy() {
             updateProgressStats();
 
             updateProgressiveVisibility();
+
+            // Hide auto-load indicator
+            const indicator = document.getElementById('autoLoadIndicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+
             showAlert('✅ Step 2 Complete! Now select technicians to start assigning terminals.');
         } else {
             setLoading(tableBody, false);
+
+            // Hide auto-load indicator even on failure
+            const indicator = document.getElementById('autoLoadIndicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
             showErrorModal(
                 'Failed to Load Terminals',
                 'Unable to load terminal hierarchy. Please check your selections and try again.',
@@ -1663,6 +1698,13 @@ function loadHierarchy() {
     .catch(error => {
         console.error('Error loading terminals:', error);
         setLoading(tableBody, false);
+
+        // Hide auto-load indicator on error
+        const indicator = document.getElementById('autoLoadIndicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+
         showErrorModal(
             'Network Error',
             'Failed to connect to the server while loading terminals. Please check your connection and try again.',

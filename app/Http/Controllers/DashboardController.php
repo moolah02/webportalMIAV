@@ -252,9 +252,10 @@ class DashboardController extends Controller
 
     private function getRegionalData()
     {
-        // Get real regional distribution
+        // Get real regional distribution from database
         $regionalData = PosTerminal::select('region', 'status', DB::raw('count(*) as count'))
             ->whereNotNull('region')
+            ->where('region', '!=', '')
             ->groupBy('region', 'status')
             ->get()
             ->groupBy('region')
@@ -269,23 +270,15 @@ class DashboardController extends Controller
                     'issues' => $issues,
                     'uptime_percentage' => $total > 0 ? round(($active / $total) * 100, 1) : 0,
                 ];
-            });
+            })
+            ->sortByDesc('total'); // Sort by total terminals (most to least)
 
-        // Add regions with no terminals
-        $allRegions = ['North Region', 'South Region', 'East Region', 'West Region', 'Central Region', 'HATFIELD', 'EPWORTH', 'CBD', 'MT PLEASANT'];
-
-        foreach ($allRegions as $region) {
-            if (!$regionalData->has($region)) {
-                $regionalData[$region] = [
-                    'total' => 0,
-                    'active' => 0,
-                    'issues' => 0,
-                    'uptime_percentage' => 0,
-                ];
-            }
+        // If no regions found in database, return empty collection
+        if ($regionalData->isEmpty()) {
+            return collect();
         }
 
-        return $regionalData->take(8); // Limit to 8 regions for display
+        return $regionalData; // Return all regions found in database
     }
 
     private function getRecentActivity()

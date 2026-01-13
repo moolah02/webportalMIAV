@@ -197,8 +197,9 @@
             <!-- Regional Distribution -->
             <div class="content-card">
                 <h4 style="margin-block-end: 20px; color: #333;">🗺️ Regional Distribution</h4>
+                @if($stats['regional_data']->isNotEmpty())
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    @foreach($stats['regional_data']->take(6) as $region => $data)
+                    @foreach($stats['regional_data'] as $region => $data)
                     <a href="{{ route('pos-terminals.index', ['region' => $region]) }}" class="regional-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3; text-decoration: none; color: inherit; transition: all 0.2s ease;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 10px;">
                             <h5 style="margin: 0; color: #333; font-size: 14px;">{{ $region }}</h5>
@@ -220,6 +221,13 @@
                     </a>
                     @endforeach
                 </div>
+                @else
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <div style="font-size: 48px; margin-block-end: 15px;">🗺️</div>
+                    <p>No regional data available yet</p>
+                    <p style="font-size: 14px; margin-top: 8px;">Regions will appear here once POS terminals are added with region information</p>
+                </div>
+                @endif
             </div>
 
             <!-- Recent Activity Feed -->

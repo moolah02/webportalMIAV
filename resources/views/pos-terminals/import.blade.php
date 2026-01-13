@@ -350,59 +350,176 @@ $(document).ready(function() {
         const formData = new FormData();
         const fileInput = document.getElementById('file');
         const mappingId = $('#mapping_id').val();
+        const clientId = $('#client_id').val();
 
         if (!fileInput.files[0]) {
             alert('Please select a file first');
             return;
         }
 
-        const csrf = $('meta[name="csrf-token"]').attr('content') || $('input[name="_token"]').val();
+        if (!clientId) {
+            alert('Please select a client first');
+            return;
+        }
 
-        formData.append('file', fileInput.files[0]);
+        const csrf = $('meta[name="csrf-token"]').attr('content') || $('input[name="_token"]').val();
+        const file = fileInput.files[0];
+        const fileSize = file.size;
+        const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
+
+        formData.append('file', file);
+        formData.append('client_id', clientId);
         if (mappingId) formData.append('mapping_id', mappingId);
         formData.append('preview_rows', '5');
 
-        // Show modal with loading
+        // Show modal with initial upload progress
         $('#previewModal').modal('show');
         $('#previewContent').html(`
-            <div class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only">Loading preview...</span>
+            <div class="text-center" id="uploadProgressContainer">
+                <h5 class="mb-3">Uploading File...</h5>
+                <p class="text-muted">File size: ${fileSizeMB} MB</p>
+                <div class="progress mb-3" style="height: 30px;">
+                    <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                         role="progressbar" style="width: 0%">
+                        <span id="uploadPercentText">0%</span>
+                    </div>
                 </div>
-                <p class="mt-2">Analyzing your file and detecting columns...</p>
+                <p id="uploadSpeedText" class="text-muted small"></p>
+                <button type="button" id="cancelUploadBtn" class="btn btn-sm btn-danger mt-2">
+                    <i class="fas fa-times mr-1"></i> Cancel Upload
+                </button>
             </div>
         `);
 
-        // Make AJAX request
-        $.ajax({
-            url: '{{ route("pos-terminals.preview-import") }}',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: { 'X-CSRF-TOKEN': csrf },
-            success: function(response) {
-                if (response.success) {
-                    displayPreview(response);
-                } else {
+        // Create XHR request with progress tracking
+        const xhr = new XMLHttpRequest();
+        let uploadStartTime = Date.now();
+        let uploadCancelled = false;
+
+        // Handle upload progress
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                const loadedMB = (e.loaded / (1024 * 1024)).toFixed(2);
+                const totalMB = (e.total / (1024 * 1024)).toFixed(2);
+
+                // Calculate upload speed
+                const elapsedTime = (Date.now() - uploadStartTime) / 1000; // seconds
+                const speedMBps = (e.loaded / (1024 * 1024)) / elapsedTime;
+                const remainingBytes = e.total - e.loaded;
+                const remainingTime = Math.round(remainingBytes / (e.loaded / elapsedTime));
+
+                $('#uploadProgressBar').css('width', percentComplete + '%');
+                $('#uploadPercentText').text(percentComplete + '%');
+                $('#uploadSpeedText').html(`
+                    Uploaded: ${loadedMB} MB / ${totalMB} MB<br>
+                    Speed: ${speedMBps.toFixed(2)} MB/s
+                    ${remainingTime > 0 ? ` | ETA: ${remainingTime}s` : ''}
+                `);
+            }
+        });
+
+        // Handle upload completion (start server processing)
+        xhr.upload.addEventListener('load', function() {
+            if (!uploadCancelled) {
+                $('#previewContent').html(`
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="sr-only">Processing...</span>
+                        </div>
+                        <h5>Analyzing File...</h5>
+                        <p class="text-muted">Processing ${fileSizeMB} MB file. This may take a moment...</p>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                 role="progressbar" style="width: 100%">
+                                Analyzing columns and validating data...
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+        });
+
+        // Handle response
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        displayPreview(response);
+                    } else {
+                        $('#previewContent').html(`
+                            <div class="alert alert-danger">
+                                <h5><i class="fas fa-exclamation-circle mr-2"></i>Preview Error</h5>
+                                <p>${response.message}</p>
+                            </div>
+                        `);
+                    }
+                } catch (e) {
                     $('#previewContent').html(`
                         <div class="alert alert-danger">
-                            <h5>Preview Error</h5>
-                            <p>${response.message}</p>
+                            <h5><i class="fas fa-exclamation-circle mr-2"></i>Processing Error</h5>
+                            <p>Failed to parse server response. Please try again.</p>
                         </div>
                     `);
                 }
-            },
-            error: function(xhr) {
-                const message = xhr.responseJSON?.message || 'Failed to preview file. Please check the file format and try again.';
+            } else {
+                let message = 'Failed to preview file. Please check the file format and try again.';
+                try {
+                    const errorResponse = JSON.parse(xhr.responseText);
+                    message = errorResponse.message || message;
+                } catch (e) {
+                    // Use default message
+                }
                 $('#previewContent').html(`
                     <div class="alert alert-danger">
-                        <h5>Preview Failed</h5>
+                        <h5><i class="fas fa-exclamation-circle mr-2"></i>Preview Failed</h5>
                         <p>${message}</p>
                     </div>
                 `);
             }
         });
+
+        // Handle errors
+        xhr.addEventListener('error', function() {
+            if (!uploadCancelled) {
+                $('#previewContent').html(`
+                    <div class="alert alert-danger">
+                        <h5><i class="fas fa-exclamation-circle mr-2"></i>Upload Failed</h5>
+                        <p>Network error occurred. Please check your connection and try again.</p>
+                    </div>
+                `);
+            }
+        });
+
+        // Handle timeout
+        xhr.addEventListener('timeout', function() {
+            $('#previewContent').html(`
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-clock mr-2"></i>Upload Timeout</h5>
+                    <p>The upload took too long. Please try a smaller file or contact support.</p>
+                </div>
+            `);
+        });
+
+        // Cancel button handler
+        $(document).off('click', '#cancelUploadBtn').on('click', '#cancelUploadBtn', function() {
+            uploadCancelled = true;
+            xhr.abort();
+            $('#previewContent').html(`
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle mr-2"></i>Upload Cancelled</h5>
+                    <p>The upload was cancelled by user.</p>
+                </div>
+            `);
+        });
+
+        // Send the request
+        xhr.open('POST', '{{ route("pos-terminals.preview-import") }}');
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrf);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.timeout = 300000; // 5 minutes timeout
+        xhr.send(formData);
     });
 
     // Proceed with import button
@@ -412,9 +529,98 @@ $(document).ready(function() {
         $('#importForm').trigger('submit');
     });
 
-    // Form submission handler
-    $('#importForm').on('submit', function() {
+    // Form submission handler with progress tracking
+    $('#importForm').on('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const file = $('#file')[0].files[0];
+        const fileSizeMB = file ? (file.size / (1024 * 1024)).toFixed(2) : '0';
+        const csrf = $('meta[name="csrf-token"]').attr('content') || $('input[name="_token"]').val();
+
+        // Show loading modal with progress
         $('#loadingModal').modal('show');
+
+        // Update modal content to show progress
+        $('#loadingModal .modal-body').html(`
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="sr-only">Processing...</span>
+                </div>
+                <h5 id="importStatusTitle">Uploading...</h5>
+                <p id="importStatusText" class="mb-3">Uploading ${fileSizeMB} MB file...</p>
+                <div class="progress" style="height: 30px;">
+                    <div id="importProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                         role="progressbar" style="width: 0%">
+                        <span id="importPercentText">0%</span>
+                    </div>
+                </div>
+                <p id="importSpeedText" class="text-muted small mt-2"></p>
+            </div>
+        `);
+
+        const xhr = new XMLHttpRequest();
+        let uploadStartTime = Date.now();
+
+        // Upload progress
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                const loadedMB = (e.loaded / (1024 * 1024)).toFixed(2);
+                const totalMB = (e.total / (1024 * 1024)).toFixed(2);
+                const elapsedTime = (Date.now() - uploadStartTime) / 1000;
+                const speedMBps = (e.loaded / (1024 * 1024)) / elapsedTime;
+
+                $('#importProgressBar').css('width', percentComplete + '%');
+                $('#importPercentText').text(percentComplete + '%');
+                $('#importSpeedText').html(`
+                    Uploaded: ${loadedMB} MB / ${totalMB} MB | Speed: ${speedMBps.toFixed(2)} MB/s
+                `);
+            }
+        });
+
+        // Upload complete, now processing
+        xhr.upload.addEventListener('load', function() {
+            $('#importStatusTitle').text('Processing Import...');
+            $('#importStatusText').text('Processing data in chunks. This may take several minutes for large files...');
+            $('#importProgressBar').removeClass('bg-primary').addClass('bg-success');
+            $('#importProgressBar').css('width', '100%');
+            $('#importPercentText').text('Processing...');
+            $('#importSpeedText').html('Please wait while records are being imported...');
+        });
+
+        // Request complete
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200 || xhr.status === 302) {
+                // Success - redirect will be handled automatically
+                $('#loadingModal').modal('hide');
+                window.location.href = '{{ route("pos-terminals.index") }}';
+            } else {
+                $('#loadingModal').modal('hide');
+                alert('Import failed. Please check the error messages and try again.');
+                window.location.reload();
+            }
+        });
+
+        // Error handling
+        xhr.addEventListener('error', function() {
+            $('#loadingModal').modal('hide');
+            alert('Network error occurred during import. Please try again.');
+        });
+
+        xhr.addEventListener('timeout', function() {
+            $('#loadingModal').modal('hide');
+            alert('Import timeout. The file may be too large or processing took too long.');
+        });
+
+        // Send request
+        xhr.open('POST', '{{ route("pos-terminals.import") }}');
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrf);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.timeout = 600000; // 10 minutes
+        xhr.send(formData);
+
+        return false;
     });
 
     function displayPreview(response) {
