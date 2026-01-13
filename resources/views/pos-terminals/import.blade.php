@@ -250,12 +250,7 @@
             </div>
             <div class="modal-body">
                 <div id="previewContent">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="sr-only">Loading preview...</span>
-                        </div>
-                        <p class="mt-2">Analyzing your file...</p>
-                    </div>
+                    <!-- Initial content will be replaced by JavaScript -->
                 </div>
             </div>
             <div class="modal-footer">
@@ -306,6 +301,8 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    console.log('POS Terminal Import JavaScript loaded successfully');
+
     // File input change handler
     $('#file').on('change', function() {
         const file = this.files[0];
@@ -347,6 +344,8 @@ $(document).ready(function() {
 
     // Preview button handler
     $('#previewBtn').on('click', function() {
+        console.log('Preview button clicked');
+
         const formData = new FormData();
         const fileInput = document.getElementById('file');
         const mappingId = $('#mapping_id').val();
@@ -361,6 +360,8 @@ $(document).ready(function() {
             alert('Please select a client first');
             return;
         }
+
+        console.log('Starting file upload with progress tracking');
 
         const csrf = $('meta[name="csrf-token"]').attr('content') || $('input[name="_token"]').val();
         const file = fileInput.files[0];

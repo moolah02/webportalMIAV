@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- Alpine.js for reactive UI -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 <style>
 :root {
     --primary-color: #4f46e5;

@@ -241,6 +241,9 @@ class Employee extends Authenticatable
 
     /**
      * Check if employee can access a specific module
+     *
+     * This method first checks our custom Role->permissions system via
+     * `hasPermission` and falls back to Spatie's `hasPermissionTo` if present.
      */
     public function canAccessModule(string $module): bool
     {
@@ -259,7 +262,15 @@ class Employee extends Authenticatable
         }
 
         foreach ($modulePermissions[$module] as $permission) {
-            if ($this->hasPermissionTo($permission)) {
+            $permission = trim($permission);
+
+            // Check custom Role->permissions first
+            if ($this->hasPermission($permission)) {
+                return true;
+            }
+
+            // Fallback to Spatie's permissions if available on the model
+            if (method_exists($this, 'hasPermissionTo') && $this->hasPermissionTo($permission)) {
                 return true;
             }
         }

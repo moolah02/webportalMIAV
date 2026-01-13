@@ -192,7 +192,7 @@ class RoleController extends Controller
     }
 
     // COMPLETE PERMISSION SYSTEM - ALL MENU ITEMS COVERED
-    private function getAllAvailablePermissions()
+    public function getAllAvailablePermissions()
     {
         return [
             // ==============================================

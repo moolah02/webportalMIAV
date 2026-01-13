@@ -29,7 +29,7 @@ class RoleSeeder extends Seeder
                 'name' => 'Technician',
                 'permissions' => [
                     'view_jobs',
-                    'update_jobs',
+                    'manage_jobs',
                     'create_reports',
                     'view_terminals',
                     'update_terminals',

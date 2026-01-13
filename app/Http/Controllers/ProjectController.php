@@ -102,6 +102,34 @@ class ProjectController extends Controller
         return view('projects.create', compact('clients', 'projectManagers', 'recentProjects'));
     }
 
+    /**
+     * Show the improved form for creating a new project
+     */
+    public function createImproved()
+    {
+        $clients = Client::where('status', 'active')
+            ->withCount('posTerminals')
+            ->orderBy('company_name')
+            ->get();
+
+        $projectManagers = Employee::where('status', 'active')
+            ->whereHas('role', function($query) {
+                $query->whereJsonContains('permissions', 'manage_projects')
+                      ->orWhereJsonContains('permissions', 'all');
+            })
+            ->orderBy('first_name')
+            ->get();
+
+        // Get recent projects for dependencies
+        $recentProjects = Project::with('client')
+            ->where('status', 'completed')
+            ->orderBy('completed_at', 'desc')
+            ->limit(20)
+            ->get();
+
+        return view('projects.create-improved', compact('clients', 'projectManagers', 'recentProjects'));
+    }
+
 
 
 /**
@@ -217,21 +245,63 @@ public function store(Request $request)
 
 
     /**
-     * Download project completion report
+     * Download project closure report with improved error handling
      */
     public function downloadReport(Project $project)
     {
-        if (!$project->report_path || !Storage::exists('public/' . $project->report_path)) {
-            abort(404, 'Report not found');
+        try {
+            // Check if report path exists in database
+            if (!$project->report_path) {
+                Log::warning('Report path not found in database', ['project_id' => $project->id]);
+                return back()->with('error', 'Report has not been generated yet. Please close the project first.');
+            }
+
+            // Check if file exists in storage
+            $fullPath = 'public/' . $project->report_path;
+            if (!Storage::exists($fullPath)) {
+                Log::error('Report file not found in storage', [
+                    'project_id' => $project->id,
+                    'report_path' => $project->report_path,
+                    'full_path' => $fullPath,
+                    'storage_path' => storage_path('app/' . $fullPath)
+                ]);
+
+                return back()->with('error', 'Report file not found in storage. The report may need to be regenerated.');
+            }
+
+            // Determine file extension and mime type
+            $extension = pathinfo($project->report_path, PATHINFO_EXTENSION);
+            $mimeType = match($extension) {
+                'pdf' => 'application/pdf',
+                'txt' => 'text/plain',
+                default => 'application/octet-stream'
+            };
+
+            // Generate appropriate filename
+            $fileName = $project->project_code . '_closure_report_' . now()->format('Ymd') . '.' . $extension;
+
+            Log::info('Report download initiated', [
+                'project_id' => $project->id,
+                'file_name' => $fileName,
+                'mime_type' => $mimeType
+            ]);
+
+            // Download the file
+            return response()->download(
+                storage_path('app/' . $fullPath),
+                $fileName,
+                ['Content-Type' => $mimeType]
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Report download failed', [
+                'project_id' => $project->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('error', 'Failed to download report: ' . $e->getMessage());
         }
-
-        // Update download count
-        DB::table('project_reports')
-            ->where('project_id', $project->id)
-            ->where('report_type', 'completion')
-            ->increment('download_count');
-
-        return Storage::download('public/' . $project->report_path, $project->project_code . '_completion_report.pdf');
     }
 
     /**
@@ -1893,21 +1963,106 @@ public function closureWizard(Project $project)
 private function generateClosureReport($project, $request)
 {
     try {
-        $content = "PROJECT CLOSURE REPORT\n======================\n\n";
-        $content .= "Project: {$project->project_name}\n";
-        $content .= "Client: {$project->client->company_name}\n";
-        $content .= "Closure Reason: " . ucfirst(str_replace('_', ' ', $request->closure_reason)) . "\n";
-        $content .= "Closed: " . now()->format('F j, Y g:i A') . "\n\n";
-        $content .= "EXECUTIVE SUMMARY\n-----------------\n{$request->executive_summary}\n\n";
-        $content .= "KEY ACHIEVEMENTS\n----------------\n{$request->key_achievements}\n\n";
+        Log::info('Generating closure report PDF', ['project_id' => $project->id]);
 
-        $fileName = 'project_closure_' . $project->project_code . '_' . date('Y-m-d') . '.txt';
+        // Refresh project to get latest data
+        $project->load(['client', 'projectManager', 'jobAssignments.technician', 'projectTerminals']);
+
+        // Calculate project metrics
+        $totalTerminals = $project->projectTerminals()->count();
+        $completedJobs = $project->jobAssignments()->where('status', 'completed')->count();
+        $totalJobs = $project->jobAssignments()->count();
+        $completionRate = $totalJobs > 0 ? round(($completedJobs / $totalJobs) * 100, 1) : 0;
+
+        $duration = $project->start_date && $project->closed_at
+            ? $project->start_date->diffInDays($project->closed_at)
+            : 0;
+
+        // Prepare data for PDF
+        $reportData = [
+            'project' => $project,
+            'client' => $project->client,
+            'projectManager' => $project->projectManager,
+            'metrics' => [
+                'total_terminals' => $totalTerminals,
+                'total_jobs' => $totalJobs,
+                'completed_jobs' => $completedJobs,
+                'completion_rate' => $completionRate,
+                'duration_days' => $duration,
+                'budget' => $project->budget,
+            ],
+            'closure_data' => [
+                'executive_summary' => $request->executive_summary,
+                'key_achievements' => $request->key_achievements,
+                'challenges_overcome' => $request->challenges_overcome ?? 'N/A',
+                'lessons_learned' => $request->lessons_learned ?? 'N/A',
+                'issues_found' => $request->issues_found ?? 'None reported',
+                'recommendations' => $request->recommendations ?? 'N/A',
+                'additional_notes' => $request->additional_notes ?? 'N/A',
+                'closure_reason' => ucfirst(str_replace('_', ' ', $request->closure_reason)),
+                'closed_by' => Auth::user()->full_name ?? 'System',
+                'closed_at' => now()->format('F j, Y g:i A'),
+            ],
+            'job_assignments' => $project->jobAssignments()->with('technician')->get(),
+        ];
+
+        // Generate PDF
+        $pdf = PDF::loadView('projects.reports.closure-pdf', $reportData);
+        $pdf->setPaper('A4', 'portrait');
+
+        // Save PDF
+        $fileName = 'project_closure_' . $project->project_code . '_' . date('Ymd_His') . '.pdf';
         $filePath = 'reports/projects/' . $fileName;
+
         Storage::makeDirectory('public/reports/projects');
-        Storage::put('public/' . $filePath, $content);
-        $project->update(['report_path' => $filePath]);
+        Storage::put('public/' . $filePath, $pdf->output());
+
+        // Update project with report path
+        DB::table('projects')->where('id', $project->id)->update([
+            'report_path' => $filePath,
+            'report_generated_at' => now(),
+        ]);
+
+        Log::info('Closure report PDF generated successfully', [
+            'project_id' => $project->id,
+            'file_path' => $filePath
+        ]);
+
+        return $filePath;
+
     } catch (\Exception $e) {
-        Log::error('Closure report generation failed', ['error' => $e->getMessage()]);
+        Log::error('Closure report generation failed', [
+            'project_id' => $project->id,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        // Create a fallback text report if PDF fails
+        try {
+            $content = "PROJECT CLOSURE REPORT\n======================\n\n";
+            $content .= "Project: {$project->project_name}\n";
+            $content .= "Client: {$project->client->company_name}\n";
+            $content .= "Closure Reason: " . ucfirst(str_replace('_', ' ', $request->closure_reason)) . "\n";
+            $content .= "Closed: " . now()->format('F j, Y g:i A') . "\n\n";
+            $content .= "EXECUTIVE SUMMARY\n-----------------\n{$request->executive_summary}\n\n";
+            $content .= "KEY ACHIEVEMENTS\n----------------\n{$request->key_achievements}\n\n";
+            $content .= "\nNOTE: PDF generation failed. This is a fallback text report.\n";
+
+            $fileName = 'project_closure_' . $project->project_code . '_' . date('Ymd_His') . '.txt';
+            $filePath = 'reports/projects/' . $fileName;
+            Storage::makeDirectory('public/reports/projects');
+            Storage::put('public/' . $filePath, $content);
+
+            DB::table('projects')->where('id', $project->id)->update([
+                'report_path' => $filePath,
+                'report_generated_at' => now(),
+            ]);
+
+            return $filePath;
+        } catch (\Exception $fallbackError) {
+            Log::error('Fallback report generation also failed', ['error' => $fallbackError->getMessage()]);
+            throw $e;
+        }
     }
 }
 /**

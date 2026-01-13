@@ -27,9 +27,24 @@ class CheckPermission
             return $next($request);
         }
 
-        // Check if user has any of the required permissions
-        foreach ($permissions as $permission) {
-            if ($user->hasPermission($permission)) {
+        // Normalize permissions - split comma-separated params and trim whitespace
+        $flat = [];
+        foreach ($permissions as $p) {
+            foreach (explode(',', $p) as $item) {
+                $item = trim($item);
+                if ($item !== '') {
+                    $flat[] = $item;
+                }
+            }
+        }
+
+        // Check if user has any of the required permissions (custom or Spatie fallback)
+        foreach ($flat as $permission) {
+            if (method_exists($user, 'hasPermission') && $user->hasPermission($permission)) {
+                return $next($request);
+            }
+
+            if (method_exists($user, 'hasPermissionTo') && $user->hasPermissionTo($permission)) {
                 return $next($request);
             }
         }
