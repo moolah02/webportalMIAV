@@ -1144,7 +1144,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     setupEventListeners();
-    updateLoadButton();
     updateProgressiveVisibility();
 });
 
@@ -1182,9 +1181,7 @@ function loadProjectsAndSelect(projectId) {
             clearInterval(checkForProject);
             projectCheckbox.checked = true;
             updateProjectSelection();
-
-            // Show next step guidance
-            showAlert('Project pre-selected! Click "Load Client Terminals" to continue with terminal assignment.');
+            // Auto-load will trigger from updateProjectSelection()
         }
     }, 100);
 
