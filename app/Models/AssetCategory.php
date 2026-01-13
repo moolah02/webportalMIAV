@@ -28,6 +28,41 @@ class AssetCategory extends Model
         return $this->hasMany(Asset::class, 'category', 'name');
     }
 
+    /**
+     * Get custom fields defined for this category
+     */
+    public function fields()
+    {
+        return $this->hasMany(AssetCategoryField::class);
+    }
+
+    /**
+     * Get active fields in display order
+     */
+    public function activeFields()
+    {
+        return $this->hasMany(AssetCategoryField::class)->active()->ordered();
+    }
+
+    /**
+     * Get fields as array for dynamic form generation
+     */
+    public function getFieldsArray()
+    {
+        return $this->activeFields()->get()->map(function($field) {
+            return [
+                'name' => $field->field_name,
+                'label' => $field->field_label,
+                'type' => $field->field_type,
+                'required' => $field->is_required,
+                'placeholder' => $field->placeholder_text,
+                'help' => $field->help_text,
+                'options' => $field->options,
+                'validation' => $field->getValidationString(),
+            ];
+        })->toArray();
+    }
+
     // Scopes
     public function scopeActive($query)
     {
