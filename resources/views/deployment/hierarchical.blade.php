@@ -1597,18 +1597,31 @@ function autoLoadTerminalsIfReady() {
     const hasClients = deploymentState.selectedClients.size > 0;
     const hasProjects = deploymentState.selectedProjects.size > 0;
 
+    console.log('Auto-load check:', {
+        hasClients,
+        hasProjects,
+        selectedClients: Array.from(deploymentState.selectedClients),
+        selectedProjects: Array.from(deploymentState.selectedProjects)
+    });
+
     // If both clients and projects are selected, automatically load terminals
     if (hasClients && hasProjects) {
+        console.log('Auto-loading terminals...');
+
         // Show loading indicator
         const indicator = document.getElementById('autoLoadIndicator');
         if (indicator) {
             indicator.style.display = 'block';
+            console.log('Loading indicator shown');
         }
 
         // Small delay to show the indicator and close dropdowns
         setTimeout(() => {
+            console.log('Calling loadHierarchy()');
             loadHierarchy();
         }, 500);
+    } else {
+        console.log('Auto-load conditions not met');
     }
 }
 
