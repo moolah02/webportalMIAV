@@ -95,7 +95,7 @@ class AssetController extends Controller
                 'created_at' => $a->created_at,
                 'updated_at' => $a->updated_at,
             ];
-        });
+        })->values()->toArray();
 
         return response()->json(['success' => true, 'data' => ['assets' => $assets]]);
     }
