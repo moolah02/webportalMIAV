@@ -27,6 +27,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Always eager load roles relationship for Employee model
+        \App\Models\Employee::retrieved(function ($employee) {
+            if (!$employee->relationLoaded('roles')) {
+                $employee->load('roles');
+            }
+        });
+
         // Force HTTPS for ngrok and secure environments
         if (request()->server('HTTP_X_FORWARDED_PROTO') == 'https') {
             URL::forceScheme('https');
