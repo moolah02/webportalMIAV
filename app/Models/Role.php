@@ -29,6 +29,15 @@ class Role extends Model
         return $this->hasMany(Employee::class);
     }
 
+    /**
+     * Many-to-many relationship with permissions through role_permissions pivot table
+     */
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'role_permissions', 'role_id', 'permission_id')
+                    ->withTimestamps();
+    }
+
     // Helper Methods
     public function isTechnician(): bool
     {
@@ -89,14 +98,16 @@ class Role extends Model
         }
     }
 
-    // Check if role has specific permission
+    // Check if role has specific permission (using pivot table)
     public function hasPermission(string $permission): bool
     {
-        if (!$this->permissions) {
-            return false;
+        // Check if role has 'all' permission (super admin)
+        if ($this->permissions()->where('name', 'all')->exists()) {
+            return true;
         }
 
-        return in_array('all', $this->permissions) || in_array($permission, $this->permissions);
+        // Check if role has the specific permission
+        return $this->permissions()->where('name', $permission)->exists();
     }
 
     // Get display name or fallback to formatted name
