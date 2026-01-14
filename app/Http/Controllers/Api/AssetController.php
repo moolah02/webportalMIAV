@@ -503,7 +503,8 @@ class AssetController extends Controller
             ->distinct()
             ->orderBy('category')
             ->pluck('category')
-            ->values();
+            ->values()
+            ->toArray();
 
         return response()->json(['success' => true, 'data' => ['categories' => $cats]]);
     }
