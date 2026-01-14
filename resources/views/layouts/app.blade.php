@@ -629,6 +629,31 @@
         </div>
       </div>
       <div class="content-body">
+        <!-- Flash Messages -->
+        @if(session('success'))
+        <div class="alert alert-success" style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">✅</span>
+          <span>{{ session('success') }}</span>
+          <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; font-size: 20px; cursor: pointer; color: #155724;">&times;</button>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="alert alert-danger" style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">❌</span>
+          <span>{{ session('error') }}</span>
+          <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; font-size: 20px; cursor: pointer; color: #721c24;">&times;</button>
+        </div>
+        @endif
+
+        @if(session('warning'))
+        <div class="alert alert-warning" style="background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">⚠️</span>
+          <span>{{ session('warning') }}</span>
+          <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; font-size: 20px; cursor: pointer; color: #856404;">&times;</button>
+        </div>
+        @endif
+
         @yield('content')
       </div>
     </div>
