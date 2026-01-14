@@ -237,7 +237,7 @@ public function store(Request $request)
 
     public function show(Employee $employee)
     {
-        $employee->load(['role', 'department', 'manager', 'subordinates']);
+        $employee->load(['roles', 'department', 'manager', 'subordinates']);
         return view('employees.show', compact('employee'));
     }
 
@@ -344,10 +344,10 @@ public function update(Request $request, Employee $employee)
     public function profile()
     {
          $employee = Auth::user()->load([
-            'role',
+            'roles',
             'department',
             'manager.department',
-            'subordinates.role',
+            'subordinates.roles',
             'currentAssetAssignments.asset',
             'assetRequests' => function($query) {
                 $query->latest()->take(5);
