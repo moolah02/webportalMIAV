@@ -240,7 +240,7 @@ class Employee extends Authenticatable
 
     public function scopeManagers($query)
     {
-        return $query->whereHas('role', function ($q) {
+        return $query->whereHas('roles', function ($q) {
             $q->where('name', 'like', '%manager%')
               ->orWhere('name', 'like', '%supervisor%')
               ->orWhere('name', 'like', '%admin%');
