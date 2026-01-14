@@ -30,6 +30,15 @@ class Role extends Model
         return $this->hasMany(Employee::class);
     }
 
+    /**
+     * Many-to-many relationship with permissions through role_permissions pivot table
+     */
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'role_permissions', 'role_id', 'permission_id')
+                    ->withTimestamps();
+    }
+
     // Helper Methods
     public function isTechnician(): bool
     {
@@ -90,30 +99,16 @@ class Role extends Model
         }
     }
 
-    // Check if role has specific permission
+    // Check if role has specific permission (using pivot table)
     public function hasPermission(string $permission): bool
     {
-        // If the role has a `permissions` attribute (legacy JSON column), use it.
-        if (!empty($this->permissions)) {
-            return in_array('all', $this->permissions) || in_array($permission, $this->permissions);
+        // Check if role has 'all' permission (super admin)
+        if ($this->permissions()->where('name', 'all')->exists()) {
+            return true;
         }
 
-        // Fallback: check the role_permissions pivot + permissions table if present.
-        try {
-            if (Schema::hasTable('role_permissions') && Schema::hasTable('permissions')) {
-                return DB::table('role_permissions')
-                    ->join('permissions', 'role_permissions.permission_id', '=', 'permissions.id')
-                    ->where('role_permissions.role_id', $this->id)
-                    ->where(function ($q) use ($permission) {
-                        $q->where('permissions.name', 'all')
-                          ->orWhere('permissions.name', $permission);
-                    })->exists();
-            }
-        } catch (\Exception $e) {
-            // If DB isn't available or tables don't exist, treat as no permission.
-        }
-
-        return false;
+        // Check if role has the specific permission
+        return $this->permissions()->where('name', $permission)->exists();
     }
 
     // Get display name or fallback to formatted name

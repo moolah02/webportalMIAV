@@ -88,6 +88,7 @@ class ClientController extends Controller
 
             Client::create([
                 'client_code' => $clientCode,
+                'name' => $request->company_name, // Use company_name as name
                 'company_name' => $request->company_name,
                 'contact_person' => $request->contact_person,
                 'email' => $request->email,
@@ -104,8 +105,13 @@ class ClientController extends Controller
                 ->with('success', 'Client created successfully!');
 
         } catch (\Exception $e) {
+            \Log::error('Client creation failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return back()
-                ->with('error', 'Failed to create client. Please try again.')
+                ->with('error', 'Failed to create client: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -176,6 +182,33 @@ class ClientController extends Controller
         }
     }
 
+    // API endpoint for project form: Get client info
+    public function getInfo(Client $client)
+    {
+        // Get terminal counts for this client
+        $totalTerminals = $client->posTerminals()->count();
+        $activeTerminals = $client->posTerminals()->where('status', 'active')->count();
+        $regions = $client->posTerminals()
+            ->select('region')
+            ->distinct()
+            ->whereNotNull('region')
+            ->where('region', '!=', '')
+            ->pluck('region');
+
+        return response()->json([
+            'client_code' => $client->client_code,
+            'company_name' => $client->company_name,
+            'contact_person' => $client->contact_person,
+            'email' => $client->email,
+            'phone' => $client->phone,
+            'region' => $client->region,
+            'total_terminals' => $totalTerminals,
+            'active_terminals' => $activeTerminals,
+            'regions' => $regions,
+            'status' => $client->status,
+        ]);
+    }
+
     // Generate unique client code
     private function generateClientCode($companyName)
     {
@@ -184,11 +217,11 @@ class ClientController extends Controller
         if (strlen($prefix) < 3) {
             $prefix = str_pad($prefix, 3, 'X');
         }
-        
+
         do {
             $code = $prefix . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
         } while (Client::where('client_code', $code)->exists());
-        
+
         return $code;
     }
 }

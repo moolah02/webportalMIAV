@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Safely create the `regions` table only if it does not already exist.
-        if (!Schema::hasTable('regions')) {
-            Schema::create('regions', function (Blueprint $table) {
-                $table->id();
-                $table->timestamps();
+        if (!Schema::hasTable('sessions')) {
+            Schema::create('sessions', function (Blueprint $table) {
+                $table->string('id')->primary();
+                $table->foreignId('user_id')->nullable()->index();
+                $table->text('payload');
+                $table->integer('last_activity')->index();
             });
         }
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('regions');
+        Schema::dropIfExists('sessions');
     }
 };

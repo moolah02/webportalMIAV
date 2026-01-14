@@ -102,6 +102,88 @@ class SettingsController extends Controller
         return redirect()->back()->with('success', 'Category deleted successfully.');
     }
 
+    // ==============================================
+    // ROLE MANAGEMENT (Settings area) - delegates to Role model
+    // ==============================================
+    public function manageRoles()
+    {
+        $roles = \App\Models\Role::orderBy('name')->get();
+
+        $raw = (new \App\Http\Controllers\RoleController())->getAllAvailablePermissions();
+        // Group permissions by category for the settings UI
+        $availablePermissions = [];
+        foreach ($raw as $key => $meta) {
+            $group = $meta['category'] ?? 'other';
+            $groupLabel = ucwords(str_replace('_', ' ', $group));
+            if (!isset($availablePermissions[$groupLabel])) {
+                $availablePermissions[$groupLabel] = [];
+            }
+            $availablePermissions[$groupLabel][$key] = $meta['name'];
+        }
+
+        return view('settings.manage-role', compact('roles', 'availablePermissions'));
+    }
+
+    public function storeRole(Request $request)
+    {
+        $available = array_keys((new \App\Http\Controllers\RoleController())->getAllAvailablePermissions());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:roles,name',
+            'display_name' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|in:'.implode(',', $available),
+        ]);
+
+        \App\Models\Role::create([
+            'name' => $validated['name'],
+            'display_name' => $validated['display_name'] ?? $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'permissions' => $validated['permissions'] ?? [],
+            'is_active' => true,
+        ]);
+
+        return redirect()->route('settings.roles.manage')->with('success', 'Role created successfully.');
+    }
+
+    public function updateRole(Request $request, \App\Models\Role $role)
+    {
+        $available = array_keys((new \App\Http\Controllers\RoleController())->getAllAvailablePermissions());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
+            'display_name' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|in:'.implode(',', $available),
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $role->update([
+            'name' => $validated['name'],
+            'display_name' => $validated['display_name'] ?? $role->display_name,
+            'description' => $validated['description'] ?? $role->description,
+            'permissions' => $validated['permissions'] ?? $role->permissions,
+            'is_active' => isset($validated['is_active']) ? (bool)$validated['is_active'] : $role->is_active,
+        ]);
+
+        return redirect()->route('settings.roles.manage')->with('success', 'Role updated successfully.');
+    }
+
+    public function deleteRole(\App\Models\Role $role)
+    {
+        if ($role->employees()->count() > 0) {
+            return redirect()->back()->with('error', 'Cannot delete role assigned to employees.');
+        }
+
+        $systemRoles = ['super_admin', 'admin', 'manager', 'employee', 'technician'];
+        if (in_array(strtolower($role->name), $systemRoles)) {
+            return redirect()->back()->with('error', 'Cannot delete system role.');
+        }
+
+        $role->delete();
+        return redirect()->route('settings.roles.manage')->with('success', 'Role deleted.');
+    }
+
     public function updateCategoryOrder(Request $request)
     {
         $request->validate([

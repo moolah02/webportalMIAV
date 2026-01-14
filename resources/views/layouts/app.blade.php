@@ -18,6 +18,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- jQuery (required for some components) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Bootstrap JS (if needed) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
   <!-- Scripts -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -580,15 +587,15 @@
           <a href="{{ route('employee.profile') }}" class="nav-sub {{ request()->routeIs('employee.profile*') ? 'active' : '' }}">
             <span class="nav-icon">👤</span> My Profile
           </a>
-        </div>
 
-        <!-- Logout -->
-        <form method="POST" action="{{ route('logout') }}" class="logout-form">
-          @csrf
-          <button type="submit" class="logout-btn">
-            <span class="nav-icon">🚪</span> Sign Out
-          </button>
-        </form>
+          <!-- Logout inside My Account -->
+          <form method="POST" action="{{ route('logout') }}" class="logout-form" style="margin: 0; border: none;">
+            @csrf
+            <button type="submit" class="nav-sub" style="width: 100%; text-align: left; padding: 12px 16px; display: flex; align-items: center; gap: 12px; background: transparent; border: none; color: #e53e3e; cursor: pointer; font-weight: 500; font-size: 14px; border-left: 3px solid transparent;">
+              <span class="nav-icon" style="color: #e53e3e;">🚪</span> Sign Out
+            </button>
+          </form>
+        </div>
       </nav>
     </div>
 
@@ -596,12 +603,57 @@
     <div class="main-content">
       <div class="content-header">
         <h1 class="page-title">{{ $title ?? 'Dashboard' }}</h1>
-        <div class="user-info">
-          {{ auth()->user()->full_name }}
-          <span class="user-badge">{{ auth()->user()->role->name ?? 'Employee' }}</span>
+        <div class="user-info" style="position: relative;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="text-align: right;">
+              <div style="font-weight: 500;">{{ auth()->user()->full_name }}</div>
+              <span class="user-badge">{{ auth()->user()->role->name ?? 'Employee' }}</span>
+            </div>
+            <div style="position: relative;">
+              <button type="button" onclick="toggleUserDropdown(event)" style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px;">
+                👤
+              </button>
+              <div id="userDropdown" style="display: none; position: absolute; top: 50px; right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 180px; z-index: 1000;">
+                <a href="{{ route('employee.profile') }}" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #e5e7eb;">
+                  <span>👤</span> My Profile
+                </a>
+                <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                  @csrf
+                  <button type="submit" style="width: 100%; display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: transparent; border: none; color: #dc2626; cursor: pointer; text-align: left; font-size: 14px;">
+                    <span>🚪</span> Sign Out
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="content-body">
+        <!-- Flash Messages -->
+        @if(session('success'))
+        <div class="alert alert-success" style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">✅</span>
+          <span>{{ session('success') }}</span>
+          <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; font-size: 20px; cursor: pointer; color: #155724;">&times;</button>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="alert alert-danger" style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">❌</span>
+          <span>{{ session('error') }}</span>
+          <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; font-size: 20px; cursor: pointer; color: #721c24;">&times;</button>
+        </div>
+        @endif
+
+        @if(session('warning'))
+        <div class="alert alert-warning" style="background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">⚠️</span>
+          <span>{{ session('warning') }}</span>
+          <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; font-size: 20px; cursor: pointer; color: #856404;">&times;</button>
+        </div>
+        @endif
+
         @yield('content')
       </div>
     </div>
@@ -610,6 +662,23 @@
   @stack('scripts')
 
   <script>
+    function toggleUserDropdown(event) {
+      if (event) event.stopPropagation();
+      const dropdown = document.getElementById('userDropdown');
+      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('userDropdown');
+      if (!dropdown) return;
+
+      const userInfo = event.target.closest('.user-info');
+      if (!userInfo && dropdown.style.display === 'block') {
+        dropdown.style.display = 'none';
+      }
+    });
+
     function toggleMenu(header) {
       const submenu = header.nextElementSibling;
       const isCurrentlyOpen = header.classList.contains('open');

@@ -14,13 +14,13 @@ class RoleFactory extends Factory
         $roles = [
             'Admin' => ['all'],
             'Manager' => ['manage_team', 'view_reports', 'approve_requests', 'manage_assets'],
-            'Technician' => ['view_jobs', 'update_jobs', 'create_reports', 'view_terminals'],
+            'Technician' => ['view_jobs', 'manage_jobs', 'create_reports', 'view_terminals'],
             'Employee' => ['view_own_data', 'request_assets', 'view_documents'],
             'Supervisor' => ['manage_team', 'view_reports', 'approve_minor_requests'],
         ];
 
         $roleName = $this->faker->randomElement(array_keys($roles));
-        
+
         return [
             'name' => $roleName,
             'permissions' => $roles[$roleName],

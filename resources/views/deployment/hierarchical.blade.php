@@ -125,8 +125,10 @@
                 <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Deployment Date</label>
                 <input type="date" id="deploymentDate" value="{{ date('Y-m-d', strtotime('+1 day')) }}"
                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px;">
-                <button type="button" class="btn btn-success" onclick="loadHierarchy()" id="loadHierarchyBtn" disabled style="margin-top: 8px; width: 100%;">
-                    🔒 Select Clients & Projects First
+                <!-- Load Button -->
+                <button type="button" class="btn btn-success" onclick="loadHierarchy()" id="loadHierarchyBtn" disabled
+                        style="margin-top: 12px; width: 100%; padding: 12px; font-size: 16px;">
+                    🗺️ Load Client Terminals
                 </button>
             </div>
         </div>
@@ -1180,9 +1182,7 @@ function loadProjectsAndSelect(projectId) {
             clearInterval(checkForProject);
             projectCheckbox.checked = true;
             updateProjectSelection();
-
-            // Show next step guidance
-            showAlert('Project pre-selected! Click "Load Client Terminals" to continue with terminal assignment.');
+            // Auto-load will trigger from updateProjectSelection()
         }
     }, 100);
 
@@ -1585,18 +1585,64 @@ function updateProjectSelection() {
     });
 
     console.log('Selected projects:', Array.from(deploymentState.selectedProjects));
-    updateLoadButton();
     updateProgressiveVisibility();
+    updateLoadButton();
 
     // Auto-close dropdown after selection
     setTimeout(() => closeDropdown('projectDropdown'), 300);
 }
 
-function updateLoadButton() {
+function autoLoadTerminalsIfReady() {
     const hasClients = deploymentState.selectedClients.size > 0;
     const hasProjects = deploymentState.selectedProjects.size > 0;
 
-    document.getElementById('loadHierarchyBtn').disabled = !(hasClients && hasProjects);
+    console.log('Auto-load check:', {
+        hasClients,
+        hasProjects,
+        selectedClients: Array.from(deploymentState.selectedClients),
+        selectedProjects: Array.from(deploymentState.selectedProjects)
+    });
+
+    // If both clients and projects are selected, automatically load terminals
+    if (hasClients && hasProjects) {
+        console.log('Auto-loading terminals...');
+
+        // Show loading indicator
+        const indicator = document.getElementById('autoLoadIndicator');
+        if (indicator) {
+            indicator.style.display = 'block';
+            console.log('Loading indicator shown');
+        }
+
+        // Small delay to show the indicator and close dropdowns
+        setTimeout(() => {
+            console.log('Calling loadHierarchy()');
+            loadHierarchy();
+        }, 500);
+    } else {
+        console.log('Auto-load conditions not met');
+    }
+}
+
+// Update the load button state
+function updateLoadButton() {
+    const loadBtn = document.getElementById('loadHierarchyBtn');
+    if (!loadBtn) return;
+
+    const hasClients = deploymentState.selectedClients.size > 0;
+    const hasProjects = deploymentState.selectedProjects.size > 0;
+
+    if (hasClients && hasProjects) {
+        loadBtn.disabled = false;
+        loadBtn.textContent = '🗺️ Load Client Terminals';
+        loadBtn.style.opacity = '1';
+        loadBtn.style.cursor = 'pointer';
+    } else {
+        loadBtn.disabled = true;
+        loadBtn.textContent = '🔒 Select Clients & Projects First';
+        loadBtn.style.opacity = '0.6';
+        loadBtn.style.cursor = 'not-allowed';
+    }
 }
 
 // =====================
@@ -1650,9 +1696,22 @@ function loadHierarchy() {
             updateProgressStats();
 
             updateProgressiveVisibility();
+
+            // Hide auto-load indicator
+            const indicator = document.getElementById('autoLoadIndicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+
             showAlert('✅ Step 2 Complete! Now select technicians to start assigning terminals.');
         } else {
             setLoading(tableBody, false);
+
+            // Hide auto-load indicator even on failure
+            const indicator = document.getElementById('autoLoadIndicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
             showErrorModal(
                 'Failed to Load Terminals',
                 'Unable to load terminal hierarchy. Please check your selections and try again.',
@@ -1663,6 +1722,13 @@ function loadHierarchy() {
     .catch(error => {
         console.error('Error loading terminals:', error);
         setLoading(tableBody, false);
+
+        // Hide auto-load indicator on error
+        const indicator = document.getElementById('autoLoadIndicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+
         showErrorModal(
             'Network Error',
             'Failed to connect to the server while loading terminals. Please check your connection and try again.',

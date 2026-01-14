@@ -124,6 +124,11 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->name('destroy');
     });
 
+    // API endpoint for client info (used by project form)
+    Route::get('/api/clients/{client}/info', [ClientController::class, 'getInfo'])
+        ->middleware('permission:view_clients,manage_clients,all')
+        ->name('api.clients.info');
+
     // ==============================================
     // POS TERMINAL ROUTES - UPDATED PERMISSIONS
     // ==============================================
@@ -1008,7 +1013,7 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
 Route::prefix('projects')->name('projects.')->middleware('permission:manage_projects,view_projects,all')->group(function () {
     // Basic CRUD routes
     Route::get('/', [App\Http\Controllers\ProjectController::class, 'index'])->name('index');
-    Route::get('/create', [App\Http\Controllers\ProjectController::class, 'create'])
+    Route::get('/create', [App\Http\Controllers\ProjectController::class, 'createImproved'])
         ->middleware('permission:manage_projects,all')
         ->name('create');
     Route::post('/', [App\Http\Controllers\ProjectController::class, 'store'])

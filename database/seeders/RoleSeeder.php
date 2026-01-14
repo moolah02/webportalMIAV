@@ -29,7 +29,7 @@ class RoleSeeder extends Seeder
                 'name' => 'Technician',
                 'permissions' => [
                     'view_jobs',
-                    'update_jobs',
+                    'manage_jobs',
                     'create_reports',
                     'view_terminals',
                     'update_terminals',
@@ -57,6 +57,10 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
+            if (!isset($role['display_name'])) {
+                $role['display_name'] = $role['name'];
+            }
+
             Role::create($role);
         }
     }

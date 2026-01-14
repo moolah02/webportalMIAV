@@ -24,9 +24,9 @@ class AssetController extends Controller
     {
         $q = Asset::query();
 
-        // Optional: limit to active
+        // Optional: limit to active/available assets
         if (!$request->filled('include_inactive')) {
-            $q->where('status', 'asset-active');
+            $q->whereIn('status', ['asset-active', 'available', 'active']);
         }
 
         if ($request->boolean('requestable_only')) {
@@ -95,7 +95,14 @@ class AssetController extends Controller
                 'created_at' => $a->created_at,
                 'updated_at' => $a->updated_at,
             ];
-        });
+        })->values()->toArray();
+
+        \Log::info('Asset API Response', [
+            'assets_type' => gettype($assets),
+            'assets_is_array' => is_array($assets),
+            'assets_count' => count($assets),
+            'first_asset' => !empty($assets) ? $assets[0] : null
+        ]);
 
         return response()->json(['success' => true, 'data' => ['assets' => $assets]]);
     }
@@ -160,7 +167,7 @@ class AssetController extends Controller
             return response()->json(['success' => false, 'message' => 'Validation failed', 'errors' => $v->errors()], 422);
         }
 
-        if (!$asset->is_requestable || $asset->status !== 'asset-active') {
+        if (!$asset->is_requestable || !in_array($asset->status, ['asset-active', 'available', 'active'])) {
             return response()->json(['success' => false, 'message' => 'Asset is not requestable'], 422);
         }
 
@@ -314,7 +321,7 @@ class AssetController extends Controller
                 /** @var Asset $asset */
                 $asset = Asset::findOrFail($row['asset_id']);
 
-                if (!$asset->is_requestable || $asset->status !== 'asset-active') {
+                if (!$asset->is_requestable || !in_array($asset->status, ['asset-active', 'available', 'active'])) {
                     throw new \Exception("Asset '{$asset->name}' is not requestable.");
                 }
 
@@ -497,13 +504,14 @@ class AssetController extends Controller
     public function getCategories(Request $request)
     {
         $cats = Asset::query()
-            ->when(!$request->boolean('include_inactive'), fn($q) => $q->where('status', 'asset-active'))
+            ->when(!$request->boolean('include_inactive'), fn($q) => $q->whereIn('status', ['asset-active', 'available', 'active']))
             ->where('is_requestable', true)
             ->whereNotNull('category')
             ->distinct()
             ->orderBy('category')
             ->pluck('category')
-            ->values();
+            ->values()
+            ->toArray();
 
         return response()->json(['success' => true, 'data' => ['categories' => $cats]]);
     }

@@ -25,6 +25,8 @@ class EmployeeSeeder extends Seeder
 
         // Create default admin user
         $admin = Employee::create([
+            'employee_id' => 'EMP0001',
+            'employee_id' => 'EMP0001',
             'employee_number' => 'EMP0001',
             'first_name' => 'System',
             'last_name' => 'Administrator',
@@ -42,6 +44,7 @@ class EmployeeSeeder extends Seeder
 
         // Create department managers
         $itManager = Employee::create([
+            'employee_id' => 'EMP0002',
             'employee_number' => 'EMP0002',
             'first_name' => 'John',
             'last_name' => 'Smith',
@@ -59,6 +62,7 @@ class EmployeeSeeder extends Seeder
         ]);
 
         $financeManager = Employee::create([
+            'employee_id' => 'EMP0003',
             'employee_number' => 'EMP0003',
             'first_name' => 'Sarah',
             'last_name' => 'Johnson',
@@ -77,6 +81,7 @@ class EmployeeSeeder extends Seeder
 
         // Create technicians
         $technician1 = Employee::create([
+            'employee_id' => 'EMP0004',
             'employee_number' => 'EMP0004',
             'first_name' => 'Mike',
             'last_name' => 'Thompson',
@@ -94,6 +99,7 @@ class EmployeeSeeder extends Seeder
         ]);
 
         $technician2 = Employee::create([
+            'employee_id' => 'EMP0005',
             'employee_number' => 'EMP0005',
             'first_name' => 'Alex',
             'last_name' => 'Wilson',
@@ -112,6 +118,7 @@ class EmployeeSeeder extends Seeder
 
         // Create regular employees
         Employee::create([
+            'employee_id' => 'EMP0006',
             'employee_number' => 'EMP0006',
             'first_name' => 'Jane',
             'last_name' => 'Doe',

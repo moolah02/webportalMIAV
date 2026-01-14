@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -78,5 +82,22 @@ class AppServiceProvider extends ServiceProvider
         Blade::if('activeEmployee', function () {
             return Auth::check() && Auth::user()->isActive();
         });
+
+        // Session driver fallback: if using DB sessions but DB or sessions table is unavailable, fall back to file driver.
+        if (config('session.driver') === 'database') {
+            try {
+                // Ensure DB connection works
+                DB::connection()->getPdo();
+
+                // If the sessions table is missing, fall back to file driver to avoid losing authentication
+                if (! Schema::hasTable(config('session.table', 'sessions'))) {
+                    Log::warning('Sessions table missing; falling back to file session driver.');
+                    Config::set('session.driver', 'file');
+                }
+            } catch (\Exception $e) {
+                Log::warning('Session DB unavailable: '.$e->getMessage().' — falling back to file session driver.');
+                Config::set('session.driver', 'file');
+            }
+        }
     }
 }

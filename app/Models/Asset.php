@@ -50,6 +50,103 @@ class Asset extends Model
         return $this->belongsTo(Category::class, 'category', 'name');
     }
 
+    /**
+     * Get relationships where this asset is the parent
+     * (e.g., Vehicle has Insurance)
+     */
+    public function assetRelationships()
+    {
+        return $this->hasMany(AssetRelationship::class, 'parent_asset_id');
+    }
+
+    /**
+     * Get relationships where this asset is related to another
+     * (e.g., Insurance belongs to Vehicle)
+     */
+    public function relatedToAssets()
+    {
+        return $this->hasMany(AssetRelationship::class, 'related_asset_id');
+    }
+
+    /**
+     * Get all active relationships for this asset
+     */
+    public function activeRelationships()
+    {
+        return $this->assetRelationships()->active()->with('relatedAsset');
+    }
+
+    /**
+     * Get related assets (e.g., get all licenses/insurance for a vehicle)
+     */
+    public function relatedAssets($type = null)
+    {
+        $query = $this->belongsToMany(Asset::class, 'asset_relationships', 'parent_asset_id', 'related_asset_id')
+            ->withPivot(['relationship_type', 'starts_at', 'expires_at', 'is_active', 'notes', 'metadata'])
+            ->wherePivot('is_active', true);
+
+        if ($type) {
+            $query->wherePivot('relationship_type', $type);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Get assets this asset is linked to (reverse relationship)
+     */
+    public function linkedFromAssets($type = null)
+    {
+        $query = $this->belongsToMany(Asset::class, 'asset_relationships', 'related_asset_id', 'parent_asset_id')
+            ->withPivot(['relationship_type', 'starts_at', 'expires_at', 'is_active', 'notes', 'metadata'])
+            ->wherePivot('is_active', true);
+
+        if ($type) {
+            $query->wherePivot('relationship_type', $type);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Check if this asset has a specific related asset
+     */
+    public function hasRelatedAsset($assetId, $type = null)
+    {
+        $query = $this->assetRelationships()->where('related_asset_id', $assetId)->active();
+
+        if ($type) {
+            $query->where('relationship_type', $type);
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Link this asset to another asset
+     */
+    public function linkToAsset($relatedAssetId, $type = 'linked_to', $data = [])
+    {
+        return AssetRelationship::create([
+            'parent_asset_id' => $this->id,
+            'related_asset_id' => $relatedAssetId,
+            'relationship_type' => $type,
+            'starts_at' => $data['starts_at'] ?? now(),
+            'expires_at' => $data['expires_at'] ?? null,
+            'metadata' => $data['metadata'] ?? null,
+            'notes' => $data['notes'] ?? null,
+            'is_active' => true,
+        ]);
+    }
+
+    /**
+     * Get expiring relationships (e.g., insurance expiring soon)
+     */
+    public function expiringRelationships($days = 30)
+    {
+        return $this->assetRelationships()->expiringSoon($days)->with('relatedAsset');
+    }
+
     // Scopes
     public function scopeActive($query)
     {

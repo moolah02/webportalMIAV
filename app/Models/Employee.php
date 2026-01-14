@@ -17,12 +17,14 @@ class Employee extends Authenticatable
     protected string $guard_name = 'web';
 
     protected $fillable = [
+        'employee_id',
         'employee_number',
         'first_name',
         'last_name',
         'email',
         'password',
         'phone',
+        'department',
         'department_id',
         'role_id',
         'manager_id',
@@ -235,5 +237,44 @@ class Employee extends Authenticatable
               ->where('expected_return_date', '<', now())
               ->whereNull('actual_return_date');
         });
+    }
+
+    /**
+     * Check if employee can access a specific module
+     *
+     * This method first checks our custom Role->permissions system via
+     * `hasPermission` and falls back to Spatie's `hasPermissionTo` if present.
+     */
+    public function canAccessModule(string $module): bool
+    {
+        $modulePermissions = [
+            'dashboard' => ['all', 'view_dashboard', 'manage_team'],
+            'assets' => ['all', 'manage_assets', 'view_own_data'],
+            'terminals' => ['all', 'view_terminals', 'update_terminals'],
+            'technicians' => ['all', 'manage_team', 'view_jobs'],
+            'reports' => ['all', 'view_reports'],
+            'employees' => ['all', 'manage_team'],
+            'clients' => ['all', 'view_clients'],
+        ];
+
+        if (!isset($modulePermissions[$module])) {
+            return false;
+        }
+
+        foreach ($modulePermissions[$module] as $permission) {
+            $permission = trim($permission);
+
+            // Check custom Role->permissions first
+            if ($this->hasPermission($permission)) {
+                return true;
+            }
+
+            // Fallback to Spatie's permissions if available on the model
+            if (method_exists($this, 'hasPermissionTo') && $this->hasPermissionTo($permission)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

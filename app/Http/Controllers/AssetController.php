@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\AssetAssignment;
+use App\Models\AssetCategory;
 use App\Models\Employee;
 use App\Models\Department;
 use App\Models\Category;
@@ -23,8 +24,8 @@ class AssetController extends Controller
             // Get the active tab (default to 'assets')
             $activeTab = $request->get('tab', 'assets');
 
-            // Get categories from database for filters
-            $assetCategories = Category::ofType('asset_category')->active()->ordered()->get();
+            // Get categories from AssetCategory model for filters
+            $assetCategories = AssetCategory::active()->ordered()->get();
             $assetStatuses = Category::ofType('asset_status')->active()->ordered()->get();
 
             // Handle different tabs with actual data
@@ -353,11 +354,11 @@ class AssetController extends Controller
     public function create()
     {
         try {
-            // Get categories from database for dropdown
-            $assetCategories = Category::ofType('asset_category')->active()->ordered()->get();
+            // Get categories from AssetCategory model (new flexible system)
+            $assetCategories = AssetCategory::active()->ordered()->get();
             $assetStatuses = Category::ofType('asset_status')->active()->ordered()->get();
         } catch (\Exception $e) {
-            // Fallback to empty collections if categories table doesn't exist
+            // Fallback to empty collections if tables don't exist
             $assetCategories = collect([]);
             $assetStatuses = collect([]);
         }
