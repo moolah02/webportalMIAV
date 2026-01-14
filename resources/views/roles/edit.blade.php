@@ -30,11 +30,11 @@ File: resources/views/roles/edit.blade.php
                 <div style="display: flex; gap: 20px; font-size: 14px; color: #666;">
                     <span><strong>Role:</strong> {{ ucwords(str_replace('_', ' ', $role->name)) }}</span>
                     <span><strong>Created:</strong> {{ $role->created_at->format('M d, Y') }}</span>
-                    <span><strong>Permissions:</strong> {{ count($role->permissions ?? []) }}</span>
+                    <span><strong>Permissions:</strong> {{ count($currentPermissions) }}</span>
                     <span><strong>Employees:</strong> {{ $role->employees()->count() }}</span>
                 </div>
             </div>
-            @if(is_array($role->permissions) && in_array('all', $role->permissions))
+            @if(in_array('all', $currentPermissions))
                 <span style="background: #ffebee; color: #d32f2f; padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                     ⚡ SUPER ADMIN ROLE
                 </span>
@@ -83,7 +83,7 @@ File: resources/views/roles/edit.blade.php
 
                     @php
                         $groupedPermissions = collect($allPermissions)->groupBy('category');
-                        $currentPermissions = old('permissions', $role->permissions ?? []);
+                        $currentPermissions = old('permissions', $currentPermissions ?? []);
                         $categoryConfig = [
                             'admin' => ['name' => 'System Administration', 'icon' => '⚡', 'color' => '#f44336'],
                             'dashboard' => ['name' => 'Dashboard Access', 'icon' => '📊', 'color' => '#2196f3'],

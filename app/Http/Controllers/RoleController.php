@@ -68,10 +68,13 @@ class RoleController extends Controller
         ]);
 
         try {
-            Role::create([
+            // Create role
+            $role = Role::create([
                 'name' => $request->name,
-                'permissions' => $request->permissions ?? [],
             ]);
+
+            // Sync permissions to pivot table
+            $this->syncPermissionsToPivot($role, $request->permissions ?? []);
 
             return redirect()->route('roles.index')
                 ->with('success', 'Role created successfully!');
@@ -94,7 +97,11 @@ class RoleController extends Controller
     public function edit(Role $role)
     {
         $allPermissions = $this->getAllAvailablePermissions();
-        return view('roles.edit', compact('role', 'allPermissions'));
+
+        // Get current permissions from pivot table (not JSON column)
+        $currentPermissions = $role->permissions()->pluck('name')->toArray();
+
+        return view('roles.edit', compact('role', 'allPermissions', 'currentPermissions'));
     }
 
     public function update(Request $request, Role $role)
@@ -106,10 +113,13 @@ class RoleController extends Controller
         ]);
 
         try {
+            // Update role name
             $role->update([
                 'name' => $request->name,
-                'permissions' => $request->permissions ?? [],
             ]);
+
+            // Sync permissions to pivot table
+            $this->syncPermissionsToPivot($role, $request->permissions ?? []);
 
             return redirect()->route('roles.index')
                 ->with('success', 'Role updated successfully!');
@@ -173,14 +183,16 @@ class RoleController extends Controller
         ]);
 
         try {
-            $role->update([
-                'permissions' => $request->permissions ?? [],
-            ]);
+            // Sync permissions to pivot table
+            $this->syncPermissionsToPivot($role, $request->permissions ?? []);
+
+            // Get updated permissions from pivot table
+            $updatedPermissions = $role->permissions()->pluck('name')->toArray();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Permissions updated successfully!',
-                'permissions' => $role->permissions
+                'permissions' => $updatedPermissions
             ]);
 
         } catch (\Exception $e) {
@@ -189,6 +201,18 @@ class RoleController extends Controller
                 'message' => 'Failed to update permissions: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Sync permissions from permission names to pivot table
+     */
+    private function syncPermissionsToPivot(Role $role, array $permissionNames)
+    {
+        // Get permission IDs from permission names
+        $permissionIds = \App\Models\Permission::whereIn('name', $permissionNames)->pluck('id')->toArray();
+
+        // Sync to pivot table (this will add new ones and remove old ones)
+        $role->permissions()->sync($permissionIds);
     }
 
     // COMPLETE PERMISSION SYSTEM - ALL MENU ITEMS COVERED
