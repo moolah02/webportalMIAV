@@ -42,17 +42,16 @@ class AppServiceProvider extends ServiceProvider
             return Auth::check() && Auth::user()->hasPermission($permission);
         });
 
-        // Role blade directive
+        // Role blade directive - checks if user has ANY of the given role
         Blade::if('role', function ($role) {
-            return Auth::check() && Auth::user()->role && Auth::user()->role->name === $role;
+            if (!Auth::check()) return false;
+            return Auth::user()->roles->contains('name', $role);
         });
 
-        // Multiple roles blade directive
+        // Multiple roles blade directive - checks if user has ANY of the given roles
         Blade::if('anyrole', function (...$roles) {
-            if (!Auth::check() || !Auth::user()->role) {
-                return false;
-            }
-            return in_array(Auth::user()->role->name, $roles);
+            if (!Auth::check()) return false;
+            return Auth::user()->roles->whereIn('name', $roles)->isNotEmpty();
         });
 
         // Module access blade directive
