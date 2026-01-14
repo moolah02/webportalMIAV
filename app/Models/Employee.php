@@ -60,6 +60,19 @@ class Employee extends Authenticatable
 
     /* ===================== Relationships ===================== */
 
+    /**
+     * Many-to-many relationship with roles
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'employee_role')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Backwards compatibility - returns primary/first role
+     * @deprecated Use roles() for multiple role support
+     */
     public function role()
     {
         return $this->belongsTo(Role::class);
@@ -162,7 +175,10 @@ class Employee extends Authenticatable
 
     public function isFieldTechnician(): bool
     {
-        return $this->role ? $this->role->isTechnician() : false;
+        // Check if employee has ANY technician role
+        return $this->roles()->get()->contains(function ($role) {
+            return $role->isTechnician();
+        });
     }
 
     public function getSpecialization()
@@ -176,11 +192,17 @@ class Employee extends Authenticatable
     }
 
     /**
-     * Keep your existing app-level permission check via Role model
+     * Check if employee has permission through ANY of their roles
      */
     public function hasPermission(string $permission): bool
     {
-        return $this->role ? $this->role->hasPermission($permission) : false;
+        // Check all roles - if ANY role has the permission, return true
+        foreach ($this->roles as $role) {
+            if ($role->hasPermission($permission)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function isManager(): bool
