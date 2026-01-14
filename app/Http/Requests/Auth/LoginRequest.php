@@ -41,7 +41,19 @@ class LoginRequest extends FormRequest
         // Check if employee exists and is active
         $employee = Employee::where('email', $this->input('email'))->first();
 
+        // Debug logging
+        \Log::info('Login attempt', [
+            'email' => $this->input('email'),
+            'employee_exists' => $employee ? 'YES' : 'NO',
+            'employee_status' => $employee ? $employee->status : 'N/A',
+            'is_active' => $employee ? $employee->isActive() : 'N/A',
+        ]);
+
         if ($employee && !$employee->isActive()) {
+            \Log::warning('Login blocked - inactive account', [
+                'email' => $this->input('email'),
+                'status' => $employee->status
+            ]);
             throw ValidationException::withMessages([
                 'email' => 'Your account has been deactivated. Please contact your administrator.',
             ]);
@@ -50,11 +62,17 @@ class LoginRequest extends FormRequest
         if (!Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
+            \Log::warning('Login failed - invalid credentials', [
+                'email' => $this->input('email'),
+                'employee_found' => $employee ? 'YES' : 'NO'
+            ]);
+
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
         }
 
+        \Log::info('Login successful', ['email' => $this->input('email')]);
         RateLimiter::clear($this->throttleKey());
     }
 
