@@ -195,19 +195,18 @@ File: resources/views/employees/index.blade.php
                         <td>
                             @php
                                 try {
-                                    $role = null;
-                                    if ($employee->role_id) {
-                                        $role = \App\Models\Role::find($employee->role_id);
-                                    }
+                                    $roles = $employee->roles;
                                 } catch (\Exception $e) {
-                                    $role = null;
+                                    $roles = collect();
                                 }
                             @endphp
 
-                            @if($role)
-                                <span class="role-badge">
-                                    {{ ucfirst(str_replace('_', ' ', $role->name)) }}
-                                </span>
+                            @if($roles->count() > 0)
+                                @foreach($roles as $role)
+                                    <span class="role-badge" style="margin-right: 4px; margin-bottom: 4px; display: inline-block;">
+                                        {{ ucfirst(str_replace('_', ' ', $role->name)) }}
+                                    </span>
+                                @endforeach
                             @else
                                 <span class="role-badge" style="background: #FFEBEE; color: #D32F2F;">
                                     No Role
