@@ -19,7 +19,7 @@ return new class extends Migration
         }
 
         // Assign Technician role to ALL employees who don't already have it
-        $sql = "
+        $affectedRows = DB::statement("
             INSERT IGNORE INTO employee_role (employee_id, role_id, created_at, updated_at)
             SELECT id, ?, NOW(), NOW()
             FROM employees
@@ -29,11 +29,14 @@ return new class extends Migration
                 WHERE employee_role.employee_id = employees.id
                 AND employee_role.role_id = ?
             )
-        ";
+        ", [$technicianRole->id, $technicianRole->id]);
 
-        $affectedRows = DB::affectedStatement($sql, [$technicianRole->id, $technicianRole->id]);
+        // Count how many employees now have technician role
+        $count = DB::table('employee_role')
+            ->where('role_id', $technicianRole->id)
+            ->count();
 
-        echo "✓ Assigned Technician role to {$affectedRows} employee(s)\n";
+        echo "✓ Assigned Technician role to employees (Total with Technician: {$count})\n";
         echo "✓ All employees can now handle jobs and technical work\n";
     }
 
