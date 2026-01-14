@@ -76,12 +76,9 @@
                             <span class="badge badge-{{ $employee->status === 'active' ? 'success' : 'inactive' }}">
                                 {{ ucfirst($employee->status) }}
                             </span>
-                            @if($employee->role)
-                                <span class="badge badge-blue">{{ $employee->role->name }}</span>
-                            @endif
-                            @if($employee->isFieldTechnician())
-                                <span class="badge badge-warning">🔧 Technician</span>
-                            @endif
+                            @foreach($employee->roles as $role)
+                                <span class="badge badge-blue">{{ $role->name }}</span>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -132,8 +129,16 @@
                         <span class="info-value">{{ $employee->department->name ?? 'Not assigned' }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Role:</span>
-                        <span class="info-value">{{ $employee->role->name ?? 'Not assigned' }}</span>
+                        <span class="info-label">Roles:</span>
+                        <span class="info-value">
+                            @if($employee->roles->count() > 0)
+                                @foreach($employee->roles as $role)
+                                    <span class="badge badge-info" style="margin-right: 0.25rem;">{{ $role->name }}</span>
+                                @endforeach
+                            @else
+                                Not assigned
+                            @endif
+                        </span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Manager:</span>
