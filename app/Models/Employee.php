@@ -224,7 +224,7 @@ class Employee extends Authenticatable
 
     public function scopeFieldTechnicians($query)
     {
-        return $query->whereHas('role', function ($q) {
+        return $query->whereHas('roles', function ($q) {
             $q->where(function ($subQ) {
                 foreach (['technician','field','maintenance','service','repair','tech','installer','hardware'] as $kw) {
                     $subQ->orWhere('name', 'like', "%{$kw}%");
