@@ -81,24 +81,17 @@ File: resources/views/roles/edit.blade.php
                         </div>
                     </div>
 
+                    <!-- DEBUG: Show what we received -->
+                    <div style="background: #ffe; padding: 20px; margin: 20px 0; border: 2px solid #f90;">
+                        <h4>DEBUG INFO:</h4>
+                        <p><strong>$currentPermissions passed from controller:</strong> {{ json_encode($currentPermissions ?? 'NOT SET') }}</p>
+                        <p><strong>Count:</strong> {{ isset($currentPermissions) ? count($currentPermissions) : 'N/A' }}</p>
+                        <p><strong>old('permissions'):</strong> {{ json_encode(old('permissions')) }}</p>
+                    </div>
+
                     @php
                         $groupedPermissions = collect($allPermissions)->groupBy('category');
-
-                        // Debug: Log what we received
-                        \Log::info('View Current Permissions', [
-                            'passed_permissions' => $currentPermissions ?? [],
-                            'old_permissions' => old('permissions'),
-                            'count' => isset($currentPermissions) ? count($currentPermissions) : 0
-                        ]);
-
                         $currentPermissions = old('permissions', $currentPermissions ?? []);
-
-                        // Debug: Log after old() processing
-                        \Log::info('After old() processing', [
-                            'final_permissions' => $currentPermissions,
-                            'count' => count($currentPermissions)
-                        ]);
-
                         $categoryConfig = [
                             'admin' => ['name' => 'System Administration', 'icon' => '⚡', 'color' => '#f44336'],
                             'dashboard' => ['name' => 'Dashboard Access', 'icon' => '📊', 'color' => '#2196f3'],
