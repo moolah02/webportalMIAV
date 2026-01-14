@@ -83,7 +83,22 @@ File: resources/views/roles/edit.blade.php
 
                     @php
                         $groupedPermissions = collect($allPermissions)->groupBy('category');
+
+                        // Debug: Log what we received
+                        \Log::info('View Current Permissions', [
+                            'passed_permissions' => $currentPermissions ?? [],
+                            'old_permissions' => old('permissions'),
+                            'count' => isset($currentPermissions) ? count($currentPermissions) : 0
+                        ]);
+
                         $currentPermissions = old('permissions', $currentPermissions ?? []);
+
+                        // Debug: Log after old() processing
+                        \Log::info('After old() processing', [
+                            'final_permissions' => $currentPermissions,
+                            'count' => count($currentPermissions)
+                        ]);
+
                         $categoryConfig = [
                             'admin' => ['name' => 'System Administration', 'icon' => '⚡', 'color' => '#f44336'],
                             'dashboard' => ['name' => 'Dashboard Access', 'icon' => '📊', 'color' => '#2196f3'],
