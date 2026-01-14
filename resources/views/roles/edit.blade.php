@@ -81,17 +81,16 @@ File: resources/views/roles/edit.blade.php
                         </div>
                     </div>
 
-                    <!-- DEBUG: Show what we received -->
-                    <div style="background: #ffe; padding: 20px; margin: 20px 0; border: 2px solid #f90;">
-                        <h4>DEBUG INFO:</h4>
-                        <p><strong>$currentPermissions passed from controller:</strong> {{ json_encode($currentPermissions ?? 'NOT SET') }}</p>
-                        <p><strong>Count:</strong> {{ isset($currentPermissions) ? count($currentPermissions) : 'N/A' }}</p>
-                        <p><strong>old('permissions'):</strong> {{ json_encode(old('permissions')) }}</p>
-                    </div>
-
                     @php
                         $groupedPermissions = collect($allPermissions)->groupBy('category');
-                        $currentPermissions = old('permissions', $currentPermissions ?? []);
+
+                        // Make sure we have permissions array
+                        $currentPermissions = $currentPermissions ?? [];
+
+                        // Use old input if validation failed, otherwise use passed permissions
+                        if (old('permissions')) {
+                            $currentPermissions = old('permissions');
+                        }
                         $categoryConfig = [
                             'admin' => ['name' => 'System Administration', 'icon' => '⚡', 'color' => '#f44336'],
                             'dashboard' => ['name' => 'Dashboard Access', 'icon' => '📊', 'color' => '#2196f3'],
