@@ -607,7 +607,11 @@
           <div style="display: flex; align-items: center; gap: 12px;">
             <div style="text-align: right;">
               <div style="font-weight: 500;">{{ auth()->user()->full_name }}</div>
-              <span class="user-badge">{{ auth()->user()->role->name ?? 'Employee' }}</span>
+              <span class="user-badge">
+                @foreach(auth()->user()->roles as $role)
+                  {{ $role->name }}{{ !$loop->last ? ', ' : '' }}
+                @endforeach
+              </span>
             </div>
             <div style="position: relative;">
               <button type="button" onclick="toggleUserDropdown(event)" style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px;">
