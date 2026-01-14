@@ -101,6 +101,14 @@ class RoleController extends Controller
         // Get current permissions from pivot table (not JSON column)
         $currentPermissions = $role->permissions()->pluck('name')->toArray();
 
+        // Debug logging
+        \Log::info('Role Edit Debug', [
+            'role_id' => $role->id,
+            'role_name' => $role->name,
+            'permissions_count' => count($currentPermissions),
+            'permissions' => $currentPermissions
+        ]);
+
         return view('roles.edit', compact('role', 'allPermissions', 'currentPermissions'));
     }
 
