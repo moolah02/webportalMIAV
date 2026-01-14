@@ -3,8 +3,9 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
+use App\Models\Permission;
+use App\Models\Role;
 
 return new class extends Migration
 {
@@ -13,22 +14,36 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Create the permission
+        // Create the permission using custom Permission model
         $permission = Permission::firstOrCreate(
             ['name' => 'view_own_data'],
             [
-                'guard_name' => 'web',
-                'description' => 'View own profile and dashboard data'
+                'display_name' => 'View Own Data',
+                'description' => 'View own profile and dashboard data',
+                'category' => 'general'
             ]
         );
 
-        // Assign to all roles except maybe admin (admin has all permissions anyway)
+        // Assign to all roles that need it
         $rolesToAssign = ['technician', 'employee', 'manager', 'supervisor'];
 
         foreach ($rolesToAssign as $roleName) {
             $role = Role::where('name', $roleName)->first();
-            if ($role && !$role->hasPermissionTo('view_own_data')) {
-                $role->givePermissionTo('view_own_data');
+            if ($role) {
+                // Check if permission is already assigned to role
+                $exists = DB::table('role_permissions')
+                    ->where('role_id', $role->id)
+                    ->where('permission_id', $permission->id)
+                    ->exists();
+
+                if (!$exists) {
+                    DB::table('role_permissions')->insert([
+                        'role_id' => $role->id,
+                        'permission_id' => $permission->id,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
             }
         }
     }
@@ -40,6 +55,12 @@ return new class extends Migration
     {
         $permission = Permission::where('name', 'view_own_data')->first();
         if ($permission) {
+            // Remove role associations
+            DB::table('role_permissions')
+                ->where('permission_id', $permission->id)
+                ->delete();
+
+            // Delete the permission
             $permission->delete();
         }
     }
