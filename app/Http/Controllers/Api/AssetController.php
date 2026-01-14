@@ -97,6 +97,13 @@ class AssetController extends Controller
             ];
         })->values()->toArray();
 
+        \Log::info('Asset API Response', [
+            'assets_type' => gettype($assets),
+            'assets_is_array' => is_array($assets),
+            'assets_count' => count($assets),
+            'first_asset' => !empty($assets) ? $assets[0] : null
+        ]);
+
         return response()->json(['success' => true, 'data' => ['assets' => $assets]]);
     }
 
