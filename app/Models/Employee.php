@@ -16,6 +16,9 @@ class Employee extends Authenticatable
     // Spatie guard (matches config/permission.php)
     protected string $guard_name = 'web';
 
+    // Always eager load roles relationship
+    protected $with = ['roles'];
+
     protected $fillable = [
         'employee_id',
         'employee_number',
