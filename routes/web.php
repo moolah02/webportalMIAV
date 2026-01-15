@@ -772,6 +772,13 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
     // REPORTS ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
+    // Report builder - Open to all authenticated users (outside permission group)
+    Route::middleware('auth')->prefix('reports')->name('reports.')->group(function () {
+        Route::get('/builder', function () {
+            return view('reports.builder', ['title' => 'Report Builder']);
+        })->name('builder');
+    });
+
     Route::middleware('permission:view_reports,all')->prefix('reports')->name('reports.')->group(function () {
         // Main reports dashboard
         Route::get('/', [SystemReportsController::class, 'index'])->name('index');
@@ -780,11 +787,6 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::get('/system', [SystemReportsController::class, 'index'])->name('system');
         Route::get('/system/export', [SystemReportsController::class, 'exportSystemReport'])->name('system.export');
         Route::get('/system/export-csv', [SystemReportsController::class, 'exportCsv'])->name('system.export-csv');
-
-        // Report builder - Open to all authenticated users
-        Route::get('/builder', function () {
-            return view('reports.builder', ['title' => 'Report Builder']);
-        })->name('builder');
 
         // Technician Visit Reports
         Route::get('/technician-visits', [TechnicianReportsController::class, 'index'])
