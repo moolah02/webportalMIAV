@@ -781,10 +781,10 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::get('/system/export', [SystemReportsController::class, 'exportSystemReport'])->name('system.export');
         Route::get('/system/export-csv', [SystemReportsController::class, 'exportCsv'])->name('system.export-csv');
 
-        // Report builder
+        // Report builder - Open to all authenticated users
         Route::get('/builder', function () {
             return view('reports.builder', ['title' => 'Report Builder']);
-        })->middleware('permission:use_report_builder,all')->name('builder');
+        })->name('builder');
 
         // Technician Visit Reports
         Route::get('/technician-visits', [TechnicianReportsController::class, 'index'])
@@ -958,10 +958,10 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
     });
 
     // ==============================================
-    // REPORT BUILDER ROUTES
+    // REPORT BUILDER ROUTES - Open to all authenticated users
     // ==============================================
 
-    Route::middleware('permission:use_report_builder,all')->group(function () {
+    Route::middleware('auth')->group(function () {
         Route::get('/reports/builder', [ReportBuilderController::class, 'index'])->name('reports.builder');
         Route::post('/reports/run', [ReportBuilderController::class, 'run'])->name('reports.run');
         Route::get('/reports/export/csv', [ReportBuilderController::class, 'exportCsv'])->name('reports.export.csv');
@@ -973,8 +973,8 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::post('/reports/run-simple', [ReportBuilderController::class, 'runSimple'])->name('reports.run.simple');
     });
 
-    // API endpoints for reports
-    Route::middleware(['permission:use_report_builder,all'])->prefix('api/report')->group(function () {
+    // API endpoints for reports - Open to all authenticated users
+    Route::middleware('auth')->prefix('api/report')->group(function () {
         Route::post('/preview', [ReportController::class, 'preview'])->name('api.report.preview');
         Route::post('/export', [ReportController::class, 'export'])->name('api.report.export');
         Route::get('/fields', [ReportController::class, 'getAvailableFields'])->name('api.report.fields');
