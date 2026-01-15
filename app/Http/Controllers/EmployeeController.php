@@ -129,6 +129,8 @@ public function store(Request $request)
         'email'      => 'required|email|unique:employees,email',
         'password'   => 'required|string|min:6|confirmed',
         'role_id'    => 'required|exists:roles,id',
+        'additional_roles' => 'nullable|array',
+        'additional_roles.*' => 'exists:roles,id',
         'department_id' => 'required|exists:departments,id',
         'hire_date'  => 'required|date',
         'status'     => 'required|in:active,inactive,pending',
@@ -149,7 +151,7 @@ public function store(Request $request)
         'two_factor_enabled' => 'nullable|boolean',
     ]);
 
-    return DB::transaction(function () use ($validatedData) {
+    return DB::transaction(function () use ($validatedData, $request) {
 
         // Generate a fresh, unique employee number INSIDE the transaction
         $employeeNumber = $this->generateEmployeeNumber($validatedData['department_id']);
@@ -196,13 +198,24 @@ public function store(Request $request)
         // ✅ CREATE ONCE
         $employee = Employee::create($employeeData);
 
+        // Assign primary role
+        $employee->roles()->attach($validatedData['role_id']);
 
+        // Assign additional roles if provided
+        if ($request->has('additional_roles') && is_array($request->additional_roles)) {
+            foreach ($request->additional_roles as $additionalRoleId) {
+                // Avoid duplicate - only attach if not the primary role
+                if ($additionalRoleId != $validatedData['role_id']) {
+                    $employee->roles()->attach($additionalRoleId);
+                }
+            }
+        }
 
-        Log::info('Employee created & role synced:', [
+        Log::info('Employee created with multiple roles:', [
             'id' => $employee->id,
             'email' => $employee->email,
             'employee_number' => $employee->employee_number,
-            'spatie_roles' => $employee->getRoleNames()->toArray()
+            'roles' => $employee->roles->pluck('name')->toArray()
         ]);
 
         return redirect()
@@ -262,6 +275,8 @@ public function update(Request $request, Employee $employee)
         'phone'      => 'nullable|string|max:20',
         'department_id' => 'required|exists:departments,id',
         'role_id'    => 'required|exists:roles,id',
+        'additional_roles' => 'nullable|array',
+        'additional_roles.*' => 'exists:roles,id',
         'manager_id' => 'nullable|exists:employees,id',
         'status'     => 'required|in:active,inactive,pending',
         'hire_date'  => 'required|date',
@@ -273,7 +288,7 @@ public function update(Request $request, Employee $employee)
         'password'   => 'nullable|string|min:6|confirmed',
     ]);
 
-    return DB::transaction(function () use ($validated, $employee) {
+    return DB::transaction(function () use ($validated, $request, $employee) {
 
         $payload = [
             'first_name' => $validated['first_name'],
@@ -302,7 +317,25 @@ public function update(Request $request, Employee $employee)
         // ✅ UPDATE ONCE
         $employee->update($payload);
 
+        // Sync roles: Build complete list of role IDs from primary + additional
+        $roleIds = [$validated['role_id']];
 
+        if ($request->has('additional_roles') && is_array($request->additional_roles)) {
+            foreach ($request->additional_roles as $additionalRoleId) {
+                if ($additionalRoleId != $validated['role_id']) {
+                    $roleIds[] = $additionalRoleId;
+                }
+            }
+        }
+
+        // Sync all roles at once (removes old, adds new)
+        $employee->roles()->sync($roleIds);
+
+        Log::info('Employee updated with multiple roles:', [
+            'id' => $employee->id,
+            'email' => $employee->email,
+            'roles' => $employee->fresh()->roles->pluck('name')->toArray()
+        ]);
 
         return redirect()->route('employees.index')->with('success', 'Employee updated successfully!');
     });
