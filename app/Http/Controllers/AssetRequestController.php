@@ -20,7 +20,7 @@ class AssetRequestController extends Controller
     public function catalog(Request $request)
     {
         $query = Asset::where('is_requestable', true)
-            ->where('status', 'Available') // Match the actual status in database
+            ->where('status', 'available') // Match the actual status in database (lowercase)
             ->where('stock_quantity', '>', 0); // Only show in-stock items
 
         // Search functionality

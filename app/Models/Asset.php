@@ -208,7 +208,7 @@ class Asset extends Model
     public function canBeRequested($quantity = 1)
     {
         return $this->is_requestable &&
-               in_array($this->status, ['asset-active', 'active', 'Available']) &&
+               in_array($this->status, ['asset-active', 'active', 'Available', 'available']) &&
                $this->stock_quantity >= $quantity;
     }
 
@@ -311,7 +311,7 @@ public function getAvailableQuantityAttribute()
 public function canBeAssigned($quantity = 1)
 {
     return $this->is_requestable &&
-           in_array($this->status, ['asset-active', 'active', 'Available']) &&
+           in_array($this->status, ['asset-active', 'active', 'Available', 'available']) &&
            $this->getAvailableQuantityAttribute() >= $quantity;
 }
 
