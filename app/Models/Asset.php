@@ -150,12 +150,12 @@ class Asset extends Model
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('status', 'asset-active');
+        return $query->whereIn('status', ['asset-active', 'active', 'Available', 'available']);
     }
 
     public function scopeRequestable($query)
     {
-        return $query->where('is_requestable', true)->where('status', 'asset-active');
+        return $query->where('is_requestable', true)->whereIn('status', ['asset-active', 'active', 'Available', 'available']);
     }
 
     public function scopeInStock($query)
@@ -383,7 +383,7 @@ public static function getStats()
 {
     return [
         'total_assets' => self::count(),
-        'active_assets' => self::where('status', 'asset-active')->count(),
+        'active_assets' => self::whereIn('status', ['asset-active', 'active', 'Available', 'available'])->count(),
         'low_stock' => self::whereColumn('stock_quantity', '<=', 'min_stock_level')
                           ->where('stock_quantity', '>', 0)->count(),
         'total_value' => self::sum(\DB::raw('unit_price * stock_quantity')) ?? 0,
@@ -561,7 +561,7 @@ private function assignAssetsTab(Request $request, $data = [])
 {
     // Get available assets (those that can still be assigned)
     $availableAssets = Asset::where('is_requestable', true)
-                           ->where('status', 'asset-active')
+                           ->whereIn('status', ['asset-active', 'active', 'Available', 'available'])
                            ->whereRaw('stock_quantity > assigned_quantity')
                            ->with('activeAssignments.employee')
                            ->paginate(15);
