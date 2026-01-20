@@ -160,7 +160,6 @@
             <tr>
                 <th>Asset</th>
                 <th>Brand</th>
-                <th>Price</th>
                 <th>Stock</th>
                 <th>Action</th>
             </tr>
@@ -173,10 +172,9 @@
                     <div>{{ $asset->category }}</div>
                 </td>
                 <td>{{ $asset->brand }} {{ $asset->model }}</td>
-                <td>{{ $asset->currency }} {{ number_format($asset->unit_price, 2) }}</td>
                 <td>
                     <span class="stock-status {{ $asset->stock_quantity > 0 ? 'stock-available' : 'stock-unavailable' }}">
-                        {{ $asset->stock_quantity > 0 ? '✓ Available' : '✗ Out of Stock' }}
+                        {{ $asset->stock_quantity > 0 ? '✓ AVAILABLE' : '✗ Out of Stock' }}
                     </span>
                 </td>
                 <td>
@@ -195,7 +193,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="empty-state">
+                <td colspan="4" class="empty-state">
                     <div class="empty-state-icon">📦</div>
                     <h3>No assets found</h3>
                     <p>Try adjusting your search criteria or check back later.</p>

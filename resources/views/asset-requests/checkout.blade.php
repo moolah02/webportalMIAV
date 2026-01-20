@@ -133,9 +133,9 @@
 
                     <div style="margin-block-end: 10px;">
                         <div style="font-weight: 500;">{{ auth()->user()->full_name }}</div>
-                        <div style="font-size: 14px; color: #666;">{{ auth()->user()->role->name ?? 'Employee' }}</div>
+                        <div style="font-size: 14px; color: #666;">{{ auth()->user()->roles->first()->name ?? 'Employee' }}</div>
                         @if(auth()->user()->department)
-                            <div style="font-size: 14px; color: #666;">{{ auth()->user()->department->name }}</div>
+                            <div style="font-size: 14px; color: #666;">{{ is_object(auth()->user()->department) ? auth()->user()->department->name : auth()->user()->department }}</div>
                         @endif
                     </div>
 
