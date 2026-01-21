@@ -11,6 +11,8 @@ class Ticket extends Model
 
     protected $fillable = [
         'ticket_id',
+        'ticket_type',
+        'assignment_type',
         'mobile_created',
         'offline_sync_id',
         'technician_id',
@@ -33,7 +35,9 @@ class Ticket extends Model
         'attachments' => 'array',
         'resolved_at' => 'datetime',
         'mobile_created' => 'boolean',
-        'estimated_resolution_time' => 'integer'
+        'estimated_resolution_time' => 'integer',
+        'ticket_type' => 'string',
+        'assignment_type' => 'string'
     ];
 
     // Relationships
@@ -78,6 +82,21 @@ class Ticket extends Model
         return $query->where('issue_type', $issueType);
     }
 
+    public function scopeByTicketType($query, $ticketType)
+    {
+        return $query->where('ticket_type', $ticketType);
+    }
+
+    public function scopeByAssignmentType($query, $assignmentType)
+    {
+        return $query->where('assignment_type', $assignmentType);
+    }
+
+    public function scopePending($query)
+    {
+        return $query->whereIn('status', ['open', 'in_progress', 'pending']);
+    }
+
     public function scopeCritical($query)
     {
         return $query->where('priority', 'critical');
@@ -98,6 +117,26 @@ class Ticket extends Model
         return $query->where('status', 'resolved');
     }
 
+    public function scopePosTerminalTickets($query)
+    {
+        return $query->where('ticket_type', 'pos_terminal');
+    }
+
+    public function scopeInternalTickets($query)
+    {
+        return $query->where('ticket_type', 'internal');
+    }
+
+    public function scopePublicTickets($query)
+    {
+        return $query->where('assignment_type', 'public');
+    }
+
+    public function scopeDirectTickets($query)
+    {
+        return $query->where('assignment_type', 'direct');
+    }
+
     // Generate unique ticket ID
     public static function generateTicketId()
     {
@@ -105,14 +144,14 @@ class Ticket extends Model
         $lastTicket = self::where('ticket_id', 'like', $prefix . '%')
             ->orderBy('ticket_id', 'desc')
             ->first();
-        
+
         if ($lastTicket) {
             $lastNumber = intval(substr($lastTicket->ticket_id, -3));
             $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
         } else {
             $newNumber = '001';
         }
-        
+
         return $prefix . $newNumber;
     }
 

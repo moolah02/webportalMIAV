@@ -29,6 +29,21 @@ class TicketController extends Controller
             $query->byIssueType($request->issue_type);
         }
 
+        // Filter by ticket type (pos_terminal or internal)
+        if ($request->filled('ticket_type')) {
+            $query->byTicketType($request->ticket_type);
+        }
+
+        // Filter by assignment type (public or direct)
+        if ($request->filled('assignment_type')) {
+            $query->byAssignmentType($request->assignment_type);
+        }
+
+        // Filter pending tickets
+        if ($request->filled('pending') && $request->pending === 'true') {
+            $query->pending();
+        }
+
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('title', 'like', '%' . $request->search . '%')
@@ -43,8 +58,13 @@ class TicketController extends Controller
         $stats = [
             'open' => Ticket::open()->count(),
             'in_progress' => Ticket::inProgress()->count(),
+            'pending' => Ticket::pending()->count(),
             'resolved' => Ticket::resolved()->whereMonth('resolved_at', now())->count(),
             'critical' => Ticket::critical()->count(),
+            'pos_terminal' => Ticket::posTerminalTickets()->count(),
+            'internal' => Ticket::internalTickets()->count(),
+            'public' => Ticket::publicTickets()->count(),
+            'direct' => Ticket::directTickets()->count(),
         ];
 
         // Get data for dropdowns
@@ -88,15 +108,26 @@ class TicketController extends Controller
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,critical',
             'issue_type' => 'required|in:hardware_malfunction,software_issue,network_connectivity,user_training,maintenance_required,replacement_needed,other',
+            'ticket_type' => 'required|in:pos_terminal,internal',
+            'assignment_type' => 'required|in:public,direct',
             'pos_terminal_id' => 'nullable|exists:pos_terminals,id',
             'assigned_to' => 'nullable|exists:employees,id',
             'estimated_resolution_time' => 'nullable|integer|min:1',
             'client_id' => 'nullable|exists:clients,id',
         ]);
 
+        // Validation rules based on ticket_type and assignment_type
+        if ($validated['ticket_type'] === 'pos_terminal' && empty($validated['pos_terminal_id'])) {
+            return back()->withErrors(['pos_terminal_id' => 'POS Terminal is required for POS Terminal tickets']);
+        }
+
+        if ($validated['assignment_type'] === 'direct' && empty($validated['assigned_to'])) {
+            return back()->withErrors(['assigned_to' => 'Assigned employee is required for direct tickets']);
+        }
+
         // Set the technician_id to the currently logged in user
         $validated['technician_id'] = Auth::id();
-        
+
         // Set default status
         $validated['status'] = 'open';
 
@@ -150,12 +181,23 @@ class TicketController extends Controller
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,critical',
             'issue_type' => 'required|in:hardware_malfunction,software_issue,network_connectivity,user_training,maintenance_required,replacement_needed,other',
+            'ticket_type' => 'required|in:pos_terminal,internal',
+            'assignment_type' => 'required|in:public,direct',
             'pos_terminal_id' => 'nullable|exists:pos_terminals,id',
             'assigned_to' => 'nullable|exists:employees,id',
             'estimated_resolution_time' => 'nullable|integer|min:1',
             'resolution' => 'nullable|string',
             'status' => 'nullable|in:open,in_progress,resolved,closed,cancelled',
         ]);
+
+        // Validation rules based on ticket_type and assignment_type
+        if ($validated['ticket_type'] === 'pos_terminal' && empty($validated['pos_terminal_id'])) {
+            return back()->withErrors(['pos_terminal_id' => 'POS Terminal is required for POS Terminal tickets']);
+        }
+
+        if ($validated['assignment_type'] === 'direct' && empty($validated['assigned_to'])) {
+            return back()->withErrors(['assigned_to' => 'Assigned employee is required for direct tickets']);
+        }
 
         // Set resolved_at timestamp if status is being changed to resolved
         if (isset($validated['status']) && $validated['status'] === 'resolved' && $ticket->status !== 'resolved') {
@@ -230,10 +272,10 @@ class TicketController extends Controller
     public function mobileIndex(Request $request)
     {
         $user = $request->user();
-        
+
         // If user is technician, show only their tickets
         $query = Ticket::with(['assignedTo', 'posTerminal', 'technician']);
-        
+
         if ($user->role->name === 'Technician') {
             $query->where(function($q) use ($user) {
                 $q->where('assigned_to', $user->id)
