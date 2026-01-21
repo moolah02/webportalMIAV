@@ -16,10 +16,12 @@ class AssetCategory extends Model
         'color',
         'sort_order',
         'is_active',
+        'requires_individual_entry',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'requires_individual_entry' => 'boolean',
     ];
 
     // Relationships
@@ -61,6 +63,32 @@ class AssetCategory extends Model
                 'validation' => $field->getValidationString(),
             ];
         })->toArray();
+    }
+
+    /**
+     * Get validation rules array for this category's fields
+     * Returns Laravel validation rules keyed by field name
+     */
+    public function getValidationRulesArray(): array
+    {
+        $rules = [];
+        foreach ($this->activeFields as $field) {
+            $rules['specifications.' . $field->field_name] = $field->getValidationString();
+        }
+        return $rules;
+    }
+
+    /**
+     * Get validation attributes for error messages
+     * Maps field names to human-readable labels
+     */
+    public function getValidationAttributes(): array
+    {
+        $attributes = [];
+        foreach ($this->activeFields as $field) {
+            $attributes['specifications.' . $field->field_name] = $field->field_label;
+        }
+        return $attributes;
     }
 
     // Scopes

@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Api\VisitController as ApiVisitController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\ReportTemplateController;
+use App\Http\Controllers\AssetCategoryFieldController;
 
 // Test endpoint
 Route::get('/test', function () {
@@ -364,6 +365,14 @@ Route::middleware(['auth:sanctum'])->prefix('assets')->group(function () {
                 'timestamp' => now()->toISOString()
             ]);
         });
+    });
+
+    // ==============================================
+    // ASSET CATEGORY FIELDS - JSON API
+    // ==============================================
+
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/asset-categories/{category}/fields', [AssetCategoryFieldController::class, 'getFieldsJson']);
     });
 
     // ==============================================

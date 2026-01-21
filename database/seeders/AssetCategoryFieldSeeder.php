@@ -22,6 +22,7 @@ class AssetCategoryFieldSeeder extends Seeder
         $vehicleCategory = AssetCategory::where('name', 'Vehicles')->first();
         $furnitureCategory = AssetCategory::where('name', 'Furniture')->first();
         $softwareCategory = AssetCategory::where('name', 'Software')->first();
+        $itCategory = AssetCategory::where('name', 'IT Equipment')->first();
 
         // Vehicle Category Fields (simplified as per user request)
         if ($vehicleCategory) {
@@ -231,6 +232,91 @@ class AssetCategoryFieldSeeder extends Seeder
             foreach ($softwareFields as $field) {
                 AssetCategoryField::create(array_merge($field, [
                     'asset_category_id' => $softwareCategory->id,
+                    'is_active' => true,
+                ]));
+            }
+        }
+
+        // IT Equipment Category Fields
+        if ($itCategory) {
+            $itFields = [
+                [
+                    'field_name' => 'serial_number',
+                    'field_label' => 'Serial Number',
+                    'field_type' => 'text',
+                    'is_required' => true,
+                    'placeholder_text' => 'Unique serial number',
+                    'help_text' => 'Device serial number for tracking',
+                    'display_order' => 1,
+                ],
+                [
+                    'field_name' => 'processor',
+                    'field_label' => 'Processor',
+                    'field_type' => 'text',
+                    'is_required' => false,
+                    'placeholder_text' => 'e.g., Intel i5-11400H, Apple M1',
+                    'display_order' => 2,
+                ],
+                [
+                    'field_name' => 'ram',
+                    'field_label' => 'RAM',
+                    'field_type' => 'text',
+                    'is_required' => false,
+                    'placeholder_text' => 'e.g., 8GB DDR4, 16GB LPDDR5',
+                    'display_order' => 3,
+                ],
+                [
+                    'field_name' => 'storage',
+                    'field_label' => 'Storage',
+                    'field_type' => 'text',
+                    'is_required' => false,
+                    'placeholder_text' => 'e.g., 256GB SSD, 512GB NVMe',
+                    'display_order' => 4,
+                ],
+                [
+                    'field_name' => 'os',
+                    'field_label' => 'Operating System',
+                    'field_type' => 'text',
+                    'is_required' => false,
+                    'placeholder_text' => 'e.g., Windows 11 Pro, macOS 13',
+                    'display_order' => 5,
+                ],
+                [
+                    'field_name' => 'purchase_date',
+                    'field_label' => 'Purchase Date',
+                    'field_type' => 'date',
+                    'is_required' => false,
+                    'display_order' => 6,
+                ],
+                [
+                    'field_name' => 'warranty_expiry',
+                    'field_label' => 'Warranty Expiry Date',
+                    'field_type' => 'date',
+                    'is_required' => false,
+                    'help_text' => 'When manufacturer warranty expires',
+                    'display_order' => 7,
+                ],
+                [
+                    'field_name' => 'condition',
+                    'field_label' => 'Condition',
+                    'field_type' => 'select',
+                    'is_required' => false,
+                    'options' => json_encode(['New', 'Good', 'Fair', 'Poor']),
+                    'display_order' => 8,
+                ],
+                [
+                    'field_name' => 'notes',
+                    'field_label' => 'Additional Notes',
+                    'field_type' => 'textarea',
+                    'is_required' => false,
+                    'placeholder_text' => 'Any additional information about this device',
+                    'display_order' => 9,
+                ],
+            ];
+
+            foreach ($itFields as $field) {
+                AssetCategoryField::create(array_merge($field, [
+                    'asset_category_id' => $itCategory->id,
                     'is_active' => true,
                 ]));
             }

@@ -34,7 +34,10 @@
       "Bash(cmd //c mkdir \"c:\\\\xampp4\\\\htdocs\\\\dashboard\\\\Revival_Technologies\\\\database\\\\backups\")",
       "Bash(git commit:*)",
       "Bash(find:*)",
-      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysql.exe\" -u root miav_system -e \"SHOW COLUMNS FROM assets;\")"
+      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysql.exe\" -u root miav_system -e \"SHOW COLUMNS FROM assets;\")",
+      "Bash(dir:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
