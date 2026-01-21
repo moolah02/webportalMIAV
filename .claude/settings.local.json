@@ -32,7 +32,9 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nFix grey overlay issue and add missing job_assignments status column\n\n- Fixed JavaScript event propagation in user dropdown menu\n- Added event parameter to toggleUserDropdown function\n- Changed button type to prevent form submission  \n- Updated event listener to prevent blocking page clicks\n- Added status column migration for job_assignments table\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git push:*)",
       "Bash(cmd //c mkdir \"c:\\\\xampp4\\\\htdocs\\\\dashboard\\\\Revival_Technologies\\\\database\\\\backups\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(find:*)",
+      "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysql.exe\" -u root miav_system -e \"SHOW COLUMNS FROM assets;\")"
     ],
     "deny": [],
     "ask": []

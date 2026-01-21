@@ -145,6 +145,10 @@ public function store(Request $request)
         'postal_code'=> 'nullable|string|max:20',
         'emergency_contact_name'  => 'nullable|string|max:255',
         'emergency_contact_phone' => 'nullable|string|max:20',
+        'emergency_contact_relationship' => 'nullable|string|in:spouse,parent,sibling,child,friend,other',
+        'skills'     => 'nullable|string|max:1000',
+        'work_location' => 'nullable|string|max:255',
+        'avatar'     => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         'notes'      => 'nullable|string|max:1000',
         'time_zone'  => 'nullable|string|max:255',
         'language'   => 'nullable|string|max:10',
@@ -159,6 +163,18 @@ public function store(Request $request)
         // Get department name for the department field
         $department = \App\Models\Department::find($validatedData['department_id']);
         $departmentName = $department ? $department->name : null;
+
+        // Handle avatar file upload
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        // Process skills - convert comma-separated string to JSON array
+        $skillsArray = null;
+        if (!empty($validatedData['skills'])) {
+            $skillsArray = array_map('trim', explode(',', $validatedData['skills']));
+        }
 
         $employeeData = [
             'employee_id'     => $employeeNumber, // Same as employee_number for consistency
@@ -183,6 +199,10 @@ public function store(Request $request)
             'postal_code' => $validatedData['postal_code'] ?? null,
             'emergency_contact_name'  => $validatedData['emergency_contact_name'] ?? null,
             'emergency_contact_phone' => $validatedData['emergency_contact_phone'] ?? null,
+            'emergency_contact_relationship' => $validatedData['emergency_contact_relationship'] ?? null,
+            'skills'      => $skillsArray,
+            'work_location' => $validatedData['work_location'] ?? null,
+            'avatar_url'  => $avatarPath,
             'notes'       => $validatedData['notes'] ?? null,
             'time_zone'   => $validatedData['time_zone'] ?? 'UTC',
             'language'    => $validatedData['language'] ?? 'en',
