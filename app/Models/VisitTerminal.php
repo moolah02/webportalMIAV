@@ -13,6 +13,8 @@ class VisitTerminal extends Model
         'condition',
         'serial_number',
         'terminal_model',
+        'device_type',
+        'comments',
     ];
 
     public function visit()
