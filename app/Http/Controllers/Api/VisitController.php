@@ -15,17 +15,25 @@ class VisitController extends Controller
     // GET /api/visits
     public function index(Request $request)
     {
-        $visits = Visit::with(['visitTerminals', 'employee'])
-            ->orderByDesc('completed_at')
-            ->limit(50) // Limit for performance
-            ->get();
+        // API endpoint: return JSON (mobile app).
+        // NOTE: Do not assume optional columns like `employees.is_active` exist.
 
-        // Get filter options
-        $technicians = \App\Models\Employee::where('is_active', true)->get();
-        $regions = \App\Models\Region::all(); // Assuming you have regions
-        $clients = \App\Models\Client::all();
+        $query = Visit::with(['visitTerminals', 'employee'])
+            ->orderByDesc('completed_at');
 
-        return view('reports.technician-visits', compact('visits', 'technicians', 'regions', 'clients'));
+        // Optional lightweight pagination/limit for mobile performance
+        $limit = (int) $request->query('limit', 200);
+        if ($limit > 0) {
+            $query->limit(min($limit, 500));
+        }
+
+        $visits = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'count'   => $visits->count(),
+            'data'    => $visits,
+        ]);
     }
 
     public function myVisits(Request $request)
