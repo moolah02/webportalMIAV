@@ -120,6 +120,14 @@
       <div class="stat-number">{{ $stats['asset_categories'] }}</div>
       <div class="stat-label">Asset Categories</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ $stats['total_departments'] }}</div>
+      <div class="stat-label">Departments</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ $stats['total_roles'] }}</div>
+      <div class="stat-label">Roles</div>
+    </div>
   </div>
 
   <!-- Settings Cards -->
@@ -183,6 +191,20 @@
           <a href="{{ route('settings.category.manage', 'service_type') }}">
             <span>⚙️ Service Types</span>
             <span class="badge">{{ $categories->get('service_type', collect())->count() }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Department Management -->
+    <div class="settings-card">
+      <div class="settings-header">🏢 Department Management</div>
+      <p style="color: #666; margin-block-end: 20px;">Manage company departments and teams</p>
+      <ul class="settings-list">
+        <li>
+          <a href="{{ route('settings.departments.manage') }}">
+            <span>📂 All Departments</span>
+            <span class="badge">{{ $stats['total_departments'] }}</span>
           </a>
         </li>
       </ul>

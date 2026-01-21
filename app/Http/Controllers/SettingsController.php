@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Asset;
 use App\Models\PosTerminal;
+use App\Models\Department;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +28,8 @@ class SettingsController extends Controller
         $stats = [
             'total_categories' => $categories->sum(fn($cat) => $cat->count()),
             'asset_categories' => $categories->get('asset_category', collect())->count(),
+            'total_departments' => Department::count(),
+            'total_roles' => \App\Models\Role::count(),
         ];
 
         return view('settings.index', compact('categoryTypes', 'categories', 'stats'));
@@ -231,5 +235,55 @@ class SettingsController extends Controller
             default:
                 return ['can_delete' => true, 'message' => ''];
         }
+    }
+
+    // ==============================================
+    // DEPARTMENT MANAGEMENT
+    // ==============================================
+    public function manageDepartments()
+    {
+        $departments = Department::withCount('employees')->orderBy('name')->get();
+        return view('settings.manage-department', compact('departments'));
+    }
+
+    public function storeDepartment(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:departments,name',
+            'code' => 'nullable|string|max:50|unique:departments,code',
+            'description' => 'nullable|string',
+            'manager_id' => 'nullable|exists:employees,id',
+        ]);
+
+        Department::create($validated);
+
+        return redirect()->route('settings.departments.manage')->with('success', 'Department created successfully.');
+    }
+
+    public function updateDepartment(Request $request, Department $department)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:departments,name,'.$department->id,
+            'code' => 'nullable|string|max:50|unique:departments,code,'.$department->id,
+            'description' => 'nullable|string',
+            'manager_id' => 'nullable|exists:employees,id',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $department->update($validated);
+
+        return redirect()->route('settings.departments.manage')->with('success', 'Department updated successfully.');
+    }
+
+    public function deleteDepartment(Department $department)
+    {
+        $employeeCount = $department->employees()->count();
+
+        if ($employeeCount > 0) {
+            return redirect()->back()->with('error', "Cannot delete department. It has {$employeeCount} employee(s) assigned.");
+        }
+
+        $department->delete();
+        return redirect()->route('settings.departments.manage')->with('success', 'Department deleted successfully.');
     }
 }

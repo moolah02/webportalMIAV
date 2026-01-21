@@ -838,6 +838,12 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::post('/roles', [SettingsController::class, 'storeRole'])->name('roles.store');
         Route::put('/roles/{role}', [SettingsController::class, 'updateRole'])->name('roles.update');
         Route::delete('/roles/{role}', [SettingsController::class, 'deleteRole'])->name('roles.delete');
+
+        // Department Management Routes
+        Route::get('/departments', [SettingsController::class, 'manageDepartments'])->name('departments.manage');
+        Route::post('/departments', [SettingsController::class, 'storeDepartment'])->name('departments.store');
+        Route::put('/departments/{department}', [SettingsController::class, 'updateDepartment'])->name('departments.update');
+        Route::delete('/departments/{department}', [SettingsController::class, 'deleteDepartment'])->name('departments.delete');
     });
 
     // ==============================================
