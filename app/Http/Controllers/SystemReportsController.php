@@ -116,8 +116,8 @@ class SystemReportsController extends Controller
 
    private function getTerminalData()
 {
-    // Load terminals with region relationship upfront
-    $terminals = PosTerminal::with('region')->get();
+    // Load terminals
+    $terminals = PosTerminal::all();
 
     return [
         'status_distribution' => $terminals->groupBy('current_status')
@@ -126,7 +126,7 @@ class SystemReportsController extends Controller
         'model_distribution' => $terminals->groupBy('terminal_model')
             ->map->count()
             ->toArray(),
-        'regional_distribution' => $terminals->groupBy('region.name')
+        'regional_distribution' => $terminals->groupBy('region')
             ->map->count()
             ->toArray(),
         'city_distribution' => $terminals->groupBy('city')
@@ -256,17 +256,17 @@ class SystemReportsController extends Controller
     private function getRegionalData()
     {
         return [
-            'terminals_by_region' => PosTerminal::select('regions.name', DB::raw('count(*) as count'))
-                ->leftJoin('regions', 'pos_terminals.region_id', '=', 'regions.id')
-                ->groupBy('regions.name')
-                ->pluck('count', 'name')
+            'terminals_by_region' => PosTerminal::select('region', DB::raw('count(*) as count'))
+                ->whereNotNull('region')
+                ->groupBy('region')
+                ->pluck('count', 'region')
                 ->toArray(),
-            'service_activity_by_region' => TechnicianVisit::select('regions.name', DB::raw('count(*) as count'))
+            'service_activity_by_region' => TechnicianVisit::select('pos_terminals.region', DB::raw('count(*) as count'))
                 ->leftJoin('pos_terminals', 'technician_visits.pos_terminal_id', '=', 'pos_terminals.id')
-                ->leftJoin('regions', 'pos_terminals.region_id', '=', 'regions.id')
                 ->where('technician_visits.visit_date', '>=', Carbon::now()->subDays(30))
-                ->groupBy('regions.name')
-                ->pluck('count', 'name')
+                ->whereNotNull('pos_terminals.region')
+                ->groupBy('pos_terminals.region')
+                ->pluck('count', 'region')
                 ->toArray(),
             'regional_health_scores' => $this->getRegionalHealthScores(),
             'coverage_analysis' => $this->getCoverageAnalysis(),
@@ -446,16 +446,22 @@ class SystemReportsController extends Controller
 
     private function getRegionalHealthScores()
     {
-        return Region::get()->mapWithKeys(function ($region) {
-            $terminals = PosTerminal::where('region_id', $region->id);
-            $totalTerminals = $terminals->count();
+        // Get unique regions from pos_terminals
+        $regions = PosTerminal::whereNotNull('region')
+            ->distinct()
+            ->pluck('region');
 
-            if ($totalTerminals === 0) return [$region->name => 0];
+        return $regions->mapWithKeys(function ($regionName) {
+            $totalTerminals = PosTerminal::where('region', $regionName)->count();
 
-            $activeTerminals = $terminals->where('current_status', 'active')->count();
+            if ($totalTerminals === 0) return [$regionName => 0];
+
+            $activeTerminals = PosTerminal::where('region', $regionName)
+                ->where('current_status', 'active')
+                ->count();
             $healthScore = round(($activeTerminals / $totalTerminals) * 100, 1);
 
-            return [$region->name => $healthScore];
+            return [$regionName => $healthScore];
         })->toArray();
     }
 
@@ -463,7 +469,7 @@ class SystemReportsController extends Controller
     {
         return [
             'total_cities' => PosTerminal::distinct('city')->count('city'),
-            'covered_regions' => PosTerminal::distinct('region_id')->count('region_id'),
+            'covered_regions' => PosTerminal::whereNotNull('region')->distinct('region')->count('region'),
             'terminals_per_technician' => $this->getTerminalsPerTechnician(),
         ];
     }
@@ -607,7 +613,7 @@ class SystemReportsController extends Controller
 
     private function exportTerminalsData()
     {
-        $terminals = PosTerminal::with('client', 'region')->get();
+        $terminals = PosTerminal::with('client')->get();
 
         $csvData = [['Terminal ID', 'Client', 'Status', 'Model', 'City', 'Region', 'Installation Date']];
 
@@ -618,7 +624,7 @@ class SystemReportsController extends Controller
                 strtoupper($terminal->current_status ?? 'UNKNOWN'),
                 $terminal->terminal_model ?? 'N/A',
                 $terminal->city ?? 'N/A',
-                $terminal->region->name ?? 'N/A',
+                $terminal->region ?? 'N/A',
                 $terminal->installation_date ?? 'N/A',
             ];
         }
