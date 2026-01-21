@@ -866,9 +866,10 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         // Asset Category Fields Management Routes
         Route::get('/asset-categories/{category}/fields', [AssetCategoryFieldController::class, 'index'])->name('asset-category-fields.index');
         Route::post('/asset-categories/{category}/fields', [AssetCategoryFieldController::class, 'store'])->name('asset-category-fields.store');
-        Route::put('/asset-categories/{category}/fields/{field}', [AssetCategoryFieldController::class, 'update'])->name('asset-category-fields.update');
-        Route::delete('/asset-categories/{category}/fields/{field}', [AssetCategoryFieldController::class, 'destroy'])->name('asset-category-fields.destroy');
+        Route::put('/asset-category-fields/{field}', [AssetCategoryFieldController::class, 'update'])->name('asset-category-fields.update');
+        Route::delete('/asset-category-fields/{field}', [AssetCategoryFieldController::class, 'destroy'])->name('asset-category-fields.destroy');
         Route::post('/asset-categories/{category}/fields/reorder', [AssetCategoryFieldController::class, 'reorder'])->name('asset-category-fields.reorder');
+        Route::put('/asset-categories/{category}/settings', [AssetCategoryFieldController::class, 'updateCategory'])->name('asset-category-fields.update-category');
     });
 
     // ==============================================
