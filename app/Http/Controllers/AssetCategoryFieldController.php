@@ -135,6 +135,44 @@ class AssetCategoryFieldController extends Controller
     }
 
     /**
+     * Get fields by category name for AJAX (used in asset create/edit forms)
+     */
+    public function getFieldsByName(string $categoryName)
+    {
+        $category = AssetCategory::where('name', $categoryName)->first();
+
+        if (!$category) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Category not found',
+                'fields' => [],
+            ]);
+        }
+
+        $fields = $category->activeFields()->ordered()->get()->map(function ($field) {
+            return [
+                'name' => $field->field_name,
+                'label' => $field->field_label,
+                'type' => $field->field_type,
+                'required' => $field->is_required,
+                'options' => $field->options,
+                'placeholder' => $field->placeholder_text,
+                'help' => $field->help_text,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'category' => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'requires_individual_entry' => $category->requires_individual_entry,
+            ],
+            'fields' => $fields,
+        ]);
+    }
+
+    /**
      * Update category settings (like requires_individual_entry)
      */
     public function updateCategory(Request $request, AssetCategory $category)

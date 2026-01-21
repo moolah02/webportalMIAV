@@ -872,6 +872,9 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::put('/asset-categories/{category}/settings', [AssetCategoryFieldController::class, 'updateCategory'])->name('asset-category-fields.update-category');
     });
 
+    // API route for getting category fields (accessible from asset create/edit forms)
+    Route::get('/api/asset-categories/{categoryName}/fields', [AssetCategoryFieldController::class, 'getFieldsByName'])->name('api.asset-category-fields');
+
     // ==============================================
     // DOCUMENT MANAGEMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================
