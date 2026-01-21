@@ -372,14 +372,14 @@ class AssetController extends Controller
         // Base validation rules
         $rules = [
             'name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
+            'category' => 'required|exists:asset_categories,name',
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'unit_price' => 'required|numeric|min:0',
-            'currency' => 'required|string|in:USD,EUR,GBP,ZWL',
+            'unit_price' => ['required', 'numeric', 'min:0'],
+            'currency' => ['required', 'string', 'in:USD,EUR,GBP,ZWL'],
             'status' => 'required|string|max:255',
-            'stock_quantity' => 'required|integer|min:0',
+            'stock_quantity' => 'required|integer|min:1',
             'min_stock_level' => 'required|integer|min:0',
             'sku' => 'nullable|string|unique:assets,sku',
             'barcode' => 'nullable|string',
@@ -389,44 +389,34 @@ class AssetController extends Controller
             'requires_approval' => 'boolean',
         ];
 
-        // Add category-specific validation rules
-        if ($request->category === 'Vehicles') {
-            $rules = array_merge($rules, [
-                'license_plate' => 'required|string|max:20|unique:assets,specifications->license_plate',
-                'vin_number' => 'nullable|string|max:50',
-                'engine_number' => 'nullable|string|max:50',
-                'vehicle_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
-                'vehicle_color' => 'nullable|string|max:10',
-                'fuel_type' => 'nullable|string|in:Petrol,Diesel,Electric,Hybrid',
-                'registration_date' => 'nullable|date',
-                'insurance_expiry' => 'nullable|date',
-            ]);
-        } elseif ($request->category === 'POS Terminals') {
-            $rules = array_merge($rules, [
-                'terminal_id' => 'nullable|string|max:100',
-                'software_version' => 'nullable|string|max:50',
-            ]);
-        } elseif ($request->category === 'Computer and IT Equipment') {
-            $rules = array_merge($rules, [
-                'processor' => 'nullable|string|max:100',
-                'ram' => 'nullable|string|max:50',
-                'storage' => 'nullable|string|max:50',
-                'operating_system' => 'nullable|string|max:100',
-            ]);
-        } elseif ($request->category === 'Licenses') {
-            $rules = array_merge($rules, [
-                'license_key' => 'nullable|string|max:255',
-                'license_expiry' => 'nullable|date',
-                'max_users' => 'nullable|integer|min:1',
-                'subscription_type' => 'nullable|string|in:Monthly,Annual,Perpetual',
-            ]);
+        // Get category to add dynamic validation rules
+        $category = AssetCategory::where('name', $request->category)->first();
+        if ($category) {
+            // Merge category-specific validation rules
+            $rules = array_merge($rules, $category->getValidationRulesArray());
+
+            // Force stock_quantity to 1 for categories requiring individual entry
+            if ($category->requires_individual_entry) {
+                $rules['stock_quantity'] = 'required|integer|in:1';
+            }
         }
 
-        $validatedData = $request->validate($rules);
+        $validator = \Illuminate\Support\Facades\Validator::make(
+            $request->all(),
+            $rules,
+            [],
+            $category ? $category->getValidationAttributes() : []
+        );
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
 
         try {
-            // Build specifications array based on category
-            $specifications = $this->buildSpecifications($request);
+            // Force stock_quantity to 1 for individual entry categories
+            if ($category && $category->requires_individual_entry) {
+                $request->merge(['stock_quantity' => 1]);
+            }
 
             $asset = Asset::create([
                 'name' => $request->name,
@@ -434,8 +424,8 @@ class AssetController extends Controller
                 'brand' => $request->brand,
                 'model' => $request->model,
                 'description' => $request->description,
-                'unit_price' => $request->unit_price,
-                'currency' => $request->currency,
+                'unit_price' => $request->unit_price ?? 0,
+                'currency' => $request->currency ?? 'USD',
                 'status' => $request->status,
                 'stock_quantity' => $request->stock_quantity,
                 'min_stock_level' => $request->min_stock_level,
@@ -445,8 +435,8 @@ class AssetController extends Controller
                 'notes' => $request->notes,
                 'is_requestable' => $request->boolean('is_requestable', false),
                 'requires_approval' => $request->boolean('requires_approval', true),
-                'specifications' => $specifications,
-                'assigned_quantity' => 0, // Initialize assigned quantity
+                'specifications' => $request->input('specifications', []),
+                'assigned_quantity' => 0,
             ]);
 
             return redirect()->route('assets.index')
@@ -479,11 +469,11 @@ class AssetController extends Controller
     public function edit(Asset $asset)
     {
         try {
-            // Get categories from database for dropdown
-            $assetCategories = Category::ofType('asset_category')->active()->ordered()->get();
+            // Get categories from AssetCategory model (new system)
+            $assetCategories = AssetCategory::active()->ordered()->get();
             $assetStatuses = Category::ofType('asset_status')->active()->ordered()->get();
         } catch (\Exception $e) {
-            // Fallback to empty collections if categories table doesn't exist
+            // Fallback to empty collections if tables don't exist
             $assetCategories = collect([]);
             $assetStatuses = collect([]);
         }
@@ -497,14 +487,14 @@ class AssetController extends Controller
         // Base validation rules
         $rules = [
             'name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
+            'category' => 'required|exists:asset_categories,name',
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'unit_price' => 'required|numeric|min:0',
-            'currency' => 'required|string|in:USD,EUR,GBP,ZWL',
+            'unit_price' => ['required', 'numeric', 'min:0'],
+            'currency' => ['required', 'string', 'in:USD,EUR,GBP,ZWL'],
             'status' => 'required|string|max:255',
-            'stock_quantity' => 'required|integer|min:0',
+            'stock_quantity' => 'required|integer|min:1',
             'min_stock_level' => 'required|integer|min:0',
             'sku' => 'nullable|string|unique:assets,sku,' . $asset->id,
             'barcode' => 'nullable|string',
@@ -514,44 +504,34 @@ class AssetController extends Controller
             'requires_approval' => 'boolean',
         ];
 
-        // Add category-specific validation rules
-        if ($request->category === 'Vehicles') {
-            $rules = array_merge($rules, [
-                'license_plate' => 'required|string|max:20',
-                'vin_number' => 'nullable|string|max:50',
-                'engine_number' => 'nullable|string|max:50',
-                'vehicle_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
-                'vehicle_color' => 'nullable|string|max:50',
-                'fuel_type' => 'nullable|string|in:Petrol,Diesel,Electric,Hybrid',
-                'registration_date' => 'nullable|date',
-                'insurance_expiry' => 'nullable|date',
-            ]);
-        } elseif ($request->category === 'POS Terminals') {
-            $rules = array_merge($rules, [
-                'terminal_id' => 'nullable|string|max:100',
-                'software_version' => 'nullable|string|max:50',
-            ]);
-        } elseif ($request->category === 'Computer and IT Equipment') {
-            $rules = array_merge($rules, [
-                'processor' => 'nullable|string|max:100',
-                'ram' => 'nullable|string|max:50',
-                'storage' => 'nullable|string|max:50',
-                'operating_system' => 'nullable|string|max:100',
-            ]);
-        } elseif ($request->category === 'Licenses') {
-            $rules = array_merge($rules, [
-                'license_key' => 'nullable|string|max:255',
-                'license_expiry' => 'nullable|date',
-                'max_users' => 'nullable|integer|min:1',
-                'subscription_type' => 'nullable|string|in:Monthly,Annual,Perpetual',
-            ]);
+        // Get category to add dynamic validation rules
+        $category = AssetCategory::where('name', $request->category)->first();
+        if ($category) {
+            // Merge category-specific validation rules
+            $rules = array_merge($rules, $category->getValidationRulesArray());
+
+            // Force stock_quantity to 1 for categories requiring individual entry
+            if ($category->requires_individual_entry) {
+                $rules['stock_quantity'] = 'required|integer|in:1';
+            }
         }
 
-        $request->validate($rules);
+        $validator = \Illuminate\Support\Facades\Validator::make(
+            $request->all(),
+            $rules,
+            [],
+            $category ? $category->getValidationAttributes() : []
+        );
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
 
         try {
-            // Build specifications array based on category
-            $specifications = $this->buildSpecifications($request);
+            // Force stock_quantity to 1 for individual entry categories
+            if ($category && $category->requires_individual_entry) {
+                $request->merge(['stock_quantity' => 1]);
+            }
 
             $asset->update([
                 'name' => $request->name,
@@ -559,8 +539,8 @@ class AssetController extends Controller
                 'brand' => $request->brand,
                 'model' => $request->model,
                 'description' => $request->description,
-                'unit_price' => $request->unit_price,
-                'currency' => $request->currency,
+                'unit_price' => $request->unit_price ?? 0,
+                'currency' => $request->currency ?? 'USD',
                 'status' => $request->status,
                 'stock_quantity' => $request->stock_quantity,
                 'min_stock_level' => $request->min_stock_level,
@@ -570,7 +550,7 @@ class AssetController extends Controller
                 'notes' => $request->notes,
                 'is_requestable' => $request->boolean('is_requestable', false),
                 'requires_approval' => $request->boolean('requires_approval', true),
-                'specifications' => $specifications,
+                'specifications' => $request->input('specifications', []),
             ]);
 
             return redirect()->route('assets.show', $asset)

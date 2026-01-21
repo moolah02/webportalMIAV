@@ -44,7 +44,7 @@
                 <!-- Basic Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📋 Basic Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Asset Name *</label>
@@ -55,10 +55,10 @@
                                 <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Category *</label>
-                            <select name="category" id="categorySelect" required onchange="toggleCategoryFields()" 
+                            <select name="category" id="categorySelect" required onchange="toggleCategoryFields()"
                                     style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                                 <option value="">Select Category</option>
                                 @foreach($assetCategories as $category)
@@ -72,14 +72,14 @@
                             @enderror
                         </div>
 
-                        <div>
+                        <div id="brandField">
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Brand</label>
                             <input type="text" name="brand" value="{{ old('brand') }}"
                                    placeholder="e.g., Toyota, Dell, Apple"
                                    style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                         </div>
 
-                        <div>
+                        <div id="modelField">
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Model</label>
                             <input type="text" name="model" value="{{ old('model') }}"
                                    placeholder="e.g., Corolla, Latitude 5420"
@@ -153,10 +153,13 @@
                     </div>
                 </div>
 
+                <!-- Dynamic Category-Specific Fields -->
+                @include('assets.partials.dynamic-fields')
+
                 <!-- POS Terminal-Specific Fields -->
                 <div id="posFields" class="content-card" style="margin-block-end: 20px; display: none;">
                     <h4 style="margin-block-end: 20px; color: #333;">🖥️ POS Terminal Details</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Terminal ID</label>
@@ -177,7 +180,7 @@
                 <!-- Computer/IT Equipment Fields -->
                 <div id="computerFields" class="content-card" style="margin-block-end: 20px; display: none;">
                     <h4 style="margin-block-end: 20px; color: #333;">💻 Computer/IT Details</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Processor</label>
@@ -212,7 +215,7 @@
                 <!-- Licenses Fields -->
                 <div id="licenseFields" class="content-card" style="margin-block-end: 20px; display: none;">
                     <h4 style="margin-block-end: 20px; color: #333;">🔑 License Details</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Key</label>
@@ -294,7 +297,7 @@
                 <!-- Request Settings -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 15px; color: #333;">⚙️ Request Settings</h4>
-                    
+
                     <div style="margin-block-end: 15px;">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" name="is_requestable" value="1" {{ old('is_requestable', true) ? 'checked' : '' }}>
@@ -393,18 +396,18 @@
 function toggleCategoryFields() {
     const categorySelect = document.getElementById('categorySelect');
     const selectedCategory = categorySelect.value;
-    
+
     // Hide all category-specific fields first
     document.getElementById('vehicleFields').style.display = 'none';
     document.getElementById('posFields').style.display = 'none';
     document.getElementById('computerFields').style.display = 'none';
     document.getElementById('licenseFields').style.display = 'none';
-    
+
     // Show relevant fields based on category
     if (selectedCategory === 'Vehicles') {
         document.getElementById('vehicleFields').style.display = 'block';
         document.getElementById('vehicleFields').classList.add('category-fields');
-        
+
         // Make license plate required for vehicles
         document.querySelector('input[name="license_plate"]').required = true;
     } else if (selectedCategory === 'POS Terminals') {

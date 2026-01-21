@@ -54,6 +54,15 @@ class TicketController extends Controller
         if ($request->filled('issue_type')) $query->where('issue_type', $request->issue_type);
         if ($request->filled('terminal_id')) $query->where('pos_terminal_id', $request->terminal_id);
 
+        // New filters for ticket_type and assignment_type
+        if ($request->filled('ticket_type')) $query->byTicketType($request->ticket_type);
+        if ($request->filled('assignment_type')) $query->byAssignmentType($request->assignment_type);
+
+        // Filter for pending tickets
+        if ($request->filled('pending') && $request->pending === 'true') {
+            $query->pending();
+        }
+
         $tickets = $query->latest()->get()->map(fn ($ticket) => $this->mapTicketRow($ticket));
 
         return response()->json([
@@ -74,7 +83,10 @@ class TicketController extends Controller
             'description'  => 'nullable|string',
             'issue_type'   => 'required|string|max:100',
             'priority'     => ['required', Rule::in(['low','medium','high','urgent'])],
+            'ticket_type'  => ['required', Rule::in(['pos_terminal', 'internal'])],
+            'assignment_type' => ['required', Rule::in(['public', 'direct'])],
             'pos_terminal_id' => 'nullable|exists:pos_terminals,id',
+            'assigned_to' => 'nullable|exists:employees,id',
             'estimated_resolution_time' => 'nullable|integer|min:0',
             'attachments'  => 'nullable', // json or array, depending on how you send it
         ]);
@@ -82,6 +94,24 @@ class TicketController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false, 'message' => 'Validation failed', 'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Validation rules based on ticket_type
+        if ($request->ticket_type === 'pos_terminal' && empty($request->pos_terminal_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => ['pos_terminal_id' => ['POS Terminal is required for POS Terminal tickets']]
+            ], 422);
+        }
+
+        // Validation rules based on assignment_type
+        if ($request->assignment_type === 'direct' && empty($request->assigned_to)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => ['assigned_to' => ['Assigned employee is required for direct tickets']]
             ], 422);
         }
 
@@ -100,17 +130,21 @@ class TicketController extends Controller
         $ticket->description = $request->description;
         $ticket->issue_type = $request->issue_type;
         $ticket->priority = $request->priority;
+        $ticket->ticket_type = $request->ticket_type;
+        $ticket->assignment_type = $request->assignment_type;
         $ticket->status = 'open';
         $ticket->estimated_resolution_time = $request->estimated_resolution_time;
         $ticket->pos_terminal_id = $request->pos_terminal_id;
         $ticket->client_id = $clientId;
         $user = $request->user();
 
-// If the creator is a field tech, auto-assign:
-if (method_exists($user, 'isFieldTechnician') && $user->isFieldTechnician()) {
-    $ticket->technician_id = $user->id;
-    $ticket->assigned_to   = $user->id;
-}
+        // If the creator is a field tech, auto-assign:
+        if (method_exists($user, 'isFieldTechnician') && $user->isFieldTechnician()) {
+            $ticket->technician_id = $user->id;
+            if (empty($ticket->assigned_to)) {
+                $ticket->assigned_to   = $user->id;
+            }
+        }
 
         // Optionally attribute creator:
         if (Schema::hasColumn('tickets', 'created_by')) {
@@ -405,6 +439,8 @@ if (method_exists($user, 'isFieldTechnician') && $user->isFieldTechnician()) {
             'status' => $t->status,
             'priority' => $t->priority,
             'issue_type' => $t->issue_type,
+            'ticket_type' => $t->ticket_type,
+            'assignment_type' => $t->assignment_type,
             'estimated_resolution_time' => $t->estimated_resolution_time,
             'terminal' => $t->posTerminal ? [
                 'id' => $t->posTerminal->id,
@@ -435,6 +471,8 @@ if (method_exists($user, 'isFieldTechnician') && $user->isFieldTechnician()) {
             'status' => $t->status,
             'priority' => $t->priority,
             'issue_type' => $t->issue_type,
+            'ticket_type' => $t->ticket_type,
+            'assignment_type' => $t->assignment_type,
             'resolution' => $t->resolution,
             'estimated_resolution_time' => $t->estimated_resolution_time,
             'terminal' => $t->posTerminal ? [

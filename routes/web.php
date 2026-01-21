@@ -15,6 +15,7 @@ use App\Http\Controllers\BusinessLicenseController;
 use App\Http\Controllers\JobAssignmentController;
 use App\Http\Controllers\TechnicianReportsController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\AssetCategoryFieldController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TerminalDeploymentController;
@@ -844,6 +845,13 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::post('/departments', [SettingsController::class, 'storeDepartment'])->name('departments.store');
         Route::put('/departments/{department}', [SettingsController::class, 'updateDepartment'])->name('departments.update');
         Route::delete('/departments/{department}', [SettingsController::class, 'deleteDepartment'])->name('departments.delete');
+
+        // Asset Category Fields Management Routes
+        Route::get('/asset-categories/{category}/fields', [AssetCategoryFieldController::class, 'index'])->name('asset-category-fields.index');
+        Route::post('/asset-categories/{category}/fields', [AssetCategoryFieldController::class, 'store'])->name('asset-category-fields.store');
+        Route::put('/asset-categories/{category}/fields/{field}', [AssetCategoryFieldController::class, 'update'])->name('asset-category-fields.update');
+        Route::delete('/asset-categories/{category}/fields/{field}', [AssetCategoryFieldController::class, 'destroy'])->name('asset-category-fields.destroy');
+        Route::post('/asset-categories/{category}/fields/reorder', [AssetCategoryFieldController::class, 'reorder'])->name('asset-category-fields.reorder');
     });
 
     // ==============================================

@@ -30,14 +30,14 @@
     <form action="{{ route('assets.update', $asset) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
-        
+
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
             <!-- Main Form -->
             <div>
                 <!-- Basic Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📋 Basic Information</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Asset Name *</label>
@@ -48,10 +48,10 @@
                                 <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Category *</label>
-                            <select name="category" id="categorySelect" required onchange="toggleCategoryFields()" 
+                            <select name="category" id="categorySelect" required onchange="toggleCategoryFields()"
                                     style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                                 <option value="">Select Category</option>
                                 @foreach($assetCategories as $category)
@@ -65,14 +65,14 @@
                             @enderror
                         </div>
 
-                        <div>
+                        <div id="brandField">
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Brand</label>
                             <input type="text" name="brand" value="{{ old('brand', $asset->brand) }}"
                                    placeholder="e.g., Toyota, Dell, Apple"
                                    style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                         </div>
 
-                        <div>
+                        <div id="modelField">
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Model</label>
                             <input type="text" name="model" value="{{ old('model', $asset->model) }}"
                                    placeholder="e.g., Corolla, Latitude 5420"
@@ -93,7 +93,7 @@
                 <!-- Vehicle-Specific Fields -->
                 <div id="vehicleFields" class="content-card" style="margin-block-end: 20px; display: none;">
                     <h4 style="margin-block-end: 20px; color: #333;">🚗 Vehicle Details</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Plate *</label>
@@ -160,10 +160,13 @@
                     </div>
                 </div>
 
+                <!-- Dynamic Category-Specific Fields -->
+                @include('assets.partials.dynamic-fields')
+
                 <!-- POS Terminal-Specific Fields -->
                 <div id="posFields" class="content-card" style="margin-block-end: 20px; display: none;">
                     <h4 style="margin-block-end: 20px; color: #333;">🖥️ POS Terminal Details</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Terminal ID</label>
@@ -184,7 +187,7 @@
                 <!-- Computer/IT Equipment Fields -->
                 <div id="computerFields" class="content-card" style="margin-block-end: 20px; display: none;">
                     <h4 style="margin-block-end: 20px; color: #333;">💻 Computer/IT Details</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Processor</label>
@@ -219,7 +222,7 @@
                 <!-- Licenses Fields -->
                 <div id="licenseFields" class="content-card" style="margin-block-end: 20px; display: none;">
                     <h4 style="margin-block-end: 20px; color: #333;">🔑 License Details</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Key</label>
@@ -256,7 +259,7 @@
                 <!-- Pricing & Inventory -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">💰 Pricing & Inventory</h4>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Unit Price *</label>
@@ -333,7 +336,7 @@
                 <!-- Additional Information -->
                 <div class="content-card">
                     <h4 style="margin-block-end: 20px; color: #333;">📝 Additional Information</h4>
-                    
+
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Image URL</label>
                         <input type="url" name="image_url" value="{{ old('image_url', $asset->image_url) }}"
@@ -358,7 +361,7 @@
                 @if($asset->image_url)
                     <div class="content-card" style="margin-block-end: 20px;">
                         <h4 style="margin-block-end: 15px; color: #333;">🖼️ Current Image</h4>
-                        <img src="{{ $asset->image_url }}" alt="{{ $asset->name }}" 
+                        <img src="{{ $asset->image_url }}" alt="{{ $asset->name }}"
                              style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
                     </div>
                 @endif
@@ -366,7 +369,7 @@
                 <!-- Request Settings -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 15px; color: #333;">⚙️ Request Settings</h4>
-                    
+
                     <div style="margin-block-end: 15px;">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" name="is_requestable" value="1" {{ old('is_requestable', $asset->is_requestable) ? 'checked' : '' }}>
@@ -387,18 +390,18 @@
                 <!-- Asset Info -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 15px; color: #333;">📊 Asset Information</h4>
-                    
+
                     <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
                         <div style="display: flex; justify-content: space-between;">
                             <span style="color: #666;">Created</span>
                             <span>{{ $asset->created_at->format('M d, Y') }}</span>
                         </div>
-                        
+
                         <div style="display: flex; justify-content: space-between;">
                             <span style="color: #666;">Last Updated</span>
                             <span>{{ $asset->updated_at->format('M d, Y') }}</span>
                         </div>
-                        
+
                         <div style="display: flex; justify-content: space-between;">
                             <span style="color: #666;">Total Value</span>
                             <span style="font-weight: bold;">{{ $asset->currency }} {{ number_format($asset->unit_price * $asset->stock_quantity, 2) }}</span>
@@ -500,18 +503,18 @@
 function toggleCategoryFields() {
     const categorySelect = document.getElementById('categorySelect');
     const selectedCategory = categorySelect.value;
-    
+
     // Hide all category-specific fields first
     document.getElementById('vehicleFields').style.display = 'none';
     document.getElementById('posFields').style.display = 'none';
     document.getElementById('computerFields').style.display = 'none';
     document.getElementById('licenseFields').style.display = 'none';
-    
+
     // Show relevant fields based on category
     if (selectedCategory === 'Vehicles') {
         document.getElementById('vehicleFields').style.display = 'block';
         document.getElementById('vehicleFields').classList.add('category-fields');
-        
+
         // Make license plate required for vehicles
         document.querySelector('input[name="license_plate"]').required = true;
     } else if (selectedCategory === 'POS Terminals') {

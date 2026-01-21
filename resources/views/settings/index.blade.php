@@ -165,6 +165,12 @@
             <span class="badge">{{ $categories->get('asset_status', collect())->count() }}</span>
           </a>
         </li>
+        <li>
+          <a href="{{ route('settings.asset-category-fields.index', $categories->get('asset_category', collect())->first()?->id ?? 1) }}">
+            <span>⚙️ Category Custom Fields</span>
+            <span class="badge">Manage</span>
+          </a>
+        </li>
       </ul>
     </div>
 
