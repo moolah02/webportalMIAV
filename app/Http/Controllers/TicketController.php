@@ -83,22 +83,8 @@ class TicketController extends Controller
 
     public function create()
     {
-        $posTerminals = PosTerminal::select('id', 'terminal_id', 'merchant_name')
-            ->orderBy('terminal_id')
-            ->get();
-
-        $technicians = Employee::whereHas('role', function($query) {
-            $query->where('name', 'Technician');
-        })->select('id', 'first_name', 'last_name')
-        ->orderBy('first_name')
-        ->get();
-
-        $clients = Client::select('id', 'company_name')
-            ->where('status', 'active')
-            ->orderBy('company_name')
-            ->get();
-
-        return view('tickets.create', compact('posTerminals', 'technicians', 'clients'));
+        // Redirect to index which has the modal form
+        return redirect()->route('tickets.index');
     }
 
     public function store(Request $request)

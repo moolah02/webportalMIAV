@@ -610,6 +610,22 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Ticket Type *</label>
+                        <select class="form-control" id="ticketType" required>
+                            <option value="">Select Type</option>
+                            <option value="pos_terminal">POS Terminal</option>
+                            <option value="internal">Internal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assignment Type *</label>
+                        <select class="form-control" id="ticketAssignmentType" required>
+                            <option value="">Select Assignment</option>
+                            <option value="public">Public (Any Employee)</option>
+                            <option value="direct">Direct (Specific Employee)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Issue Type *</label>
                         <select class="form-control" id="ticketIssueType" required>
                             <option value="">Select Issue Type</option>
@@ -622,19 +638,19 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">POS Terminal (Optional)</label>
-                        <select class="form-control" id="ticketPosTerminal">
+                    <div class="form-group" id="posTerminalField">
+                        <label class="form-label">POS Terminal *</label>
+                        <select class="form-control" id="ticketPosTerminal" required>
                             <option value="">Select Terminal</option>
                             @foreach($posTerminals as $terminal)
                                 <option value="{{ $terminal->id }}">{{ $terminal->terminal_id }} - {{ $terminal->merchant_name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Assigned To</label>
-                        <select class="form-control" id="ticketAssignedTo">
-                            <option value="">Unassigned</option>
+                    <div class="form-group" id="assignedToField" style="display: none;">
+                        <label class="form-label">Assigned To *</label>
+                        <select class="form-control" id="ticketAssignedTo" required>
+                            <option value="">Select Employee</option>
                             @foreach($technicians as $technician)
                                 <option value="{{ $technician->id }}">{{ $technician->first_name }} {{ $technician->last_name }}</option>
                             @endforeach
@@ -706,6 +722,10 @@
         document.getElementById('issueTypeFilter').addEventListener('change', filterTickets);
         document.getElementById('searchInput').addEventListener('input', filterTickets);
 
+        // Ticket form field visibility
+        document.getElementById('ticketType')?.addEventListener('change', updateFormFields);
+        document.getElementById('ticketAssignmentType')?.addEventListener('change', updateFormFields);
+
         // Modal close on outside click
         window.addEventListener('click', function(event) {
             const ticketModal = document.getElementById('ticketModal');
@@ -719,6 +739,37 @@
         });
     }
 
+    function updateFormFields() {
+        const ticketType = document.getElementById('ticketType')?.value;
+        const assignmentType = document.getElementById('ticketAssignmentType')?.value;
+
+        // Show/hide POS Terminal field based on ticket type
+        const posTerminalField = document.getElementById('posTerminalField');
+        if (posTerminalField) {
+            if (ticketType === 'pos_terminal') {
+                posTerminalField.style.display = 'block';
+                document.getElementById('ticketPosTerminal').required = true;
+            } else {
+                posTerminalField.style.display = 'none';
+                document.getElementById('ticketPosTerminal').required = false;
+                document.getElementById('ticketPosTerminal').value = '';
+            }
+        }
+
+        // Show/hide Assigned To field based on assignment type
+        const assignedToField = document.getElementById('assignedToField');
+        if (assignedToField) {
+            if (assignmentType === 'direct') {
+                assignedToField.style.display = 'block';
+                document.getElementById('ticketAssignedTo').required = true;
+            } else {
+                assignedToField.style.display = 'none';
+                document.getElementById('ticketAssignedTo').required = false;
+                document.getElementById('ticketAssignedTo').value = '';
+            }
+        }
+    }
+
     function filterTickets() {
         const statusFilter = document.getElementById('statusFilter').value;
         const priorityFilter = document.getElementById('priorityFilter').value;
@@ -726,7 +777,7 @@
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
 
         const rows = document.querySelectorAll('#ticketsTableBody tr');
-        
+
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             if (cells.length < 8) return; // Skip empty state row
@@ -738,7 +789,7 @@
             const priority = cells[3].querySelector('.priority-badge')?.className.includes(`priority-${priorityFilter}`) || !priorityFilter;
             const status = cells[4].querySelector('.status-badge')?.className.includes(`status-${statusFilter.replace('_', '-')}`) || !statusFilter;
 
-            const matchesSearch = !searchInput || 
+            const matchesSearch = !searchInput ||
                 title.toLowerCase().includes(searchInput) ||
                 description.toLowerCase().includes(searchInput) ||
                 ticketId.toLowerCase().includes(searchInput);
@@ -753,7 +804,7 @@
         document.getElementById('priorityFilter').value = '';
         document.getElementById('issueTypeFilter').value = '';
         document.getElementById('searchInput').value = '';
-        
+
         // Show all rows
         document.querySelectorAll('#ticketsTableBody tr').forEach(row => {
             row.style.display = '';
@@ -765,6 +816,7 @@
         document.getElementById('ticketModalTitle').textContent = 'Create New Ticket';
         document.getElementById('ticketForm').reset();
         document.getElementById('resolutionGroup').style.display = 'none';
+        updateFormFields(); // Update field visibility based on form defaults
         document.getElementById('ticketModal').classList.add('show');
     }
 
@@ -778,16 +830,21 @@
 
         currentEditingTicket = ticket;
         document.getElementById('ticketModalTitle').textContent = 'Edit Ticket';
-        
+
         // Populate form
         document.getElementById('ticketTitle').value = ticket.title;
         document.getElementById('ticketPriority').value = ticket.priority;
+        document.getElementById('ticketType').value = ticket.ticket_type || 'pos_terminal';
+        document.getElementById('ticketAssignmentType').value = ticket.assignment_type || 'public';
         document.getElementById('ticketIssueType').value = ticket.issue_type;
         document.getElementById('ticketPosTerminal').value = ticket.pos_terminal_id || '';
         document.getElementById('ticketAssignedTo').value = ticket.assigned_to || '';
         document.getElementById('ticketEstimatedTime').value = ticket.estimated_resolution_time || '';
         document.getElementById('ticketDescription').value = ticket.description;
         document.getElementById('ticketResolution').value = ticket.resolution || '';
+
+        // Update form fields visibility based on values
+        updateFormFields();
 
         // Show resolution field if ticket is resolved
         if (ticket.status === 'resolved' || ticket.status === 'closed') {
@@ -807,6 +864,8 @@
         const formData = {
             title: document.getElementById('ticketTitle').value,
             priority: document.getElementById('ticketPriority').value,
+            ticket_type: document.getElementById('ticketType').value,
+            assignment_type: document.getElementById('ticketAssignmentType').value,
             issue_type: document.getElementById('ticketIssueType').value,
             pos_terminal_id: document.getElementById('ticketPosTerminal').value || null,
             assigned_to: document.getElementById('ticketAssignedTo').value || null,
@@ -818,7 +877,7 @@
         try {
             const url = currentEditingTicket ? routes.update(currentEditingTicket.id) : routes.store;
             const method = currentEditingTicket ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -868,7 +927,7 @@
         if (!ticket) return;
 
         document.getElementById('ticketDetailsTitle').textContent = `Ticket ${ticket.ticket_id}`;
-        
+
         const detailsBody = document.getElementById('ticketDetailsBody');
         detailsBody.innerHTML = `
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px;">
