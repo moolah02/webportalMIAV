@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\JobAssignmentController;
 use App\Http\Controllers\Api\PosTerminalController;
 use App\Http\Controllers\Api\AssetController as AssetApi;
+use App\Http\Controllers\Api\AssetRequestController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\TechnicianController;
@@ -246,6 +247,30 @@ Route::middleware(['auth:sanctum'])->prefix('assets')->group(function () {
     Route::post('/{asset}/request', [AssetApi::class, 'requestAsset'])->whereNumber('asset');
     Route::get('/{asset}',          [AssetApi::class, 'show'])->whereNumber('asset');
 });
+
+    // ==============================================
+    // ASSET REQUESTS API - COMPREHENSIVE
+    // ==============================================
+
+    Route::middleware(['auth:sanctum'])->prefix('asset-requests')->group(function () {
+        // List all asset requests for authenticated user
+        Route::get('/', [AssetRequestController::class, 'index']);
+
+        // Get statistics
+        Route::get('/stats', [AssetRequestController::class, 'stats']);
+
+        // Get available assets for requesting
+        Route::get('/available-assets', [AssetRequestController::class, 'availableAssets']);
+
+        // Create new asset request
+        Route::post('/', [AssetRequestController::class, 'store']);
+
+        // Get specific request
+        Route::get('/{id}', [AssetRequestController::class, 'show']);
+
+        // Cancel a request
+        Route::post('/{id}/cancel', [AssetRequestController::class, 'cancel']);
+    });
 
     // ==============================================
     // REPORTS ROUTES - ENHANCED

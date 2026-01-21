@@ -772,6 +772,13 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
     // REPORTS ROUTES - UPDATED PERMISSIONS
     // ==============================================
 
+    // Report builder - Open to all authenticated users (outside permission group)
+    Route::middleware('auth')->prefix('reports')->name('reports.')->group(function () {
+        Route::get('/builder', function () {
+            return view('reports.builder', ['title' => 'Report Builder']);
+        })->name('builder');
+    });
+
     Route::middleware('permission:view_reports,all')->prefix('reports')->name('reports.')->group(function () {
         // Main reports dashboard
         Route::get('/', [SystemReportsController::class, 'index'])->name('index');
@@ -780,11 +787,6 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::get('/system', [SystemReportsController::class, 'index'])->name('system');
         Route::get('/system/export', [SystemReportsController::class, 'exportSystemReport'])->name('system.export');
         Route::get('/system/export-csv', [SystemReportsController::class, 'exportCsv'])->name('system.export-csv');
-
-        // Report builder
-        Route::get('/builder', function () {
-            return view('reports.builder', ['title' => 'Report Builder']);
-        })->middleware('permission:use_report_builder,all')->name('builder');
 
         // Technician Visit Reports
         Route::get('/technician-visits', [TechnicianReportsController::class, 'index'])
@@ -836,6 +838,12 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::post('/roles', [SettingsController::class, 'storeRole'])->name('roles.store');
         Route::put('/roles/{role}', [SettingsController::class, 'updateRole'])->name('roles.update');
         Route::delete('/roles/{role}', [SettingsController::class, 'deleteRole'])->name('roles.delete');
+
+        // Department Management Routes
+        Route::get('/departments', [SettingsController::class, 'manageDepartments'])->name('departments.manage');
+        Route::post('/departments', [SettingsController::class, 'storeDepartment'])->name('departments.store');
+        Route::put('/departments/{department}', [SettingsController::class, 'updateDepartment'])->name('departments.update');
+        Route::delete('/departments/{department}', [SettingsController::class, 'deleteDepartment'])->name('departments.delete');
     });
 
     // ==============================================
@@ -958,10 +966,10 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
     });
 
     // ==============================================
-    // REPORT BUILDER ROUTES
+    // REPORT BUILDER ROUTES - Open to all authenticated users
     // ==============================================
 
-    Route::middleware('permission:use_report_builder,all')->group(function () {
+    Route::middleware('auth')->group(function () {
         Route::get('/reports/builder', [ReportBuilderController::class, 'index'])->name('reports.builder');
         Route::post('/reports/run', [ReportBuilderController::class, 'run'])->name('reports.run');
         Route::get('/reports/export/csv', [ReportBuilderController::class, 'exportCsv'])->name('reports.export.csv');
@@ -973,8 +981,8 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::post('/reports/run-simple', [ReportBuilderController::class, 'runSimple'])->name('reports.run.simple');
     });
 
-    // API endpoints for reports
-    Route::middleware(['permission:use_report_builder,all'])->prefix('api/report')->group(function () {
+    // API endpoints for reports - Open to all authenticated users
+    Route::middleware('auth')->prefix('api/report')->group(function () {
         Route::post('/preview', [ReportController::class, 'preview'])->name('api.report.preview');
         Route::post('/export', [ReportController::class, 'export'])->name('api.report.export');
         Route::get('/fields', [ReportController::class, 'getAvailableFields'])->name('api.report.fields');

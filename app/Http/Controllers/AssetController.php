@@ -289,7 +289,7 @@ class AssetController extends Controller
     {
         // Get available assets for assignment
         $availableAssetsQuery = Asset::where('is_requestable', true)
-            ->where('status', 'asset-active')
+            ->whereIn('status', ['asset-active', 'active', 'Available', 'available'])
             ->where('stock_quantity', '>', 0);
 
         $availableAssets = $availableAssetsQuery->with(['activeAssignments.employee:id,first_name,last_name'])

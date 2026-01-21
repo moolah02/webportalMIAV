@@ -20,19 +20,17 @@ class ReportBuilderController extends Controller
     {
         $user = Auth::user();
 
-        // Check permissions
-        if (!$user->can('use-report-builder')) {
-            abort(403, 'You do not have permission to access the report builder.');
-        }
+        // Report builder is now open to all authenticated users
+        // No permission check required
 
         // Get available fields and filters for the builder
         $fields = $this->queryBuilder->getAvailableFields();
         $filters = $this->queryBuilder->getFilterOptions();
 
-        // Check user capabilities
+        // Check user capabilities for advanced features
         $canManageTemplates = $user->can('manage-report-templates');
-        $canPreviewReports = $user->can('preview-reports');
-        $canExportReports = $user->can('export-reports');
+        $canPreviewReports = true; // Allow all users to preview reports
+        $canExportReports = true;  // Allow all users to export reports
 
         return view('reports.builder', compact(
             'fields',

@@ -17,7 +17,7 @@ File: resources/views/employees/create.blade.php
         <a href="{{ route('employees.index') }}" class="btn">← Back to Employees</a>
     </div>
 
-    <form action="{{ route('employees.store') }}" method="POST" id="employeeForm">
+    <form action="{{ route('employees.store') }}" method="POST" id="employeeForm" enctype="multipart/form-data">
         @csrf
 
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
@@ -110,9 +110,9 @@ File: resources/views/employees/create.blade.php
                         </div>
 
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Role *</label>
+                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Primary Role *</label>
                             <select name="role_id" required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;" onchange="showRolePermissions(this.value)">
-                                <option value="">Select Role</option>
+                                <option value="">Select Primary Role</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->id }}" data-permissions="{{ json_encode($role->permissions) }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
                                         {{ ucfirst(str_replace('_', ' ', $role->name)) }}
@@ -120,6 +120,30 @@ File: resources/views/employees/create.blade.php
                                 @endforeach
                             </select>
                             @error('role_id')
+                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label style="display: block; margin-block-end: 10px; font-weight: 500;">Additional Roles (Optional)</label>
+                            <div style="border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #F8F9FA;">
+                                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Select additional roles for this employee. The primary role is required.</p>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                                    @foreach($roles as $role)
+                                        <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #E0E0E0; transition: all 0.2s;"
+                                               onmouseover="this.style.borderColor='#1976D2'; this.style.background='#F0F7FF';"
+                                               onmouseout="this.style.borderColor='#E0E0E0'; this.style.background='white';">
+                                            <input type="checkbox"
+                                                   name="additional_roles[]"
+                                                   value="{{ $role->id }}"
+                                                   {{ is_array(old('additional_roles')) && in_array($role->id, old('additional_roles')) ? 'checked' : '' }}
+                                                   style="cursor: pointer; width: 16px; height: 16px;">
+                                            <span style="font-size: 14px; color: #333;">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @error('additional_roles')
                                 <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
                         </div>
@@ -231,7 +255,7 @@ File: resources/views/employees/create.blade.php
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Emergency Contact Name</label>
                             <input type="text" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}"
@@ -245,6 +269,43 @@ File: resources/views/employees/create.blade.php
                                    placeholder="+1 (555) 987-6543"
                                    style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                         </div>
+
+                        <div>
+                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Relationship</label>
+                            <select name="emergency_contact_relationship" style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                                <option value="">Select Relationship</option>
+                                <option value="spouse" {{ old('emergency_contact_relationship') == 'spouse' ? 'selected' : '' }}>Spouse</option>
+                                <option value="parent" {{ old('emergency_contact_relationship') == 'parent' ? 'selected' : '' }}>Parent</option>
+                                <option value="sibling" {{ old('emergency_contact_relationship') == 'sibling' ? 'selected' : '' }}>Sibling</option>
+                                <option value="child" {{ old('emergency_contact_relationship') == 'child' ? 'selected' : '' }}>Child</option>
+                                <option value="friend" {{ old('emergency_contact_relationship') == 'friend' ? 'selected' : '' }}>Friend</option>
+                                <option value="other" {{ old('emergency_contact_relationship') == 'other' ? 'selected' : '' }}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
+                        <div>
+                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Skills / Certifications</label>
+                            <textarea name="skills" rows="2" placeholder="E.g., POS Terminal Installation, Network Configuration, CompTIA A+..."
+                                      style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">{{ old('skills') }}</textarea>
+                            <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Comma-separated list of skills</div>
+                        </div>
+
+                        <div>
+                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Work Location / Office</label>
+                            <input type="text" name="work_location" value="{{ old('work_location') }}"
+                                   placeholder="Head Office, Remote, Regional Office, etc."
+                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                            <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Primary work location</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-block-end: 20px;">
+                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Profile Photo</label>
+                        <input type="file" name="avatar" accept="image/*"
+                               style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                        <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Upload a profile picture (optional)</div>
                     </div>
 
                     <div>

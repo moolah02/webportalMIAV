@@ -189,11 +189,11 @@ class SystemReportsController extends Controller
                 ->toArray(),
             'assignment_status' => [
                 'assigned' => AssetAssignment::where('status', 'assigned')->count(),
-                'available' => Asset::where('status', 'asset-active')->sum('available_quantity'),
+                'available' => Asset::where('status', 'asset-active')->sum(DB::raw('stock_quantity - assigned_quantity')),
                 'total_stock' => Asset::where('status', 'asset-active')->sum('stock_quantity'),
             ],
             'low_stock_alerts' => Asset::where('status', 'asset-active')
-                ->whereColumn('available_quantity', '<=', 'min_stock_level')
+                ->whereColumn(DB::raw('stock_quantity - assigned_quantity'), '<=', 'min_stock_level')
                 ->count(),
             'asset_utilization' => $this->calculateAssetUtilization(),
             'top_requested_assets' => $this->getTopRequestedAssets(),
@@ -494,7 +494,7 @@ class SystemReportsController extends Controller
         $totalAssets = Asset::where('status', 'asset-active')->sum('stock_quantity');
         if ($totalAssets === 0) return 100;
 
-        $availableAssets = Asset::where('status', 'asset-active')->sum('available_quantity');
+        $availableAssets = Asset::where('status', 'asset-active')->sum(DB::raw('stock_quantity - assigned_quantity'));
         return round(($availableAssets / $totalAssets) * 100, 2);
     }
 

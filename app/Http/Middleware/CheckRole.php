@@ -16,9 +16,11 @@ class CheckRole
         }
 
         $employee = Auth::user();
-        $employeeRole = $employee->role->name ?? '';
 
-        if (!in_array($employeeRole, $roles)) {
+        // Check if employee has ANY of the required roles
+        $hasRole = $employee->roles->whereIn('name', $roles)->isNotEmpty();
+
+        if (!$hasRole) {
             abort(403, 'Unauthorized. Required roles: ' . implode(', ', $roles));
         }
 

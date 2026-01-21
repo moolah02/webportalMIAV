@@ -21,11 +21,11 @@ class TechnicianReportsController extends Controller
     {
         // Check if TechnicianVisit table exists
         if (!class_exists(\App\Models\TechnicianVisit::class)) {
-            return view('technician-reports.index', [
+            return view('reports.technician-visits', [
                 'visits' => collect([]),
                 'technicians' => Employee::select('id', 'first_name', 'last_name')->get(),
                 'regions' => Region::where('is_active', true)->get(),
-                'clients' => Client::orderBy('name', 'asc')->get(),
+                'clients' => Client::orderBy('company_name', 'asc')->get(),
                 'stats' => [
                     'total_visits' => 0,
                     'completed_visits' => 0,
@@ -121,11 +121,11 @@ $clients = Client::orderBy('company_name', 'asc')->get();
             ));
         } catch (\Exception $e) {
             // TechnicianVisit table doesn't exist or has issues
-            return view('technician-reports.index', [
+            return view('reports.technician-visits', [
                 'visits' => collect([]),
                 'technicians' => Employee::select('id', 'first_name', 'last_name')->get(),
                 'regions' => Region::where('is_active', true)->get(),
-                'clients' => Client::orderBy('name', 'asc')->get(),
+                'clients' => Client::orderBy('company_name', 'asc')->get(),
                 'stats' => [
                     'total_visits' => 0,
                     'completed_visits' => 0,

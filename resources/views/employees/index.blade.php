@@ -195,24 +195,38 @@ File: resources/views/employees/index.blade.php
                         <td>
                             @php
                                 try {
-                                    $role = null;
-                                    if ($employee->role_id) {
-                                        $role = \App\Models\Role::find($employee->role_id);
-                                    }
+                                    $roles = $employee->roles;
                                 } catch (\Exception $e) {
-                                    $role = null;
+                                    $roles = collect();
                                 }
+
+                                // Role color mapping
+                                $roleColors = [
+                                    'admin' => ['bg' => '#E8F5E9', 'color' => '#2E7D32'],
+                                    'supervisor' => ['bg' => '#FFF3E0', 'color' => '#F57C00'],
+                                    'technician' => ['bg' => '#E3F2FD', 'color' => '#1976D2'],
+                                    'manager' => ['bg' => '#F3E5F5', 'color' => '#7B1FA2'],
+                                    'default' => ['bg' => '#F5F5F5', 'color' => '#666']
+                                ];
                             @endphp
 
-                            @if($role)
-                                <span class="role-badge">
-                                    {{ ucfirst(str_replace('_', ' ', $role->name)) }}
-                                </span>
-                            @else
-                                <span class="role-badge" style="background: #FFEBEE; color: #D32F2F;">
-                                    No Role
-                                </span>
-                            @endif
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                @if($roles->count() > 0)
+                                    @foreach($roles as $role)
+                                        @php
+                                            $roleLower = strtolower($role->name);
+                                            $colors = $roleColors[$roleLower] ?? $roleColors['default'];
+                                        @endphp
+                                        <span class="role-badge" style="background: {{ $colors['bg'] }}; color: {{ $colors['color'] }}; margin: 0;">
+                                            {{ ucfirst(str_replace('_', ' ', $role->name)) }}
+                                        </span>
+                                    @endforeach
+                                @else
+                                    <span class="role-badge" style="background: #FFEBEE; color: #D32F2F; margin: 0;">
+                                        No Role
+                                    </span>
+                                @endif
+                            </div>
                         </td>
                         <td>
                             <div style="color: #666; font-size: 14px;">
