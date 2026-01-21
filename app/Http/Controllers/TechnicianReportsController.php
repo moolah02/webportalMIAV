@@ -22,7 +22,7 @@ class TechnicianReportsController extends Controller
         // Check if TechnicianVisit table exists
         if (!class_exists(\App\Models\TechnicianVisit::class)) {
             return view('reports.technician-visits', [
-                'visits' => collect([]),
+                'visits' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
                 'technicians' => Employee::select('id', 'first_name', 'last_name')->get(),
                 'regions' => Region::where('is_active', true)->get(),
                 'clients' => Client::orderBy('company_name', 'asc')->get(),
@@ -122,7 +122,7 @@ $clients = Client::orderBy('company_name', 'asc')->get();
         } catch (\Exception $e) {
             // TechnicianVisit table doesn't exist or has issues
             return view('reports.technician-visits', [
-                'visits' => collect([]),
+                'visits' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
                 'technicians' => Employee::select('id', 'first_name', 'last_name')->get(),
                 'regions' => Region::where('is_active', true)->get(),
                 'clients' => Client::orderBy('company_name', 'asc')->get(),
