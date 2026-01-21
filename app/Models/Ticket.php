@@ -66,6 +66,16 @@ class Ticket extends Model
         return $this->belongsTo(Employee::class, 'assigned_to');
     }
 
+    public function steps()
+    {
+        return $this->hasMany(TicketStep::class)->orderBy('step_number');
+    }
+
+    public function currentStep()
+    {
+        return $this->steps()->where('status', 'in_progress')->first();
+    }
+
     // Scopes for easy filtering
     public function scopeByStatus($query, $status)
     {

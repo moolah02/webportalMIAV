@@ -641,8 +641,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Est. Resolution Time (minutes)</label>
-                        <input type="number" class="form-control" id="ticketEstimatedTime" min="0">
+                        <label class="form-label">Est. Resolution Time (Days)</label>
+                        <input type="number" class="form-control" id="ticketEstimatedDays" min="0">
                     </div>
                 </div>
                 <div class="form-group form-group-full">
@@ -674,7 +674,76 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" onclick="closeTicketDetailsModal()">Close</button>
+            <button type="button" class="btn btn-primary" id="viewStepsBtn" onclick="viewTicketSteps()">View Steps</button>
             <button type="button" class="btn btn-primary" id="editTicketBtn" onclick="editTicket()">Edit Ticket</button>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket Steps / Audit Trail Modal -->
+<div id="ticketStepsModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="ticketStepsTitle">Ticket Steps & Audit Trail</h3>
+            <button class="modal-close" onclick="closeTicketStepsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="ticketStepsContainer">
+                <!-- Steps will be dynamically loaded here -->
+            </div>
+
+            <!-- Add New Step Form -->
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                <h4>Add Work Step</h4>
+                <div class="form-group">
+                    <label class="form-label">Description *</label>
+                    <input type="text" class="form-control" id="stepDescription" placeholder="What work was done?">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" id="stepNotes" placeholder="Additional notes..." rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-success btn-sm" onclick="addTicketStep()">Add Step</button>
+                    <button type="button" class="btn btn-warning btn-sm" onclick="completeAndTransfer()">Complete & Transfer</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeTicketStepsModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Transfer Ticket Modal -->
+<div id="transferModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Transfer Ticket</h3>
+            <button class="modal-close" onclick="closeTransferModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Transfer To *</label>
+                <select class="form-control" id="transferToEmployee">
+                    <option value="">Select Employee</option>
+                    @foreach($technicians as $tech)
+                        <option value="{{ $tech->id }}">{{ $tech->first_name }} {{ $tech->last_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Reason for Transfer *</label>
+                <textarea class="form-control" id="transferReason" placeholder="Why are you transferring this ticket?" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Work Completed</label>
+                <textarea class="form-control" id="transferNotes" placeholder="What have you accomplished so far?" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeTransferModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="submitTransfer()">Transfer</button>
         </div>
     </div>
 </div>
@@ -689,10 +758,16 @@
         store: '{{ route("tickets.store") }}',
         update: (id) => `{{ route("tickets.update", ":id") }}`.replace(':id', id),
         show: (id) => `{{ route("tickets.show", ":id") }}`.replace(':id', id),
-        updateStatus: (id) => `{{ route("tickets.updateStatus", ":id") }}`.replace(':id', id)
+        updateStatus: (id) => `{{ route("tickets.updateStatus", ":id") }}`.replace(':id', id),
+        addStep: (id) => `{{ route("tickets.addStep", ":id") }}`.replace(':id', id),
+        completeStep: (id, stepId) => `{{ route("tickets.completeStep", [":id", ":step"]) }}`.replace(':id', id).replace(':step', stepId),
+        transferStep: (id, stepId) => `{{ route("tickets.transferStep", [":id", ":step"]) }}`.replace(':id', id).replace(':step', stepId),
+        resolveTicket: (id) => `{{ route("tickets.resolve", ":id") }}`.replace(':id', id),
+        auditTrail: (id) => `{{ route("tickets.auditTrail", ":id") }}`.replace(':id', id)
     };
 
     let currentEditingTicket = null;
+    let currentViewingTicketId = null;
 
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
@@ -726,7 +801,7 @@
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
 
         const rows = document.querySelectorAll('#ticketsTableBody tr');
-        
+
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             if (cells.length < 8) return; // Skip empty state row
@@ -738,7 +813,7 @@
             const priority = cells[3].querySelector('.priority-badge')?.className.includes(`priority-${priorityFilter}`) || !priorityFilter;
             const status = cells[4].querySelector('.status-badge')?.className.includes(`status-${statusFilter.replace('_', '-')}`) || !statusFilter;
 
-            const matchesSearch = !searchInput || 
+            const matchesSearch = !searchInput ||
                 title.toLowerCase().includes(searchInput) ||
                 description.toLowerCase().includes(searchInput) ||
                 ticketId.toLowerCase().includes(searchInput);
@@ -753,7 +828,7 @@
         document.getElementById('priorityFilter').value = '';
         document.getElementById('issueTypeFilter').value = '';
         document.getElementById('searchInput').value = '';
-        
+
         // Show all rows
         document.querySelectorAll('#ticketsTableBody tr').forEach(row => {
             row.style.display = '';
@@ -778,14 +853,14 @@
 
         currentEditingTicket = ticket;
         document.getElementById('ticketModalTitle').textContent = 'Edit Ticket';
-        
+
         // Populate form
         document.getElementById('ticketTitle').value = ticket.title;
         document.getElementById('ticketPriority').value = ticket.priority;
         document.getElementById('ticketIssueType').value = ticket.issue_type;
         document.getElementById('ticketPosTerminal').value = ticket.pos_terminal_id || '';
         document.getElementById('ticketAssignedTo').value = ticket.assigned_to || '';
-        document.getElementById('ticketEstimatedTime').value = ticket.estimated_resolution_time || '';
+        document.getElementById('ticketEstimatedDays').value = ticket.estimated_resolution_days || '';
         document.getElementById('ticketDescription').value = ticket.description;
         document.getElementById('ticketResolution').value = ticket.resolution || '';
 
@@ -810,7 +885,7 @@
             issue_type: document.getElementById('ticketIssueType').value,
             pos_terminal_id: document.getElementById('ticketPosTerminal').value || null,
             assigned_to: document.getElementById('ticketAssignedTo').value || null,
-            estimated_resolution_time: document.getElementById('ticketEstimatedTime').value || null,
+            estimated_resolution_days: document.getElementById('ticketEstimatedDays').value || null,
             description: document.getElementById('ticketDescription').value,
             resolution: document.getElementById('ticketResolution').value || null
         };
@@ -818,7 +893,7 @@
         try {
             const url = currentEditingTicket ? routes.update(currentEditingTicket.id) : routes.store;
             const method = currentEditingTicket ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -867,8 +942,10 @@
         const ticket = ticketsData.find(t => t.id === ticketId);
         if (!ticket) return;
 
+        currentViewingTicketId = ticketId;
+
         document.getElementById('ticketDetailsTitle').textContent = `Ticket ${ticket.ticket_id}`;
-        
+
         const detailsBody = document.getElementById('ticketDetailsBody');
         detailsBody.innerHTML = `
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px;">
@@ -902,10 +979,10 @@
                         ${ticket.pos_terminal.terminal_id}
                     </div>
                 ` : ''}
-                ${ticket.estimated_resolution_time ? `
+                ${ticket.estimated_resolution_days ? `
                     <div>
                         <strong>Est. Resolution:</strong><br>
-                        ${ticket.estimated_resolution_time} minutes
+                        ${ticket.estimated_resolution_days} days
                     </div>
                 ` : ''}
             </div>
@@ -935,6 +1012,169 @@
 
     function closeTicketDetailsModal() {
         document.getElementById('ticketDetailsModal').classList.remove('show');
+    }
+
+    async function viewTicketSteps() {
+        if (!currentViewingTicketId) return;
+
+        try {
+            const response = await fetch(routes.auditTrail(currentViewingTicketId), {
+                headers: {
+                    'Authorization': `Bearer ${document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch steps');
+
+            const data = await response.json();
+            displayTicketSteps(data.steps || []);
+
+            closeTicketDetailsModal();
+            document.getElementById('ticketStepsModal').classList.add('show');
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error loading ticket steps');
+        }
+    }
+
+    function displayTicketSteps(steps) {
+        const container = document.getElementById('ticketStepsContainer');
+
+        if (steps.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #999;">No steps recorded yet</p>';
+            return;
+        }
+
+        container.innerHTML = steps.map((step, index) => `
+            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid ${getStepColor(step.status)};">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <strong>Step ${step.step_number}</strong> - ${step.status.toUpperCase()}
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                            ${step.employee_name}
+                            ${step.completed_at ? ` • Completed: ${new Date(step.completed_at).toLocaleString()}` : ''}
+                        </div>
+                    </div>
+                </div>
+                <p style="margin: 10px 0; color: #333;">${step.description}</p>
+                ${step.resolution_notes ? `<p style="margin: 10px 0; padding: 10px; background: white; border-radius: 4px;"><strong>Resolution:</strong> ${step.resolution_notes}</p>` : ''}
+                ${step.notes ? `<p style="margin: 10px 0; font-size: 12px; color: #666;"><strong>Notes:</strong> ${step.notes}</p>` : ''}
+                ${step.transferred_reason ? `<p style="margin: 10px 0; font-size: 12px; color: #d9534f;"><strong>Transferred to ${step.transferred_to_name}:</strong> ${step.transferred_reason}</p>` : ''}
+            </div>
+        `).join('');
+    }
+
+    function getStepColor(status) {
+        const colors = {
+            'in_progress': '#3498db',
+            'completed': '#27ae60',
+            'transferred': '#f39c12',
+            'resolved': '#2ecc71'
+        };
+        return colors[status] || '#95a5a6';
+    }
+
+    async function addTicketStep() {
+        const description = document.getElementById('stepDescription').value;
+        const notes = document.getElementById('stepNotes').value;
+
+        if (!description.trim()) {
+            alert('Please enter a description');
+            return;
+        }
+
+        try {
+            const response = await fetch(routes.addStep(currentViewingTicketId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    description,
+                    notes: notes || null
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to add step');
+
+            // Clear form and reload steps
+            document.getElementById('stepDescription').value = '';
+            document.getElementById('stepNotes').value = '';
+
+            // Reload steps display
+            await viewTicketSteps();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error adding step');
+        }
+    }
+
+    function completeAndTransfer() {
+        document.getElementById('transferModal').classList.add('show');
+    }
+
+    function closeTransferModal() {
+        document.getElementById('transferModal').classList.remove('show');
+        document.getElementById('transferToEmployee').value = '';
+        document.getElementById('transferReason').value = '';
+        document.getElementById('transferNotes').value = '';
+    }
+
+    async function submitTransfer() {
+        const transferTo = document.getElementById('transferToEmployee').value;
+        const reason = document.getElementById('transferReason').value;
+        const notes = document.getElementById('transferNotes').value;
+
+        if (!transferTo || !reason.trim()) {
+            alert('Please select an employee and provide a reason');
+            return;
+        }
+
+        try {
+            // First get current step
+            const auditResponse = await fetch(routes.auditTrail(currentViewingTicketId));
+            const auditData = await auditResponse.json();
+            const currentStep = auditData.steps?.find(s => s.status === 'in_progress');
+
+            if (!currentStep) {
+                alert('No active step to transfer');
+                return;
+            }
+
+            // Transfer the step
+            const transferResponse = await fetch(
+                routes.transferStep(currentViewingTicketId, currentStep.id),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        transferred_to: transferTo,
+                        transferred_reason: reason,
+                        notes: notes || null
+                    })
+                }
+            );
+
+            if (!transferResponse.ok) throw new Error('Failed to transfer');
+
+            alert('Ticket transferred successfully');
+            closeTransferModal();
+            closeTicketStepsModal();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error transferring ticket');
+        }
+    }
+
+    function closeTicketStepsModal() {
+        document.getElementById('ticketStepsModal').classList.remove('show');
     }
 </script>
 @endpush

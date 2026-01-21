@@ -645,6 +645,23 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         ->middleware('permission:manage_tickets,all')
         ->name('tickets.assign');
 
+    // Staged Resolution System Routes
+    Route::post('tickets/{ticket}/steps', [TicketController::class, 'addStep'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.addStep');
+    Route::patch('tickets/{ticket}/steps/{step}/complete', [TicketController::class, 'completeStep'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.completeStep');
+    Route::post('tickets/{ticket}/steps/{step}/transfer', [TicketController::class, 'transferStep'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.transferStep');
+    Route::patch('tickets/{ticket}/resolve', [TicketController::class, 'resolveTicket'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.resolve');
+    Route::get('tickets/{ticket}/audit-trail', [TicketController::class, 'getAuditTrail'])
+        ->middleware('permission:view_tickets,manage_tickets,all')
+        ->name('tickets.auditTrail');
+
     // ==============================================
     // DEPLOYMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================
