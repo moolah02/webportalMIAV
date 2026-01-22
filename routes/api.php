@@ -296,7 +296,12 @@ Route::middleware(['auth:sanctum'])->prefix('assets')->group(function () {
         // Additional API-specific routes
         Route::post('/{ticket}/comments', [TicketController::class, 'addComment']);
         Route::get('/{ticket}/history', [TicketController::class, 'getHistory']);
-
+        // Staged Resolution System Routes
+        Route::post('/{ticket}/steps', [TicketController::class, 'addStep']);
+        Route::patch('/{ticket}/steps/{step}/complete', [TicketController::class, 'completeStep']);
+        Route::post('/{ticket}/steps/{step}/transfer', [TicketController::class, 'transferStep']);
+        Route::patch('/{ticket}/resolve', [TicketController::class, 'resolveTicket']);
+        Route::get('/{ticket}/audit-trail', [TicketController::class, 'getAuditTrail']);
         // Optional: explicit “mine” shortcut
         Route::get('/mine/list', [TicketController::class, 'myTickets']);
     });

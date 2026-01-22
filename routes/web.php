@@ -645,6 +645,23 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         ->middleware('permission:manage_tickets,all')
         ->name('tickets.assign');
 
+    // Staged Resolution System Routes
+    Route::post('tickets/{ticket}/steps', [TicketController::class, 'addStep'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.addStep');
+    Route::patch('tickets/{ticket}/steps/{step}/complete', [TicketController::class, 'completeStep'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.completeStep');
+    Route::post('tickets/{ticket}/steps/{step}/transfer', [TicketController::class, 'transferStep'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.transferStep');
+    Route::patch('tickets/{ticket}/resolve', [TicketController::class, 'resolveTicket'])
+        ->middleware('permission:manage_tickets,all')
+        ->name('tickets.resolve');
+    Route::get('tickets/{ticket}/audit-trail', [TicketController::class, 'getAuditTrail'])
+        ->middleware('permission:view_tickets,manage_tickets,all')
+        ->name('tickets.auditTrail');
+
     // ==============================================
     // DEPLOYMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================
@@ -849,10 +866,14 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         // Asset Category Fields Management Routes
         Route::get('/asset-categories/{category}/fields', [AssetCategoryFieldController::class, 'index'])->name('asset-category-fields.index');
         Route::post('/asset-categories/{category}/fields', [AssetCategoryFieldController::class, 'store'])->name('asset-category-fields.store');
-        Route::put('/asset-categories/{category}/fields/{field}', [AssetCategoryFieldController::class, 'update'])->name('asset-category-fields.update');
-        Route::delete('/asset-categories/{category}/fields/{field}', [AssetCategoryFieldController::class, 'destroy'])->name('asset-category-fields.destroy');
+        Route::put('/asset-category-fields/{field}', [AssetCategoryFieldController::class, 'update'])->name('asset-category-fields.update');
+        Route::delete('/asset-category-fields/{field}', [AssetCategoryFieldController::class, 'destroy'])->name('asset-category-fields.destroy');
         Route::post('/asset-categories/{category}/fields/reorder', [AssetCategoryFieldController::class, 'reorder'])->name('asset-category-fields.reorder');
+        Route::put('/asset-categories/{category}/settings', [AssetCategoryFieldController::class, 'updateCategory'])->name('asset-category-fields.update-category');
     });
+
+    // API route for getting category fields (accessible from asset create/edit forms)
+    Route::get('/api/asset-categories/{categoryName}/fields', [AssetCategoryFieldController::class, 'getFieldsByName'])->name('api.asset-category-fields');
 
     // ==============================================
     // DOCUMENT MANAGEMENT ROUTES - UPDATED PERMISSIONS

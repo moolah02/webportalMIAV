@@ -1,25 +1,28 @@
 <!-- Dynamic Category Fields Partial -->
-<div id="categoryFieldsContainer" style="display:none;">
-    <div class="form-group">
-        <div id="dynamicFieldsContent"></div>
-    </div>
+<div id="dynamicFieldsSection" class="content-card" style="margin-block-end: 20px; display: none;">
+    <h4 id="dynamicFieldsTitle" style="margin-block-end: 20px; color: #333;"></h4>
+    <div id="dynamicFieldsContent" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"></div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const categorySelect = document.getElementById('category');
-    const stockQuantityInput = document.getElementById('stock_quantity');
-    const dynamicFieldsContainer = document.getElementById('categoryFieldsContainer');
+    const categorySelect = document.getElementById('categorySelect');
+    const stockQuantityInput = document.querySelector('input[name="stock_quantity"]');
+    const dynamicFieldsSection = document.getElementById('dynamicFieldsSection');
+    const dynamicFieldsTitle = document.getElementById('dynamicFieldsTitle');
     const dynamicFieldsContent = document.getElementById('dynamicFieldsContent');
 
     // Categories that don't typically need Brand and Model
     const categoriesWithoutBrandModel = ['Furniture', 'Software', 'Office Supplies', 'Licenses'];
 
+    // Store existing specification values (for edit mode)
+    const existingSpecifications = @json(old('specifications', $asset->specifications ?? []));
+
     // Load fields when category changes
     if (categorySelect) {
         categorySelect.addEventListener('change', loadCategoryFields);
 
-        // Load on page load if category is already selected (edit mode)
+        // Load on page load if category is already selected
         if (categorySelect.value) {
             loadCategoryFields();
         }
@@ -29,9 +32,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const categoryName = categorySelect.value;
 
         if (!categoryName) {
-            dynamicFieldsContainer.style.display = 'none';
+            dynamicFieldsSection.style.display = 'none';
             dynamicFieldsContent.innerHTML = '';
-            toggleBrandModelFields(true); // Show them by default
+            toggleBrandModelFields(true);
             return;
         }
 
@@ -39,41 +42,43 @@ document.addEventListener('DOMContentLoaded', function() {
         const shouldHideBrandModel = categoriesWithoutBrandModel.includes(categoryName);
         toggleBrandModelFields(!shouldHideBrandModel);
 
-        fetch(`/api/asset-categories/${categoryName}/fields`)
+        // Fetch category fields from API
+        fetch(`/api/asset-categories/${encodeURIComponent(categoryName)}/fields`)
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
+                if (data.success && data.fields.length > 0) {
                     renderDynamicFields(data.category, data.fields);
                     updateStockQuantityBehavior(data.category.requires_individual_entry);
+                } else {
+                    dynamicFieldsSection.style.display = 'none';
+                    dynamicFieldsContent.innerHTML = '';
+                    updateStockQuantityBehavior(false);
                 }
             })
-            .catch(error => console.error('Error loading fields:', error));
+            .catch(error => {
+                console.error('Error loading category fields:', error);
+                dynamicFieldsSection.style.display = 'none';
+            });
     }
 
     function toggleBrandModelFields(show) {
-        // Find Brand and Model field containers by ID
         const brandField = document.getElementById('brandField');
         const modelField = document.getElementById('modelField');
 
         if (brandField) {
             brandField.style.display = show ? 'block' : 'none';
-            const brandInput = brandField.querySelector('input[name="brand"]');
-            if (brandInput) {
-                if (!show) brandInput.removeAttribute('required');
-            }
         }
 
         if (modelField) {
             modelField.style.display = show ? 'block' : 'none';
-            const modelInput = modelField.querySelector('input[name="model"]');
-            if (modelInput) {
-                if (!show) modelInput.removeAttribute('required');
-            }
         }
     }
-        }
 
-        dynamicFieldsContainer.style.display = 'block';
+    function renderDynamicFields(category, fields) {
+        dynamicFieldsContent.innerHTML = '';
+        dynamicFieldsTitle.innerHTML = `<span style="margin-right: 8px;">${getCategoryIcon(category.name)}</span>${category.name} Details`;
+        dynamicFieldsSection.style.display = 'block';
+        dynamicFieldsSection.classList.add('category-fields');
 
         fields.forEach(field => {
             const fieldGroup = createFieldElement(field);
@@ -81,111 +86,92 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function getCategoryIcon(categoryName) {
+        const icons = {
+            'Vehicles': '🚗',
+            'Computer and IT Equipment': '💻',
+            'IT Equipment': '💻',
+            'POS Terminals': '🖥️',
+            'Licenses': '🔑',
+            'Software': '💾',
+            'Furniture': '🪑',
+            'Office Supplies': '📎',
+            'Electronics': '📱'
+        };
+        return icons[categoryName] || '📋';
+    }
+
     function createFieldElement(field) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'form-group';
 
         const label = document.createElement('label');
-        label.htmlFor = `field_${field.name}`;
+        label.style.cssText = 'display: block; margin-block-end: 5px; font-weight: 500;';
+        label.htmlFor = `spec_${field.name}`;
         label.textContent = field.label;
         if (field.required) {
-            label.innerHTML += '<span class="text-danger">*</span>';
+            label.innerHTML += ' <span style="color: #f44336;">*</span>';
         }
 
-        const inputContainer = document.createElement('div');
+        // Get existing value from specifications
+        const existingValue = existingSpecifications && existingSpecifications[field.name]
+            ? existingSpecifications[field.name]
+            : '';
 
         let input;
-        const fieldId = `field_${field.name}`;
+        const fieldId = `spec_${field.name}`;
         const fieldInputName = `specifications[${field.name}]`;
-        const existingValue = document.querySelector(`[name="${fieldInputName}"]`)?.value || '';
+        const inputStyle = 'inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;';
 
         switch (field.type) {
             case 'text':
-                input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'form-control';
-                input.id = fieldId;
-                input.name = fieldInputName;
-                input.placeholder = field.placeholder || '';
-                input.value = existingValue;
-                if (field.required) input.required = true;
-                inputContainer.appendChild(input);
-                break;
-
             case 'email':
-                input = document.createElement('input');
-                input.type = 'email';
-                input.className = 'form-control';
-                input.id = fieldId;
-                input.name = fieldInputName;
-                input.placeholder = field.placeholder || '';
-                input.value = existingValue;
-                if (field.required) input.required = true;
-                inputContainer.appendChild(input);
-                break;
-
             case 'url':
-                input = document.createElement('input');
-                input.type = 'url';
-                input.className = 'form-control';
-                input.id = fieldId;
-                input.name = fieldInputName;
-                input.placeholder = field.placeholder || '';
-                input.value = existingValue;
-                if (field.required) input.required = true;
-                inputContainer.appendChild(input);
-                break;
-
             case 'tel':
                 input = document.createElement('input');
-                input.type = 'tel';
-                input.className = 'form-control';
+                input.type = field.type;
+                input.style.cssText = inputStyle;
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.placeholder = field.placeholder || '';
                 input.value = existingValue;
                 if (field.required) input.required = true;
-                inputContainer.appendChild(input);
                 break;
 
             case 'number':
                 input = document.createElement('input');
                 input.type = 'number';
-                input.className = 'form-control';
+                input.style.cssText = inputStyle;
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.placeholder = field.placeholder || '';
                 input.value = existingValue;
                 if (field.required) input.required = true;
-                inputContainer.appendChild(input);
                 break;
 
             case 'date':
                 input = document.createElement('input');
                 input.type = 'date';
-                input.className = 'form-control';
+                input.style.cssText = inputStyle;
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.value = existingValue;
                 if (field.required) input.required = true;
-                inputContainer.appendChild(input);
                 break;
 
             case 'textarea':
                 input = document.createElement('textarea');
-                input.className = 'form-control';
+                input.style.cssText = inputStyle;
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.placeholder = field.placeholder || '';
-                input.rows = '3';
+                input.rows = 3;
                 input.value = existingValue;
                 if (field.required) input.required = true;
-                inputContainer.appendChild(input);
                 break;
 
             case 'select':
                 input = document.createElement('select');
-                input.className = 'form-control';
+                input.style.cssText = inputStyle;
                 input.id = fieldId;
                 input.name = fieldInputName;
                 if (field.required) input.required = true;
@@ -206,28 +192,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         input.appendChild(optionEl);
                     });
                 }
-
-                inputContainer.appendChild(input);
                 break;
 
             default:
                 input = document.createElement('input');
                 input.type = 'text';
-                input.className = 'form-control';
+                input.style.cssText = inputStyle;
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.placeholder = field.placeholder || '';
                 input.value = existingValue;
                 if (field.required) input.required = true;
-                inputContainer.appendChild(input);
         }
 
         wrapper.appendChild(label);
-        wrapper.appendChild(inputContainer);
+        wrapper.appendChild(input);
 
         if (field.help) {
-            const helpText = document.createElement('small');
-            helpText.className = 'form-text text-muted';
+            const helpText = document.createElement('div');
+            helpText.style.cssText = 'font-size: 12px; color: #666; margin-block-start: 5px;';
             helpText.textContent = field.help;
             wrapper.appendChild(helpText);
         }
@@ -236,27 +219,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateStockQuantityBehavior(requiresIndividualEntry) {
-        if (requiresIndividualEntry && stockQuantityInput) {
+        if (!stockQuantityInput) return;
+
+        const existingNotice = document.getElementById('individualEntryNotice');
+
+        if (requiresIndividualEntry) {
             stockQuantityInput.value = 1;
             stockQuantityInput.readOnly = true;
-            stockQuantityInput.disabled = true;
+            stockQuantityInput.style.backgroundColor = '#f5f5f5';
 
-            // Show notice
-            let notice = document.getElementById('individualEntryNotice');
-            if (!notice) {
-                notice = document.createElement('div');
+            if (!existingNotice) {
+                const notice = document.createElement('div');
                 notice.id = 'individualEntryNotice';
-                notice.className = 'alert alert-info';
-                notice.innerHTML = '<i class="fas fa-info-circle"></i> This category requires individual entry. Stock quantity is automatically set to 1.';
+                notice.style.cssText = 'background: #e3f2fd; color: #1565c0; padding: 10px; border-radius: 4px; margin-block-start: 10px; font-size: 13px;';
+                notice.innerHTML = '<strong>ℹ️ Note:</strong> This category requires individual entry. Each item must be added separately with unique identifiers.';
                 stockQuantityInput.parentElement.appendChild(notice);
             }
-            notice.style.display = 'block';
-        } else if (stockQuantityInput) {
+        } else {
             stockQuantityInput.readOnly = false;
-            stockQuantityInput.disabled = false;
-            const notice = document.getElementById('individualEntryNotice');
-            if (notice) {
-                notice.style.display = 'none';
+            stockQuantityInput.style.backgroundColor = '';
+
+            if (existingNotice) {
+                existingNotice.remove();
             }
         }
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\TicketStep;
 use App\Models\Employee;
 use App\Models\PosTerminal;
 use App\Models\Client;
@@ -98,7 +99,7 @@ class TicketController extends Controller
             'assignment_type' => 'required|in:public,direct',
             'pos_terminal_id' => 'nullable|exists:pos_terminals,id',
             'assigned_to' => 'nullable|exists:employees,id',
-            'estimated_resolution_time' => 'nullable|integer|min:1',
+            'estimated_resolution_days' => 'nullable|integer|min:1',
             'client_id' => 'nullable|exists:clients,id',
         ]);
 
@@ -119,10 +120,19 @@ class TicketController extends Controller
 
         $ticket = Ticket::create($validated);
 
+        // Create initial step for the ticket
+        TicketStep::create([
+            'ticket_id' => $ticket->id,
+            'employee_id' => Auth::id(),
+            'step_number' => 1,
+            'status' => 'in_progress',
+            'description' => 'Ticket created and opened',
+        ]);
+
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Ticket created successfully',
-                'ticket' => $ticket->load(['assignedTo', 'posTerminal', 'technician'])
+                'ticket' => $ticket->load(['assignedTo', 'posTerminal', 'technician', 'steps'])
             ], 201);
         }
 
@@ -171,7 +181,7 @@ class TicketController extends Controller
             'assignment_type' => 'required|in:public,direct',
             'pos_terminal_id' => 'nullable|exists:pos_terminals,id',
             'assigned_to' => 'nullable|exists:employees,id',
-            'estimated_resolution_time' => 'nullable|integer|min:1',
+            'estimated_resolution_days' => 'nullable|integer|min:1',
             'resolution' => 'nullable|string',
             'status' => 'nullable|in:open,in_progress,resolved,closed,cancelled',
         ]);
@@ -298,5 +308,114 @@ class TicketController extends Controller
             'message' => 'Ticket created successfully',
             'ticket' => $ticket->load(['posTerminal'])
         ], 201);
+    }
+
+    /**
+     * Add work to a ticket step
+     */
+    public function addStep(Request $request, Ticket $ticket)
+    {
+        $validated = $request->validate([
+            'description' => 'required|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $validated['ticket_id'] = $ticket->id;
+        $validated['employee_id'] = Auth::id();
+
+        // Get next step number
+        $lastStep = $ticket->steps()->orderBy('step_number', 'desc')->first();
+        $validated['step_number'] = ($lastStep?->step_number ?? 0) + 1;
+        $validated['status'] = 'in_progress';
+
+        $step = TicketStep::create($validated);
+
+        return response()->json([
+            'message' => 'Work step added successfully',
+            'step' => $step,
+        ]);
+    }
+
+    /**
+     * Complete current step (mark as complete)
+     */
+    public function completeStep(Request $request, Ticket $ticket, TicketStep $step)
+    {
+        $validated = $request->validate([
+            'resolution_notes' => 'nullable|string',
+        ]);
+
+        $step->resolution_notes = $validated['resolution_notes'] ?? null;
+        $step->markAsCompleted();
+
+        return response()->json([
+            'message' => 'Step completed successfully',
+            'step' => $step,
+        ]);
+    }
+
+    /**
+     * Transfer ticket to another employee
+     */
+    public function transferStep(Request $request, Ticket $ticket, TicketStep $step)
+    {
+        $validated = $request->validate([
+            'transferred_to' => 'required|exists:employees,id',
+            'transferred_reason' => 'required|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $step->notes = $validated['notes'] ?? null;
+        $employee = Employee::find($validated['transferred_to']);
+        $newStep = $step->transferTo($employee, $validated['transferred_reason']);
+
+        return response()->json([
+            'message' => 'Ticket transferred successfully',
+            'old_step' => $step,
+            'new_step' => $newStep,
+        ]);
+    }
+
+    /**
+     * Mark ticket as resolved
+     */
+    public function resolveTicket(Request $request, Ticket $ticket)
+    {
+        $validated = $request->validate([
+            'resolution_notes' => 'nullable|string',
+        ]);
+
+        // Mark current step as resolved
+        $currentStep = $ticket->currentStep();
+        if ($currentStep) {
+            $currentStep->resolution_notes = $validated['resolution_notes'] ?? null;
+            $currentStep->markAsResolved();
+        }
+
+        // Mark ticket as resolved
+        $ticket->status = 'resolved';
+        $ticket->resolution = $validated['resolution_notes'] ?? null;
+        $ticket->resolved_at = now();
+        $ticket->save();
+
+        return response()->json([
+            'message' => 'Ticket resolved successfully',
+            'ticket' => $ticket->load(['steps']),
+        ]);
+    }
+
+    /**
+     * Get ticket audit trail (all steps)
+     */
+    public function getAuditTrail(Ticket $ticket)
+    {
+        $steps = $ticket->steps()->get()->map(fn($step) => $step->getAuditTrail());
+
+        return response()->json([
+            'success' => true,
+            'ticket_id' => $ticket->ticket_id,
+            'total_steps' => count($steps),
+            'steps' => $steps,
+        ]);
     }
 }
