@@ -262,7 +262,7 @@ textarea.modern-form-control {
                     <p class="mb-0 mt-2 opacity-75">Set up a new project with all the essential details and requirements.</p>
                 </div>
 
-                <form action="{{ route('projects.store') }}" method="POST">
+                <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <div class="card-body p-4">
@@ -509,6 +509,9 @@ textarea.modern-form-control {
                                 @enderror
                             </div>
                         </div>
+
+                        {{-- Terminal Upload Section --}}
+                        @include('projects.partials.terminal-upload-section')
                     </div>
 
                     <div class="modern-footer d-flex justify-content-between align-items-center">

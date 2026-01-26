@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Client;
 use App\Models\Employee;
 use App\Models\PosTerminal;
+use App\Models\ProjectTerminal;
 use App\Models\JobAssignment;
 use App\Models\Visit;
 use App\Models\ProjectCompletion;
@@ -184,12 +185,97 @@ public function store(Request $request)
             'created_by' => Auth::id(),
         ]);
 
+        // Handle terminal assignment from upload (if provided)
+        $terminalsAssigned = 0;
+        if ($request->filled('uploaded_terminal_ids')) {
+            $terminalIds = json_decode($request->input('uploaded_terminal_ids'), true);
+            if (is_array($terminalIds) && count($terminalIds) > 0) {
+                $inclusionReason = $request->input('terminal_inclusion_reason', 'Initial project setup');
+
+                foreach ($terminalIds as $terminalId) {
+                    try {
+                        ProjectTerminal::create([
+                            'project_id' => $project->id,
+                            'pos_terminal_id' => $terminalId,
+                            'included_at' => now(),
+                            'inclusion_reason' => $inclusionReason,
+                            'is_active' => true,
+                            'created_by' => Auth::id(),
+                        ]);
+                        $terminalsAssigned++;
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to assign terminal to project', [
+                            'project_id' => $project->id,
+                            'terminal_id' => $terminalId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // Update estimated terminals count
+                $project->update([
+                    'estimated_terminals_count' => $project->projectTerminals()->where('is_active', true)->count(),
+                ]);
+            }
+        }
+
+        // Handle creating missing terminals (if provided)
+        if ($request->filled('missing_terminals_data')) {
+            $missingTerminals = json_decode($request->input('missing_terminals_data'), true);
+            if (is_array($missingTerminals)) {
+                foreach ($missingTerminals as $terminalData) {
+                    if (empty($terminalData['terminal_id']) || empty($terminalData['merchant_name'])) {
+                        continue;
+                    }
+                    try {
+                        $newTerminal = PosTerminal::create([
+                            'terminal_id' => $terminalData['terminal_id'],
+                            'merchant_name' => $terminalData['merchant_name'],
+                            'merchant_phone' => $terminalData['merchant_phone'] ?? null,
+                            'physical_address' => $terminalData['physical_address'] ?? null,
+                            'city' => $terminalData['city'] ?? null,
+                            'region' => $terminalData['region'] ?? null,
+                            'province' => $terminalData['province'] ?? null,
+                            'status' => $terminalData['status'] ?? 'active',
+                            'client_id' => $project->client_id,
+                        ]);
+
+                        ProjectTerminal::create([
+                            'project_id' => $project->id,
+                            'pos_terminal_id' => $newTerminal->id,
+                            'included_at' => now(),
+                            'inclusion_reason' => 'Created during project setup',
+                            'is_active' => true,
+                            'created_by' => Auth::id(),
+                        ]);
+                        $terminalsAssigned++;
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to create terminal for project', [
+                            'project_id' => $project->id,
+                            'terminal_id' => $terminalData['terminal_id'] ?? 'unknown',
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // Update estimated terminals count
+                $project->update([
+                    'estimated_terminals_count' => $project->projectTerminals()->where('is_active', true)->count(),
+                ]);
+            }
+        }
+
         DB::commit();
 
-        $successMessage = 'Project created successfully! You can assign terminals using the Job Assignment system.';
+        $successMessage = 'Project created successfully!';
+        if ($terminalsAssigned > 0) {
+            $successMessage .= " {$terminalsAssigned} terminals assigned.";
+        } else {
+            $successMessage .= ' You can assign terminals using the Job Assignment system.';
+        }
 
         return redirect()->route('projects.show', $project)
-    ->with('success', 'Project created successfully!')
+    ->with('success', $successMessage)
     ->with('show_deployment_link', true);
 
     } catch (\Exception $e) {
@@ -232,14 +318,114 @@ public function store(Request $request)
             'notes' => 'nullable|string',
         ]);
 
-        $project->update($request->only([
-            'project_name', 'client_id', 'project_type', 'description',
-            'start_date', 'end_date', 'priority', 'budget',
-            'estimated_terminals_count', 'project_manager_id', 'notes'
-        ]));
+        DB::beginTransaction();
+        try {
+            $project->update($request->only([
+                'project_name', 'client_id', 'project_type', 'description',
+                'start_date', 'end_date', 'priority', 'budget',
+                'estimated_terminals_count', 'project_manager_id', 'notes'
+            ]));
 
-        return redirect()->route('projects.show', $project)
-            ->with('success', 'Project updated successfully!');
+            // Handle terminal assignment from upload (if provided)
+            $terminalsAssigned = 0;
+            if ($request->filled('uploaded_terminal_ids')) {
+                $terminalIds = json_decode($request->input('uploaded_terminal_ids'), true);
+                if (is_array($terminalIds) && count($terminalIds) > 0) {
+                    $inclusionReason = $request->input('terminal_inclusion_reason', 'Added via project edit');
+
+                    $existingIds = $project->projectTerminals()
+                        ->where('is_active', true)
+                        ->pluck('pos_terminal_id')
+                        ->toArray();
+
+                    foreach ($terminalIds as $terminalId) {
+                        if (in_array($terminalId, $existingIds)) {
+                            continue; // Skip already assigned
+                        }
+                        try {
+                            ProjectTerminal::create([
+                                'project_id' => $project->id,
+                                'pos_terminal_id' => $terminalId,
+                                'included_at' => now(),
+                                'inclusion_reason' => $inclusionReason,
+                                'is_active' => true,
+                                'created_by' => Auth::id(),
+                            ]);
+                            $terminalsAssigned++;
+                        } catch (\Exception $e) {
+                            Log::warning('Failed to assign terminal to project', [
+                                'project_id' => $project->id,
+                                'terminal_id' => $terminalId,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Handle creating missing terminals (if provided)
+            if ($request->filled('missing_terminals_data')) {
+                $missingTerminals = json_decode($request->input('missing_terminals_data'), true);
+                if (is_array($missingTerminals)) {
+                    foreach ($missingTerminals as $terminalData) {
+                        if (empty($terminalData['terminal_id']) || empty($terminalData['merchant_name'])) {
+                            continue;
+                        }
+                        try {
+                            $newTerminal = PosTerminal::create([
+                                'terminal_id' => $terminalData['terminal_id'],
+                                'merchant_name' => $terminalData['merchant_name'],
+                                'merchant_phone' => $terminalData['merchant_phone'] ?? null,
+                                'physical_address' => $terminalData['physical_address'] ?? null,
+                                'city' => $terminalData['city'] ?? null,
+                                'region' => $terminalData['region'] ?? null,
+                                'province' => $terminalData['province'] ?? null,
+                                'status' => $terminalData['status'] ?? 'active',
+                                'client_id' => $project->client_id,
+                            ]);
+
+                            ProjectTerminal::create([
+                                'project_id' => $project->id,
+                                'pos_terminal_id' => $newTerminal->id,
+                                'included_at' => now(),
+                                'inclusion_reason' => 'Created during project edit',
+                                'is_active' => true,
+                                'created_by' => Auth::id(),
+                            ]);
+                            $terminalsAssigned++;
+                        } catch (\Exception $e) {
+                            Log::warning('Failed to create terminal for project', [
+                                'project_id' => $project->id,
+                                'terminal_id' => $terminalData['terminal_id'] ?? 'unknown',
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Update estimated terminals count if terminals were assigned
+            if ($terminalsAssigned > 0) {
+                $project->update([
+                    'estimated_terminals_count' => $project->projectTerminals()->where('is_active', true)->count(),
+                ]);
+            }
+
+            DB::commit();
+
+            $successMessage = 'Project updated successfully!';
+            if ($terminalsAssigned > 0) {
+                $successMessage .= " {$terminalsAssigned} terminals assigned.";
+            }
+
+            return redirect()->route('projects.show', $project)
+                ->with('success', $successMessage);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()
+                ->withErrors(['error' => 'Error updating project: ' . $e->getMessage()]);
+        }
     }
 
 

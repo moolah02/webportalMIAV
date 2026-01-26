@@ -1077,6 +1077,28 @@ Route::prefix('projects')->name('projects.')->middleware('permission:manage_proj
     // REMOVED: completion-success (no longer needed in closure flow)
     // Route::get('/{project}/completion-success'...
 
+    // ==============================================
+    // PROJECT TERMINAL UPLOAD ROUTES
+    // ==============================================
+    Route::get('/terminals/download-template', [App\Http\Controllers\ProjectTerminalUploadController::class, 'downloadTemplate'])
+        ->name('terminals.download-template');
+
+    // Temporary preview for create mode (before project exists)
+    Route::post('/terminals/preview-upload-temp', [App\Http\Controllers\ProjectTerminalUploadController::class, 'previewForCreate'])
+        ->middleware('permission:manage_projects,all')
+        ->name('terminals.preview-upload-temp');
+
+    Route::prefix('{project}/terminals')->name('terminals.')->middleware('permission:manage_projects,all')->group(function () {
+        Route::post('/preview-upload', [App\Http\Controllers\ProjectTerminalUploadController::class, 'preview'])
+            ->name('preview-upload');
+        Route::post('/upload', [App\Http\Controllers\ProjectTerminalUploadController::class, 'upload'])
+            ->name('upload');
+        Route::get('/list', [App\Http\Controllers\ProjectTerminalUploadController::class, 'getProjectTerminals'])
+            ->name('list');
+        Route::delete('/{terminal}', [App\Http\Controllers\ProjectTerminalUploadController::class, 'remove'])
+            ->name('remove');
+    });
+
     Route::get('/{project}/edit', [App\Http\Controllers\ProjectController::class, 'edit'])
         ->middleware('permission:manage_projects,all')
         ->name('edit');

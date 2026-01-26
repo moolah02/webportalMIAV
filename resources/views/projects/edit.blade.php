@@ -254,7 +254,7 @@ body {
                     </div>
                 </div>
 
-                <form action="{{ route('projects.update', $project) }}" method="POST">
+                <form action="{{ route('projects.update', $project) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -500,6 +500,9 @@ body {
                                 @enderror
                             </div>
                         </div>
+
+                        {{-- Terminal Upload Section --}}
+                        @include('projects.partials.terminal-upload-section')
                     </div>
 
                     <div class="modern-footer d-flex justify-content-between align-items-center">
