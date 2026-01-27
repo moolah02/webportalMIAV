@@ -105,7 +105,6 @@
          selectedProjectType: '',
          startDate: '{{ date('Y-m-d') }}',
          durationDays: 30,
-         estimatedTerminals: 0,
          budget: null,
          budgetTemplate: '',
 
@@ -115,7 +114,6 @@
              try {
                  const response = await fetch(`/api/clients/${clientId}/info`);
                  this.clientInfo = await response.json();
-                 this.estimatedTerminals = Math.min(this.estimatedTerminals || 0, this.clientInfo.total_terminals);
              } catch (error) {
                  console.error('Failed to load client info:', error);
              }
@@ -137,10 +135,7 @@
              return start.toISOString().split('T')[0];
          },
 
-         validateEstimatedTerminals() {
-             if (!this.clientInfo) return true;
-             return this.estimatedTerminals <= this.clientInfo.total_terminals;
-         }
+         dummy: null
      }">
 
     <div class="row justify-content-center">
@@ -161,8 +156,8 @@
                         <div class="col-md-3">
                             <div class="workflow-step inactive">
                                 <div class="fw-bold mb-1">STEP 2</div>
-                                <div class="small">Assign Terminals</div>
-                                <div class="tiny text-muted">Via Job Assignments</div>
+                                <div class="small">Assign Technicians</div>
+                                <div class="tiny text-muted">Deploy to field</div>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -230,6 +225,7 @@
                                 Client <span class="text-danger">*</span>
                             </label>
                             <select class="form-select form-select-lg"
+                                    id="client_id"
                                     name="client_id"
                                     x-model="selectedClient"
                                     @change="loadClientInfo($event.target.value)"
@@ -335,26 +331,6 @@
                                        :value="calculateEndDate()"
                                        style="background: #f8fafc;">
                                 <div class="field-hint">Auto-calculated</div>
-                            </div>
-                        </div>
-
-                        <!-- Estimated Terminals with Validation -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Estimated Terminal Count</label>
-                            <input type="number" class="form-control"
-                                   name="estimated_terminals_count"
-                                   x-model="estimatedTerminals"
-                                   min="0"
-                                   placeholder="How many terminals will this project cover?">
-
-                            <!-- Real-time Validation Warning -->
-                            <div x-show="clientInfo && estimatedTerminals > clientInfo.total_terminals"
-                                 x-transition
-                                 class="validation-warning">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>Warning:</strong> You estimated
-                                <span x-text="estimatedTerminals"></span> terminals, but this client only has
-                                <span x-text="clientInfo?.total_terminals"></span> terminals!
                             </div>
                         </div>
 
