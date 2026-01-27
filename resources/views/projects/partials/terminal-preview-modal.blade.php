@@ -7,7 +7,7 @@
                     <i class="fas fa-eye me-2"></i>
                     Terminal Upload Preview
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 {{-- Summary Cards --}}
@@ -145,7 +145,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
                     <i class="fas fa-times me-1"></i> Cancel
                 </button>
                 <button type="button" class="btn btn-success" onclick="confirmTerminalUpload()">

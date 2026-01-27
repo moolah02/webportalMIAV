@@ -307,8 +307,7 @@ function showPreviewModal(data) {
     previewData = data;
 
     // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('terminalPreviewModal'));
-    modal.show();
+    $('#terminalPreviewModal').modal('show');
 }
 
 function confirmTerminalUpload() {
@@ -348,7 +347,7 @@ function confirmTerminalUpload() {
     summaryDiv.style.display = 'block';
 
     // Close modal
-    bootstrap.Modal.getInstance(document.getElementById('terminalPreviewModal')).hide();
+    $('#terminalPreviewModal').modal('hide');
 
     // Clear file input
     document.getElementById('terminal_file').value = '';
@@ -396,8 +395,7 @@ function viewProjectTerminals() {
                 });
 
                 document.getElementById('terminalListCount').textContent = data.count;
-                const modal = new bootstrap.Modal(document.getElementById('terminalListModal'));
-                modal.show();
+                $('#terminalListModal').modal('show');
             }
         })
         .catch(error => {

@@ -6,12 +6,12 @@
 
 <style>
 :root {
-    --primary-color: #4f46e5;
-    --primary-hover: #4338ca;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
-    --info-color: #3b82f6;
+    --primary-color: #4299e1;
+    --primary-hover: #3182ce;
+    --success-color: #48bb78;
+    --warning-color: #ed8936;
+    --danger-color: #fc5c65;
+    --info-color: #4299e1;
 }
 
 .workflow-step {
@@ -95,26 +95,6 @@
     background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(79, 70, 229, 0.1) 100%);
 }
 
-.duration-button {
-    padding: 0.75rem 1.5rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 600;
-}
-
-.duration-button:hover {
-    border-color: var(--success-color);
-    background: #f0fdf4;
-}
-
-.duration-button.active {
-    border-color: var(--success-color);
-    background: var(--success-color);
-    color: white;
-}
 </style>
 
 <div class="container-fluid"
@@ -125,7 +105,6 @@
          selectedProjectType: '',
          startDate: '{{ date('Y-m-d') }}',
          durationDays: 30,
-         customDuration: false,
          estimatedTerminals: 0,
          budget: null,
          budgetTemplate: '',
@@ -144,11 +123,6 @@
 
          selectProjectType(type) {
              this.selectedProjectType = type;
-         },
-
-         setDuration(days) {
-             this.durationDays = days;
-             this.customDuration = false;
          },
 
          applyBudgetTemplate(amount) {
@@ -173,7 +147,7 @@
         <div class="col-xl-10 col-lg-12">
 
             <!-- Workflow Progress -->
-            <div class="card mb-4" style="border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            <div class="card mb-4" style="border-radius: 16px; border: 1px solid #e2e8f0;">
                 <div class="card-body p-4">
                     <h6 class="text-muted mb-3">PROJECT CREATION WORKFLOW</h6>
                     <div class="row g-3">
@@ -210,8 +184,8 @@
             </div>
 
             <!-- Main Form Card -->
-            <div class="card" style="border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                <div class="card-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 2.5rem; border-radius: 24px 24px 0 0;">
+            <div class="card" style="border-radius: 16px; border: 1px solid #e2e8f0;">
+                <div class="card-header" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); padding: 2rem; border-radius: 16px 16px 0 0;">
                     <h3 class="text-white mb-0">
                         <i class="fas fa-plus-circle me-3"></i>
                         Create New Project
@@ -219,7 +193,7 @@
                     <p class="text-white-50 mb-0 mt-2">Quick setup - Only 3 required fields!</p>
                 </div>
 
-                <form action="{{ route('projects.store') }}" method="POST">
+                <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <div class="card-body p-4">
@@ -346,29 +320,21 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Project Duration</label>
-                                <div class="d-flex gap-2 mb-2">
-                                    <button type="button" class="duration-button"
-                                            :class="durationDays === 7 ? 'active' : ''"
-                                            @click="setDuration(7)">
-                                        1 Week
-                                    </button>
-                                    <button type="button" class="duration-button"
-                                            :class="durationDays === 30 ? 'active' : ''"
-                                            @click="setDuration(30)">
-                                        1 Month
-                                    </button>
-                                    <button type="button" class="duration-button"
-                                            :class="durationDays === 90 ? 'active' : ''"
-                                            @click="setDuration(90)">
-                                        3 Months
-                                    </button>
-                                </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Duration (Days)</label>
+                                <input type="number" class="form-control"
+                                       name="duration_days"
+                                       x-model="durationDays"
+                                       min="1"
+                                       placeholder="e.g. 30">
                                 <input type="hidden" name="end_date" :value="calculateEndDate()">
-                                <input type="number" x-show="customDuration" class="form-control"
-                                       x-model="durationDays" placeholder="Custom days">
-                                <div class="field-hint" x-text="`End date: ${calculateEndDate()}`"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">End Date</label>
+                                <input type="text" class="form-control" readonly
+                                       :value="calculateEndDate()"
+                                       style="background: #f8fafc;">
+                                <div class="field-hint">Auto-calculated</div>
                             </div>
                         </div>
 
@@ -463,11 +429,16 @@
                             </div>
                         </details>
 
+                        <hr class="my-4">
+
+                        {{-- Terminal Upload Section --}}
+                        @include('projects.partials.terminal-upload-section')
+
                     </div>
 
                     <!-- Footer -->
                     <div class="card-footer d-flex justify-content-between align-items-center p-4"
-                         style="background: #f8fafc; border-radius: 0 0 24px 24px;">
+                         style="background: #f8fafc; border-radius: 0 0 16px 16px;">
                         <a href="{{ route('projects.index') }}" class="btn btn-lg btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i> Cancel
                         </a>
