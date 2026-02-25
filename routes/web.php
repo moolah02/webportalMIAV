@@ -26,7 +26,24 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\PosTerminalImportController;
 use App\Http\Controllers\SystemReportsController;
+use App\Http\Controllers\DocsController;
 use Illuminate\Support\Facades\Auth;
+
+
+// ==============================================
+// DOCUMENTATION HUB ROUTES (PUBLIC — no auth)
+// ==============================================
+
+Route::prefix('docs')->name('docs.')->group(function () {
+    Route::get('/',                [DocsController::class, 'index'])->name('index');
+    Route::get('/system',          [DocsController::class, 'system'])->name('system');
+    Route::get('/testing',         [DocsController::class, 'testing'])->name('testing');
+    Route::get('/tickets',         [DocsController::class, 'tickets'])->name('tickets');
+    Route::get('/staged-resolution', [DocsController::class, 'stagedResolution'])->name('staged-resolution');
+    Route::get('/api',             [DocsController::class, 'api'])->name('api');
+    Route::get('/overview',        [DocsController::class, 'overview'])->name('overview');
+    Route::get('/deployment',      [DocsController::class, 'deployment'])->name('deployment');
+});
 
 
 // ==============================================

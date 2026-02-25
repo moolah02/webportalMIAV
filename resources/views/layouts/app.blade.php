@@ -579,6 +579,15 @@
 </div>
 
 
+        <!-- Documentation Hub -->
+        <a href="{{ url('/docs') }}" target="_blank"
+           style="display:flex;align-items:center;gap:12px;padding:12px 16px;color:#2d3748;text-decoration:none;
+                  font-weight:500;font-size:14px;border-left:3px solid transparent;transition:all .15s;"
+           onmouseover="this.style.background='#f7fafc';this.style.borderLeftColor='#2563a8'"
+           onmouseout="this.style.background='transparent';this.style.borderLeftColor='transparent'">
+          <span class="nav-icon">📚</span> Documentation Hub
+        </a>
+
         <!-- My Account -->
         <div class="nav-section" onclick="toggleMenu(this)">
           <span class="nav-icon">👤</span> My Account
