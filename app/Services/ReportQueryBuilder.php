@@ -87,21 +87,26 @@ class ReportQueryBuilder
             }
         }
 
-        $applied = [];
+        // Track joined tables by name to avoid duplicate joins
+        $joinedTables = [$baseTable];
 
         // Apply auto-detected joins first
         foreach ($this->detectRequiredJoins($baseTable, $referencedTables) as $join) {
-            if (!in_array($join['on'], $applied)) {
+            if (!in_array($join['join_table'], $joinedTables)) {
                 $this->applyJoin($query, $join);
-                $applied[] = $join['on'];
+                $joinedTables[] = $join['join_table'];
             }
         }
 
         // Apply any explicit joins from config (skip duplicates)
         foreach ($config['joins'] ?? [] as $join) {
-            if (!in_array($join['on'], $applied)) {
+            if (!isset($join['join_table'])) {
+                [$rs] = array_slice(explode(' = ', $join['on'], 2), 1);
+                [$join['join_table']] = explode('.', $rs, 2);
+            }
+            if (!in_array($join['join_table'], $joinedTables)) {
                 $this->applyJoin($query, $join);
-                $applied[] = $join['on'];
+                $joinedTables[] = $join['join_table'];
             }
         }
 
@@ -186,7 +191,7 @@ class ReportQueryBuilder
                 }
                 $visited[$neighbor] = true;
                 $queue[]  = $neighbor;
-                $joinPlan[] = ['on' => $condition, 'type' => 'left'];
+                $joinPlan[] = ['on' => $condition, 'type' => 'left', 'join_table' => $neighbor];
 
                 $targets = array_values(array_diff($targets, [$neighbor]));
             }
@@ -352,17 +357,23 @@ class ReportQueryBuilder
     {
         $type = $join['type'] ?? 'inner';
         [$leftSide, $rightSide] = explode(' = ', $join['on'], 2);
-        [$rightTable] = explode('.', $rightSide, 2);
+
+        // Use the explicitly identified join_table (set by BFS) so we always
+        // join the correct table even when the condition has it on the left side.
+        $joinTable = $join['join_table'] ?? null;
+        if (!$joinTable) {
+            [$joinTable] = explode('.', $rightSide, 2);
+        }
 
         switch (strtolower($type)) {
             case 'left':
-                $query->leftJoin($rightTable, $leftSide, '=', $rightSide);
+                $query->leftJoin($joinTable, $leftSide, '=', $rightSide);
                 break;
             case 'right':
-                $query->rightJoin($rightTable, $leftSide, '=', $rightSide);
+                $query->rightJoin($joinTable, $leftSide, '=', $rightSide);
                 break;
             default:
-                $query->join($rightTable, $leftSide, '=', $rightSide);
+                $query->join($joinTable, $leftSide, '=', $rightSide);
                 break;
         }
     }
