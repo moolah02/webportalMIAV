@@ -5,237 +5,244 @@
 
 <div x-data="reportBuilder()" x-init="init()">
 
-    <!-- Inline notifications (replaces alert() calls) -->
+    <!-- Notifications -->
     <div x-show="errorMessage" x-transition
-         style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;color:#b91c1c;font-size:14px;">
+         style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;color:#b91c1c;font-size:14px;">
         <span x-text="errorMessage"></span>
-        <button @click="errorMessage=''" style="background:none;border:none;color:#b91c1c;cursor:pointer;font-weight:bold;font-size:18px;line-height:1;padding:0 0 0 12px;">×</button>
+        <button @click="errorMessage=''" style="background:none;border:none;color:#b91c1c;cursor:pointer;font-size:20px;line-height:1;padding:0 0 0 12px;">&#x00D7;</button>
     </div>
     <div x-show="successMessage" x-transition
-         style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;color:#166534;font-size:14px;">
+         style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;color:#166534;font-size:14px;">
         <span x-text="successMessage"></span>
-        <button @click="successMessage=''" style="background:none;border:none;color:#166534;cursor:pointer;font-weight:bold;font-size:18px;line-height:1;padding:0 0 0 12px;">×</button>
+        <button @click="successMessage=''" style="background:none;border:none;color:#166534;cursor:pointer;font-size:20px;line-height:1;padding:0 0 0 12px;">&#x00D7;</button>
     </div>
 
     <!-- Header -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
         <div>
-            <h2 style="margin:0;color:#111827;font-weight:700;letter-spacing:-.02em;">Report Builder</h2>
-            <p style="margin:6px 0 0;color:#6b7280;font-size:14px;">Drag fields from the left panel into the drop zones, then click Run Report</p>
+            <h2 style="margin:0;color:#111827;font-weight:700;font-size:22px;">Report Builder</h2>
+            <p style="margin:5px 0 0;color:#6b7280;font-size:14px;">
+                Drag fields from the left panel into the report area, then click <strong>Run Report</strong>
+            </p>
         </div>
-
-        <!-- Toolbar -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button @click="runReport()"
-                    :disabled="loading || !hasValidConfig()"
-                    class="btn btn-secondary">
-                <span x-show="!loading">&#x1F504; Run Report</span>
-                <span x-show="loading">&#x23F3; Running...</span>
+            <button @click="runReport()" :disabled="loading || fields.length === 0" class="rb-btn rb-btn-primary">
+                <span x-show="!loading">&#9654; Run Report</span>
+                <span x-show="loading">&#9203; Running...</span>
             </button>
-
-            @if($canManageTemplates)
-            <button @click="showSaveModal = true"
-                    :disabled="!hasValidConfig()"
-                    class="btn btn-secondary">
-                &#x1F4BE; Save Template
-            </button>
-            @endif
 
             <div style="position:relative;" x-data="{ open: false }">
-                <button @click="open = !open"
-                        :disabled="!reportData || reportData.length === 0"
-                        class="btn btn-outline">
-                    &#x1F4CA; Export &#x25BE;
+                <button @click="open = !open" :disabled="!reportData || reportData.length === 0" class="rb-btn rb-btn-outline">
+                    &#11015; Export &#9662;
                 </button>
                 <div x-show="open" @click.outside="open = false"
-                     style="position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;box-shadow:0 4px 6px -1px rgba(0,0,0,.1);z-index:50;min-width:150px;">
+                     style="position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 16px rgba(0,0,0,.08);z-index:50;min-width:140px;overflow:hidden;">
                     <button @click="exportReport('csv'); open = false"
-                            style="display:block;width:100%;text-align:left;padding:8px 12px;border:none;background:none;color:#374151;font-size:14px;cursor:pointer;">
-                        CSV Format
+                            style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;color:#374151;font-size:13px;cursor:pointer;"
+                            onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='none'">
+                        &#128196; CSV
                     </button>
                 </div>
             </div>
 
-            <button @click="openTemplateModal()" class="btn btn-outline">
-                &#x1F4C2; Load Template
+            @if($canManageTemplates)
+            <button @click="showSaveModal = true" :disabled="fields.length === 0" class="rb-btn rb-btn-outline">
+                &#128190; Save
+            </button>
+            @endif
+
+            <button @click="openTemplateModal()" class="rb-btn rb-btn-outline">
+                &#128193; Templates
+            </button>
+
+            <button @click="clearAll()" x-show="fields.length > 0" class="rb-btn rb-btn-ghost">
+                &#128465; Clear
             </button>
         </div>
     </div>
 
-    <!-- Main 3-panel layout -->
-    <div style="display:grid;grid-template-columns:280px 1fr 260px;gap:16px;height:calc(100vh - 210px);">
+    <!-- Main layout: left panel + main area -->
+    <div style="display:grid;grid-template-columns:260px 1fr;gap:16px;height:calc(100vh - 200px);min-height:500px;">
 
-        <!-- ===== LEFT PANEL — Available Fields ===== -->
-        <div class="content-card" style="overflow-y:auto;padding:16px;">
-            <h4 class="card-title">Available Fields</h4>
+        <!-- ===== LEFT: Available Fields ===== -->
+        <div class="rb-card" style="overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:0;">
+            <div style="font-weight:700;color:#111827;font-size:14px;margin-bottom:10px;">Available Fields</div>
 
-            <div style="margin-bottom:12px;">
-                <input type="text" x-model="fieldSearch" placeholder="Search fields..."
-                       style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
-            </div>
+            <input type="text" x-model="fieldSearch" placeholder="&#128269; Search fields..."
+                   style="width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#374151;background:#f9fafb;margin-bottom:12px;box-sizing:border-box;"
+                   @input="null">
 
             <template x-for="(table, tableName) in availableFields" :key="tableName">
-                <div style="margin-bottom:18px;" x-show="shouldShowTable(table)">
-                    <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #f3f4f6;"
+                <div x-show="tableVisible(table)" style="margin-bottom:16px;">
+                    <div style="font-size:10px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #f3f4f6;"
                          x-text="table.label"></div>
-
-                    <!-- Dimensions -->
-                    <template x-if="table.fields.filter(f => f.category === 'dimensions' && matchesSearch(f.label)).length > 0">
-                        <div style="margin-bottom:8px;">
-                            <div class="field-category-label">&#x1F4CF; Dimensions</div>
-                            <template x-for="field in table.fields.filter(f => f.category === 'dimensions')" :key="field.expression">
-                                <div x-show="matchesSearch(field.label)"
-                                     class="field-item dimension-field"
-                                     draggable="true"
-                                     @dragstart="startDrag($event, field, 'dimension')"
-                                     :title="field.expression"
-                                     x-text="field.label">
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-
-                    <!-- Measures -->
-                    <template x-if="table.fields.filter(f => f.category === 'measures' && matchesSearch(f.label)).length > 0">
-                        <div>
-                            <div class="field-category-label">&#x1F4CA; Measures</div>
-                            <template x-for="field in table.fields.filter(f => f.category === 'measures')" :key="field.expression">
-                                <div x-show="matchesSearch(field.label)"
-                                     class="field-item measure-field"
-                                     draggable="true"
-                                     @dragstart="startDrag($event, field, 'measure')"
-                                     :title="field.expression"
-                                     x-text="field.label">
-                                </div>
-                            </template>
+                    <template x-for="field in table.fields.filter(f => fieldVisible(f))" :key="field.expression">
+                        <div class="rb-field-item"
+                             :class="field.category === 'measures' ? 'rb-measure' : 'rb-dimension'"
+                             draggable="true"
+                             @dragstart="startDrag($event, field)"
+                             :title="'Drag to add: ' + field.expression"
+                             x-text="field.label">
                         </div>
                     </template>
                 </div>
             </template>
         </div>
 
-        <!-- ===== CENTER PANEL — Drop Zones + Results ===== -->
-        <div style="display:flex;flex-direction:column;gap:16px;overflow:hidden;">
+        <!-- ===== RIGHT: Drop zone + Results ===== -->
+        <div style="display:flex;flex-direction:column;gap:14px;overflow:hidden;min-height:0;">
 
-            <!-- Drop Zones -->
-            <div class="content-card" style="padding:16px;flex-shrink:0;">
-                <h4 class="card-title">Report Configuration</h4>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <!-- Drop zone row -->
+            <div class="rb-card" style="padding:16px;flex-shrink:0;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                    <span style="font-weight:700;color:#111827;font-size:14px;">&#128202; Report Fields</span>
 
-                    <!-- Columns -->
-                    <div>
-                        <div class="zone-label">&#x1F4CA; Columns</div>
-                        <div class="drop-zone"
-                             @dragover.prevent="handleDragOver($event)"
-                             @dragleave="handleDragLeave($event)"
-                             @drop="handleDrop($event, 'columns')">
-                            <template x-for="(field, index) in reportConfig.columns" :key="index">
-                                <div class="field-pill dimension-pill">
-                                    <span x-text="field.label"></span>
-                                    <button @click="removeField('columns', index)" class="remove-btn">×</button>
-                                </div>
+                    <!-- Inline filters: Base Table + Region + Client + Date -->
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <select x-model="config.baseTable" @change="clearAll()"
+                                style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;">
+                            <template x-for="(t, tn) in availableFields" :key="tn">
+                                <option :value="tn" x-text="t.label"></option>
                             </template>
-                            <div x-show="reportConfig.columns.length === 0" class="drop-hint">Drop dimensions here</div>
-                        </div>
-                    </div>
+                        </select>
 
-                    <!-- Rows / Groups -->
-                    <div>
-                        <div class="zone-label">&#x1F4CB; Rows / Groups</div>
-                        <div class="drop-zone"
-                             @dragover.prevent="handleDragOver($event)"
-                             @dragleave="handleDragLeave($event)"
-                             @drop="handleDrop($event, 'rows')">
-                            <template x-for="(field, index) in reportConfig.rows" :key="index">
-                                <div class="field-pill dimension-pill">
-                                    <span x-text="field.label"></span>
-                                    <button @click="removeField('rows', index)" class="remove-btn">×</button>
-                                </div>
+                        <select x-model="config.regionId"
+                                style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;">
+                            <option value="">All Regions</option>
+                            <template x-for="(name, id) in availableFilters.regions" :key="id">
+                                <option :value="id" x-text="name"></option>
                             </template>
-                            <div x-show="reportConfig.rows.length === 0" class="drop-hint">Drop dimensions here</div>
-                        </div>
-                    </div>
+                        </select>
 
-                    <!-- Values / Aggregations -->
-                    <div>
-                        <div class="zone-label">&#x1F522; Values / Aggregations</div>
-                        <div class="drop-zone"
-                             @dragover.prevent="handleDragOver($event)"
-                             @dragleave="handleDragLeave($event)"
-                             @drop="handleDrop($event, 'values')">
-                            <template x-for="(field, index) in reportConfig.values" :key="index">
-                                <div class="field-pill measure-pill" style="flex-wrap:wrap;">
-                                    <span x-text="field.label"></span>
+                        <select x-model="config.clientId"
+                                style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;">
+                            <option value="">All Clients</option>
+                            <template x-for="(name, id) in availableFilters.clients" :key="id">
+                                <option :value="id" x-text="name"></option>
+                            </template>
+                        </select>
+
+                        <select x-model="config.dateColumn"
+                                style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;">
+                            <option value="">No date filter</option>
+                            <template x-for="(t, tn) in availableFields" :key="tn">
+                                <template x-for="f in t.fields.filter(f => f.type === 'date')" :key="f.expression">
+                                    <option :value="f.expression" x-text="t.label + ' › ' + f.label"></option>
+                                </template>
+                            </template>
+                        </select>
+
+                        <template x-if="config.dateColumn">
+                            <input type="date" x-model="config.dateFrom"
+                                   style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;">
+                        </template>
+                        <template x-if="config.dateColumn">
+                            <input type="date" x-model="config.dateTo"
+                                   style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;">
+                        </template>
+
+                        <input type="number" x-model.number="config.limit" min="1" max="10000"
+                               style="width:70px;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;"
+                               title="Row limit">
+                    </div>
+                </div>
+
+                <!-- The drop zone -->
+                <div class="rb-dropzone"
+                     :class="{ 'rb-dropzone-over': draggingOver }"
+                     @dragover.prevent="draggingOver = true"
+                     @dragleave="draggingOver = false"
+                     @drop="onDrop($event)">
+
+                    <template x-if="fields.length === 0">
+                        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;">
+                            <div style="text-align:center;">
+                                <div style="font-size:28px;margin-bottom:6px;">&#8592;</div>
+                                <div style="font-size:13px;">Drag fields here to build your report</div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;">
+                        <template x-for="(field, i) in fields" :key="i">
+                            <div class="rb-pill" :class="field.category === 'measures' ? 'rb-pill-measure' : 'rb-pill-dim'">
+                                <span x-text="field.label" style="font-size:12px;font-weight:500;"></span>
+
+                                <!-- Aggregate selector for measures -->
+                                <template x-if="field.category === 'measures'">
                                     <select x-model="field.aggregate"
-                                            style="margin-left:4px;border:none;background:transparent;font-size:11px;color:#92400e;">
+                                            style="margin-left:4px;border:none;background:transparent;font-size:11px;cursor:pointer;color:inherit;outline:none;">
+                                        <option value="">Raw</option>
                                         <option value="COUNT">COUNT</option>
                                         <option value="SUM">SUM</option>
                                         <option value="AVG">AVG</option>
                                         <option value="MIN">MIN</option>
                                         <option value="MAX">MAX</option>
                                     </select>
-                                    <button @click="removeField('values', index)" class="remove-btn">×</button>
-                                </div>
-                            </template>
-                            <div x-show="reportConfig.values.length === 0" class="drop-hint">Drop measures here</div>
-                        </div>
+                                </template>
+
+                                <button @click="removeField(i)"
+                                        style="margin-left:5px;background:none;border:none;cursor:pointer;font-size:14px;line-height:1;padding:0;opacity:.6;"
+                                        onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">&#x00D7;</button>
+                            </div>
+                        </template>
                     </div>
+                </div>
+
+                <div x-show="fields.length > 0" style="margin-top:8px;font-size:11px;color:#9ca3af;">
+                    <span x-text="fields.length + ' field' + (fields.length === 1 ? '' : 's') + ' selected'"></span>
+                    <span x-show="hasAggregates()" style="margin-left:8px;">&#8226; Aggregated fields will GROUP BY all other columns</span>
                 </div>
             </div>
 
-            <!-- Results -->
-            <div class="content-card" style="flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <h4 class="card-title" style="margin:0;">&#x1F4C8; Results</h4>
-                    <span x-show="reportData" style="font-size:13px;color:#6b7280;"
-                          x-text="(reportData?.length || 0) + ' row' + (reportData?.length === 1 ? '' : 's')"></span>
+            <!-- Results panel -->
+            <div class="rb-card" style="flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;padding:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0;">
+                    <span style="font-weight:700;color:#111827;font-size:14px;">Results</span>
+                    <span x-show="reportData" style="font-size:12px;color:#6b7280;"
+                          x-text="(reportData?.length || 0) + ' row' + ((reportData?.length ?? 0) === 1 ? '' : 's')"></span>
                 </div>
 
-                <!-- Empty state -->
-                <div x-show="!reportData && !loading"
-                     style="flex:1;display:flex;align-items:center;justify-content:center;color:#9ca3af;text-align:center;">
+                <!-- States -->
+                <div x-show="!reportData && !loading" style="flex:1;display:flex;align-items:center;justify-content:center;color:#9ca3af;text-align:center;">
                     <div>
-                        <div style="font-size:40px;margin-bottom:12px;">&#x1F4CA;</div>
-                        <p style="margin:0;font-size:14px;">Add fields and click <strong>Run Report</strong></p>
+                        <div style="font-size:36px;margin-bottom:10px;">&#128202;</div>
+                        <p style="margin:0;font-size:13px;">Drag fields above and click <strong style="color:#374151;">Run Report</strong></p>
                     </div>
                 </div>
 
-                <!-- Loading -->
-                <div x-show="loading"
-                     style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b7280;">
+                <div x-show="loading" style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b7280;">
                     <div style="text-align:center;">
-                        <div class="spinner"></div>
-                        <p style="margin-top:12px;font-size:14px;">Generating report...</p>
+                        <div class="rb-spinner"></div>
+                        <p style="margin-top:10px;font-size:13px;">Running report...</p>
                     </div>
                 </div>
 
-                <!-- No results -->
                 <div x-show="reportData && reportData.length === 0 && !loading"
                      style="flex:1;display:flex;align-items:center;justify-content:center;color:#9ca3af;text-align:center;">
                     <div>
-                        <div style="font-size:40px;margin-bottom:12px;">&#x1F50D;</div>
-                        <p style="margin:0;font-size:14px;">No data found for this configuration</p>
+                        <div style="font-size:36px;margin-bottom:10px;">&#128269;</div>
+                        <p style="margin:0;font-size:13px;">No data matches your filters</p>
                     </div>
                 </div>
 
-                <!-- Data table -->
                 <div x-show="reportData && reportData.length > 0" style="flex:1;overflow:auto;min-height:0;">
                     <table style="width:100%;border-collapse:collapse;font-size:13px;">
-                        <thead style="background:#f9fafb;position:sticky;top:0;z-index:1;">
+                        <thead style="position:sticky;top:0;z-index:1;background:#f9fafb;">
                             <tr>
-                                <template x-for="column in reportColumns" :key="column">
-                                    <th style="padding:10px 8px;text-align:left;font-weight:600;font-size:11px;color:#374151;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #e5e7eb;white-space:nowrap;"
-                                        x-text="column"></th>
+                                <template x-for="col in reportColumns" :key="col">
+                                    <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #e5e7eb;white-space:nowrap;"
+                                        x-text="col"></th>
                                 </template>
                             </tr>
                         </thead>
                         <tbody>
-                            <template x-for="(row, index) in reportData" :key="index">
-                                <tr style="border-bottom:1px solid #f3f4f6;"
+                            <template x-for="(row, i) in reportData" :key="i">
+                                <tr style="border-bottom:1px solid #f3f4f6;transition:background .1s;"
                                     @mouseenter="$el.style.background='#f9fafb'"
-                                    @mouseleave="$el.style.background='transparent'">
-                                    <template x-for="column in reportColumns" :key="column">
-                                        <td style="padding:8px;color:#111827;" x-text="row[column] ?? '—'"></td>
+                                    @mouseleave="$el.style.background=''">
+                                    <template x-for="col in reportColumns" :key="col">
+                                        <td style="padding:9px 12px;color:#111827;" x-text="row[col] ?? '—'"></td>
                                     </template>
                                 </tr>
                             </template>
@@ -244,167 +251,68 @@
                 </div>
             </div>
         </div>
-
-        <!-- ===== RIGHT PANEL — Filters & Options ===== -->
-        <div class="content-card" style="overflow-y:auto;padding:16px;">
-            <h4 class="card-title">&#x2699;&#xFE0F; Filters &amp; Options</h4>
-
-            <!-- Base Table -->
-            <div style="margin-bottom:16px;">
-                <div class="label">Base Table</div>
-                <select x-model="reportConfig.baseTable"
-                        @change="clearConfig()"
-                        style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;">
-                    <template x-for="(tableInfo, tableName) in availableFields" :key="tableName">
-                        <option :value="tableName" x-text="tableInfo.label"></option>
-                    </template>
-                </select>
-                <div style="font-size:11px;color:#9ca3af;margin-top:3px;">Changing base table clears all fields</div>
-            </div>
-
-            <!-- Region Filter -->
-            <div style="margin-bottom:16px;">
-                <div class="label">Region</div>
-                <select x-model="reportConfig.regionId"
-                        style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;">
-                    <option value="">All Regions</option>
-                    <template x-for="(name, id) in availableFilters.regions" :key="id">
-                        <option :value="id" x-text="name"></option>
-                    </template>
-                </select>
-            </div>
-
-            <!-- Client Filter -->
-            <div style="margin-bottom:16px;">
-                <div class="label">Client</div>
-                <select x-model="reportConfig.clientId"
-                        style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;">
-                    <option value="">All Clients</option>
-                    <template x-for="(name, id) in availableFilters.clients" :key="id">
-                        <option :value="id" x-text="name"></option>
-                    </template>
-                </select>
-            </div>
-
-            <!-- Date Filter -->
-            <div style="margin-bottom:16px;">
-                <div class="label">Date Column</div>
-                <select x-model="reportConfig.dateColumn"
-                        style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;">
-                    <option value="">No date filter</option>
-                    <template x-for="(tableInfo, tableName) in availableFields" :key="tableName">
-                        <template x-for="field in tableInfo.fields.filter(f => f.type === 'date')" :key="field.expression">
-                            <option :value="field.expression" x-text="tableInfo.label + ' › ' + field.label"></option>
-                        </template>
-                    </template>
-                </select>
-            </div>
-            <div x-show="reportConfig.dateColumn" style="margin-bottom:12px;">
-                <div class="label">From</div>
-                <input type="date" x-model="reportConfig.dateFrom"
-                       style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
-            </div>
-            <div x-show="reportConfig.dateColumn" style="margin-bottom:16px;">
-                <div class="label">To</div>
-                <input type="date" x-model="reportConfig.dateTo"
-                       style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
-            </div>
-
-            <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 16px;">
-
-            <!-- Result Limit -->
-            <div style="margin-bottom:12px;">
-                <div class="label">Row Limit (preview)</div>
-                <input type="number" x-model.number="reportConfig.limit" min="1" max="10000"
-                       style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
-            </div>
-
-            <!-- Download All -->
-            <div style="margin-bottom:16px;">
-                <label style="display:flex;align-items:center;cursor:pointer;gap:8px;">
-                    <input type="checkbox" x-model="reportConfig.downloadAll">
-                    <span style="font-size:13px;color:#374151;">Export all rows (bypass limit)</span>
-                </label>
-            </div>
-
-            <!-- Quick Clear -->
-            <button @click="clearConfig()" class="btn btn-outline" style="width:100%;font-size:13px;">
-                &#x1F5D1; Clear All Fields
-            </button>
-        </div>
     </div>
 
-    <!-- ===== SAVE TEMPLATE MODAL ===== -->
+    <!-- SAVE TEMPLATE MODAL -->
     <div x-show="showSaveModal"
-         style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;">
-        <div class="content-card" style="width:420px;max-width:92vw;" @click.stop>
-            <h4 class="card-title">&#x1F4BE; Save Report Template</h4>
-            <div style="margin-bottom:14px;">
-                <div class="label">Template Name *</div>
-                <input type="text" x-model="templateForm.name" placeholder="e.g. Monthly Terminal Summary"
-                       style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;box-sizing:border-box;">
+         style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:300;">
+        <div class="rb-card" style="width:400px;max-width:92vw;" @click.stop>
+            <div style="font-weight:700;color:#111827;font-size:15px;margin-bottom:16px;">&#128190; Save Template</div>
+            <div style="margin-bottom:12px;">
+                <div class="rb-label">Name *</div>
+                <input type="text" x-model="saveForm.name" placeholder="e.g. Monthly Terminal Report"
+                       style="width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;box-sizing:border-box;">
             </div>
             <div style="margin-bottom:14px;">
-                <div class="label">Description</div>
-                <textarea x-model="templateForm.description" rows="2" placeholder="Optional description..."
-                          style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;resize:vertical;box-sizing:border-box;"></textarea>
+                <div class="rb-label">Description</div>
+                <textarea x-model="saveForm.description" rows="2"
+                          style="width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;resize:vertical;box-sizing:border-box;"></textarea>
             </div>
             @if($canManageTemplates)
             <div style="margin-bottom:16px;">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                    <input type="checkbox" x-model="templateForm.isGlobal">
-                    <span style="font-size:14px;color:#374151;">Make global (visible to all users)</span>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#374151;">
+                    <input type="checkbox" x-model="saveForm.isGlobal"> Make visible to all users
                 </label>
             </div>
             @endif
             <div style="display:flex;justify-content:flex-end;gap:8px;">
-                <button @click="showSaveModal = false; templateForm = {name:'',description:'',isGlobal:false}" class="btn btn-outline">Cancel</button>
-                <button @click="saveTemplate()" :disabled="!templateForm.name" class="btn btn-secondary">Save</button>
+                <button @click="showSaveModal = false" class="rb-btn rb-btn-outline">Cancel</button>
+                <button @click="saveTemplate()" :disabled="!saveForm.name" class="rb-btn rb-btn-primary">Save</button>
             </div>
         </div>
     </div>
 
-    <!-- ===== LOAD TEMPLATE MODAL ===== -->
+    <!-- LOAD TEMPLATE MODAL -->
     <div x-show="showTemplateModal"
-         style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;">
-        <div class="content-card" style="width:640px;max-width:92vw;max-height:80vh;display:flex;flex-direction:column;" @click.stop>
-            <h4 class="card-title">&#x1F4C2; Load Report Template</h4>
+         style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:300;">
+        <div class="rb-card" style="width:580px;max-width:92vw;max-height:75vh;display:flex;flex-direction:column;" @click.stop>
+            <div style="font-weight:700;color:#111827;font-size:15px;margin-bottom:14px;">&#128193; Load Template</div>
 
-            <!-- Loading state -->
-            <div x-show="templatesLoading" style="text-align:center;padding:24px;color:#6b7280;font-size:14px;">
-                Loading templates...
-            </div>
+            <div x-show="templatesLoading" style="text-align:center;padding:24px;color:#6b7280;font-size:14px;">Loading...</div>
 
-            <!-- No templates -->
             <div x-show="!templatesLoading && availableTemplates.length === 0"
-                 style="text-align:center;padding:24px;color:#9ca3af;font-size:14px;">
-                No saved templates found.
-            </div>
+                 style="text-align:center;padding:24px;color:#9ca3af;font-size:14px;">No saved templates yet.</div>
 
-            <!-- Template list -->
-            <div x-show="!templatesLoading && availableTemplates.length > 0"
-                 style="flex:1;overflow-y:auto;margin-bottom:16px;">
-                <template x-for="template in availableTemplates" :key="template.id">
-                    <div style="border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer;transition:background .15s;"
-                         @click="loadTemplate(template)"
-                         @mouseenter="$el.style.background='#f9fafb'"
-                         @mouseleave="$el.style.background='transparent'">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                            <span style="font-weight:600;color:#111827;font-size:14px;" x-text="template.name"></span>
-                            <span x-show="template.is_global"
-                                  style="font-size:10px;font-weight:700;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:4px;padding:2px 6px;text-transform:uppercase;">
-                                Global
-                            </span>
+            <div x-show="!templatesLoading && availableTemplates.length > 0" style="flex:1;overflow-y:auto;margin-bottom:14px;">
+                <template x-for="tpl in availableTemplates" :key="tpl.id">
+                    <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s;"
+                         @click="applyTemplate(tpl)"
+                         @mouseenter="$el.style.borderColor='#3b82f6'; $el.style.background='#eff6ff'"
+                         @mouseleave="$el.style.borderColor='#e5e7eb'; $el.style.background=''">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+                            <span style="font-weight:600;color:#111827;font-size:14px;" x-text="tpl.name"></span>
+                            <span x-show="tpl.is_global"
+                                  style="font-size:10px;font-weight:700;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:4px;padding:2px 6px;">GLOBAL</span>
                         </div>
-                        <div style="font-size:13px;color:#6b7280;" x-text="template.description || 'No description'"></div>
-                        <div style="font-size:12px;color:#9ca3af;margin-top:4px;"
-                             x-text="'By ' + (template.creator?.first_name || 'Unknown') + ' ' + (template.creator?.last_name || '')"></div>
+                        <div style="font-size:12px;color:#6b7280;" x-text="tpl.description || 'No description'"></div>
+                        <div style="font-size:11px;color:#9ca3af;margin-top:4px;"
+                             x-text="'By ' + (tpl.creator?.first_name || 'Unknown') + ' ' + (tpl.creator?.last_name || '')"></div>
                     </div>
                 </template>
             </div>
 
             <div style="display:flex;justify-content:flex-end;">
-                <button @click="showTemplateModal = false" class="btn btn-outline">Close</button>
+                <button @click="showTemplateModal = false" class="rb-btn rb-btn-outline">Close</button>
             </div>
         </div>
     </div>
@@ -412,46 +320,60 @@
 </div><!-- /x-data -->
 
 <style>
-.content-card  { background:#fff; padding:20px; border-radius:10px; border:1px solid #e5e7eb; }
-.card-title    { margin:0 0 12px; color:#111827; font-weight:700; font-size:15px; }
-.label         { font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; font-weight:600; }
-.zone-label    { font-size:12px; color:#374151; font-weight:600; margin-bottom:6px; }
+/* Base card */
+.rb-card { background:#fff; border-radius:10px; border:1px solid #e5e7eb; }
 
-.btn           { padding:9px 14px; border:1px solid #d1d5db; border-radius:6px; background:#fff; color:#374151; cursor:pointer; font-weight:500; font-size:14px; transition:all .15s; line-height:1; }
-.btn:hover     { border-color:#9ca3af; background:#f9fafb; }
-.btn:disabled  { opacity:.45; cursor:not-allowed; }
-.btn-secondary { background:#f3f4f6; border-color:#d1d5db; }
-.btn-secondary:hover:not(:disabled) { background:#e5e7eb; border-color:#9ca3af; }
-.btn-outline   { background:transparent; }
-.btn-outline:hover:not(:disabled) { background:#f9fafb; border-color:#9ca3af; }
+/* Buttons */
+.rb-btn { padding:8px 14px; border-radius:7px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; transition:all .15s; line-height:1.4; white-space:nowrap; }
+.rb-btn:disabled { opacity:.4; cursor:not-allowed; }
+.rb-btn-primary { background:#111827; color:#fff; border-color:#111827; }
+.rb-btn-primary:hover:not(:disabled) { background:#374151; }
+.rb-btn-outline { background:#fff; color:#374151; border-color:#d1d5db; }
+.rb-btn-outline:hover:not(:disabled) { background:#f9fafb; border-color:#9ca3af; }
+.rb-btn-ghost { background:transparent; color:#6b7280; border-color:transparent; }
+.rb-btn-ghost:hover:not(:disabled) { background:#f3f4f6; color:#374151; }
 
-.field-category-label { font-size:10px; color:#9ca3af; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; }
-
-.field-item    { padding:5px 8px; margin-bottom:3px; border-radius:4px; font-size:12px; cursor:grab; transition:all .15s; border:1px solid transparent; user-select:none; }
-.field-item:hover { opacity:.85; }
-.field-item:active { cursor:grabbing; }
-
-.dimension-field { background:#ecfdf5; color:#065f46; border-color:#bbf7d0; }
-.dimension-field:hover { background:#d1fae5; border-color:#86efac; }
-.measure-field   { background:#fef3c7; color:#92400e; border-color:#fde68a; }
-.measure-field:hover { background:#fef08a; border-color:#facc15; }
-
-.drop-zone {
-    min-height:64px; padding:10px; border:2px dashed #d1d5db; border-radius:6px;
-    background:#f9fafb; transition:all .2s ease;
+/* Field items in left panel */
+.rb-field-item {
+    padding:6px 10px; margin-bottom:3px; border-radius:5px;
+    font-size:12px; font-weight:500; cursor:grab;
+    transition:transform .1s, box-shadow .1s;
+    user-select:none; border:1px solid transparent;
 }
-.drop-zone.drag-over { border-color:#3b82f6; background:#dbeafe; }
+.rb-field-item:hover { transform:translateX(2px); box-shadow:0 2px 6px rgba(0,0,0,.06); }
+.rb-field-item:active { cursor:grabbing; }
+.rb-dimension { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+.rb-dimension:hover { background:#dcfce7; }
+.rb-measure   { background:#fff7ed; color:#9a3412; border-color:#fed7aa; }
+.rb-measure:hover { background:#ffedd5; }
 
-.drop-hint { color:#9ca3af; font-size:12px; text-align:center; font-style:italic; padding-top:8px; }
+/* Drop zone */
+.rb-dropzone {
+    min-height:72px; padding:10px 12px;
+    border:2px dashed #d1d5db; border-radius:8px;
+    background:#fafafa; transition:all .2s;
+}
+.rb-dropzone-over { border-color:#3b82f6; background:#eff6ff; }
 
-.field-pill  { display:inline-flex; align-items:center; padding:3px 8px; margin:2px; border-radius:12px; font-size:12px; font-weight:500; }
-.dimension-pill { background:#ecfdf5; color:#065f46; border:1px solid #bbf7d0; }
-.measure-pill   { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
-.remove-btn  { margin-left:5px; background:none; border:none; color:#ef4444; cursor:pointer; font-weight:bold; font-size:14px; padding:0; line-height:1; }
-.remove-btn:hover { color:#b91c1c; }
+/* Pills in drop zone */
+.rb-pill {
+    display:inline-flex; align-items:center; padding:5px 10px;
+    border-radius:20px; font-size:12px; font-weight:500;
+    border:1px solid transparent;
+}
+.rb-pill-dim     { background:#f0fdf4; color:#166534; border-color:#86efac; }
+.rb-pill-measure { background:#fff7ed; color:#9a3412; border-color:#fdba74; }
 
-.spinner { width:28px; height:28px; border:3px solid #f3f3f3; border-top:3px solid #3b82f6; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto; }
-@keyframes spin { to { transform:rotate(360deg); } }
+/* Table */
+table { border-collapse:collapse; }
+thead th { font-size:11px !important; }
+
+/* Spinner */
+.rb-spinner { width:26px; height:26px; border:3px solid #e5e7eb; border-top-color:#3b82f6; border-radius:50%; animation:rb-spin 1s linear infinite; margin:0 auto; }
+@keyframes rb-spin { to { transform:rotate(360deg); } }
+
+/* Label in modal */
+.rb-label { font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
 </style>
 
 @push('scripts')
@@ -460,174 +382,165 @@
 document.addEventListener('alpine:init', () => {
   Alpine.data('reportBuilder', () => ({
 
-    // ── Server-provided data ──────────────────────────────────────────────────
+    // ── Server data ──────────────────────────────────────────────────────────
     availableFields:    @json($fields),
     availableFilters:   @json($filters),
     canManageTemplates: @json($canManageTemplates),
 
-    // ── UI state ─────────────────────────────────────────────────────────────
+    // ── State ────────────────────────────────────────────────────────────────
     loading:          false,
     templatesLoading: false,
     fieldSearch:      '',
+    draggingOver:     false,
     errorMessage:     '',
     successMessage:   '',
     showSaveModal:    false,
     showTemplateModal:false,
     availableTemplates: [],
 
-    // ── Report configuration ─────────────────────────────────────────────────
-    reportConfig: {
-      baseTable:   'pos_terminals',
-      columns:     [],
-      rows:        [],
-      values:      [],
-      regionId:    '',
-      clientId:    '',
-      dateColumn:  '',
-      dateFrom:    '',
-      dateTo:      '',
-      limit:       100,
-      downloadAll: false,
+    // ── The selected fields (single flat array) ───────────────────────────────
+    fields: [],   // each: { label, expression, type, category, aggregate: '' }
+
+    // ── Config / filters ─────────────────────────────────────────────────────
+    config: {
+      baseTable:  'pos_terminals',
+      regionId:   '',
+      clientId:   '',
+      dateColumn: '',
+      dateFrom:   '',
+      dateTo:     '',
+      limit:      100,
     },
 
-    // ── Template save form ───────────────────────────────────────────────────
-    templateForm: { name: '', description: '', isGlobal: false },
+    // ── Save form ─────────────────────────────────────────────────────────────
+    saveForm: { name: '', description: '', isGlobal: false },
 
     // ── Results ──────────────────────────────────────────────────────────────
     reportData:    null,
     reportColumns: [],
 
-    // ── Lifecycle ────────────────────────────────────────────────────────────
+    // ── Init ─────────────────────────────────────────────────────────────────
     init() {
       this.loadTemplates();
     },
 
-    // ── Field panel helpers ───────────────────────────────────────────────────
-    shouldShowTable(table) {
+    // ── Left panel helpers ────────────────────────────────────────────────────
+    tableVisible(table) {
       if (!this.fieldSearch) return true;
-      return table.fields.some(f => this.matchesSearch(f.label));
+      return table.fields.some(f => this.fieldVisible(f));
     },
-
-    matchesSearch(label) {
+    fieldVisible(field) {
       if (!this.fieldSearch) return true;
-      return label.toLowerCase().includes(this.fieldSearch.toLowerCase());
+      return field.label.toLowerCase().includes(this.fieldSearch.toLowerCase());
     },
 
-    hasValidConfig() {
-      return this.reportConfig.columns.length > 0
-          || this.reportConfig.rows.length > 0
-          || this.reportConfig.values.length > 0;
+    // ── Drag ─────────────────────────────────────────────────────────────────
+    startDrag(event, field) {
+      event.dataTransfer.setData('application/json', JSON.stringify(field));
+      event.dataTransfer.effectAllowed = 'copy';
     },
 
-    clearConfig() {
-      this.reportConfig.columns    = [];
-      this.reportConfig.rows       = [];
-      this.reportConfig.values     = [];
-      this.reportData              = null;
-      this.reportColumns           = [];
-      this.errorMessage            = '';
-      this.successMessage          = '';
-    },
-
-    // ── Drag & drop ───────────────────────────────────────────────────────────
-    startDrag(event, field, type) {
-      event.dataTransfer.setData('application/json', JSON.stringify({ field, type }));
-    },
-
-    handleDragOver(event) {
+    onDrop(event) {
       event.preventDefault();
-      event.currentTarget.classList.add('drag-over');
-    },
-
-    handleDragLeave(event) {
-      event.currentTarget.classList.remove('drag-over');
-    },
-
-    handleDrop(event, zone) {
-      event.preventDefault();
-      event.currentTarget.classList.remove('drag-over');
-
+      this.draggingOver = false;
       try {
-        const { field, type } = JSON.parse(event.dataTransfer.getData('application/json'));
-
-        if ((zone === 'columns' || zone === 'rows') && type === 'measure') {
-          this.errorMessage = 'Measures cannot be used as dimensions. Drop them in the Values zone instead.';
+        const field = JSON.parse(event.dataTransfer.getData('application/json'));
+        // Prevent duplicates
+        if (this.fields.some(f => f.expression === field.expression)) {
+          this.errorMessage = `"${field.label}" is already in the report.`;
           return;
         }
-
-        const entry = { ...field, aggregate: zone === 'values' ? 'COUNT' : undefined };
-        this.reportConfig[zone].push(entry);
+        this.fields.push({ ...field, aggregate: '' });
+        this.errorMessage = '';
       } catch (e) {
-        this.errorMessage = 'Failed to add field: ' + e.message;
+        this.errorMessage = 'Drop failed: ' + e.message;
       }
     },
 
-    removeField(zone, index) {
-      this.reportConfig[zone].splice(index, 1);
+    removeField(index) {
+      this.fields.splice(index, 1);
+      if (this.fields.length === 0) {
+        this.reportData    = null;
+        this.reportColumns = [];
+      }
     },
 
-    // ── Query config builder ─────────────────────────────────────────────────
-    buildQueryConfig() {
-      const cfg = {
-        base:         { table: this.reportConfig.baseTable },
-        select:       [],
-        joins:        [],       // backend auto-detects from referenced tables
-        group_by:     [],
-        where:        [],
-        limit:        this.reportConfig.downloadAll ? null : this.reportConfig.limit,
-        download_all: this.reportConfig.downloadAll,
-      };
+    clearAll() {
+      this.fields        = [];
+      this.reportData    = null;
+      this.reportColumns = [];
+      this.errorMessage  = '';
+      this.successMessage= '';
+    },
 
-      // SELECT + GROUP BY from columns and rows
-      [...this.reportConfig.columns, ...this.reportConfig.rows].forEach(field => {
-        cfg.select.push({ expr: field.expression, as: field.label });
-        cfg.group_by.push(field.expression);
+    hasAggregates() {
+      return this.fields.some(f => f.aggregate && f.aggregate !== '');
+    },
+
+    // ── Build query payload ───────────────────────────────────────────────────
+    buildPayload() {
+      const withAgg = this.hasAggregates();
+
+      const select   = [];
+      const group_by = [];
+
+      this.fields.forEach(f => {
+        if (f.aggregate && f.aggregate !== '') {
+          // Aggregated column
+          select.push({ expr: f.expression, as: f.aggregate + '(' + f.label + ')', aggregate: f.aggregate });
+        } else {
+          select.push({ expr: f.expression, as: f.label });
+          if (withAgg) group_by.push(f.expression);
+        }
       });
 
-      // SELECT for values (aggregates)
-      this.reportConfig.values.forEach(field => {
-        cfg.select.push({ expr: field.expression, as: field.label, aggregate: field.aggregate });
-      });
+      const where = [];
 
-      // --- WHERE filters ---
-
-      // Region filter: use baseTable.region_id if the base table has that column,
-      // otherwise fall back to pos_terminals.region_id (auto-join handles the rest)
-      if (this.reportConfig.regionId) {
-        const baseFields  = this.availableFields[this.reportConfig.baseTable]?.fields || [];
+      // Region filter
+      if (this.config.regionId) {
+        const baseFields  = this.availableFields[this.config.baseTable]?.fields || [];
         const hasRegionId = baseFields.some(f => f.name === 'region_id');
-        const regionCol   = hasRegionId
-          ? this.reportConfig.baseTable + '.region_id'
-          : 'pos_terminals.region_id';
-        cfg.where.push({ column: regionCol, operator: '=', value: this.reportConfig.regionId });
-      }
-
-      // Client filter: same dynamic column detection
-      if (this.reportConfig.clientId) {
-        const baseFields   = this.availableFields[this.reportConfig.baseTable]?.fields || [];
-        const hasClientId  = baseFields.some(f => f.name === 'client_id');
-        const clientCol    = hasClientId
-          ? this.reportConfig.baseTable + '.client_id'
-          : 'pos_terminals.client_id';
-        cfg.where.push({ column: clientCol, operator: '=', value: this.reportConfig.clientId });
-      }
-
-      // Date range filter
-      if (this.reportConfig.dateColumn && (this.reportConfig.dateFrom || this.reportConfig.dateTo)) {
-        cfg.where.push({
-          column:   this.reportConfig.dateColumn,
-          operator: 'between_dates',
-          value:    { from: this.reportConfig.dateFrom || null, to: this.reportConfig.dateTo || null },
+        where.push({
+          column:   hasRegionId ? this.config.baseTable + '.region_id' : 'pos_terminals.region_id',
+          operator: '=',
+          value:    this.config.regionId,
         });
       }
 
-      return cfg;
+      // Client filter
+      if (this.config.clientId) {
+        const baseFields   = this.availableFields[this.config.baseTable]?.fields || [];
+        const hasClientId  = baseFields.some(f => f.name === 'client_id');
+        where.push({
+          column:   hasClientId ? this.config.baseTable + '.client_id' : 'pos_terminals.client_id',
+          operator: '=',
+          value:    this.config.clientId,
+        });
+      }
+
+      // Date filter
+      if (this.config.dateColumn && (this.config.dateFrom || this.config.dateTo)) {
+        where.push({
+          column:   this.config.dateColumn,
+          operator: 'between_dates',
+          value:    { from: this.config.dateFrom || null, to: this.config.dateTo || null },
+        });
+      }
+
+      return {
+        base:    { table: this.config.baseTable },
+        select,
+        joins:   [],
+        group_by,
+        where,
+        limit:   this.config.limit,
+      };
     },
 
-    // ── API: run report ───────────────────────────────────────────────────────
+    // ── Run report ────────────────────────────────────────────────────────────
     async runReport() {
-      if (!this.hasValidConfig()) {
-        this.errorMessage = 'Please add at least one field to your report.';
+      if (this.fields.length === 0) {
+        this.errorMessage = 'Drag at least one field into the report area first.';
         return;
       }
 
@@ -636,7 +549,7 @@ document.addEventListener('alpine:init', () => {
       this.successMessage= '';
 
       try {
-        const response = await fetch('/api/report/preview', {
+        const res = await fetch('/api/report/preview', {
           method:      'POST',
           credentials: 'same-origin',
           headers: {
@@ -645,12 +558,12 @@ document.addEventListener('alpine:init', () => {
             'X-CSRF-TOKEN':     document.querySelector('meta[name="csrf-token"]').content,
             'X-Requested-With': 'XMLHttpRequest',
           },
-          body: JSON.stringify(this.buildQueryConfig()),
+          body: JSON.stringify(this.buildPayload()),
         });
 
-        const text = await response.text();
+        const text = await res.text();
         if (text.trim().startsWith('<!')) {
-          this.errorMessage = 'Session expired or server error. Please refresh and try again.';
+          this.errorMessage = 'Session expired. Please refresh and try again.';
           return;
         }
 
@@ -659,25 +572,25 @@ document.addEventListener('alpine:init', () => {
           this.reportData    = result.data;
           this.reportColumns = result.data.length > 0 ? Object.keys(result.data[0]) : [];
         } else {
-          this.errorMessage = result.error || 'Unknown error generating report.';
+          this.errorMessage = result.error || 'Unknown error';
         }
-      } catch (error) {
-        this.errorMessage = 'Run report failed: ' + error.message;
+      } catch (err) {
+        this.errorMessage = 'Request failed: ' + err.message;
       } finally {
         this.loading = false;
       }
     },
 
-    // ── API: export ───────────────────────────────────────────────────────────
+    // ── Export ────────────────────────────────────────────────────────────────
     async exportReport(format) {
       this.errorMessage = '';
-
       try {
-        const cfg     = this.buildQueryConfig();
-        cfg.format    = format;
-        cfg.filename  = 'report_' + new Date().toISOString().slice(0, 10);
+        const payload    = this.buildPayload();
+        payload.format   = format;
+        payload.filename = 'report_' + new Date().toISOString().slice(0, 10);
+        payload.download_all = true;
 
-        const response = await fetch('/api/report/export', {
+        const res = await fetch('/api/report/export', {
           method:      'POST',
           credentials: 'same-origin',
           headers: {
@@ -686,51 +599,38 @@ document.addEventListener('alpine:init', () => {
             'X-CSRF-TOKEN':     document.querySelector('meta[name="csrf-token"]').content,
             'X-Requested-With': 'XMLHttpRequest',
           },
-          body: JSON.stringify(cfg),
+          body: JSON.stringify(payload),
         });
 
-        if (response.ok) {
-          const blob = await response.blob();
-          const url  = window.URL.createObjectURL(blob);
-          const a    = document.createElement('a');
-          a.href     = url;
-          a.download = cfg.filename + '.' + format;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
+        if (res.ok) {
+          const blob = await res.blob();
+          const url  = URL.createObjectURL(blob);
+          const a    = Object.assign(document.createElement('a'), { href: url, download: payload.filename + '.' + format });
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(url);
         } else {
-          const result = await response.json().catch(() => ({}));
-          this.errorMessage = 'Export failed: ' + (result.error || response.statusText);
+          const r = await res.json().catch(() => ({}));
+          this.errorMessage = 'Export failed: ' + (r.error || res.statusText);
         }
-      } catch (error) {
-        this.errorMessage = 'Export failed: ' + error.message;
+      } catch (err) {
+        this.errorMessage = 'Export failed: ' + err.message;
       }
     },
 
-    // ── API: templates ────────────────────────────────────────────────────────
+    // ── Templates ─────────────────────────────────────────────────────────────
     async loadTemplates() {
       this.templatesLoading = true;
       try {
-        const response = await fetch('/api/report/templates', {
+        const res  = await fetch('/api/report/templates', {
           credentials: 'same-origin',
           headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         });
-
-        const text = await response.text();
-        if (text.trim().startsWith('<!')) {
-          console.warn('Could not load templates — HTML response (session?)');
-          return;
-        }
-
-        const result = JSON.parse(text);
-        if (result.success) {
-          this.availableTemplates = Array.isArray(result.data)
-            ? result.data
-            : (result.data?.data || []);
-        }
-      } catch (error) {
-        console.error('Failed to load templates:', error);
+        const text = await res.text();
+        if (text.trim().startsWith('<!')) return;
+        const r = JSON.parse(text);
+        if (r.success) this.availableTemplates = Array.isArray(r.data) ? r.data : (r.data?.data || []);
+      } catch (e) {
+        console.error('Template load error:', e);
       } finally {
         this.templatesLoading = false;
       }
@@ -741,45 +641,38 @@ document.addEventListener('alpine:init', () => {
       this.loadTemplates();
     },
 
-    loadTemplate(template) {
+    applyTemplate(tpl) {
       try {
-        const p = template.payload;
-        if (!p || typeof p !== 'object') {
-          this.errorMessage = 'Invalid template data — cannot load.';
-          return;
-        }
+        const p = tpl.payload;
+        if (!p) { this.errorMessage = 'Template has no payload.'; return; }
 
-        this.reportConfig = {
-          baseTable:   p.baseTable   || 'pos_terminals',
-          columns:     Array.isArray(p.columns) ? p.columns : [],
-          rows:        Array.isArray(p.rows)    ? p.rows    : [],
-          values:      Array.isArray(p.values)  ? p.values  : [],
-          regionId:    p.regionId    || '',
-          clientId:    p.clientId    || '',
-          dateColumn:  p.dateColumn  || '',
-          dateFrom:    p.dateFrom    || '',
-          dateTo:      p.dateTo      || '',
-          limit:       p.limit       || 100,
-          downloadAll: p.downloadAll || false,
+        // Restore fields array
+        this.fields = Array.isArray(p.fields) ? p.fields : [];
+
+        // Restore config
+        this.config = {
+          baseTable:  p.baseTable  || 'pos_terminals',
+          regionId:   p.regionId   || '',
+          clientId:   p.clientId   || '',
+          dateColumn: p.dateColumn || '',
+          dateFrom:   p.dateFrom   || '',
+          dateTo:     p.dateTo     || '',
+          limit:      p.limit      || 100,
         };
 
         this.reportData         = null;
         this.reportColumns      = [];
         this.showTemplateModal  = false;
-        this.successMessage     = `Template "${template.name}" loaded. Click Run Report to execute.`;
+        this.successMessage     = `"${tpl.name}" loaded — click Run Report to execute.`;
       } catch (e) {
         this.errorMessage = 'Failed to load template: ' + e.message;
       }
     },
 
     async saveTemplate() {
-      if (!this.templateForm.name) {
-        this.errorMessage = 'Please enter a template name.';
-        return;
-      }
-
+      if (!this.saveForm.name) { this.errorMessage = 'Enter a template name.'; return; }
       try {
-        const response = await fetch('/api/report/templates', {
+        const res = await fetch('/api/report/templates', {
           method:      'POST',
           credentials: 'same-origin',
           headers: {
@@ -789,30 +682,34 @@ document.addEventListener('alpine:init', () => {
             'X-Requested-With': 'XMLHttpRequest',
           },
           body: JSON.stringify({
-            name:        this.templateForm.name,
-            description: this.templateForm.description,
-            is_global:   this.templateForm.isGlobal,
-            payload:     this.reportConfig,
+            name:        this.saveForm.name,
+            description: this.saveForm.description,
+            is_global:   this.saveForm.isGlobal,
+            payload: {
+              fields:     this.fields,
+              baseTable:  this.config.baseTable,
+              regionId:   this.config.regionId,
+              clientId:   this.config.clientId,
+              dateColumn: this.config.dateColumn,
+              dateFrom:   this.config.dateFrom,
+              dateTo:     this.config.dateTo,
+              limit:      this.config.limit,
+            },
           }),
         });
-
-        const text = await response.text();
-        if (text.trim().startsWith('<!')) {
-          this.errorMessage = 'Save failed — session expired. Please refresh.';
-          return;
-        }
-
-        const result = JSON.parse(text);
-        if (result.success) {
+        const text = await res.text();
+        if (text.trim().startsWith('<!')) { this.errorMessage = 'Session expired.'; return; }
+        const r = JSON.parse(text);
+        if (r.success) {
           this.showSaveModal  = false;
-          this.templateForm   = { name: '', description: '', isGlobal: false };
-          this.successMessage = 'Template saved successfully!';
+          this.saveForm       = { name: '', description: '', isGlobal: false };
+          this.successMessage = 'Template saved!';
           this.loadTemplates();
         } else {
-          this.errorMessage = 'Error: ' + (result.error || 'Unknown error');
+          this.errorMessage = r.error || 'Save failed';
         }
-      } catch (error) {
-        this.errorMessage = 'Failed to save template: ' + error.message;
+      } catch (e) {
+        this.errorMessage = 'Save failed: ' + e.message;
       }
     },
 
