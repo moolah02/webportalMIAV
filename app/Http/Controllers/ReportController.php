@@ -25,19 +25,19 @@ class ReportController extends Controller
         try {
             $user = Auth::user();
 
-            if (!$user->can('preview-reports')) {
-                return response()->json(['error' => 'Insufficient permissions'], 403);
-            }
-
             $validated = $request->validate([
-                'base' => 'required|array',
-                'base.table' => 'required|string',
-                'joins' => 'sometimes|array',
-                'select' => 'required|array|min:1',
-                'where' => 'sometimes|array',
-                'group_by' => 'sometimes|array',
-                'order_by' => 'sometimes|array',
-                'limit' => 'sometimes|integer|min:1|max:10000',
+                'base'              => 'required|array',
+                'base.table'        => 'required|string',
+                'joins'             => 'sometimes|array',
+                'select'            => 'required|array|min:1',
+                'where'             => 'sometimes|array',
+                'where.*.column'    => 'required_with:where|string',
+                'where.*.operator'  => 'required_with:where|string',
+                'where.*.value'     => 'sometimes|nullable',
+                'group_by'          => 'sometimes|array',
+                'order_by'          => 'sometimes|array',
+                'limit'             => 'sometimes|integer|min:1|max:10000',
+                'download_all'      => 'sometimes|boolean',
             ]);
 
             $queryData = $this->queryBuilder->buildQuery($validated);
@@ -70,16 +70,17 @@ class ReportController extends Controller
         try {
             $user = Auth::user();
 
-            if (!$user->can('export-reports')) {
-                return response()->json(['error' => 'Insufficient permissions'], 403);
-            }
-
             $validated = $request->validate([
-                'base' => 'required|array',
-                'base.table' => 'required|string',
-                'select' => 'required|array|min:1',
-                'format' => 'required|string|in:csv,xlsx,pdf',
-                'filename' => 'sometimes|string'
+                'base'              => 'required|array',
+                'base.table'        => 'required|string',
+                'select'            => 'required|array|min:1',
+                'where'             => 'sometimes|array',
+                'where.*.column'    => 'required_with:where|string',
+                'where.*.operator'  => 'required_with:where|string',
+                'where.*.value'     => 'sometimes|nullable',
+                'format'            => 'required|string|in:csv,xlsx,pdf',
+                'filename'          => 'sometimes|string',
+                'download_all'      => 'sometimes|boolean',
             ]);
 
             $validated['download_all'] = true;

@@ -172,4 +172,75 @@ class ReportTemplateController extends Controller
             ], 404);
         }
     }
+
+    public function duplicate(string $id): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $original = ReportTemplate::findOrFail($id);
+
+            // Must be able to see the template to duplicate it
+            if (!$original->is_global && $original->created_by !== $user->id && !$user->can('manage-report-templates')) {
+                return response()->json(['error' => 'Access denied'], 403);
+            }
+
+            $copy = ReportTemplate::create([
+                'name'        => 'Copy of ' . $original->name,
+                'description' => $original->description,
+                'tags'        => $original->tags,
+                'is_global'   => false,
+                'payload'     => $original->payload,
+                'created_by'  => $user->id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $copy,
+                'message' => 'Template duplicated successfully',
+            ], 201);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function getTags(): JsonResponse
+    {
+        try {
+            $user      = Auth::user();
+            $isManager = $user->can('manage-report-templates');
+
+            $query = ReportTemplate::select('tags');
+
+            if (!$isManager) {
+                $query->where(function ($q) use ($user) {
+                    $q->where('is_global', true)
+                      ->orWhere('created_by', $user->id);
+                });
+            }
+
+            $tags = $query->get()
+                ->pluck('tags')
+                ->filter()
+                ->flatten()
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            return response()->json([
+                'success' => true,
+                'data'    => $tags,
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

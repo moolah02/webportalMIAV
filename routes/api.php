@@ -605,12 +605,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->name('api.report.fields');
     });
 
-    // Report template CRUD
+    // Report template CRUD (static routes MUST come before parameterised /{id})
     Route::prefix('report/templates')->group(function () {
         Route::get('/', [ReportTemplateController::class, 'index'])
             ->name('api.report.templates.index');
         Route::post('/', [ReportTemplateController::class, 'store'])
             ->name('api.report.templates.store');
+        Route::get('/tags/list', [ReportTemplateController::class, 'getTags'])
+            ->name('api.report.templates.tags');
         Route::get('/{id}', [ReportTemplateController::class, 'show'])
             ->name('api.report.templates.show');
         Route::put('/{id}', [ReportTemplateController::class, 'update'])
@@ -619,7 +621,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->name('api.report.templates.destroy');
         Route::post('/{id}/duplicate', [ReportTemplateController::class, 'duplicate'])
             ->name('api.report.templates.duplicate');
-        Route::get('/tags/list', [ReportTemplateController::class, 'getTags'])
-            ->name('api.report.templates.tags');
     });
 });
