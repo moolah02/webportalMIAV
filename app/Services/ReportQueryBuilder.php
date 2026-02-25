@@ -7,20 +7,20 @@ use InvalidArgumentException;
 
 class ReportQueryBuilder
 {
-    // Allowlisted tables and columns
+    // Allowlisted tables and columns (must match actual DB schema)
     private const ALLOWED_TABLES = [
         'pos_terminals' => [
-            'id', 'terminal_id', 'client_id', 'region_id', 'merchant_name', 'merchant_contact_person',
-            'merchant_phone', 'physical_address', 'city', 'province', 'area', 'business_type',
+            'id', 'terminal_id', 'client_id', 'merchant_name', 'merchant_contact_person',
+            'merchant_phone', 'physical_address', 'region', 'city', 'province', 'area', 'business_type',
             'installation_date', 'terminal_model', 'serial_number', 'status', 'last_service_date',
-            'created_at', 'updated_at', 'current_status', 'deployment_status'
+            'created_at', 'updated_at', 'current_status'
         ],
         'clients' => [
             'id', 'client_code', 'company_name', 'email', 'phone', 'address', 'city', 'region',
             'contract_start_date', 'contract_end_date', 'status', 'priority', 'created_at', 'updated_at'
         ],
         'regions' => [
-            'id', 'name', 'description', 'region_code', 'is_active', 'created_at', 'updated_at'
+            'id', 'name', 'description', 'is_active', 'created_at', 'updated_at'
         ],
         'visits' => [
             'id', 'merchant_id', 'merchant_name', 'employee_id', 'assignment_id', 'completed_at',
@@ -45,13 +45,12 @@ class ReportQueryBuilder
         ]
     ];
 
-    // Allowlisted joins
+    // Allowlisted joins (verified against actual DB foreign keys)
     private const ALLOWED_JOINS = [
         'pos_terminals.client_id = clients.id',
-        'pos_terminals.region_id = regions.id',
         'visit_terminals.visit_id = visits.id',
         'visit_terminals.terminal_id = pos_terminals.id',
-        'visits.employee_id = job_assignments.id',
+        'visits.assignment_id = job_assignments.id',
         'tickets.pos_terminal_id = pos_terminals.id',
         'tickets.client_id = clients.id',
         'job_assignments.project_id = projects.id',
@@ -176,32 +175,64 @@ class ReportQueryBuilder
             return [];
         }
 
-        $graph    = $this->buildJoinGraph();
-        $visited  = [$baseTable => true];
-        $queue    = [$baseTable];
-        $joinPlan = [];
-        $targets  = array_values($targets);
+        $graph = $this->buildJoinGraph();
 
-        while (!empty($queue) && !empty($targets)) {
+        // Full BFS to build a parent map (table => parent table, condition)
+        $parent    = [$baseTable => null];
+        $parentCon = [];
+        $queue     = [$baseTable];
+
+        while (!empty($queue)) {
             $current = array_shift($queue);
-
             foreach ($graph[$current] ?? [] as $neighbor => $condition) {
-                if (isset($visited[$neighbor])) {
+                if (array_key_exists($neighbor, $parent)) {
                     continue;
                 }
-                $visited[$neighbor] = true;
-                $queue[]  = $neighbor;
-                $joinPlan[] = ['on' => $condition, 'type' => 'left', 'join_table' => $neighbor];
-
-                $targets = array_values(array_diff($targets, [$neighbor]));
+                $parent[$neighbor]    = $current;
+                $parentCon[$neighbor] = $condition;
+                $queue[]              = $neighbor;
             }
         }
 
-        if (!empty($targets)) {
+        // Verify all targets are reachable
+        $missing = array_values(array_filter($targets, fn($t) => !array_key_exists($t, $parent)));
+        if (!empty($missing)) {
             throw new InvalidArgumentException(
-                'Cannot join tables: ' . implode(', ', $targets) .
+                'Cannot join tables: ' . implode(', ', $missing) .
                 '. No join path from base table "' . $baseTable . '".'
             );
+        }
+
+        // For each target trace back to base — collect ONLY needed intermediate nodes
+        $neededTables = [];
+        foreach ($targets as $target) {
+            $node = $target;
+            while ($node !== $baseTable) {
+                if (!isset($neededTables[$node])) {
+                    $neededTables[$node] = $parentCon[$node];
+                }
+                $node = $parent[$node];
+            }
+        }
+
+        // Emit join plan in BFS order so each table is joined after its parent
+        $joinPlan  = [];
+        $scheduled = [$baseTable => true];
+        $queue     = [$baseTable];
+
+        while (!empty($queue)) {
+            $current = array_shift($queue);
+            foreach ($neededTables as $table => $condition) {
+                if ($parent[$table] === $current && !isset($scheduled[$table])) {
+                    $scheduled[$table] = true;
+                    $queue[]           = $table;
+                    $joinPlan[]        = [
+                        'on'         => $condition,
+                        'type'       => 'left',
+                        'join_table' => $table,
+                    ];
+                }
+            }
         }
 
         return $joinPlan;
