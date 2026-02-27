@@ -251,6 +251,14 @@
         <a href="{{ url('/docs/system') }}" class="{{ request()->is('docs/system') ? 'active' : '' }}">System Manual</a>
         <a href="{{ url('/docs/srs') }}" class="{{ request()->is('docs/srs') ? 'active' : '' }}">SRS</a>
         <a href="{{ url('/login') }}" class="app-link">&#8592; App</a>
+        @auth
+            @if(auth()->user()->roles->whereIn('name', ['super_admin', 'administrator'])->isNotEmpty())
+                @if(!request()->is('docs'))
+                    <a href="{{ url('/admin/docs/' . basename(request()->path()) . '/edit') }}" class="app-link" style="background:#fff3cd;color:#856404;border-color:#ffc107;">&#9998; Edit Page</a>
+                @endif
+                <a href="{{ url('/admin/docs') }}" class="app-link" style="background:#d1ecf1;color:#0c5460;border-color:#bee5eb;">&#9881; Manage Docs</a>
+            @endif
+        @endauth
     </div>
 </nav>
 

@@ -2,10 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DocPage;
 use Illuminate\Http\Request;
 
 class DocsController extends Controller
 {
+    /**
+     * Load a doc page from the DB, falling back to an empty object so the blade
+     * can always use $page->content, $page->title, etc.
+     */
+    protected function loadPage(string $slug): DocPage
+    {
+        return DocPage::where('slug', $slug)->first()
+            ?? new DocPage(['slug' => $slug, 'title' => '', 'subtitle' => '', 'content' => '']);
+    }
+
     public function index()
     {
         return view('docs.index');
@@ -13,8 +24,41 @@ class DocsController extends Controller
 
     public function system()
     {
-        return view('docs.system');
+        $page = $this->loadPage('system');
+        return view('docs.system', compact('page'));
     }
+
+    public function mobile()
+    {
+        $page = $this->loadPage('mobile');
+        return view('docs.mobile', compact('page'));
+    }
+
+    public function reports()
+    {
+        $page = $this->loadPage('reports');
+        return view('docs.reports', compact('page'));
+    }
+
+    public function projects()
+    {
+        $page = $this->loadPage('projects');
+        return view('docs.projects', compact('page'));
+    }
+
+    public function srs()
+    {
+        $page = $this->loadPage('srs');
+        return view('docs.srs', compact('page'));
+    }
+
+    public function overview()
+    {
+        $page = $this->loadPage('overview');
+        return view('docs.overview', compact('page'));
+    }
+
+    // ── Legacy routes kept for backward compatibility ──────────────
 
     public function testing()
     {
@@ -36,33 +80,8 @@ class DocsController extends Controller
         return view('docs.api');
     }
 
-    public function overview()
-    {
-        return view('docs.overview');
-    }
-
     public function deployment()
     {
         return view('docs.deployment');
-    }
-
-    public function mobile()
-    {
-        return view('docs.mobile');
-    }
-
-    public function reports()
-    {
-        return view('docs.reports');
-    }
-
-    public function projects()
-    {
-        return view('docs.projects');
-    }
-
-    public function srs()
-    {
-        return view('docs.srs');
     }
 }

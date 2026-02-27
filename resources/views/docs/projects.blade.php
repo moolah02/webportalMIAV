@@ -1,5 +1,8 @@
-@extends('docs.layout')
+﻿@extends('docs.layout')
 @section('content')
+@if(!empty(trim($page->content ?? '')))
+    {!! $page->content !!}
+@else
 
 <div class="breadcrumb">
     <a href="{{ url('/docs') }}">Docs Hub</a>
@@ -229,4 +232,5 @@
     </tbody>
 </table>
 
+@endif
 @endsection

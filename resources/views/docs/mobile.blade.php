@@ -1,5 +1,8 @@
-@extends('docs.layout')
+﻿@extends('docs.layout')
 @section('content')
+@if(!empty(trim($page->content ?? '')))
+    {!! $page->content !!}
+@else
 
 <div class="breadcrumb">
     <a href="{{ url('/docs') }}">Docs Hub</a>
@@ -137,4 +140,5 @@
     <li><strong>Never close a ticket</strong> yourself unless your supervisor has confirmed this is correct procedure for your team.</li>
 </ul>
 
+@endif
 @endsection

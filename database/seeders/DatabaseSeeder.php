@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ClientSeeder::class,
             PosTerminalSeeder::class,
             TechnicianSeeder::class,
+            DocPageSeeder::class,
         ]);
     }
 }

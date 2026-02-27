@@ -1,5 +1,8 @@
-@extends('docs.layout')
+﻿@extends('docs.layout')
 @section('content')
+@if(!empty(trim($page->content ?? '')))
+    {!! $page->content !!}
+@else
 
 <div class="breadcrumb">
     <a href="{{ url('/docs') }}">Docs Hub</a>
@@ -227,4 +230,5 @@
 <h3>9.5 API</h3>
 <p>A RESTful API is available for integration purposes. See the <a href="{{ url('/docs/api') }}">API Documentation</a> for endpoint reference.</p>
 
+@endif
 @endsection

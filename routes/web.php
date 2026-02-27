@@ -27,6 +27,7 @@ use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\PosTerminalImportController;
 use App\Http\Controllers\SystemReportsController;
 use App\Http\Controllers\DocsController;
+use App\Http\Controllers\Admin\DocPageController;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -91,6 +92,19 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
 
     // Logout route
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+    // ==============================================
+    // ADMIN DOCUMENTATION EDITOR (admin / super_admin only)
+    // ==============================================
+
+    Route::prefix('admin/docs')
+        ->name('admin.docs.')
+        ->middleware('role:super_admin,administrator')
+        ->group(function () {
+            Route::get('/',           [DocPageController::class, 'index'])->name('index');
+            Route::get('/{slug}/edit',[DocPageController::class, 'edit'])->name('edit');
+            Route::put('/{slug}',     [DocPageController::class, 'update'])->name('update');
+        });
 
     // ==============================================
     // DASHBOARD ROUTES - UPDATED WITH NEW PERMISSIONS

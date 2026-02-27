@@ -1,5 +1,8 @@
-@extends('docs.layout')
+﻿@extends('docs.layout')
 @section('content')
+@if(!empty(trim($page->content ?? '')))
+    {!! $page->content !!}
+@else
 
 <div class="breadcrumb">
     <a href="{{ url('/docs') }}">Docs Hub</a>
@@ -188,4 +191,5 @@
     <strong>Note:</strong> Scheduled reports require the system mail configuration to be active. Contact your admin if emails are not arriving.
 </div>
 
+@endif
 @endsection
