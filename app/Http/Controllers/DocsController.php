@@ -45,4 +45,24 @@ class DocsController extends Controller
     {
         return view('docs.deployment');
     }
+
+    public function mobile()
+    {
+        return view('docs.mobile');
+    }
+
+    public function reports()
+    {
+        return view('docs.reports');
+    }
+
+    public function projects()
+    {
+        return view('docs.projects');
+    }
+
+    public function srs()
+    {
+        return view('docs.srs');
+    }
 }

@@ -35,14 +35,19 @@ use Illuminate\Support\Facades\Auth;
 // ==============================================
 
 Route::prefix('docs')->name('docs.')->group(function () {
-    Route::get('/',                [DocsController::class, 'index'])->name('index');
-    Route::get('/system',          [DocsController::class, 'system'])->name('system');
-    Route::get('/testing',         [DocsController::class, 'testing'])->name('testing');
-    Route::get('/tickets',         [DocsController::class, 'tickets'])->name('tickets');
+    Route::get('/',                  [DocsController::class, 'index'])->name('index');
+    Route::get('/system',            [DocsController::class, 'system'])->name('system');
+    Route::get('/mobile',            [DocsController::class, 'mobile'])->name('mobile');
+    Route::get('/reports',           [DocsController::class, 'reports'])->name('reports');
+    Route::get('/projects',          [DocsController::class, 'projects'])->name('projects');
+    Route::get('/srs',               [DocsController::class, 'srs'])->name('srs');
+    Route::get('/overview',          [DocsController::class, 'overview'])->name('overview');
+    // Legacy routes kept for any existing links
+    Route::get('/testing',           [DocsController::class, 'testing'])->name('testing');
+    Route::get('/tickets',           [DocsController::class, 'tickets'])->name('tickets');
     Route::get('/staged-resolution', [DocsController::class, 'stagedResolution'])->name('staged-resolution');
-    Route::get('/api',             [DocsController::class, 'api'])->name('api');
-    Route::get('/overview',        [DocsController::class, 'overview'])->name('overview');
-    Route::get('/deployment',      [DocsController::class, 'deployment'])->name('deployment');
+    Route::get('/api',               [DocsController::class, 'api'])->name('api');
+    Route::get('/deployment',        [DocsController::class, 'deployment'])->name('deployment');
 });
 
 
