@@ -123,10 +123,10 @@ class ReportController extends Controller
             $file = fopen('php://output', 'w');
 
             if ($results->isNotEmpty()) {
-                fputcsv($file, array_keys($results->first()->toArray()));
+                fputcsv($file, array_keys((array) $results->first()));
 
                 foreach ($results as $result) {
-                    fputcsv($file, array_values($result->toArray()));
+                    fputcsv($file, array_values((array) $result));
                 }
             }
 

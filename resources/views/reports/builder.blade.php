@@ -93,37 +93,49 @@
         <div style="display:flex;flex-direction:column;gap:14px;overflow:hidden;min-height:0;">
 
             <!-- Drop zone row -->
-            <div class="rb-card" style="padding:16px;flex-shrink:0;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div class="rb-card" style="padding:16px;flex-shrink:0;max-height:220px;overflow-y:auto;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                     <span style="font-weight:700;color:#111827;font-size:14px;">&#128202; Report Fields</span>
+                </div>
 
-                    <!-- Inline filters: Base Table + Region + Client + Date -->
-                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <!-- Filter bar -->
+                <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding:10px 12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                        <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">Data Source</label>
                         <select x-model="config.baseTable" @change="clearAll()"
-                                style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;">
+                                style="padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#374151;background:#fff;min-width:130px;">
                             <template x-for="(t, tn) in availableFields" :key="tn">
                                 <option :value="tn" x-text="t.label"></option>
                             </template>
                         </select>
+                    </div>
 
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                        <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">Region</label>
                         <select x-model="config.regionId"
-                                style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;">
+                                style="padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#374151;background:#fff;min-width:120px;">
                             <option value="">All Regions</option>
                             <template x-for="(name, id) in availableFilters.regions" :key="id">
                                 <option :value="id" x-text="name"></option>
                             </template>
                         </select>
+                    </div>
 
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                        <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">Client</label>
                         <select x-model="config.clientId"
-                                style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;">
+                                style="padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#374151;background:#fff;min-width:130px;">
                             <option value="">All Clients</option>
                             <template x-for="(name, id) in availableFilters.clients" :key="id">
                                 <option :value="id" x-text="name"></option>
                             </template>
                         </select>
+                    </div>
 
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                        <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">Date Field</label>
                         <select x-model="config.dateColumn"
-                                style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;">
+                                style="padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#374151;background:#fff;min-width:140px;">
                             <option value="">No date filter</option>
                             <template x-for="(t, tn) in availableFields" :key="tn">
                                 <template x-for="f in t.fields.filter(f => f.type === 'date')" :key="f.expression">
@@ -131,19 +143,27 @@
                                 </template>
                             </template>
                         </select>
+                    </div>
 
-                        <template x-if="config.dateColumn">
+                    <template x-if="config.dateColumn">
+                        <div style="display:flex;flex-direction:column;gap:3px;">
+                            <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">From</label>
                             <input type="date" x-model="config.dateFrom"
-                                   style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;">
-                        </template>
-                        <template x-if="config.dateColumn">
+                                   style="padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#374151;">
+                        </div>
+                    </template>
+                    <template x-if="config.dateColumn">
+                        <div style="display:flex;flex-direction:column;gap:3px;">
+                            <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">To</label>
                             <input type="date" x-model="config.dateTo"
-                                   style="padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;">
-                        </template>
+                                   style="padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#374151;">
+                        </div>
+                    </template>
 
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                        <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">Row Limit</label>
                         <input type="number" x-model.number="config.limit" min="1" max="10000"
-                               style="width:70px;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;"
-                               title="Row limit">
+                               style="width:75px;padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;color:#374151;">
                     </div>
                 </div>
 
