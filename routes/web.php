@@ -828,9 +828,7 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
 
     // Report builder - Open to all authenticated users (outside permission group)
     Route::middleware('auth')->prefix('reports')->name('reports.')->group(function () {
-        Route::get('/builder', function () {
-            return view('reports.builder', ['title' => 'Report Builder']);
-        })->name('builder');
+        Route::get('/builder', [\App\Http\Controllers\ReportBuilderController::class, 'index'])->name('builder');
     });
 
     Route::middleware('permission:view_reports,all')->prefix('reports')->name('reports.')->group(function () {

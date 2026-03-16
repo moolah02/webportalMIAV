@@ -31,7 +31,7 @@
 
                 {{-- Status Update Actions --}}
                 <div class="action-section">
-                    @if(auth()->user()->can('update', $assignment) || (auth()->user()->id == $assignment->technician_id))
+                    @if(auth()->user()->can('update', $assignment) || auth()->user()->hasPermission('manage_jobs') || auth()->user()->hasPermission('all') || (auth()->user()->id == $assignment->technician_id))
                         <div class="status-actions">
                             @if($assignment->status === 'assigned')
                                 <button type="button" class="btn btn-primary" onclick="updateStatus({{ $assignment->id }}, 'in_progress', this)">

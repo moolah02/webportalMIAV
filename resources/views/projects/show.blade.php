@@ -124,6 +124,25 @@
                     </a>
                 @endif
             </div>
+
+            {{-- Quick Status Update --}}
+            <form method="POST" action="{{ route('projects.update', $project) }}" class="d-flex align-items-center gap-2 mt-3" style="flex-wrap:wrap;">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="name" value="{{ $project->name }}">
+                <input type="hidden" name="client_id" value="{{ $project->client_id }}">
+                <input type="hidden" name="start_date" value="{{ $project->start_date }}">
+                <input type="hidden" name="description" value="{{ $project->description }}">
+                <label for="quick_status" style="margin:0;font-weight:600;white-space:nowrap;">Update Status:</label>
+                <select name="status" id="quick_status" class="form-control" style="width:auto;min-width:150px;">
+                    @foreach(['planning','active','on_hold','completed','cancelled'] as $s)
+                        <option value="{{ $s }}" {{ $project->status === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
+                    @endforeach
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </form>
         </div>
     </div>
 

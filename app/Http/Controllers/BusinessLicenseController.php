@@ -101,10 +101,10 @@ class BusinessLicenseController extends Controller
     private function getCompanyLicenseStats()
     {
         return [
-            'total_licenses' => BusinessLicense::companyHeld()->count(),
-            'active_licenses' => BusinessLicense::companyHeld()->where('status', 'active')->count(),
-            'expired_licenses' => BusinessLicense::companyHeld()->expired()->count(),
-            'expiring_soon' => BusinessLicense::companyHeld()->expiringSoon(15)->count(),
+            'total_licenses'    => BusinessLicense::companyHeld()->count(),
+            'active_licenses'   => BusinessLicense::companyHeld()->where('status', 'active')->count(),
+            'expired_licenses'  => BusinessLicense::companyHeld()->expired()->count(),
+            'expiring_soon'     => BusinessLicense::companyHeld()->expiringSoon(15)->count(),
             'critical_licenses' => BusinessLicense::companyHeld()->where('priority_level', 'critical')->count(),
             'total_annual_cost' => BusinessLicense::companyHeld()->where('status', 'active')->sum('renewal_cost') ?? 0,
         ];
@@ -112,15 +112,13 @@ class BusinessLicenseController extends Controller
 
     private function getCustomerLicenseStats()
     {
-        $customerLicenses = BusinessLicense::customerIssued();
-
         return [
-            'total_licenses' => $customerLicenses->count(),
-            'active_licenses' => $customerLicenses->where('status', 'active')->count(),
-            'expired_licenses' => $customerLicenses->expired()->count(),
-            'expiring_soon' => $customerLicenses->expiringSoon(15)->count(),
-            'unique_customers' => $customerLicenses->whereNotNull('customer_email')->distinct('customer_email')->count(),
-            'total_revenue' => $customerLicenses->where('status', 'active')->get()->sum('annual_revenue') ?? 0,
+            'total_licenses'    => BusinessLicense::customerIssued()->count(),
+            'active_licenses'   => BusinessLicense::customerIssued()->where('status', 'active')->count(),
+            'expired_licenses'  => BusinessLicense::customerIssued()->expired()->count(),
+            'expiring_soon'     => BusinessLicense::customerIssued()->expiringSoon(15)->count(),
+            'unique_customers'  => BusinessLicense::customerIssued()->whereNotNull('customer_email')->distinct('customer_email')->count(),
+            'total_revenue'     => BusinessLicense::customerIssued()->where('status', 'active')->sum('annual_revenue') ?? 0,
         ];
     }
 
