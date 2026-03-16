@@ -24,14 +24,12 @@ class ClientDashboardController extends Controller
             ->orderBy('company_name')
             ->get()
             ->map(function ($client) {
-                // Get terminal status breakdown
                 $statusBreakdown = $client->posTerminals()
                     ->select('current_status', DB::raw('count(*) as count'))
                     ->groupBy('current_status')
                     ->pluck('count', 'current_status')
                     ->toArray();
 
-                // Get recent activity count (last 30 days)
                 $recentActivity = TechnicianVisit::where('client_id', $client->id)
                     ->where('visit_date', '>=', Carbon::now()->subDays(30))
                     ->count();
@@ -42,13 +40,22 @@ class ClientDashboardController extends Controller
                 return $client;
             });
 
-    return view('client-dashboards.index', [
-        'title' => 'Client Dashboards',
-        'clients' => $clients,
-        'stats' => $stats,
-        'regions' => $regions,
-    ]);
-}
+        $stats = [
+            'total_clients'   => Client::count(),
+            'total_terminals' => PosTerminal::count(),
+            'active_terminals' => PosTerminal::where('current_status', 'active')->count(),
+            'open_tickets'    => Ticket::whereIn('status', ['open', 'in_progress'])->count(),
+        ];
+
+        $regions = Region::orderBy('name')->get();
+
+        return view('client-dashboards.index', [
+            'title'   => 'Client Dashboards',
+            'clients' => $clients,
+            'stats'   => $stats,
+            'regions' => $regions,
+        ]);
+    }
 
     public function show(Client $client, Request $request)
     {

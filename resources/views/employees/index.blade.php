@@ -103,11 +103,11 @@ File: resources/views/employees/index.blade.php
                    placeholder="Search employees..."
                    style="flex: 1; min-inline-size: 250px; padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
 
-            <select name="department" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
+            <select name="department_id" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
                 <option value="">All Departments</option>
-                <option value="engineering" {{ request('department') == 'engineering' ? 'selected' : '' }}>Engineering</option>
-                <option value="sales" {{ request('department') == 'sales' ? 'selected' : '' }}>Sales</option>
-                <option value="hr" {{ request('department') == 'hr' ? 'selected' : '' }}>HR</option>
+                @foreach($departments as $dept)
+                    <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
+                @endforeach
             </select>
 
             <select name="status" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
@@ -119,7 +119,7 @@ File: resources/views/employees/index.blade.php
 
             <button type="submit" class="btn">Filter</button>
 
-            @if(request()->hasAny(['search', 'status', 'department']))
+            @if(request()->hasAny(['search', 'status', 'department_id']))
             <a href="{{ route('employees.index') }}" class="btn">Clear</a>
             @endif
         </form>
