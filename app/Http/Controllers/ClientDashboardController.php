@@ -42,6 +42,13 @@ class ClientDashboardController extends Controller
 
         $stats = [
             'total_clients'   => Client::count(),
+            'active_clients'  => Client::where('status', 'active')->count(),
+            'prospects'       => Client::where('status', 'prospect')->count(),
+            'under_contract'  => Client::whereNotNull('contract_start_date')
+                ->where(function ($q) {
+                    $q->whereNull('contract_end_date')
+                      ->orWhere('contract_end_date', '>=', now());
+                })->count(),
             'total_terminals' => PosTerminal::count(),
             'active_terminals' => PosTerminal::where('current_status', 'active')->count(),
             'open_tickets'    => Ticket::whereIn('status', ['open', 'in_progress'])->count(),

@@ -19,18 +19,21 @@ class BusinessLicenseController extends Controller
     {
         $direction = $request->get('direction', 'company_held');
 
-        $query = BusinessLicense::where('license_direction', $direction)
-            ->with(['department', 'responsibleEmployee']);
-
-        // Apply direction-specific filters
-        $this->applyFilters($query, $request, $direction);
+        if ($direction === 'all') {
+            $query = BusinessLicense::with(['department', 'responsibleEmployee']);
+            $this->applyFilters($query, $request, 'all');
+        } else {
+            $query = BusinessLicense::where('license_direction', $direction)
+                ->with(['department', 'responsibleEmployee']);
+            $this->applyFilters($query, $request, $direction);
+        }
 
         // Sort by expiry date by default (upcoming expirations first)
         $sortField = $request->get('sort', 'expiry_date');
         $sortDirection = $request->get('direction_sort', 'asc');
         $query->orderBy($sortField, $sortDirection);
 
-        $licenses = $query->paginate(15)->appends($request->query());
+        $licenses = $query->paginate(25)->appends($request->query());
 
         // Get direction-specific statistics
         $stats = $this->getStatsByDirection($direction);
@@ -63,8 +66,8 @@ class BusinessLicenseController extends Controller
                   ->orWhere('license_number', 'LIKE', "%{$search}%")
                   ->orWhere('issuing_authority', 'LIKE', "%{$search}%");
 
-                // Add customer-specific search for customer-issued licenses
-                if ($direction === 'customer_issued') {
+                // Search customer fields for customer-issued or all
+                if ($direction === 'customer_issued' || $direction === 'all') {
                     $q->orWhere('customer_name', 'LIKE', "%{$search}%")
                       ->orWhere('customer_company', 'LIKE', "%{$search}%")
                       ->orWhere('customer_email', 'LIKE', "%{$search}%");
@@ -93,8 +96,18 @@ class BusinessLicenseController extends Controller
     {
         if ($direction === 'company_held') {
             return $this->getCompanyLicenseStats();
-        } else {
+        } elseif ($direction === 'customer_issued') {
             return $this->getCustomerLicenseStats();
+        } else {
+            // 'all' — combined stats
+            return [
+                'total_licenses'   => BusinessLicense::count(),
+                'active_licenses'  => BusinessLicense::where('status', 'active')->count(),
+                'expired_licenses' => BusinessLicense::expired()->count(),
+                'expiring_soon'    => BusinessLicense::expiringSoon(15)->count(),
+                'company_held'     => BusinessLicense::companyHeld()->count(),
+                'customer_issued'  => BusinessLicense::customerIssued()->count(),
+            ];
         }
     }
 

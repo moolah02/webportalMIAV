@@ -411,10 +411,13 @@ class ReportQueryBuilder
 
     private function buildSelectField(array $field): string
     {
-        if (isset($field['aggregate'])) {
-            $expr = strtoupper($field['aggregate']) . '(' . $field['expr'] . ')';
+        // Backtick-quote table.column so reserved words (condition, status, etc.) never break
+        $quotedExpr = $this->quoteExpression($field['expr']);
+
+        if (!empty($field['aggregate'])) {
+            $expr = strtoupper($field['aggregate']) . '(' . $quotedExpr . ')';
         } else {
-            $expr = $field['expr'];
+            $expr = $quotedExpr;
         }
 
         if (isset($field['as'])) {
@@ -422,6 +425,16 @@ class ReportQueryBuilder
         }
 
         return $expr;
+    }
+
+    private function quoteExpression(string $expr): string
+    {
+        // table.column → `table`.`column`
+        if (strpos($expr, '.') !== false) {
+            [$table, $column] = explode('.', $expr, 2);
+            return '`' . $table . '`.`' . $column . '`';
+        }
+        return '`' . $expr . '`';
     }
 
     // -------------------------------------------------------------------------

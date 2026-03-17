@@ -158,3 +158,4 @@ class AssetCategoryField extends Model
 
         return $input . $help;
     }
+}

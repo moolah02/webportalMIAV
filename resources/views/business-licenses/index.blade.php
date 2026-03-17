@@ -8,18 +8,24 @@
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;">
         <div>
             <h2 style="margin:0;color:#222;font-weight:600;">
-                {{ $direction === 'company_held' ? 'Business Licenses' : 'Customer Licenses' }}
+                @if($direction === 'company_held') Business Licenses
+                @elseif($direction === 'customer_issued') Customer Licenses
+                @else All Licenses — History & Lookup
+                @endif
             </h2>
             <p style="color:#6b7280;margin:6px 0 0 0;font-size:14px;">
-                {{ $direction === 'company_held'
-                    ? 'Repository of licenses and compliance records'
-                    : 'Repository of customer-issued licenses' }}
+                @if($direction === 'company_held') Repository of licenses and compliance records
+                @elseif($direction === 'customer_issued') Repository of customer-issued licenses
+                @else Complete record of all issued and held licenses
+                @endif
             </p>
         </div>
         <div style="display:flex;gap:8px;">
-            <a href="{{ route('business-licenses.compliance', ['direction' => $direction]) }}" class="btn btn-ghost">Compliance</a>
-            <a href="{{ route('business-licenses.expiring', ['direction' => $direction]) }}" class="btn btn-ghost">Expiring</a>
-            <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn btn-primary">Add {{ $direction === 'company_held' ? 'License' : 'Customer License' }}</a>
+            @if($direction !== 'all')
+                <a href="{{ route('business-licenses.compliance', ['direction' => $direction]) }}" class="btn btn-ghost">Compliance</a>
+                <a href="{{ route('business-licenses.expiring', ['direction' => $direction]) }}" class="btn btn-ghost">Expiring</a>
+                <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn btn-primary">Add {{ $direction === 'company_held' ? 'License' : 'Customer License' }}</a>
+            @endif
         </div>
     </div>
 
@@ -30,6 +36,8 @@
                class="seg {{ $direction === 'company_held' ? 'seg--active' : '' }}">Our Licenses</a>
             <a href="{{ route('business-licenses.index', ['direction' => 'customer_issued']) }}"
                class="seg {{ $direction === 'customer_issued' ? 'seg--active' : '' }}">Customer Licenses</a>
+            <a href="{{ route('business-licenses.index', ['direction' => 'all']) }}"
+               class="seg {{ $direction === 'all' ? 'seg--active' : '' }}">All / History</a>
         </div>
     </div>
 
@@ -98,7 +106,7 @@
         </form>
     </div>
 
-    {{-- Stats (neutral, no icons / colors) --}}
+    {{-- Stats --}}
     <div id="stats-cards" class="stats-grid" style="margin-bottom:20px;">
         @if($direction === 'company_held')
             <div class="stat">
@@ -125,7 +133,7 @@
                 <div class="stat__value" id="total-count">{{ $stats['total_licenses'] }}</div>
                 <div class="stat__label">Total Licenses</div>
             </div>
-        @else
+        @elseif($direction === 'customer_issued')
             <div class="stat">
                 <div class="stat__value" id="active-count">{{ $stats['active_licenses'] }}</div>
                 <div class="stat__label">Active Licenses</div>
@@ -150,6 +158,32 @@
                 <div class="stat__value" id="total-count">{{ $stats['total_licenses'] }}</div>
                 <div class="stat__label">Total Licenses</div>
             </div>
+        @else
+            {{-- All / History --}}
+            <div class="stat">
+                <div class="stat__value">{{ $stats['total_licenses'] }}</div>
+                <div class="stat__label">Total Records</div>
+            </div>
+            <div class="stat">
+                <div class="stat__value">{{ $stats['active_licenses'] }}</div>
+                <div class="stat__label">Active</div>
+            </div>
+            <div class="stat">
+                <div class="stat__value">{{ $stats['expired_licenses'] }}</div>
+                <div class="stat__label">Expired</div>
+            </div>
+            <div class="stat">
+                <div class="stat__value">{{ $stats['expiring_soon'] }}</div>
+                <div class="stat__label">Expiring Soon</div>
+            </div>
+            <div class="stat">
+                <div class="stat__value">{{ $stats['company_held'] }}</div>
+                <div class="stat__label">Company-Held</div>
+            </div>
+            <div class="stat">
+                <div class="stat__value">{{ $stats['customer_issued'] }}</div>
+                <div class="stat__label">Customer-Issued</div>
+            </div>
         @endif
     </div>
 
@@ -170,10 +204,14 @@
                                 <th>Department</th>
                                 <th>Responsible</th>
                                 <th>Priority</th>
-                            @else
+                            @elseif($direction === 'customer_issued')
                                 <th>Customer</th>
                                 <th>Revenue</th>
                                 <th>Support</th>
+                            @else
+                                <th>Type</th>
+                                <th>Dept / Customer</th>
+                                <th>Issuing Authority</th>
                             @endif
                             <th>Status</th>
                             <th>Dates</th>
@@ -193,7 +231,23 @@
                                     @endif
                                 </td>
 
-                                @if($license->isCompanyHeld())
+                                @if($direction === 'all')
+                                    <td>
+                                        <span class="badge">{{ $license->isCompanyHeld() ? 'Company' : 'Customer' }}</span>
+                                    </td>
+                                    <td>
+                                        @if($license->isCompanyHeld())
+                                            <div class="t-title">{{ $license->department->name ?? 'Unassigned' }}</div>
+                                            <div class="t-hint">{{ $license->responsibleEmployee->full_name ?? '' }}</div>
+                                        @else
+                                            <div class="t-title">{{ $license->customer_display_name }}</div>
+                                            <div class="t-hint">{{ $license->customer_email }}</div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="t-hint">{{ $license->issuing_authority }}</div>
+                                    </td>
+                                @elseif($license->isCompanyHeld())
                                     <td>
                                         <div class="t-title">{{ $license->department->name ?? 'Unassigned' }}</div>
                                         @if($license->location)
