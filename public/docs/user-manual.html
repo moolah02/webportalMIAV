@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revival Technologies — System User Manual</title>
+<style>
+  :root { --blue:#1976D2; --dark:#1a1a2e; --light:#f8f9fa; --border:#e0e0e0; --text:#333; --muted:#666; --green:#388E3C; --red:#D32F2F; --orange:#F57C00; --purple:#7B1FA2; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:15px;color:var(--text);background:#fff;line-height:1.7;}
+  a{color:var(--blue);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* COVER */
+  .cover{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;padding:80px 60px;min-height:300px;display:flex;flex-direction:column;justify-content:center;}
+  .cover h1{font-size:42px;font-weight:700;margin-bottom:12px;letter-spacing:-0.5px;}
+  .cover .subtitle{font-size:20px;opacity:.8;margin-bottom:30px;}
+  .cover .meta{font-size:13px;opacity:.6;border-top:1px solid rgba(255,255,255,.2);padding-top:20px;margin-top:20px;}
+
+  /* LAYOUT */
+  .container{max-width:960px;margin:0 auto;padding:0 30px;}
+  .toc-wrap{background:var(--light);border-left:4px solid var(--blue);padding:30px 40px;margin:40px 0;}
+  .toc-wrap h2{font-size:18px;margin-bottom:20px;color:var(--blue);}
+  .toc-wrap ol{padding-left:20px;}
+  .toc-wrap li{margin:6px 0;font-size:14px;}
+  .toc-wrap .sub{padding-left:20px;list-style:lower-alpha;}
+
+  /* SECTIONS */
+  .section{margin:50px 0;padding-bottom:40px;border-bottom:1px solid var(--border);}
+  .section:last-child{border-bottom:none;}
+  h2.section-title{font-size:26px;color:var(--dark);margin-bottom:6px;padding-bottom:10px;border-bottom:3px solid var(--blue);display:inline-block;}
+  h3{font-size:19px;color:var(--blue);margin:30px 0 12px;}
+  h4{font-size:16px;color:var(--text);margin:20px 0 8px;font-weight:600;}
+  p{margin:10px 0;}
+  ul,ol{padding-left:24px;margin:10px 0;}
+  li{margin:5px 0;}
+
+  /* CALLOUTS */
+  .note{background:#E3F2FD;border-left:4px solid var(--blue);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .warn{background:#FFF3E0;border-left:4px solid var(--orange);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .tip{background:#E8F5E8;border-left:4px solid var(--green);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .danger{background:#FFEBEE;border-left:4px solid var(--red);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+
+  /* STEPS */
+  .steps{counter-reset:step;margin:16px 0;}
+  .step{display:flex;gap:16px;margin:14px 0;align-items:flex-start;}
+  .step-num{background:var(--blue);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;margin-top:2px;}
+  .step-body{flex:1;}
+  .step-body strong{display:block;margin-bottom:4px;}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;}
+  th{background:var(--dark);color:#fff;padding:10px 14px;text-align:left;font-weight:600;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:nth-child(even) td{background:var(--light);}
+
+  /* BADGE */
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;}
+  .badge-blue{background:#E3F2FD;color:var(--blue);}
+  .badge-green{background:#E8F5E8;color:var(--green);}
+  .badge-red{background:#FFEBEE;color:var(--red);}
+  .badge-orange{background:#FFF3E0;color:var(--orange);}
+  .badge-purple{background:#F3E5F5;color:var(--purple);}
+
+  /* CODE */
+  code{background:#f4f4f4;border:1px solid #ddd;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px;}
+
+  /* PERM GRID */
+  .perm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin:14px 0;}
+  .perm-item{border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:13px;}
+  .perm-item strong{display:block;margin-bottom:2px;}
+  .perm-item span{color:var(--muted);}
+
+  /* PRINT */
+  @media print{
+    .cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .section{page-break-inside:avoid;}
+    h2.section-title,h3{page-break-after:avoid;}
+    .toc-wrap{page-break-inside:avoid;}
+  }
+
+  /* FOOTER */
+  .footer{background:var(--dark);color:rgba(255,255,255,.6);text-align:center;padding:30px;font-size:13px;margin-top:60px;}
+  .footer strong{color:#fff;}
+
+  /* NAV BACK-TO-TOP */
+  .btt{position:fixed;bottom:30px;right:30px;background:var(--blue);color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,.3);cursor:pointer;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="container">
+    <h1>Revival Technologies</h1>
+    <div class="subtitle">System User Manual — Complete Guide</div>
+    <div class="meta">
+      Version 1.0 &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; All Modules Including Report Builder
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc-wrap">
+  <h2>📋 Table of Contents</h2>
+  <ol>
+    <li><a href="#s1">Getting Started — Login &amp; Navigation</a></li>
+    <li><a href="#s2">Company Dashboard</a></li>
+    <li><a href="#s3">Employee Dashboard &amp; My Profile</a></li>
+    <li><a href="#s4">Client Management</a></li>
+    <li><a href="#s5">POS Terminal Management</a>
+      <ol class="sub">
+        <li><a href="#s5a">Adding &amp; Editing Terminals</a></li>
+        <li><a href="#s5b">Bulk Import from Excel/CSV</a></li>
+        <li><a href="#s5c">Terminal Status &amp; Service Tracking</a></li>
+      </ol>
+    </li>
+    <li><a href="#s6">Internal Assets</a>
+      <ol class="sub">
+        <li><a href="#s6a">Asset Inventory</a></li>
+        <li><a href="#s6b">Assigning, Returning &amp; Transferring</a></li>
+        <li><a href="#s6c">Asset Requests (Self-Service Catalog)</a></li>
+        <li><a href="#s6d">Asset Approvals</a></li>
+      </ol>
+    </li>
+    <li><a href="#s7">Business Licenses</a>
+      <ol class="sub">
+        <li><a href="#s7a">Company-Held Licenses</a></li>
+        <li><a href="#s7b">Customer-Issued Licenses</a></li>
+        <li><a href="#s7c">Renewals &amp; Compliance</a></li>
+      </ol>
+    </li>
+    <li><a href="#s8">Field Operations — Job Assignments</a></li>
+    <li><a href="#s9">Support Tickets</a></li>
+    <li><a href="#s10">Site Visits</a></li>
+    <li><a href="#s11">Terminal Deployment Planning</a></li>
+    <li><a href="#s12">Project Management</a></li>
+    <li><a href="#s13">Employee Management</a></li>
+    <li><a href="#s14">Roles &amp; Permissions</a></li>
+    <li><a href="#s15">System Settings</a></li>
+    <li><a href="#s16">Reports &amp; Analytics</a>
+      <ol class="sub">
+        <li><a href="#s16a">Reports Dashboard</a></li>
+        <li><a href="#s16b">Technician Visit Reports</a></li>
+        <li><a href="#s16c">Report Builder — Full Step-by-Step Guide</a></li>
+      </ol>
+    </li>
+    <li><a href="#s17">Permissions Reference</a></li>
+    <li><a href="#s18">Troubleshooting &amp; FAQs</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: GETTING STARTED -->
+<!-- ============================================================ -->
+<div class="section" id="s1">
+  <h2 class="section-title">1. Getting Started — Login &amp; Navigation</h2>
+
+  <h3>Logging In</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Open the system URL in your browser.</strong> You will be redirected to the login page automatically.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Enter your email address and password.</strong> These are set by your administrator during onboarding.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Click Sign In.</strong> If your credentials are correct and your account is active, you will be taken to your dashboard.</div></div>
+  </div>
+
+  <div class="warn"><strong>Note:</strong> If you see "Your account is inactive", contact your administrator. Inactive accounts cannot log in even with the correct password.</div>
+
+  <h3>The Navigation Sidebar</h3>
+  <p>The left-hand sidebar is your main navigation. It is always visible and divided into sections. Click any section header to expand or collapse it. The section containing your current page is automatically expanded when you load the page.</p>
+
+  <table>
+    <tr><th>Sidebar Section</th><th>What You Can Do There</th></tr>
+    <tr><td>Company Dashboard</td><td>System-wide metrics, alerts, terminal health overview</td></tr>
+    <tr><td>Employee Dashboard</td><td>Your personal stats, schedule, and quick links</td></tr>
+    <tr><td>Assets Management</td><td>Internal assets, POS terminals, asset requests &amp; approvals, business licenses</td></tr>
+    <tr><td>Field Operations</td><td>Terminal deployment, job assignments, site visits, support tickets</td></tr>
+    <tr><td>Project Management</td><td>Projects, project closure and reports</td></tr>
+    <tr><td>Client Management</td><td>Client directory and per-client dashboards</td></tr>
+    <tr><td>Employee Management</td><td>Employee directory and role management</td></tr>
+    <tr><td>Administration</td><td>System settings (departments, categories, service types)</td></tr>
+    <tr><td>Reports &amp; Analytics</td><td>Reports dashboard, technician visits report, Report Builder</td></tr>
+    <tr><td>Documentation Hub</td><td>Opens the public documentation site in a new tab</td></tr>
+    <tr><td>My Account</td><td>View/edit your profile and sign out</td></tr>
+  </table>
+
+  <div class="note">Menu items only appear if you have the required permission. If you cannot see a section, ask your administrator to check your role's permissions.</div>
+
+  <h3>Top Header Bar</h3>
+  <p>The header at the top of every page shows:</p>
+  <ul>
+    <li><strong>Page title</strong> — The name of the current section.</li>
+    <li><strong>Your name and role badge</strong> — Top-right corner. Click your name to go to your profile.</li>
+    <li><strong>Flash messages</strong> — Green (success), red (error), or yellow (warning) banners appear at the top after any action (saving, deleting, etc.). They disappear automatically after a few seconds.</li>
+  </ul>
+
+  <h3>General UI Conventions</h3>
+  <ul>
+    <li><strong>Blue buttons</strong> are primary actions (Save, Create, Submit).</li>
+    <li><strong>Grey/white buttons</strong> are secondary or cancel actions.</li>
+    <li><strong>Red/danger buttons</strong> are destructive actions (Delete). You will always be asked to confirm.</li>
+    <li><strong>Status badges</strong> are colour-coded chips: green = active/completed, orange = warning/pending, red = expired/faulty, grey = inactive.</li>
+    <li><strong>Pagination</strong> appears below large lists. Use the numbered buttons to move between pages.</li>
+    <li><strong>Search &amp; filter bars</strong> are at the top of every list view. Press the Filter button or hit Enter to apply.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: COMPANY DASHBOARD -->
+<!-- ============================================================ -->
+<div class="section" id="s2">
+  <h2 class="section-title">2. Company Dashboard</h2>
+  <p>The Company Dashboard gives management a real-time overview of the entire operation. Access it from the top of the sidebar.</p>
+
+  <div class="note">Requires the <strong>Company Dashboard</strong> (<code>view_dashboard</code>) permission or Super Admin access.</div>
+
+  <h3>Top Metrics Row</h3>
+  <p>Four large stat cards show at a glance:</p>
+  <ul>
+    <li><strong>Total Terminals</strong> — All POS terminals in the system, plus how many were added this month.</li>
+    <li><strong>Active Terminals</strong> — Currently active terminals and their percentage of total.</li>
+    <li><strong>Offline Terminals</strong> — Terminals with status "Offline".</li>
+    <li><strong>Need Attention</strong> — Combined count of Offline + Faulty + Maintenance terminals.</li>
+  </ul>
+
+  <h3>Terminal Status Breakdown</h3>
+  <p>Five smaller cards show counts for each terminal status: Active, Offline, Maintenance, Faulty, and Decommissioned.</p>
+
+  <h3>License Stats Row</h3>
+  <p>Shows: Total Licenses, Active, Expired, Expiring Soon (within 15 days), Critical Priority Licenses, Annual Renewal Cost, and Compliance Rate (%).</p>
+
+  <h3>System Alerts Panel</h3>
+  <p>Alerts are automatically generated from live data. They are colour-coded by severity:</p>
+  <ul>
+    <li><span class="badge badge-red">Critical</span> — Expired business licenses, faulty terminals. Require immediate action.</li>
+    <li><span class="badge badge-orange">Warning</span> — Licenses expiring within 30 days, many offline terminals, contracts expiring soon, low compliance rate, overdue jobs.</li>
+    <li><span class="badge badge-blue">Info</span> — High-cost renewals approaching, many pending asset requests.</li>
+  </ul>
+  <p>Click any alert to navigate to the relevant section.</p>
+
+  <h3>Regional Distribution</h3>
+  <p>A table showing every region in the system with: total terminals, active terminals, issues count, and uptime %.</p>
+
+  <h3>Monthly Trends</h3>
+  <p>A 6-month chart showing terminals added, clients added, and licenses added per month.</p>
+
+  <h3>Recent Activity Feed</h3>
+  <p>Up to 15 recent events: new terminals, new clients, licenses added or renewed, job assignments, technician visits. Each item shows the time elapsed since the event.</p>
+
+  <h3>Top Clients</h3>
+  <p>The 5 clients with the most terminals, showing their contract status.</p>
+
+  <h3>Upcoming License Renewals</h3>
+  <p>The next 10 licenses expiring within 60 days, showing department, responsible employee, and exact expiry date.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: EMPLOYEE DASHBOARD & PROFILE -->
+<!-- ============================================================ -->
+<div class="section" id="s3">
+  <h2 class="section-title">3. Employee Dashboard &amp; My Profile</h2>
+
+  <h3>Employee Dashboard</h3>
+  <p>This is your personal view of the system. It shows:</p>
+  <ul>
+    <li>Your assigned jobs — count by status (Assigned, In Progress, Completed Today).</li>
+    <li>Upcoming job assignments with client, project, region, and scheduled date.</li>
+    <li>Your asset request counts (pending, approved, total).</li>
+    <li>Recent activity specific to you.</li>
+  </ul>
+
+  <h3>My Profile</h3>
+  <p>Access via <strong>My Account → My Profile</strong> in the sidebar, or by clicking your name in the top-right header.</p>
+  <p>Your profile page shows your full personal information, all assigned roles, department, manager, subordinates (if any), and your current asset assignments.</p>
+
+  <h4>Editing Your Profile</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to My Profile.</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Click Edit Profile.</strong> You can update your name, phone number, timezone, and display language.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Click Save Changes.</strong></div></div>
+  </div>
+
+  <h4>Changing Your Password</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to My Profile → Edit Profile.</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Scroll to the Change Password section.</strong> Enter your current password, then your new password twice.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Click Update Password.</strong></div></div>
+  </div>
+  <div class="warn">You must enter your current password correctly before a new password will be accepted.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: CLIENT MANAGEMENT -->
+<!-- ============================================================ -->
+<div class="section" id="s4">
+  <h2 class="section-title">4. Client Management</h2>
+  <p>Clients are the companies that deploy POS terminals managed by Revival Technologies.</p>
+  <div class="note">Requires <code>manage_clients</code> (full access) or <code>view_clients</code> (read-only).</div>
+
+  <h3>Client List</h3>
+  <p>Go to <strong>Client Management → Clients</strong>. The list shows all clients with their status, region, contact person, and terminal count. Use the search box and filters (status, region) to narrow results.</p>
+
+  <h3>Creating a New Client</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Click "+ Create New Client"</strong> from the client list.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Fill in Company Name</strong> — this is mandatory. A unique client code is generated automatically (e.g., <code>ENV0042</code>).</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Enter contact details:</strong> Contact Person, Email (must be unique), Phone.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Enter location:</strong> Address, City, Region.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Set Status:</strong> Active (currently being serviced) or Prospect (potential client not yet contracted).</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Set Contract Dates</strong> (optional): Contract Start and Contract End dates.</div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Click Save.</strong></div></div>
+  </div>
+
+  <h3>Client Detail Page</h3>
+  <p>Click a client's name to open their detail page. It shows all client information, their POS terminal summary, terminal status breakdown, and contract info.</p>
+
+  <h3>Client Dashboards</h3>
+  <p>Go to <strong>Client Management → Client Dashboards</strong> for a per-client analytics view showing terminal health, job history, and service metrics for each individual client.</p>
+  <div class="note">Requires <code>view_client_dashboards</code> permission.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: POS TERMINAL MANAGEMENT -->
+<!-- ============================================================ -->
+<div class="section" id="s5">
+  <h2 class="section-title">5. POS Terminal Management</h2>
+  <p>POS Terminals are the point-of-sale devices that Revival Technologies manages on behalf of clients at merchant locations.</p>
+  <div class="note">Requires <code>manage_terminals</code> or <code>view_terminals</code>.</div>
+
+  <h3 id="s5a">5a. Adding &amp; Editing Terminals</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to Assets Management → POS Terminals</strong>, then click "+ Add Terminal".</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Enter the Terminal ID</strong> — the merchant's own terminal identifier. Must be unique.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Select the Client</strong> this terminal belongs to.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Enter Merchant details:</strong> Merchant Name, Contact Person, Phone, Email.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Enter Location:</strong> Physical Address, Region, City, Province.</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Enter Hardware details:</strong> Terminal Model, Serial Number, Business Type.</div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Enter Service dates:</strong> Installation Date, Last Service Date, Next Service Due.</div></div>
+    <div class="step"><div class="step-num">8</div><div class="step-body"><strong>Set Status:</strong> Active, Offline, Faulty, or Maintenance.</div></div>
+    <div class="step"><div class="step-num">9</div><div class="step-body"><strong>Add Contract Details</strong> if applicable, then click Save.</div></div>
+  </div>
+
+  <h3 id="s5b">5b. Bulk Import from Excel/CSV</h3>
+  <p>To add many terminals at once, use the import feature.</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>From the POS Terminals list, click "Import".</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Select the Client</strong> these terminals belong to.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Upload your Excel or CSV file.</strong> The file should have headers in the first row.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Map Columns.</strong> The system shows your file's column headers. Drag or select each one to match the correct field in the system (e.g., map "TID" → Terminal ID, "Merchant" → Merchant Name).</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Save the column mapping</strong> with a name so you can reuse it next time for the same client format.</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Click Import.</strong> The system will process the file and report how many terminals were created or skipped (duplicates).</div></div>
+  </div>
+  <div class="tip">If you import from the same client regularly with the same file format, you can load a saved column mapping profile to skip the mapping step entirely.</div>
+
+  <h3 id="s5c">5c. Terminal Status &amp; Service Tracking</h3>
+  <p>From any terminal's detail page, you can:</p>
+  <ul>
+    <li><strong>Change Status</strong> — Quickly update the terminal status using the status dropdown.</li>
+    <li><strong>Create Ticket</strong> — Raise a support ticket directly from the terminal page.</li>
+    <li><strong>Schedule Service</strong> — Set the next service date.</li>
+    <li><strong>Add Note</strong> — Add a free-text note to the terminal record.</li>
+    <li><strong>Export</strong> — From the list view, click Export to download a CSV of all terminals (respecting any active filters).</li>
+  </ul>
+
+  <h4>Filtering Terminals</h4>
+  <p>The list view supports filters for: Client, Status (Active/Offline/Faulty/Maintenance), Region, City, and Province. Combine multiple filters to drill down to specific subsets.</p>
+
+  <h4>Service Due Alerts</h4>
+  <p>Terminals are flagged automatically:</p>
+  <ul>
+    <li><span class="badge badge-orange">Due Soon</span> — Service due within 60 days.</li>
+    <li><span class="badge badge-red">Overdue</span> — Service overdue by more than 90 days.</li>
+    <li><span class="badge badge-red">Never Serviced</span> — Installed but no service date recorded.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: INTERNAL ASSETS -->
+<!-- ============================================================ -->
+<div class="section" id="s6">
+  <h2 class="section-title">6. Internal Assets</h2>
+  <p>Internal Assets track everything Revival Technologies owns: vehicles, IT equipment, software licenses, and more.</p>
+  <div class="note">Requires <code>manage_assets</code> or <code>view_assets</code>.</div>
+
+  <h3 id="s6a">6a. Asset Inventory</h3>
+  <p>Go to <strong>Assets Management → Internal Assets</strong>. The page has four tabs:</p>
+  <ul>
+    <li><strong>Assets</strong> — The full inventory with search and filters by category, status, and stock level.</li>
+    <li><strong>Assignments</strong> — All assets currently assigned to employees.</li>
+    <li><strong>History</strong> — Past assignments (returned, transferred, lost, damaged).</li>
+    <li><strong>Assign</strong> — Quickly assign an available asset to an employee.</li>
+  </ul>
+
+  <h4>Creating an Asset</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>On the Assets tab, click "+ Add Asset".</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Select a Category.</strong> The form will show extra fields specific to that category (e.g., vehicles show license plate and engine number; IT equipment shows RAM and processor).</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Fill in the core fields:</strong> Name (required), Brand, Model, SKU (unique identifier), Barcode, Unit Price, Currency.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Set stock quantities:</strong> Stock Quantity (how many you have) and Min Stock Level (triggers a low-stock alert when quantity falls to this number).</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Set flags:</strong> Is Requestable (appears in the self-service catalog for employees to request) and Requires Approval (requests need a manager to approve).</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Click Save.</strong></div></div>
+  </div>
+
+  <h3 id="s6b">6b. Assigning, Returning &amp; Transferring Assets</h3>
+
+  <h4>Assigning an Asset to an Employee</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to the Assign tab</strong> or open the asset and click "Assign".</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Select the Employee</strong> to assign to.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Set the Assignment Date</strong> and optionally an Expected Return Date.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Set the Condition</strong> at time of assignment: New, Good, Fair, or Poor.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Click Assign.</strong> The asset's assigned quantity increases automatically.</div></div>
+  </div>
+
+  <h4>Returning an Asset</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to the Assignments tab,</strong> find the assignment, and click "Return".</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Set the Return Condition:</strong> Available, Maintenance Needed, Damaged, or Retired.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Click Confirm Return.</strong> The assignment is closed and the history is preserved.</div></div>
+  </div>
+
+  <h4>Transferring an Asset Between Employees</h4>
+  <p>On the Assignments tab, click "Transfer" next to an assignment. Select the new employee. The system closes the current assignment (marking it as "transferred") and creates a new assignment to the target employee in one step.</p>
+
+  <h3 id="s6c">6c. Asset Requests (Self-Service Catalog)</h3>
+  <p>Employees can request assets they need through the catalog.</p>
+  <div class="note">Requires <code>request_assets</code> permission.</div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to Assets Management → Request Assets.</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Browse the catalog.</strong> Only assets marked "Is Requestable" appear here.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Add items to your cart</strong> by clicking the item and selecting quantity.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Go to Cart</strong> and review your selections.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Click Checkout,</strong> add a reason/justification for the request, and submit.</div></div>
+  </div>
+  <p>Track your requests under <strong>My Requests</strong>.</p>
+
+  <h3 id="s6d">6d. Asset Approvals</h3>
+  <p>If an asset requires approval, it enters a queue for managers to review.</p>
+  <div class="note">Requires <code>approve_requests</code> permission.</div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to Assets Management → Asset Approvals.</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Review each pending request</strong> — you can see the employee, item requested, quantity, and their justification.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Click Approve or Reject.</strong> Add a note explaining your decision (optional but recommended for rejections).</div></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 7: BUSINESS LICENSES -->
+<!-- ============================================================ -->
+<div class="section" id="s7">
+  <h2 class="section-title">7. Business Licenses</h2>
+  <p>The Business Licenses module tracks two distinct types of licenses:</p>
+  <ul>
+    <li><strong>Company-Held</strong> — Licenses Revival Technologies holds to legally operate (registrations, permits, software licenses, regulatory certifications).</li>
+    <li><strong>Customer-Issued</strong> — Licenses/subscriptions Revival Technologies issues to its own customers.</li>
+  </ul>
+  <div class="note">Requires <code>manage_licenses</code> permission.</div>
+
+  <p>Switch between them using the three tabs at the top of the Business Licenses page: <strong>Company-Held</strong>, <strong>Customer-Issued</strong>, and <strong>All / History</strong>.</p>
+
+  <h3 id="s7a">7a. Company-Held Licenses</h3>
+  <h4>Creating a Company-Held License</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>On the Company-Held tab, click "+ Add License".</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Enter License Name</strong> (e.g., "Business Registration Certificate") and a unique <strong>License Number</strong>.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Select License Type</strong> and enter the <strong>Issuing Authority</strong> (the government body or organisation that issued it).</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Set Issue Date and Expiry Date.</strong></div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Set Priority Level:</strong> Critical, High, Medium, or Low. Critical licenses trigger prominent alerts when they expire.</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Assign Department and Responsible Employee</strong> — who is accountable for keeping this license current.</div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Enter Costs:</strong> License cost and annual renewal cost.</div></div>
+    <div class="step"><div class="step-num">8</div><div class="step-body"><strong>Set Renewal Reminder Days</strong> — how many days before expiry to start showing alerts (default 30).</div></div>
+    <div class="step"><div class="step-num">9</div><div class="step-body"><strong>Upload Document</strong> (PDF, Word doc, or image of the license certificate) — optional but recommended.</div></div>
+    <div class="step"><div class="step-num">10</div><div class="step-body"><strong>Click Save.</strong></div></div>
+  </div>
+
+  <h3 id="s7b">7b. Customer-Issued Licenses</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Click the "Customer-Issued" tab, then "+ Add License".</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Enter License Name and License Number</strong> (your internal reference number).</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Enter Customer Details:</strong> Customer Name, Email, Company, Phone.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Set Issue Date and Expiry Date.</strong></div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Set commercial details:</strong> Revenue Amount, Billing Cycle (Monthly/Quarterly/Annually/One-time), Support Level (Basic/Standard/Premium/Enterprise).</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Enter License Terms,</strong> Usage Limit, and License Quantity if applicable.</div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Click Save.</strong></div></div>
+  </div>
+
+  <h3 id="s7c">7c. Renewals &amp; Compliance</h3>
+  <h4>Renewing a License</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Find the license</strong> in the list. Expiring licenses show an orange badge; expired licenses show red.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Click "Renew"</strong> next to the license, or open it and click the Renew button.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Enter the new Expiry Date.</strong></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Optionally update the cost</strong> for this renewal period.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Add Compliance Notes</strong> (optional) and upload a new document if you received an updated certificate.</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Click Confirm Renewal.</strong> The license status becomes Active and the new expiry is saved.</div></div>
+  </div>
+
+  <h4>Compliance Dashboard</h4>
+  <p>Click "Compliance" from the Company-Held tab to see the overall compliance rate, broken down into Compliant, Warning, and Non-Compliant categories.</p>
+
+  <h4>Expiring Licenses View</h4>
+  <p>Click "Expiring Soon" to see a filtered list of licenses expiring within a configurable number of days.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 8: JOB ASSIGNMENTS -->
+<!-- ============================================================ -->
+<div class="section" id="s8">
+  <h2 class="section-title">8. Field Operations — Job Assignments</h2>
+  <p>Job Assignments are used to dispatch technicians to service POS terminals at merchant locations.</p>
+  <div class="note">Creating/managing jobs requires <code>manage_jobs</code> or <code>assign_jobs</code>. Technicians viewing their own jobs require <code>view_jobs</code>.</div>
+
+  <h3>Dispatch Board</h3>
+  <p>Go to <strong>Field Operations → All Job Assignments</strong> and click the dispatch tab. This is where new assignments are created.</p>
+
+  <h4>Creating a Job Assignment</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Select Technician</strong> — Only employees with a technician-type role appear in this list.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Select Region</strong> — The region the technician is going to.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Select Terminals</strong> — After choosing a region, a list of active terminals in that region loads. Tick the ones to be serviced on this assignment.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Select Client</strong> (optional) — filter the view to a specific client's terminals.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Set Scheduled Date</strong> — Must be today or a future date.</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Select Service Type</strong> — e.g., Routine Maintenance, Emergency Repair, Software Update, Installation.</div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Set Priority:</strong> Low, Normal, High, or Emergency.</div></div>
+    <div class="step"><div class="step-num">8</div><div class="step-body"><strong>Set Estimated Duration</strong> in hours (0.5 to 8 hours).</div></div>
+    <div class="step"><div class="step-num">9</div><div class="step-body"><strong>Add Notes</strong> with any special instructions for the technician.</div></div>
+    <div class="step"><div class="step-num">10</div><div class="step-body"><strong>Click Create Assignment.</strong> A unique Assignment ID (e.g., <code>JA-20260317-0042</code>) is generated automatically.</div></div>
+  </div>
+
+  <h3>Job Status Workflow</h3>
+  <p>Each job moves through these stages:</p>
+  <table>
+    <tr><th>Status</th><th>Meaning</th><th>Who Changes It</th></tr>
+    <tr><td><span class="badge badge-blue">Assigned</span></td><td>Created and waiting for the technician to start</td><td>Dispatcher</td></tr>
+    <tr><td><span class="badge badge-orange">In Progress</span></td><td>Technician has started; actual start time is recorded</td><td>Technician</td></tr>
+    <tr><td><span class="badge badge-green">Completed</span></td><td>Job done; actual end time is recorded</td><td>Technician</td></tr>
+    <tr><td><span class="badge badge-red">Cancelled</span></td><td>Job cancelled (only while still "Assigned")</td><td>Dispatcher</td></tr>
+  </table>
+
+  <h3>My Job Assignments (Technician View)</h3>
+  <p>Technicians go to <strong>Technician Portal → My Job Assignment</strong> to see their own assigned jobs. They can update the status directly from this list or from the job detail page.</p>
+
+  <h3>Exporting Jobs</h3>
+  <p>From the All Assignments list, click Export to download a CSV with all assignment details. The export respects any active filters (date range, technician, status, etc.).</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 9: SUPPORT TICKETS -->
+<!-- ============================================================ -->
+<div class="section" id="s9">
+  <h2 class="section-title">9. Support Tickets</h2>
+  <p>Support Tickets track issues related to POS terminals or internal operational matters.</p>
+  <div class="note">Requires <code>manage_tickets</code> or <code>view_tickets</code>.</div>
+
+  <h3>Creating a Ticket</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to Field Operations → Support Tickets</strong> and click "+ Create Ticket".</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Enter Title and Description</strong> of the issue.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Set Priority:</strong> Low, Medium, High, or Critical.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Select Issue Type:</strong> Hardware Malfunction, Software Issue, Network Connectivity, User Training, Maintenance Required, Replacement Needed, or Other.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Select Ticket Type:</strong>
+      <ul>
+        <li><em>POS Terminal</em> — linked to a specific terminal. Select the terminal from the dropdown.</li>
+        <li><em>Internal</em> — an internal operational issue not linked to a terminal.</li>
+      </ul>
+    </div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Select Assignment Type:</strong>
+      <ul>
+        <li><em>Public</em> — any available technician can pick it up.</li>
+        <li><em>Direct</em> — assigned to a specific employee immediately.</li>
+      </ul>
+    </div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Set Estimated Resolution Days</strong> and optionally link a Client.</div></div>
+    <div class="step"><div class="step-num">8</div><div class="step-body"><strong>Click Save.</strong></div></div>
+  </div>
+
+  <h3>Ticket Resolution Trail (Steps)</h3>
+  <p>Each ticket has a step-by-step audit trail. As work progresses, technicians add steps, complete them, or transfer responsibility:</p>
+  <ul>
+    <li><strong>Add Step</strong> — Document a new action taken on the ticket.</li>
+    <li><strong>Complete Step</strong> — Mark the current step as done.</li>
+    <li><strong>Transfer Step</strong> — Hand the current step to another employee (with a transfer reason).</li>
+    <li><strong>Resolve Ticket</strong> — Mark the ticket as fully resolved. Adds a resolution note and timestamps it.</li>
+  </ul>
+
+  <h3>Ticket Statuses</h3>
+  <table>
+    <tr><th>Status</th><th>Meaning</th></tr>
+    <tr><td><span class="badge badge-red">Open</span></td><td>New, unassigned</td></tr>
+    <tr><td><span class="badge badge-orange">In Progress</span></td><td>Assigned and being worked on</td></tr>
+    <tr><td><span class="badge badge-orange">Pending</span></td><td>Waiting for something external (parts, customer response)</td></tr>
+    <tr><td><span class="badge badge-green">Resolved</span></td><td>Issue fixed</td></tr>
+    <tr><td><span class="badge badge-blue">Closed</span></td><td>Verified and closed after resolution</td></tr>
+    <tr><td>Cancelled</td><td>Ticket withdrawn</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 10: SITE VISITS -->
+<!-- ============================================================ -->
+<div class="section" id="s10">
+  <h2 class="section-title">10. Site Visits</h2>
+  <p>Site Visits are records of completed technician visits to merchant locations. They are primarily submitted via the mobile app and appear in the web portal for review and reporting.</p>
+  <div class="note">Requires <code>manage_visits</code> or <code>view_visits</code>.</div>
+
+  <h3>Viewing Site Visits</h3>
+  <p>Go to <strong>Field Operations → Site Visits</strong>. Use the filters to search by:</p>
+  <ul>
+    <li>Merchant name</li>
+    <li>Employee (technician) name</li>
+    <li>Terminal ID</li>
+    <li>Terminal Status (as recorded at the time of the visit)</li>
+    <li>Date range (From / To)</li>
+    <li>Free text search (summary or action points)</li>
+  </ul>
+
+  <p>Click any visit to open the detail view, which shows the full visit summary, action points, the technician's notes, and a snapshot of the terminal's state at the time of the visit.</p>
+
+  <div class="tip">Because terminal data is <em>snapshotted</em> at visit time, the visit record preserves history even if the terminal's details change later. This makes visits a reliable audit trail.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 11: TERMINAL DEPLOYMENT PLANNING -->
+<!-- ============================================================ -->
+<div class="section" id="s11">
+  <h2 class="section-title">11. Terminal Deployment Planning</h2>
+  <p>The Deployment Planning tool provides a hierarchical tree view for planning terminal rollouts across regions and clients.</p>
+  <div class="note">Requires <code>manage_deployments</code> permission.</div>
+  <p>Go to <strong>Field Operations → Terminal Deployment</strong>. The hierarchical view shows regions, sub-regions, and planned terminal placements. Use this to coordinate large-scale rollout projects before creating individual job assignments.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 12: PROJECT MANAGEMENT -->
+<!-- ============================================================ -->
+<div class="section" id="s12">
+  <h2 class="section-title">12. Project Management</h2>
+  <p>Projects group related job assignments and terminal deployments into a single managed initiative.</p>
+
+  <h3>Creating a Project</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to Project Management → New Project.</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Enter the Project Name, Description, and select the Client.</strong></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Set Start and End Dates, Priority, and Status.</strong></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Upload a terminal list</strong> (Excel/CSV) for the terminals involved in this project.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Click Save.</strong></div></div>
+  </div>
+
+  <h3>Project Closure</h3>
+  <p>When a project is complete, use the <strong>Completion Wizard</strong> and then the <strong>Closure Wizard</strong> to formally close it. The closure process generates a <strong>PDF Closure Report</strong> summarising the project's outcomes, terminals deployed, and job completion statistics. Download this report from the Closure Reports section.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 13: EMPLOYEE MANAGEMENT -->
+<!-- ============================================================ -->
+<div class="section" id="s13">
+  <h2 class="section-title">13. Employee Management</h2>
+  <div class="note">Requires <code>manage_employees</code> or <code>view_employees</code>.</div>
+
+  <h3>Employee Directory</h3>
+  <p>Go to <strong>Employee Management → Employees</strong>. Search by name, email, or employee number. Filter by Department, Status (Active/Inactive/Pending), or Role.</p>
+
+  <h3>Onboarding a New Employee</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Click "+ Add Employee".</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Enter Personal Info:</strong> First Name, Last Name, Email (this becomes their login username). These are required.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Set a temporary Password.</strong> The employee can change it after first login.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Assign Primary Role</strong> — Controls what the employee can see and do in the system.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Optionally assign Additional Roles</strong> — An employee can have multiple roles simultaneously.</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Select Department</strong> — Used for the employee number prefix (e.g., HR → <code>HR260001</code>).</div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Set Hire Date and Status</strong> (Active, Pending, or Inactive).</div></div>
+    <div class="step"><div class="step-num">8</div><div class="step-body"><strong>Enter contact details,</strong> manager, position, and salary (optional).</div></div>
+    <div class="step"><div class="step-num">9</div><div class="step-body"><strong>Add Emergency Contact</strong> details (Name, Phone, Relationship).</div></div>
+    <div class="step"><div class="step-num">10</div><div class="step-body"><strong>Click Save.</strong> The employee number is generated automatically.</div></div>
+  </div>
+
+  <h4>Activating / Deactivating an Employee</h4>
+  <p>From the employee list or detail page, click the <strong>Toggle Status</strong> button. Inactive employees cannot log in to the system.</p>
+
+  <div class="warn">Deactivating an employee is immediate. They will be logged out of any active sessions and cannot log in again until reactivated.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 14: ROLES & PERMISSIONS -->
+<!-- ============================================================ -->
+<div class="section" id="s14">
+  <h2 class="section-title">14. Roles &amp; Permissions</h2>
+  <p>Roles define what employees can see and do in the system. Each role is a named set of permissions.</p>
+  <div class="note">Requires <code>manage_roles</code> permission.</div>
+
+  <h3>Understanding the System</h3>
+  <ul>
+    <li>Every employee has at least one role.</li>
+    <li>An employee can have multiple roles simultaneously — they get the combined permissions of all their roles.</li>
+    <li>If a role has the <strong>All Permissions (Super Admin)</strong> permission, it bypasses all other checks.</li>
+    <li>System roles (super_admin, admin, manager, employee, technician) cannot be deleted.</li>
+  </ul>
+
+  <h3>Creating a Role</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to Employee Management → Role Management</strong> and click "+ Create New Role".</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Enter a Role Name.</strong> Use lowercase with underscores (e.g., <code>field_supervisor</code>). Must be unique.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Check the permissions</strong> this role should have. Permissions are grouped by category — expand each category to see individual permissions.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Click Save Role.</strong></div></div>
+  </div>
+
+  <h3>Cloning a Role</h3>
+  <p>Open any role and click "Clone Role" to create an exact duplicate you can then edit. Useful for creating similar roles with slightly different permissions.</p>
+
+  <h3>Permission Categories</h3>
+  <table>
+    <tr><th>Category</th><th>Controls Access To</th></tr>
+    <tr><td>Admin</td><td>Super Admin bypass, System Settings, Documents</td></tr>
+    <tr><td>Dashboard</td><td>Company dashboard, Employee dashboard</td></tr>
+    <tr><td>Assets</td><td>Internal assets, POS terminals, asset requests &amp; approvals, business licenses</td></tr>
+    <tr><td>Operations</td><td>Deployments, job assignments, site visits, tickets</td></tr>
+    <tr><td>Clients</td><td>Client records and dashboards</td></tr>
+    <tr><td>Management</td><td>Employee management, role management, team management</td></tr>
+    <tr><td>Technician</td><td>Personal schedule, creating/viewing service reports</td></tr>
+    <tr><td>Reports</td><td>Reports dashboard, technician visits, report builder, export</td></tr>
+    <tr><td>Special</td><td>Import data, export data, bulk operations, system logs</td></tr>
+  </table>
+
+  <div class="danger"><strong>Danger Permission:</strong> The <code>all</code> (Super Admin) permission gives complete unrestricted access to the entire system. Only assign this to fully trusted administrators.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 15: SYSTEM SETTINGS -->
+<!-- ============================================================ -->
+<div class="section" id="s15">
+  <h2 class="section-title">15. System Settings</h2>
+  <div class="note">Requires <code>manage_settings</code> permission.</div>
+  <p>Go to <strong>Administration → System Settings</strong>. Here you can manage:</p>
+  <ul>
+    <li><strong>Departments</strong> — Add, edit, or remove departments. The department name prefix is used when generating employee numbers.</li>
+    <li><strong>Asset Categories</strong> — Define categories for internal assets (e.g., Vehicles, IT Equipment). Categories determine which extra fields appear on the asset form.</li>
+    <li><strong>Service Types</strong> — Define the types of service that can be selected when creating job assignments (e.g., Routine Maintenance, Emergency Repair).</li>
+    <li><strong>System Configuration</strong> — Other global configuration options.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 16: REPORTS & ANALYTICS -->
+<!-- ============================================================ -->
+<div class="section" id="s16">
+  <h2 class="section-title">16. Reports &amp; Analytics</h2>
+
+  <h3 id="s16a">16a. Reports Dashboard</h3>
+  <p>Go to <strong>Reports &amp; Analytics → Reports Dashboard</strong> for an overview of pre-built system reports including executive summaries, detailed operation breakdowns, and client presentations.</p>
+  <div class="note">Requires <code>view_reports</code> permission.</div>
+
+  <h3 id="s16b">16b. Technician Visit Reports</h3>
+  <p>Go to <strong>Reports &amp; Analytics → Technician Visits</strong> for a dedicated report on all site visits made by technicians. Filterable by technician, date range, region, and merchant. Exportable as PDF.</p>
+  <div class="note">Requires <code>view_technician_visits</code> or <code>view_technician_reports</code> permission.</div>
+
+  <!-- ========================================================== -->
+  <!-- REPORT BUILDER — FULL GUIDE -->
+  <!-- ========================================================== -->
+  <h3 id="s16c">16c. Report Builder — Full Step-by-Step Guide</h3>
+  <p>The Report Builder is a powerful, flexible tool that lets you create <strong>any custom report</strong> by selecting data sources, choosing columns, applying filters, and exporting results — all without writing any code.</p>
+  <div class="note">Requires <code>use_report_builder</code> permission. Saving shared templates also requires <code>manage-report-templates</code>.</div>
+
+  <p>Go to <strong>Reports &amp; Analytics → Report Builder</strong>.</p>
+
+  <h4>Overview of the Interface</h4>
+  <p>The Report Builder page has three main areas:</p>
+  <ul>
+    <li><strong>Filter Strip (top)</strong> — Choose your data source, apply global filters (region, client, date range), set a row limit.</li>
+    <li><strong>Left Panel — Field Browser</strong> — All available columns grouped by table, with a search box. Drag or double-click fields to add them to your report.</li>
+    <li><strong>Right Panel — Report Columns &amp; Results</strong> — Shows your selected columns, then the report results table after you click Run.</li>
+  </ul>
+
+  <hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
+
+  <h4>Step 1 — Select a Data Source</h4>
+  <p>The <strong>Data Source</strong> dropdown at the top left defines the primary table your report starts from. Available data sources are:</p>
+  <table>
+    <tr><th>Data Source</th><th>What It Contains</th></tr>
+    <tr><td>POS Terminals</td><td>All merchant terminal records (ID, model, status, region, client, service dates)</td></tr>
+    <tr><td>Clients</td><td>All client company records (name, region, status, contract dates)</td></tr>
+    <tr><td>Regions</td><td>Region names and codes</td></tr>
+    <tr><td>Visits</td><td>Site visit records (merchant, date, summary, action points, employee)</td></tr>
+    <tr><td>Visit Terminals</td><td>Terminal-level data captured inside each visit</td></tr>
+    <tr><td>Tickets</td><td>Support ticket records (title, priority, status, issue type, terminal, client)</td></tr>
+    <tr><td>Job Assignments</td><td>All field job assignments (technician, region, status, service type, dates)</td></tr>
+    <tr><td>Projects</td><td>Project records (name, client, status, dates)</td></tr>
+  </table>
+
+  <div class="warn"><strong>Changing the data source clears all selected columns.</strong> You will see a confirmation dialog before this happens so you can cancel if needed.</div>
+
+  <hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
+
+  <h4>Step 2 — Apply Global Filters (Optional)</h4>
+  <p>Before selecting columns, you can narrow down the data using the filter strip:</p>
+
+  <table>
+    <tr><th>Filter</th><th>How to Use</th></tr>
+    <tr><td>Region</td><td>Select a specific region to restrict results to that region only.</td></tr>
+    <tr><td>Client</td><td>Select a specific client to see only their data.</td></tr>
+    <tr><td>Date Column</td><td>Choose which date field to filter on (e.g., "Job Assignments &gt; Scheduled Date", "Visits &gt; Completed At"). The dropdown shows all date fields from all related tables.</td></tr>
+    <tr><td>From / To</td><td>Set a date range. <em>Only available after selecting a Date Column.</em> Leave blank for no date filter.</td></tr>
+    <tr><td>Rows</td><td>Maximum number of rows to return. Default is 100. Set higher for larger exports (up to 10,000). For unlimited rows when exporting, use the Export button (not Run Report).</td></tr>
+  </table>
+
+  <div class="tip">Leave filters blank to see all data. You can always add filters after seeing initial results.</div>
+
+  <hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
+
+  <h4>Step 3 — Add Columns from the Field Browser</h4>
+  <p>The <strong>Field Browser</strong> panel on the left shows all available columns grouped by table. Each field has a colour-coded chip:</p>
+  <ul>
+    <li><span class="badge badge-blue">Dimension</span> — Text, date, or category fields. These describe what you are looking at (e.g., merchant name, region, status).</li>
+    <li><span class="badge badge-purple">Measure</span> — Numeric or ID fields that can be counted, summed, or averaged (e.g., terminal ID for counting, revenue amount for summing).</li>
+  </ul>
+
+  <p><strong>To add a field to your report, use either method:</strong></p>
+  <ul>
+    <li><strong>Double-click</strong> the field name in the left panel.</li>
+    <li><strong>Drag and drop</strong> the field into the "Report Columns" drop zone on the right.</li>
+  </ul>
+
+  <p><strong>To search for a specific field:</strong> Type in the search box at the top of the Field Browser. The list filters in real time as you type.</p>
+
+  <div class="tip">You can add columns from <em>multiple tables</em> in a single report. The system automatically works out the joins — you do not need to do this yourself. For example, you can add "Merchant Name" (from POS Terminals) and "Company Name" (from Clients) in the same report when starting from POS Terminals.</div>
+
+  <hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
+
+  <h4>Step 4 — Configure Columns (Aggregates)</h4>
+  <p>Your selected columns appear as pills in the <strong>Report Columns</strong> bar at the top right. For each column:</p>
+  <ul>
+    <li>Click the <strong>×</strong> button inside the pill to remove a column.</li>
+    <li>For <span class="badge badge-purple">Measure</span> (numeric) columns, a small dropdown appears inside the pill to set an aggregate function:</li>
+  </ul>
+
+  <table>
+    <tr><th>Aggregate</th><th>What It Does</th><th>Example Use</th></tr>
+    <tr><td>Raw</td><td>Shows the raw value for each row (no grouping)</td><td>Show each terminal's ID</td></tr>
+    <tr><td>COUNT</td><td>Counts the number of records</td><td>How many terminals per region</td></tr>
+    <tr><td>SUM</td><td>Adds up numeric values</td><td>Total revenue per client</td></tr>
+    <tr><td>AVG</td><td>Calculates the average</td><td>Average job duration per technician</td></tr>
+    <tr><td>MIN</td><td>Finds the smallest value</td><td>Earliest installation date per region</td></tr>
+    <tr><td>MAX</td><td>Finds the largest value</td><td>Latest service date per client</td></tr>
+  </table>
+
+  <div class="note"><strong>Automatic GROUP BY:</strong> As soon as you set any column to COUNT, SUM, AVG, MIN, or MAX, the system automatically groups results by all the non-aggregated (Dimension) columns in your report. You do not need to configure this manually.</div>
+
+  <h4>Example — Terminals per Region</h4>
+  <ol>
+    <li>Data Source: <strong>POS Terminals</strong></li>
+    <li>Add column: <strong>Region</strong> (Dimension)</li>
+    <li>Add column: <strong>Terminal ID</strong> (Measure) → set aggregate to <strong>COUNT</strong></li>
+    <li>Click <strong>Run Report</strong></li>
+    <li>Result: a two-column table showing each region and how many terminals it has.</li>
+  </ol>
+
+  <h4>Example — Active vs Offline Terminals per Client</h4>
+  <ol>
+    <li>Data Source: <strong>POS Terminals</strong></li>
+    <li>Add: <strong>Client → Company Name</strong> (Dimension)</li>
+    <li>Add: <strong>POS Terminals → Status</strong> (Dimension)</li>
+    <li>Add: <strong>POS Terminals → Terminal ID</strong> (Measure) → set to <strong>COUNT</strong></li>
+    <li>Click <strong>Run Report</strong></li>
+    <li>Result: one row per client+status combination, showing the count for each.</li>
+  </ol>
+
+  <h4>Example — Jobs Completed Per Technician This Month</h4>
+  <ol>
+    <li>Data Source: <strong>Job Assignments</strong></li>
+    <li>Filters: Date Column = <strong>Job Assignments → Scheduled Date</strong>, From = first day of current month, To = today.</li>
+    <li>Add: <strong>Job Assignments → Technician ID</strong> (Dimension) — this will show the ID. Cross-reference with the Employees list, or add an employee name column if available.</li>
+    <li>Add: <strong>Job Assignments → Status</strong> (Dimension)</li>
+    <li>Add: <strong>Job Assignments → Assignment ID</strong> (Measure) → set to <strong>COUNT</strong></li>
+    <li>Click <strong>Run Report</strong></li>
+    <li>Result: rows showing each technician × status combination with a count of assignments.</li>
+  </ol>
+
+  <hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
+
+  <h4>Step 5 — Run the Report</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Make sure at least one column is selected.</strong> If no columns are selected, you will see a validation message.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Click the blue "▶ Run Report" button.</strong></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>A loading spinner</strong> appears while the system queries the database.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>The results table</strong> appears below the columns bar. The top of the table shows the row count and column count.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Scroll horizontally</strong> if you have many columns. The column headers are sticky (they stay visible as you scroll down).</div></div>
+  </div>
+
+  <div class="tip">If the result has too many rows, reduce the <strong>Rows</strong> filter at the top. If you need all rows, use the Export button instead — it removes the row limit for CSV downloads.</div>
+
+  <hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
+
+  <h4>Step 6 — Export the Report as CSV</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Click "Export ▾"</strong> (next to the Run Report button).</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Click "Download CSV"</strong> from the dropdown.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>The download starts automatically.</strong> The file includes all rows (the row limit is removed for exports).</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Open the CSV in Excel, Google Sheets, or any spreadsheet tool</strong> for further analysis, charting, or sharing.</div></div>
+  </div>
+
+  <hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
+
+  <h4>Step 7 — Saving a Report as a Template</h4>
+  <p>Templates let you save your report configuration (data source, filters, columns, aggregates) so you can run the same report again in the future with one click.</p>
+
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Build and run your report</strong> as described above.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Click the "Save" button</strong> (requires the <code>manage-report-templates</code> permission). A save dialog appears.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Enter a Template Name</strong> (required) and an optional description.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Toggle "Global"</strong> if you want this template to be visible to all users, not just yourself.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Click Save Template.</strong></div></div>
+  </div>
+
+  <h4>Loading a Saved Template</h4>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Click "Templates"</strong> (next to the Save button). A modal opens listing all your saved templates plus any global templates.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Click the template you want to load.</strong> This pre-fills all filter settings and column selections from when the template was saved.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Click "Run Report"</strong> to execute the loaded configuration against current data.</div></div>
+  </div>
+
+  <div class="tip">Templates store the <em>configuration</em>, not the results. Every time you load a template and run it, you get fresh, up-to-date data.</div>
+
+  <hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
+
+  <h4>Report Builder Tips &amp; Common Questions</h4>
+
+  <p><strong>Q: Can I combine data from multiple tables in one report?</strong><br>
+  Yes. Select columns from different tables freely. The system automatically detects and applies the required joins. For example, starting from POS Terminals you can freely add columns from Clients, Regions, Tickets, and Job Assignments.</p>
+
+  <p><strong>Q: Why is my column showing IDs instead of names?</strong><br>
+  Some columns are stored as numeric IDs (e.g., Technician ID, Client ID). Add the corresponding name column from the related table (e.g., add Clients → Company Name to see the client name instead of the ID number).</p>
+
+  <p><strong>Q: Why do I get fewer rows than expected when I use COUNT?</strong><br>
+  When you use aggregate functions, rows are grouped by your Dimension columns. Each unique combination of dimension values becomes one row. This is expected behaviour — you are seeing one row per group, not one row per record.</p>
+
+  <p><strong>Q: The report returns zero rows. What went wrong?</strong><br>
+  Check your filters — a very narrow date range or a region/client filter may be excluding all data. Try removing filters one at a time to identify which one is causing the issue.</p>
+
+  <p><strong>Q: Can I sort the results?</strong><br>
+  Sorting can be done after exporting to CSV/Excel. In-browser sorting is not yet available in the Report Builder.</p>
+
+  <p><strong>Q: How many rows can I export?</strong><br>
+  The screen preview defaults to 100 rows (configurable up to 10,000). The CSV export fetches all matching rows with no limit.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 17: PERMISSIONS REFERENCE -->
+<!-- ============================================================ -->
+<div class="section" id="s17">
+  <h2 class="section-title">17. Permissions Reference</h2>
+  <p>This is a complete list of all permissions in the system. Assign them to roles via <strong>Employee Management → Role Management</strong>.</p>
+
+  <h3>Admin</h3>
+  <div class="perm-grid">
+    <div class="perm-item"><strong>all</strong><span>All Permissions (Super Admin) — complete system access. <span class="badge badge-red">DANGER</span></span></div>
+    <div class="perm-item"><strong>manage_settings</strong><span>System Settings — departments, categories, configuration</span></div>
+    <div class="perm-item"><strong>manage_documents</strong><span>Upload and organise documents</span></div>
+    <div class="perm-item"><strong>view_documents</strong><span>Access and download documents</span></div>
+  </div>
+
+  <h3>Dashboard</h3>
+  <div class="perm-grid">
+    <div class="perm-item"><strong>view_dashboard</strong><span>Company Dashboard — system-wide metrics and alerts</span></div>
+    <div class="perm-item"><strong>view_own_data</strong><span>Employee Dashboard — personal stats and schedule</span></div>
+  </div>
+
+  <h3>Assets</h3>
+  <div class="perm-grid">
+    <div class="perm-item"><strong>manage_assets</strong><span>Full internal asset management (create, edit, delete, assign)</span></div>
+    <div class="perm-item"><strong>view_assets</strong><span>View asset inventory</span></div>
+    <div class="perm-item"><strong>manage_terminals</strong><span>Full POS terminal management</span></div>
+    <div class="perm-item"><strong>view_terminals</strong><span>View POS terminal records</span></div>
+    <div class="perm-item"><strong>request_assets</strong><span>Browse catalog and submit asset requests</span></div>
+    <div class="perm-item"><strong>view_own_requests</strong><span>View personal request history</span></div>
+    <div class="perm-item"><strong>approve_requests</strong><span>Approve or reject employee asset requests</span></div>
+    <div class="perm-item"><strong>manage_licenses</strong><span>Manage all business licenses (both directions)</span></div>
+  </div>
+
+  <h3>Operations</h3>
+  <div class="perm-grid">
+    <div class="perm-item"><strong>manage_deployments</strong><span>Terminal deployment planning</span></div>
+    <div class="perm-item"><strong>manage_jobs</strong><span>Create and manage all job assignments</span></div>
+    <div class="perm-item"><strong>assign_jobs</strong><span>Assign jobs to technicians</span></div>
+    <div class="perm-item"><strong>view_jobs</strong><span>View assigned jobs (technician access)</span></div>
+    <div class="perm-item"><strong>view_technician_reports</strong><span>View technician visit reports and analytics</span></div>
+    <div class="perm-item"><strong>manage_visits</strong><span>Create and manage site visit records</span></div>
+    <div class="perm-item"><strong>view_visits</strong><span>View site visit records</span></div>
+    <div class="perm-item"><strong>manage_tickets</strong><span>Create, assign and resolve support tickets</span></div>
+    <div class="perm-item"><strong>view_tickets</strong><span>View support ticket records</span></div>
+  </div>
+
+  <h3>Clients</h3>
+  <div class="perm-grid">
+    <div class="perm-item"><strong>manage_clients</strong><span>Full client management (create, edit, delete)</span></div>
+    <div class="perm-item"><strong>view_clients</strong><span>View client information</span></div>
+    <div class="perm-item"><strong>view_client_dashboards</strong><span>Access per-client analytics dashboards</span></div>
+  </div>
+
+  <h3>Management</h3>
+  <div class="perm-grid">
+    <div class="perm-item"><strong>manage_employees</strong><span>Full employee management (hire, edit, deactivate)</span></div>
+    <div class="perm-item"><strong>view_employees</strong><span>View employee profiles</span></div>
+    <div class="perm-item"><strong>manage_roles</strong><span>Create and modify roles and permissions</span></div>
+    <div class="perm-item"><strong>manage_team</strong><span>Team management and workflows</span></div>
+  </div>
+
+  <h3>Technician</h3>
+  <div class="perm-grid">
+    <div class="perm-item"><strong>view_schedule</strong><span>View personal work schedule</span></div>
+    <div class="perm-item"><strong>create_reports</strong><span>Create and submit service reports</span></div>
+    <div class="perm-item"><strong>view_own_reports</strong><span>View personal service report history</span></div>
+  </div>
+
+  <h3>Reports</h3>
+  <div class="perm-grid">
+    <div class="perm-item"><strong>view_reports</strong><span>Reports dashboard and analytics</span></div>
+    <div class="perm-item"><strong>view_technician_visits</strong><span>Technician visit reports</span></div>
+    <div class="perm-item"><strong>use_report_builder</strong><span>Access and use the custom report builder</span></div>
+    <div class="perm-item"><strong>export_reports</strong><span>Export reports to files</span></div>
+  </div>
+
+  <h3>Special</h3>
+  <div class="perm-grid">
+    <div class="perm-item"><strong>import_data</strong><span>Import data from Excel/CSV files</span></div>
+    <div class="perm-item"><strong>export_data</strong><span>Export system data to files</span></div>
+    <div class="perm-item"><strong>bulk_operations</strong><span>Perform bulk operations on records</span></div>
+    <div class="perm-item"><strong>system_logs</strong><span>View system logs and audit trails</span></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 18: TROUBLESHOOTING -->
+<!-- ============================================================ -->
+<div class="section" id="s18">
+  <h2 class="section-title">18. Troubleshooting &amp; FAQs</h2>
+
+  <h3>Login Issues</h3>
+  <p><strong>I can't log in with the correct password.</strong><br>
+  Your account may be inactive. Contact your administrator to check your account status.</p>
+
+  <p><strong>I forgot my password.</strong><br>
+  Contact your administrator. They can set a new temporary password from the Employee Management page.</p>
+
+  <h3>Missing Menu Items</h3>
+  <p><strong>I can't see a section in the sidebar.</strong><br>
+  Menu items are hidden if you do not have the required permission. Ask your administrator to review your role and add the necessary permissions.</p>
+
+  <h3>Page Shows an Error</h3>
+  <p><strong>I see "403 Forbidden" or "Unauthorized".</strong><br>
+  You are trying to access a page that requires a permission you do not have. Contact your administrator.</p>
+
+  <p><strong>I see "500 Server Error".</strong><br>
+  This is an unexpected system error. Note the page you were on and what you were doing, then report it to your administrator or system support team.</p>
+
+  <h3>Report Builder Issues</h3>
+  <p><strong>My report returns no results.</strong><br>
+  Check your filters. A date range that excludes all records is the most common cause. Try removing filters one by one until data appears.</p>
+
+  <p><strong>I get a "validation error" when I run a report.</strong><br>
+  Ensure at least one column is selected. Also ensure your date filter has a valid "From" and "To" date if a date column is selected.</p>
+
+  <p><strong>Column values are showing IDs instead of readable names.</strong><br>
+  Add the human-readable column from the related table. For example, to see client names instead of client IDs, add "Clients → Company Name" from the Field Browser.</p>
+
+  <h3>Business Licenses</h3>
+  <p><strong>My license create form reloads without saving.</strong><br>
+  Make sure you are on the correct tab (Company-Held or Customer-Issued) before clicking Add License. The form direction must match.</p>
+
+  <h3>POS Terminal Import</h3>
+  <p><strong>My import file is rejected.</strong><br>
+  Ensure the file is .xlsx, .xls, or .csv format. Files must have headers in the first row. Maximum recommended size is 5,000 rows per import.</p>
+
+  <p><strong>Terminals are being skipped during import.</strong><br>
+  Terminals with duplicate Terminal IDs (already in the system) are automatically skipped to prevent duplicates. The import summary shows how many were skipped.</p>
+</div>
+
+</div><!-- /container -->
+
+<div class="footer">
+  <strong>Revival Technologies</strong> — System User Manual v1.0<br>
+  Generated March 2026 · Confidential — Internal Use Only
+</div>
+
+<a href="#" class="btt" title="Back to top">↑</a>
+
+</body>
+</html>
