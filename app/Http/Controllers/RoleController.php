@@ -15,7 +15,7 @@ class RoleController extends Controller
 
     public function index(Request $request)
     {
-        $query = Role::with('permissions');
+        $query = Role::with('rolePermissions');
 
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
@@ -24,12 +24,12 @@ class RoleController extends Controller
         if ($request->filled('permission_level')) {
             $level = $request->permission_level;
             if ($level === 'super_admin') {
-                $query->whereHas('permissions', fn($q) => $q->where('name', 'all'));
+                $query->whereHas('rolePermissions', fn($q) => $q->where('name', 'all'));
             } elseif ($level === 'manager') {
-                $query->whereHas('permissions', fn($q) => $q->where('name', 'manage_team'))
-                      ->whereDoesntHave('permissions', fn($q) => $q->where('name', 'all'));
+                $query->whereHas('rolePermissions', fn($q) => $q->where('name', 'manage_team'))
+                      ->whereDoesntHave('rolePermissions', fn($q) => $q->where('name', 'all'));
             } elseif ($level === 'user') {
-                $query->whereDoesntHave('permissions', fn($q) => $q->whereIn('name', ['all', 'manage_team']));
+                $query->whereDoesntHave('rolePermissions', fn($q) => $q->whereIn('name', ['all', 'manage_team']));
             }
         }
 
@@ -39,7 +39,7 @@ class RoleController extends Controller
 
         $stats = [
             'total_roles'       => Role::count(),
-            'roles_with_admin'  => Role::whereHas('permissions', fn($q) => $q->where('name', 'all'))->count(),
+            'roles_with_admin'  => Role::whereHas('rolePermissions', fn($q) => $q->where('name', 'all'))->count(),
             'custom_roles'      => Role::whereNotIn('name', ['super_admin', 'admin', 'manager', 'employee', 'technician'])->count(),
             'employees_assigned'=> \App\Models\Employee::whereNotNull('role_id')->count(),
         ];
@@ -82,7 +82,7 @@ class RoleController extends Controller
 
     public function show(Role $role)
     {
-        $role->load(['employees', 'permissions']);
+        $role->load(['employees', 'rolePermissions']);
         $allPermissions = $this->getAllAvailablePermissions();
 
         return view('roles.show', compact('role', 'allPermissions'));
@@ -93,7 +93,7 @@ class RoleController extends Controller
         $allPermissions = $this->getAllAvailablePermissions();
 
         // Get current permissions from pivot table (not JSON column)
-        $currentPermissions = $role->permissions()->pluck('name')->toArray();
+        $currentPermissions = $role->rolePermissions()->pluck('name')->toArray();
 
         // Debug logging
         \Log::info('Role Edit Debug', [
@@ -170,8 +170,8 @@ class RoleController extends Controller
             $newRole = Role::create(['name' => $newName]);
 
             // Copy permissions from pivot table
-            $permissionIds = $role->permissions()->pluck('id')->toArray();
-            $newRole->permissions()->sync($permissionIds);
+            $permissionIds = $role->rolePermissions()->pluck('id')->toArray();
+            $newRole->rolePermissions()->sync($permissionIds);
 
             return response()->json([
                 'success' => true,
@@ -199,7 +199,7 @@ class RoleController extends Controller
             $this->syncPermissionsToPivot($role, $request->permissions ?? []);
 
             // Get updated permissions from pivot table
-            $updatedPermissions = $role->permissions()->pluck('name')->toArray();
+            $updatedPermissions = $role->rolePermissions()->pluck('name')->toArray();
 
             return response()->json([
                 'success' => true,
@@ -224,7 +224,7 @@ class RoleController extends Controller
         $permissionIds = \App\Models\Permission::whereIn('name', $permissionNames)->pluck('id')->toArray();
 
         // Sync to pivot table (this will add new ones and remove old ones)
-        $role->permissions()->sync($permissionIds);
+        $role->rolePermissions()->sync($permissionIds);
     }
 
     // COMPLETE PERMISSION SYSTEM - ALL MENU ITEMS COVERED

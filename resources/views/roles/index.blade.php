@@ -107,7 +107,7 @@ File: resources/views/roles/index.blade.php
                             <input type="checkbox" name="role_ids[]" value="{{ $role->id }}" style="cursor: pointer;">
                         </td>
                         <td>
-                            @php $rolePerms = $role->permissions; @endphp
+                            @php $rolePerms = $role->rolePermissions; @endphp
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div class="role-icon">
                                     @if($rolePerms->contains('name', 'all'))

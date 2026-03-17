@@ -31,8 +31,9 @@ class Role extends Model
 
     /**
      * Many-to-many relationship with permissions through role_permissions pivot table
+     * Named 'rolePermissions' to avoid conflict with the legacy 'permissions' JSON column
      */
-    public function permissions()
+    public function rolePermissions()
     {
         return $this->belongsToMany(Permission::class, 'role_permissions', 'role_id', 'permission_id')
                     ->withTimestamps();
@@ -101,13 +102,10 @@ class Role extends Model
     // Check if role has specific permission (using pivot table)
     public function hasPermission(string $permission): bool
     {
-        // Check if role has 'all' permission (super admin)
-        if ($this->permissions()->where('name', 'all')->exists()) {
+        if ($this->rolePermissions()->where('name', 'all')->exists()) {
             return true;
         }
-
-        // Check if role has the specific permission
-        return $this->permissions()->where('name', $permission)->exists();
+        return $this->rolePermissions()->where('name', $permission)->exists();
     }
 
     // Get display name or fallback to formatted name

@@ -8,7 +8,7 @@ File: resources/views/roles/show.blade.php
 
 @section('content')
 <div>
-    @php $rolePermNames = $role->permissions->pluck('name')->toArray(); @endphp
+    @php $rolePermNames = $role->rolePermissions->pluck('name')->toArray(); @endphp
 
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
