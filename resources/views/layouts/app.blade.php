@@ -10,8 +10,8 @@
   <title>{{ config('app.name', 'Revival Technologies') }} – {{ $title ?? 'Dashboard' }}</title>
 
   <!-- Favicon -->
-  <link rel="icon" type="image/jpeg" href="{{ asset('logo/revival logo.jpeg') }}">
-  <link rel="shortcut icon" type="image/jpeg" href="{{ asset('logo/revival logo.jpeg') }}">
+  <link rel="icon" type="image/jpeg" href="{{ asset('logo/revival-logo.jpeg') }}">
+  <link rel="shortcut icon" type="image/jpeg" href="{{ asset('logo/revival-logo.jpeg') }}">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.bunny.net">
