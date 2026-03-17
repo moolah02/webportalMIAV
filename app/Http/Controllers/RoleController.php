@@ -15,42 +15,36 @@ class RoleController extends Controller
 
     public function index(Request $request)
     {
-        try {
-            $query = Role::query();
+        $query = Role::with('permissions');
 
-            // Search functionality
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where('name', 'like', "%{$search}%");
-            }
-
-            $roles = $query->orderBy('name')->paginate(15);
-
-            // Get all available permissions
-            $allPermissions = $this->getAllAvailablePermissions();
-
-            // Calculate statistics
-            $stats = [
-                'total_roles' => Role::count(),
-                'roles_with_admin' => Role::whereJsonContains('permissions', 'all')->count(),
-                'custom_roles' => Role::whereNotIn('name', ['super_admin', 'admin', 'manager', 'employee', 'technician'])->count(),
-                'employees_assigned' => \App\Models\Employee::whereNotNull('role_id')->count(),
-            ];
-
-            return view('roles.index', compact('roles', 'allPermissions', 'stats'));
-
-        } catch (\Exception $e) {
-            $roles = Role::all();
-            $allPermissions = $this->getAllAvailablePermissions();
-            $stats = [
-                'total_roles' => $roles->count(),
-                'roles_with_admin' => 0,
-                'custom_roles' => 0,
-                'employees_assigned' => 0,
-            ];
-
-            return view('roles.index', compact('roles', 'allPermissions', 'stats'));
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
         }
+
+        if ($request->filled('permission_level')) {
+            $level = $request->permission_level;
+            if ($level === 'super_admin') {
+                $query->whereHas('permissions', fn($q) => $q->where('name', 'all'));
+            } elseif ($level === 'manager') {
+                $query->whereHas('permissions', fn($q) => $q->where('name', 'manage_team'))
+                      ->whereDoesntHave('permissions', fn($q) => $q->where('name', 'all'));
+            } elseif ($level === 'user') {
+                $query->whereDoesntHave('permissions', fn($q) => $q->whereIn('name', ['all', 'manage_team']));
+            }
+        }
+
+        $roles = $query->orderBy('name')->paginate(15);
+
+        $allPermissions = $this->getAllAvailablePermissions();
+
+        $stats = [
+            'total_roles'       => Role::count(),
+            'roles_with_admin'  => Role::whereHas('permissions', fn($q) => $q->where('name', 'all'))->count(),
+            'custom_roles'      => Role::whereNotIn('name', ['super_admin', 'admin', 'manager', 'employee', 'technician'])->count(),
+            'employees_assigned'=> \App\Models\Employee::whereNotNull('role_id')->count(),
+        ];
+
+        return view('roles.index', compact('roles', 'allPermissions', 'stats'));
     }
 
     public function create()
@@ -88,7 +82,7 @@ class RoleController extends Controller
 
     public function show(Role $role)
     {
-        $role->load('employees');
+        $role->load(['employees', 'permissions']);
         $allPermissions = $this->getAllAvailablePermissions();
 
         return view('roles.show', compact('role', 'allPermissions'));
@@ -161,17 +155,27 @@ class RoleController extends Controller
         }
     }
 
-    public function clone(Role $role)
+    public function clone(Request $request, Role $role)
     {
+        $newName = $request->input('name', $role->name . '_copy');
+
+        // Ensure the name is unique
+        $base = $newName;
+        $counter = 1;
+        while (Role::where('name', $newName)->exists()) {
+            $newName = $base . '_' . $counter++;
+        }
+
         try {
-            $newRole = Role::create([
-                'name' => $role->name . '_copy',
-                'permissions' => $role->permissions,
-            ]);
+            $newRole = Role::create(['name' => $newName]);
+
+            // Copy permissions from pivot table
+            $permissionIds = $role->permissions()->pluck('id')->toArray();
+            $newRole->permissions()->sync($permissionIds);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Role cloned successfully!',
+                'message' => "Role cloned as '{$newName}'!",
                 'newRoleId' => $newRole->id
             ]);
 

@@ -69,9 +69,9 @@ File: resources/views/roles/index.blade.php
 
             <select name="permission_level" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
                 <option value="">All Permission Levels</option>
-                <option value="admin" {{ request('permission_level') == 'admin' ? 'selected' : '' }}>Admin</option>
+                <option value="super_admin" {{ request('permission_level') == 'super_admin' ? 'selected' : '' }}>Super Admin</option>
                 <option value="manager" {{ request('permission_level') == 'manager' ? 'selected' : '' }}>Manager</option>
-                <option value="user" {{ request('permission_level') == 'user' ? 'selected' : '' }}>User</option>
+                <option value="user" {{ request('permission_level') == 'user' ? 'selected' : '' }}>User / Limited</option>
             </select>
 
             <button type="submit" class="btn">Filter</button>
@@ -107,11 +107,12 @@ File: resources/views/roles/index.blade.php
                             <input type="checkbox" name="role_ids[]" value="{{ $role->id }}" style="cursor: pointer;">
                         </td>
                         <td>
+                            @php $rolePerms = $role->permissions; @endphp
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div class="role-icon">
-                                    @if(is_array($role->permissions) && in_array('all', $role->permissions))
+                                    @if($rolePerms->contains('name', 'all'))
                                         <span style="color: #D32F2F;">⚡</span>
-                                    @elseif(is_array($role->permissions) && in_array('manage_team', $role->permissions))
+                                    @elseif($rolePerms->contains('name', 'manage_team'))
                                         <span style="color: #7B1FA2;">👑</span>
                                     @else
                                         <span style="color: #1976D2;">👤</span>
@@ -128,40 +129,41 @@ File: resources/views/roles/index.blade.php
                             </div>
                         </td>
                         <td>
-                            @if(is_array($role->permissions) && in_array('all', $role->permissions))
+                            @if($rolePerms->contains('name', 'all'))
                                 <span class="permission-badge super-admin">Super Admin</span>
-                            @elseif(is_array($role->permissions) && in_array('manage_team', $role->permissions))
+                            @elseif($rolePerms->contains('name', 'manage_team'))
                                 <span class="permission-badge manager">Manager</span>
-                            @elseif(is_array($role->permissions) && (in_array('view_dashboard', $role->permissions) || in_array('view_jobs', $role->permissions)))
+                            @elseif($rolePerms->whereIn('name', ['view_dashboard', 'view_jobs'])->isNotEmpty())
                                 <span class="permission-badge user">User</span>
+                            @elseif($rolePerms->isNotEmpty())
+                                <span class="permission-badge user">Limited Admin</span>
                             @else
                                 <span class="permission-badge limited">Limited</span>
                             @endif
                         </td>
                         <td>
                             <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 300px;">
-                                @if(!is_array($role->permissions) || empty($role->permissions))
+                                @if($rolePerms->isEmpty())
                                     <span style="color: #999; font-style: italic; font-size: 12px;">No permissions</span>
                                 @else
                                     @php
-                                        $displayPermissions = array_slice($role->permissions, 0, 3);
-                                        $remainingCount = count($role->permissions) - 3;
+                                        $displayPerms = $rolePerms->take(3);
+                                        $remainingCount = $rolePerms->count() - 3;
+                                        $colors = [
+                                            'all'            => ['bg' => '#FFEBEE', 'text' => '#D32F2F'],
+                                            'manage_team'    => ['bg' => '#F3E5F5', 'text' => '#7B1FA2'],
+                                            'manage_assets'  => ['bg' => '#E8F5E8', 'text' => '#388E3C'],
+                                            'view_dashboard' => ['bg' => '#E3F2FD', 'text' => '#1976D2'],
+                                            'view_clients'   => ['bg' => '#FFF3E0', 'text' => '#F57C00'],
+                                            'view_jobs'      => ['bg' => '#E0F2F1', 'text' => '#00796B'],
+                                        ];
                                     @endphp
-                                    @foreach($displayPermissions as $permission)
+                                    @foreach($displayPerms as $perm)
                                         @php
-                                            $colors = [
-                                                'all' => ['bg' => '#FFEBEE', 'text' => '#D32F2F'],
-                                                'manage_team' => ['bg' => '#F3E5F5', 'text' => '#7B1FA2'],
-                                                'manage_assets' => ['bg' => '#E8F5E8', 'text' => '#388E3C'],
-                                                'view_dashboard' => ['bg' => '#E3F2FD', 'text' => '#1976D2'],
-                                                'view_clients' => ['bg' => '#FFF3E0', 'text' => '#F57C00'],
-                                                'view_jobs' => ['bg' => '#E0F2F1', 'text' => '#00796B'],
-                                            ];
-                                            $color = $colors[$permission] ?? ['bg' => '#F5F5F5', 'text' => '#666'];
-                                            $displayName = ucwords(str_replace('_', ' ', $permission));
+                                            $color = $colors[$perm->name] ?? ['bg' => '#F5F5F5', 'text' => '#666'];
                                         @endphp
                                         <span class="permission-tag" style="background: {{ $color['bg'] }}; color: {{ $color['text'] }};">
-                                            {{ $displayName }}
+                                            {{ ucwords(str_replace('_', ' ', $perm->name)) }}
                                         </span>
                                     @endforeach
                                     @if($remainingCount > 0)

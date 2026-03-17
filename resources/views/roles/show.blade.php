@@ -8,12 +8,14 @@ File: resources/views/roles/show.blade.php
 
 @section('content')
 <div>
+    @php $rolePermNames = $role->permissions->pluck('name')->toArray(); @endphp
+
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <h2 style="margin: 0; color: #333;">
                 🔑 {{ ucfirst(str_replace('_', ' ', $role->name)) }}
-                @if(in_array('all', $role->permissions ?? []))
+                @if(in_array('all', $rolePermNames))
                     <span style="color: #f44336; font-size: 16px; margin-left: 10px;">⚡ Super Admin</span>
                 @endif
             </h2>
@@ -53,7 +55,7 @@ File: resources/views/roles/show.blade.php
                         
                         <div style="margin-block-end: 15px;">
                             <div style="font-weight: 600; color: #333; margin-block-end: 5px;">Total Permissions</div>
-                            <div style="color: #666; font-size: 24px; font-weight: bold;">{{ count($role->permissions ?? []) }}</div>
+                            <div style="color: #666; font-size: 24px; font-weight: bold;">{{ count($rolePermNames) }}</div>
                         </div>
                     </div>
                 </div>
@@ -63,16 +65,15 @@ File: resources/views/roles/show.blade.php
             <div class="content-card" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 20px; color: #333;">🔐 Permissions</h4>
                 
-                @if(empty($role->permissions))
+                @if(empty($rolePermNames))
                     <div style="text-align: center; padding: 40px; color: #666;">
                         <div style="font-size: 48px; margin-block-end: 15px;">🔒</div>
                         <div>No permissions assigned to this role</div>
                     </div>
                 @else
                     @php
-                        $permissions = $role->permissions ?? [];
-                        $groupedPermissions = collect($allPermissions)->filter(function($permission, $key) use ($permissions) {
-                            return in_array($key, $permissions);
+                        $groupedPermissions = collect($allPermissions)->filter(function($permission, $key) use ($rolePermNames) {
+                            return in_array($key, $rolePermNames);
                         })->groupBy('category');
                     @endphp
                     
@@ -202,16 +203,16 @@ File: resources/views/roles/show.blade.php
                     
                     <div style="display: flex; justify-content: space-between; margin-block-end: 8px;">
                         <span style="color: #666;">Total Permissions:</span>
-                        <span style="font-weight: bold;">{{ count($role->permissions ?? []) }}</span>
+                        <span style="font-weight: bold;">{{ count($rolePermNames) }}</span>
                     </div>
                 </div>
                 
                 <!-- Permission Level Indicator -->
                 @php
-                    $permissionCount = count($role->permissions ?? []);
-                    $hasAll = in_array('all', $role->permissions ?? []);
-                    $hasManageTeam = in_array('manage_team', $role->permissions ?? []);
-                    $hasManageAssets = in_array('manage_assets', $role->permissions ?? []);
+                    $permissionCount = count($rolePermNames);
+                    $hasAll = in_array('all', $rolePermNames);
+                    $hasManageTeam = in_array('manage_team', $rolePermNames);
+                    $hasManageAssets = in_array('manage_assets', $rolePermNames);
                     
                     if ($hasAll) {
                         $level = 'Super Admin';
