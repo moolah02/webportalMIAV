@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revival Technologies — Developer Handover Notes</title>
+<style>
+  :root{--blue:#1976D2;--dark:#1a1a2e;--light:#f8f9fa;--border:#e0e0e0;--text:#333;--muted:#666;--green:#388E3C;--red:#D32F2F;--orange:#F57C00;--purple:#7B1FA2;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:15px;color:var(--text);background:#fff;line-height:1.7;}
+  .cover{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;padding:80px 60px;min-height:260px;display:flex;flex-direction:column;justify-content:center;}
+  .cover h1{font-size:42px;font-weight:700;margin-bottom:12px;}
+  .cover .subtitle{font-size:20px;opacity:.8;margin-bottom:30px;}
+  .cover .meta{font-size:13px;opacity:.6;border-top:1px solid rgba(255,255,255,.2);padding-top:20px;margin-top:20px;}
+  .container{max-width:960px;margin:0 auto;padding:0 30px;}
+  .toc-wrap{background:var(--light);border-left:4px solid var(--blue);padding:30px 40px;margin:40px 0;}
+  .toc-wrap h2{font-size:18px;margin-bottom:16px;color:var(--blue);}
+  .toc-wrap ol{padding-left:20px;font-size:14px;}
+  .toc-wrap li{margin:5px 0;}
+  .section{margin:50px 0;padding-bottom:40px;border-bottom:1px solid var(--border);}
+  .section:last-child{border-bottom:none;}
+  h2.section-title{font-size:26px;color:var(--dark);margin-bottom:6px;padding-bottom:10px;border-bottom:3px solid var(--blue);display:inline-block;}
+  h3{font-size:19px;color:var(--blue);margin:30px 0 12px;}
+  h4{font-size:16px;color:var(--text);margin:20px 0 8px;font-weight:600;}
+  p{margin:10px 0;}
+  ul,ol{padding-left:24px;margin:10px 0;}
+  li{margin:5px 0;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;}
+  th{background:var(--dark);color:#fff;padding:9px 12px;text-align:left;font-weight:600;}
+  td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:nth-child(even) td{background:var(--light);}
+  code{background:#f4f4f4;border:1px solid #ddd;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px;}
+  pre{background:#1a1a2e;color:#e0e0e0;padding:18px 20px;border-radius:8px;font-size:13px;overflow-x:auto;margin:14px 0;line-height:1.6;font-family:monospace;}
+  .note{background:#E3F2FD;border-left:4px solid var(--blue);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .warn{background:#FFF3E0;border-left:4px solid var(--orange);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .danger{background:#FFEBEE;border-left:4px solid var(--red);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .file-tree{background:#1a1a2e;color:#e0e0e0;padding:20px;border-radius:8px;font-family:monospace;font-size:13px;line-height:1.8;margin:14px 0;}
+  .file-tree .dir{color:#64B5F6;}
+  .file-tree .file{color:#A5D6A7;}
+  .btn-print{display:inline-block;padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin:20px 0;}
+  @media print{.btn-print{display:none;}.cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.section{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Developer Handover Notes</h1>
+  <div class="subtitle">Revival Technologies MIAV System</div>
+  <div class="meta">Version 1.0 &nbsp;|&nbsp; March 2026 &nbsp;|&nbsp; Confidential — Developer Reference</div>
+</div>
+
+<div class="container">
+  <button class="btn-print" onclick="window.print()">⬇ Download / Print as PDF</button>
+
+  <div class="toc-wrap">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li>Tech Stack Summary</li>
+      <li>Project Structure</li>
+      <li>Local Development Setup</li>
+      <li>Key Patterns &amp; Conventions</li>
+      <li>Authentication System</li>
+      <li>Role &amp; Permissions System</li>
+      <li>API Design Patterns</li>
+      <li>Database Conventions</li>
+      <li>Offline Sync System</li>
+      <li>Deployment Process</li>
+      <li>Environment Variables</li>
+      <li>Known Quirks &amp; Gotchas</li>
+    </ol>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="section">
+    <h2 class="section-title">1. Tech Stack Summary</h2>
+    <table>
+      <tr><th>Layer</th><th>Technology</th><th>Version</th></tr>
+      <tr><td>Backend Language</td><td>PHP</td><td>^8.2</td></tr>
+      <tr><td>Backend Framework</td><td>Laravel</td><td>^12.0</td></tr>
+      <tr><td>API Auth</td><td>Laravel Sanctum</td><td>^4.2</td></tr>
+      <tr><td>Permissions</td><td>Spatie Laravel Permission</td><td>^6.21</td></tr>
+      <tr><td>PDF Generation</td><td>barryvdh/laravel-dompdf</td><td>^3.1</td></tr>
+      <tr><td>Excel Export</td><td>maatwebsite/excel</td><td>^1.1</td></tr>
+      <tr><td>Frontend JS</td><td>Vue 3 + Alpine.js</td><td>3.x + 3.4.x</td></tr>
+      <tr><td>CSS</td><td>Tailwind CSS + Bootstrap</td><td>3.x + 5.x</td></tr>
+      <tr><td>Charts</td><td>ApexCharts</td><td>^5.3.4</td></tr>
+      <tr><td>Build Tool</td><td>Vite</td><td>^6.2.4</td></tr>
+      <tr><td>Database</td><td>MySQL</td><td>8.x</td></tr>
+      <tr><td>Server</td><td>Ubuntu + Nginx + PHP-FPM</td><td>LTS</td></tr>
+    </table>
+  </div>
+
+  <!-- PROJECT STRUCTURE -->
+  <div class="section">
+    <h2 class="section-title">2. Project Structure</h2>
+    <div class="file-tree">
+<span class="dir">app/</span>
+├── <span class="dir">Http/Controllers/</span>
+│   ├── <span class="dir">Api/</span>                    ← All mobile/API controllers
+│   │   ├── <span class="file">AuthController.php</span>
+│   │   ├── <span class="file">TicketController.php</span>
+│   │   ├── <span class="file">VisitController.php</span>
+│   │   ├── <span class="file">AssetRequestController.php</span>
+│   │   ├── <span class="file">JobAssignmentController.php</span>
+│   │   ├── <span class="file">PosTerminalController.php</span>
+│   │   └── <span class="file">... (15 API controllers total)</span>
+│   └── <span class="dir">(Web controllers for dashboard)</span>
+├── <span class="dir">Models/</span>                     ← Eloquent models (40+)
+├── <span class="dir">Services/</span>                   ← Business logic services
+├── <span class="dir">Exports/</span>                    ← Excel/CSV export classes
+└── <span class="dir">Providers/</span>                  ← Service providers
+<span class="dir">database/migrations/</span>            ← All DB migrations (chronological)
+<span class="dir">routes/</span>
+├── <span class="file">api.php</span>                    ← All API routes (626 lines)
+└── <span class="file">web.php</span>                    ← Dashboard web routes
+<span class="dir">resources/views/</span>               ← Blade templates
+<span class="dir">public/docs/</span>                   ← This documentation hub
+    </div>
+  </div>
+
+  <!-- LOCAL SETUP -->
+  <div class="section">
+    <h2 class="section-title">3. Local Development Setup</h2>
+    <pre>git clone https://github.com/moolah02/webportalMIAV.git
+cd webportalMIAV
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+
+# Configure your .env with DB credentials, then:
+php artisan migrate
+php artisan db:seed        # if seeders exist
+
+npm run dev                # Vite dev server
+php artisan serve          # Laravel dev server</pre>
+
+    <div class="note">Set <code>DB_CONNECTION=mysql</code> and configure <code>DB_HOST</code>, <code>DB_DATABASE</code>, <code>DB_USERNAME</code>, <code>DB_PASSWORD</code> in your <code>.env</code> file. Default uses SQLite for quick start.</div>
+  </div>
+
+  <!-- KEY PATTERNS -->
+  <div class="section">
+    <h2 class="section-title">4. Key Patterns &amp; Conventions</h2>
+
+    <h3>4.1 API Response Pattern</h3>
+    <p>All API responses return a consistent structure. Always use:</p>
+    <pre>return response()->json([
+    'success' => true,
+    'message' => 'Optional message',
+    'data'    => $payload,
+], 200);</pre>
+
+    <h3>4.2 Validation Pattern</h3>
+    <p>Use Laravel's <code>Validator::make()</code> for API endpoints (not <code>$request->validate()</code>) so you can return JSON errors:</p>
+    <pre>$validator = Validator::make($request->all(), [
+    'field' => 'required|string|max:255',
+]);
+if ($validator->fails()) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Validation failed',
+        'errors'  => $validator->errors(),
+    ], 422);
+}</pre>
+
+    <h3>4.3 Soft Deletes</h3>
+    <p>Most models do NOT use soft deletes. Hard deletes are used. Check each model individually before adding delete logic.</p>
+
+    <h3>4.4 Transactions</h3>
+    <p>Use <code>DB::transaction()</code> for any operation that writes to multiple tables (e.g., visit + visit_terminals).</p>
+
+    <h3>4.5 JSON Columns</h3>
+    <p>Several models use JSON columns (e.g., <code>terminal</code>, <code>evidence</code>, <code>pos_terminals</code> on assignments). These are cast in the model:</p>
+    <pre>protected $casts = [
+    'terminal'   => 'array',
+    'evidence'   => 'array',
+];
+</pre>
+  </div>
+
+  <!-- AUTH -->
+  <div class="section">
+    <h2 class="section-title">5. Authentication System</h2>
+    <p>The system uses <strong>Laravel Sanctum</strong> for API token authentication. The <code>Employee</code> model (not the default <code>User</code> model) is the authenticatable model.</p>
+
+    <h4>Login Flow</h4>
+    <ol>
+      <li><code>POST /api/auth/login</code> with email + password</li>
+      <li>Server calls <code>Auth::attempt()</code> against the <code>employees</code> table</li>
+      <li>Checks <code>$employee->isActive()</code> — returns 403 if inactive</li>
+      <li>Creates a Sanctum token: <code>$employee->createToken('mobile-app-token')->plainTextToken</code></li>
+      <li>Returns token to client. Client stores it and sends as <code>Authorization: Bearer {token}</code></li>
+    </ol>
+
+    <h4>Logout</h4>
+    <p>Calls <code>$request->user()->currentAccessToken()->delete()</code> — revokes the token from the DB.</p>
+
+    <div class="warn">The auth guard for API routes is <code>auth:sanctum</code>. The web dashboard uses session-based auth. Do not mix these guards.</div>
+  </div>
+
+  <!-- PERMISSIONS -->
+  <div class="section">
+    <h2 class="section-title">6. Role &amp; Permissions System</h2>
+    <p>The system uses a <strong>custom permissions system</strong> alongside Spatie Laravel Permission. Permissions are stored in both a <code>permissions</code> table and as JSON on roles.</p>
+
+    <h4>Checking Permissions</h4>
+    <pre>// Via custom method on Employee model:
+$user->hasPermission('manage_assets')
+
+// Via Spatie can() helper:
+$user->can('manage_team')</pre>
+
+    <h4>Role Hierarchy</h4>
+    <table>
+      <tr><th>Role Slug</th><th>Access Level</th></tr>
+      <tr><td>super_admin / admin</td><td>All permissions</td></tr>
+      <tr><td>manager</td><td>Team management, reports, assignments</td></tr>
+      <tr><td>supervisor</td><td>Regional oversight</td></tr>
+      <tr><td>field_technician</td><td>Own data only — jobs, visits, tickets, assets</td></tr>
+      <tr><td>client_user</td><td>Read-only view of their own client data</td></tr>
+    </table>
+
+    <h4>Role Detection Methods on Employee Model</h4>
+    <pre>$user->isFieldTechnician()   // checks role slug
+$user->isClientUser()
+$user->isAdmin()</pre>
+
+    <div class="note">When adding new API endpoints that should be role-restricted, always check <code>$user->isFieldTechnician()</code> and scope data accordingly.</div>
+  </div>
+
+  <!-- API DESIGN -->
+  <div class="section">
+    <h2 class="section-title">7. API Design Patterns</h2>
+
+    <h3>7.1 Route Registration</h3>
+    <p>All API routes are in <code>routes/api.php</code>. Protected routes are wrapped in:</p>
+    <pre>Route::middleware('auth:sanctum')->group(function () {
+    // protected routes here
+});</pre>
+
+    <h3>7.2 Scoped Data (Role-Based)</h3>
+    <p>Several controllers scope data by role. Pattern used in <code>TicketController@index</code>:</p>
+    <pre>if ($user->isFieldTechnician()) {
+    $query->where('assigned_to', $user->id)
+          ->orWhere('technician_id', $user->id);
+} elseif ($user->isClientUser()) {
+    $query->where('client_id', $user->client_id);
+}
+// else: admin/staff sees all</pre>
+
+    <h3>7.3 Schema::hasColumn Guards</h3>
+    <p>Some code uses <code>Schema::hasColumn()</code> guards for safety during migrations. This is intentional — do not remove them without verifying the column exists in all environments.</p>
+
+    <h3>7.4 Offline Sync Endpoints</h3>
+    <p>The <code>/api/sync/*</code> routes return large payloads intended for local caching on the mobile app. These are intentionally unpaginated. Do not add pagination to sync endpoints.</p>
+  </div>
+
+  <!-- DATABASE -->
+  <div class="section">
+    <h2 class="section-title">8. Database Conventions</h2>
+    <ul>
+      <li>All tables use snake_case naming</li>
+      <li>Primary keys: <code>id</code> (bigInteger, auto-increment)</li>
+      <li>Foreign keys follow: <code>{table_singular}_id</code> pattern</li>
+      <li>All tables have <code>created_at</code> and <code>updated_at</code> timestamps</li>
+      <li>Enum columns are used for fixed status values — add new values via migration (ALTER TABLE)</li>
+      <li>JSON columns store arrays/objects — always cast them in the model</li>
+      <li>Auto-generated IDs (ticket_id: TCK-YYYY-XXXXXX, assignment_id: ASN-YYYYMMDD-001) are generated in controller/model, not DB</li>
+    </ul>
+
+    <h4>Adding New Enum Values</h4>
+    <p>MySQL enum columns require a raw SQL migration to add new values:</p>
+    <pre>DB::statement("ALTER TABLE tickets MODIFY COLUMN status
+  ENUM('open','in_progress','pending','resolved','closed','cancelled','new_value')
+  NOT NULL DEFAULT 'open'");</pre>
+  </div>
+
+  <!-- OFFLINE SYNC -->
+  <div class="section">
+    <h2 class="section-title">9. Offline Sync System</h2>
+    <p>The mobile app supports offline-first operation. The sync system works as follows:</p>
+    <ol>
+      <li>On app startup, mobile calls <code>GET /api/sync/full-sync</code> to download all data</li>
+      <li>User works offline — records are queued locally</li>
+      <li>On reconnect, mobile pushes queued records to <code>POST /api/sync/bulk-sync</code></li>
+      <li>Server processes records and returns server-side updates since last sync</li>
+      <li>The <code>GET /api/sync/timestamp</code> endpoint returns server time for delta comparison</li>
+    </ol>
+    <div class="warn">Offline sync can create duplicate records if the mobile app retries failed syncs. The <code>offline_sync_id</code> column on the <code>tickets</code> table is used for deduplication — check for this before inserting.</div>
+  </div>
+
+  <!-- DEPLOYMENT -->
+  <div class="section">
+    <h2 class="section-title">10. Deployment Process</h2>
+
+    <h4>Production Deploy</h4>
+    <pre>ssh -i "RTLDEV.pem" ubuntu@51.21.252.67
+cd /var/www/html/revival_production
+sudo -u www-data git -c safe.directory=$(pwd) pull origin main
+sudo -u www-data php artisan migrate --force
+sudo -u www-data php artisan cache:clear
+sudo -u www-data php artisan config:clear
+sudo -u www-data php artisan view:clear</pre>
+
+    <h4>Development Deploy</h4>
+    <pre>cd /var/www/html/revival_dev
+sudo -u www-data git -c safe.directory=$(pwd) pull origin main
+sudo -u www-data php artisan migrate --force
+sudo -u www-data php artisan cache:clear</pre>
+
+    <div class="note">Always run <code>migrate --force</code> (not just <code>migrate</code>) in production to skip the "Are you sure?" prompt.</div>
+
+    <h4>Frontend Assets (if Vite changes are made)</h4>
+    <pre>npm run build    # Builds assets to public/build/</pre>
+  </div>
+
+  <!-- ENV VARS -->
+  <div class="section">
+    <h2 class="section-title">11. Environment Variables</h2>
+    <table>
+      <tr><th>Variable</th><th>Description</th><th>Example</th></tr>
+      <tr><td><code>APP_KEY</code></td><td>Laravel encryption key (required)</td><td>base64:xxxxx</td></tr>
+      <tr><td><code>APP_ENV</code></td><td>Environment</td><td>production</td></tr>
+      <tr><td><code>APP_URL</code></td><td>Full app URL</td><td>https://yourdomain.com</td></tr>
+      <tr><td><code>DB_CONNECTION</code></td><td>Database driver</td><td>mysql</td></tr>
+      <tr><td><code>DB_HOST</code></td><td>Database host</td><td>127.0.0.1</td></tr>
+      <tr><td><code>DB_DATABASE</code></td><td>Database name</td><td>miav_system_production</td></tr>
+      <tr><td><code>DB_USERNAME</code></td><td>DB user</td><td>root</td></tr>
+      <tr><td><code>DB_PASSWORD</code></td><td>DB password</td><td>(secret)</td></tr>
+      <tr><td><code>MAIL_MAILER</code></td><td>Email driver</td><td>smtp</td></tr>
+      <tr><td><code>SANCTUM_STATEFUL_DOMAINS</code></td><td>Domains for cookie auth</td><td>yourdomain.com</td></tr>
+    </table>
+  </div>
+
+  <!-- GOTCHAS -->
+  <div class="section">
+    <h2 class="section-title">12. Known Quirks &amp; Gotchas</h2>
+
+    <ul>
+      <li><strong>Employee model, not User:</strong> The authenticatable model is <code>App\Models\Employee</code>. The <code>User</code> model exists but is not used for auth.</li>
+      <li><strong>assignment_id on visits is a BigInteger, not a string:</strong> The mobile app sends numeric IDs. The old validation required a string — this was fixed. Do not re-add the <code>'string'</code> rule.</li>
+      <li><strong>Ticket status enum:</strong> The original migration had only 4 statuses. A migration was added to include <code>cancelled</code> and <code>pending</code>. Always run migrations after pulling.</li>
+      <li><strong>Public tickets:</strong> Tickets with <code>assignment_type = 'public'</code> can be updated by any field technician. Direct tickets are restricted to the assigned technician.</li>
+      <li><strong>Asset date validation:</strong> <code>needed_by_date</code> uses <code>after_or_equal:today</code> — same-day requests are allowed.</li>
+      <li><strong>Git safe.directory:</strong> The web server runs as <code>www-data</code> but the git repo may be owned differently. Use <code>git -c safe.directory=/path pull</code> to bypass the ownership check.</li>
+      <li><strong>Two migration files create visits table:</strong> <code>2025_11_11_081245</code> and <code>2026_01_09_000003</code> both create a visits table. The newer one is the canonical one. The older migration may conflict if migrations are reset — be careful with <code>migrate:fresh</code>.</li>
+      <li><strong>Schema::hasColumn() checks:</strong> Several migration files and controller methods guard with <code>Schema::hasColumn()</code>. This is intentional for idempotent migrations — do not remove these guards.</li>
+    </ul>
+
+    <div class="danger"><strong>Never run <code>php artisan migrate:fresh</code> on production.</strong> It drops all tables and data. Always use <code>php artisan migrate</code>.</div>
+  </div>
+
+</div>
+</body>
+</html>

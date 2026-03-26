@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revival Technologies — Database Schema</title>
+<style>
+  :root{--blue:#1976D2;--dark:#1a1a2e;--light:#f8f9fa;--border:#e0e0e0;--text:#333;--muted:#666;--green:#388E3C;--red:#D32F2F;--orange:#F57C00;--purple:#7B1FA2;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:15px;color:var(--text);background:#fff;line-height:1.7;}
+  .cover{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;padding:80px 60px;min-height:260px;display:flex;flex-direction:column;justify-content:center;}
+  .cover h1{font-size:42px;font-weight:700;margin-bottom:12px;}
+  .cover .subtitle{font-size:20px;opacity:.8;margin-bottom:30px;}
+  .cover .meta{font-size:13px;opacity:.6;border-top:1px solid rgba(255,255,255,.2);padding-top:20px;margin-top:20px;}
+  .container{max-width:1000px;margin:0 auto;padding:0 30px;}
+  .toc-wrap{background:var(--light);border-left:4px solid var(--blue);padding:30px 40px;margin:40px 0;}
+  .toc-wrap h2{font-size:18px;margin-bottom:16px;color:var(--blue);}
+  .toc-wrap ul{padding-left:20px;columns:2;font-size:14px;}
+  .toc-wrap li{margin:4px 0;}
+  .section{margin:50px 0;padding-bottom:40px;border-bottom:1px solid var(--border);}
+  .section:last-child{border-bottom:none;}
+  h2.section-title{font-size:26px;color:var(--dark);margin-bottom:6px;padding-bottom:10px;border-bottom:3px solid var(--blue);display:inline-block;}
+  h3{font-size:17px;color:var(--blue);margin:30px 0 10px;font-family:monospace;}
+  h4{font-size:15px;color:var(--muted);margin:6px 0 8px;font-weight:400;}
+  p{margin:10px 0;font-size:14px;}
+  table{width:100%;border-collapse:collapse;margin:10px 0 24px;font-size:13px;}
+  th{background:var(--dark);color:#fff;padding:8px 12px;text-align:left;font-weight:600;}
+  td{padding:7px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:nth-child(even) td{background:var(--light);}
+  code{background:#f4f4f4;border:1px solid #ddd;padding:2px 5px;border-radius:3px;font-family:monospace;font-size:12px;}
+  .pk{color:var(--orange);font-weight:700;}
+  .fk{color:var(--blue);}
+  .req{color:var(--red);}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;}
+  .badge-pk{background:#FFF3E0;color:var(--orange);}
+  .badge-fk{background:#E3F2FD;color:var(--blue);}
+  .badge-idx{background:#E8F5E9;color:var(--green);}
+  .note{background:#E3F2FD;border-left:4px solid var(--blue);padding:12px 16px;border-radius:0 6px 6px 0;margin:14px 0;font-size:13px;}
+  .table-group{background:#f8f8f8;border-radius:10px;padding:20px 24px;margin-bottom:30px;border:1px solid var(--border);}
+  .table-group-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:16px;}
+  .btn-print{display:inline-block;padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin:20px 0;}
+  @media print{.btn-print{display:none;}.cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.section{page-break-inside:avoid;}.table-group{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Database Schema</h1>
+  <div class="subtitle">Revival Technologies MIAV System</div>
+  <div class="meta">Version 1.0 &nbsp;|&nbsp; March 2026 &nbsp;|&nbsp; Confidential — Technical Reference</div>
+</div>
+
+<div class="container">
+  <button class="btn-print" onclick="window.print()">⬇ Download / Print as PDF</button>
+
+  <div class="toc-wrap">
+    <h2>Tables Overview</h2>
+    <ul>
+      <li>employees</li><li>departments</li><li>roles</li><li>permissions</li>
+      <li>clients</li><li>pos_terminals</li>
+      <li>job_assignments</li><li>regions</li>
+      <li>visits</li><li>visit_terminals</li>
+      <li>tickets</li><li>ticket_steps</li>
+      <li>assets</li><li>asset_requests</li><li>asset_request_items</li><li>asset_assignments</li>
+      <li>projects</li><li>project_terminals</li>
+      <li>service_reports</li><li>report_templates</li>
+      <li>personal_access_tokens</li><li>sessions</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <strong>Legend:</strong> &nbsp;
+    <span class="badge badge-pk">PK</span> Primary Key &nbsp;
+    <span class="badge badge-fk">FK</span> Foreign Key &nbsp;
+    <span class="badge badge-idx">IDX</span> Indexed Column
+  </div>
+
+  <!-- IDENTITY -->
+  <div class="section">
+    <h2 class="section-title">Identity &amp; Access Tables</h2>
+
+    <div class="table-group">
+      <div class="table-group-title">employees</div>
+      <p>Core user table. All system users are employees.</p>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Nullable</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td>No</td><td><span class="badge badge-pk">PK</span> Auto increment</td></tr>
+        <tr><td><code>employee_number</code></td><td>VARCHAR(255)</td><td>No</td><td>Unique employee code</td></tr>
+        <tr><td><code>first_name</code></td><td>VARCHAR(255)</td><td>No</td><td></td></tr>
+        <tr><td><code>last_name</code></td><td>VARCHAR(255)</td><td>No</td><td></td></tr>
+        <tr><td><code>email</code></td><td>VARCHAR(255)</td><td>No</td><td>Unique login email</td></tr>
+        <tr><td><code>email_verified_at</code></td><td>TIMESTAMP</td><td>Yes</td><td></td></tr>
+        <tr><td><code>password</code></td><td>VARCHAR(255)</td><td>No</td><td>bcrypt hashed</td></tr>
+        <tr><td><code>phone</code></td><td>VARCHAR(255)</td><td>Yes</td><td></td></tr>
+        <tr><td><code>department_id</code></td><td>BIGINT UNSIGNED</td><td>Yes</td><td><span class="badge badge-fk">FK</span> → departments.id</td></tr>
+        <tr><td><code>role_id</code></td><td>BIGINT UNSIGNED</td><td>Yes</td><td><span class="badge badge-fk">FK</span> → roles.id</td></tr>
+        <tr><td><code>manager_id</code></td><td>BIGINT UNSIGNED</td><td>Yes</td><td><span class="badge badge-fk">FK</span> → employees.id (self)</td></tr>
+        <tr><td><code>status</code></td><td>ENUM('active','inactive','suspended')</td><td>No</td><td>Default: active</td></tr>
+        <tr><td><code>hire_date</code></td><td>DATE</td><td>Yes</td><td></td></tr>
+        <tr><td><code>last_login_at</code></td><td>TIMESTAMP</td><td>Yes</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>avatar</code></td><td>VARCHAR(255)</td><td>Yes</td><td>Storage path</td></tr>
+        <tr><td><code>created_at / updated_at</code></td><td>TIMESTAMP</td><td>Yes</td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">departments</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>name</code></td><td>VARCHAR(255)</td><td>Department name</td></tr>
+        <tr><td><code>description</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>created_at / updated_at</code></td><td>TIMESTAMP</td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">roles</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>name</code></td><td>VARCHAR(255)</td><td>Unique, slug-style (e.g. field_technician)</td></tr>
+        <tr><td><code>display_name</code></td><td>VARCHAR(255)</td><td>Human-readable name</td></tr>
+        <tr><td><code>permissions</code></td><td>JSON</td><td>Permissions array (legacy)</td></tr>
+        <tr><td><code>created_at / updated_at</code></td><td>TIMESTAMP</td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">permissions</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>name</code></td><td>VARCHAR(255)</td><td>Unique permission key (e.g. manage_assets)</td></tr>
+        <tr><td><code>display_name</code></td><td>VARCHAR(255)</td><td>Label</td></tr>
+        <tr><td><code>category</code></td><td>VARCHAR(255)</td><td>Default: general</td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">personal_access_tokens (Sanctum)</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>tokenable_id</code></td><td>BIGINT UNSIGNED</td><td>Employee ID</td></tr>
+        <tr><td><code>tokenable_type</code></td><td>VARCHAR(255)</td><td>Model class name</td></tr>
+        <tr><td><code>name</code></td><td>VARCHAR(255)</td><td>Token label (e.g. mobile-app-token)</td></tr>
+        <tr><td><code>token</code></td><td>VARCHAR(64)</td><td>Unique, SHA-256 hashed</td></tr>
+        <tr><td><code>abilities</code></td><td>JSON</td><td>Scopes/abilities</td></tr>
+        <tr><td><code>last_used_at</code></td><td>TIMESTAMP</td><td>Nullable</td></tr>
+        <tr><td><code>expires_at</code></td><td>TIMESTAMP</td><td>Nullable</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- CLIENTS & TERMINALS -->
+  <div class="section">
+    <h2 class="section-title">Client &amp; Terminal Tables</h2>
+
+    <div class="table-group">
+      <div class="table-group-title">clients</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>company_name</code></td><td>VARCHAR(255)</td><td>Trading name</td></tr>
+        <tr><td><code>contact_person</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>phone / email</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>address</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>industry</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>status</code></td><td>ENUM('active','inactive','prospect','lost')</td><td>Default: prospect</td></tr>
+        <tr><td><code>priority</code></td><td>ENUM('high','medium','low')</td><td>Default: medium</td></tr>
+        <tr><td><code>contract_start_date / end_date</code></td><td>DATE</td><td>Nullable</td></tr>
+        <tr><td><code>created_at / updated_at</code></td><td>TIMESTAMP</td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">pos_terminals</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>terminal_id</code></td><td>VARCHAR(255)</td><td>Unique external identifier</td></tr>
+        <tr><td><code>merchant_id</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>client_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → clients.id &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>merchant_name</code></td><td>VARCHAR(255)</td><td></td></tr>
+        <tr><td><code>legal_name</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>merchant_contact_person</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>merchant_phone / email</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>physical_address</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>city / province / region / area</code></td><td>VARCHAR(191)</td><td>Nullable &nbsp;<span class="badge badge-idx">IDX</span> (region)</td></tr>
+        <tr><td><code>business_type</code></td><td>VARCHAR(191)</td><td>Nullable</td></tr>
+        <tr><td><code>terminal_model</code></td><td>VARCHAR(191)</td><td>Nullable</td></tr>
+        <tr><td><code>serial_number</code></td><td>VARCHAR(191)</td><td>Nullable</td></tr>
+        <tr><td><code>status</code></td><td>ENUM('active','offline','maintenance','faulty','decommissioned')</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>installation_date</code></td><td>DATE</td><td>Nullable</td></tr>
+        <tr><td><code>last_service_date</code></td><td>DATE</td><td>Nullable</td></tr>
+        <tr><td><code>next_service_due</code></td><td>DATE</td><td>Nullable</td></tr>
+        <tr><td><code>coordinates</code></td><td>JSON</td><td>{latitude, longitude}</td></tr>
+        <tr><td><code>status_info</code></td><td>JSON</td><td>{is_active, is_faulty, needs_service}</td></tr>
+        <tr><td><code>extra_fields</code></td><td>JSON</td><td>Custom category fields</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- JOBS -->
+  <div class="section">
+    <h2 class="section-title">Job &amp; Assignment Tables</h2>
+
+    <div class="table-group">
+      <div class="table-group-title">job_assignments</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>assignment_id</code></td><td>VARCHAR(255)</td><td>Unique. Format: ASN-YYYYMMDD-001</td></tr>
+        <tr><td><code>technician_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → employees.id &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>region_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → regions.id</td></tr>
+        <tr><td><code>client_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → clients.id</td></tr>
+        <tr><td><code>project_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → projects.id</td></tr>
+        <tr><td><code>pos_terminals</code></td><td>JSON</td><td>Array of terminal IDs</td></tr>
+        <tr><td><code>title</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>description</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>scheduled_date</code></td><td>DATE</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>service_type</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>priority</code></td><td>ENUM('low','normal','high','emergency')</td><td>Default: normal</td></tr>
+        <tr><td><code>status</code></td><td>ENUM('assigned','in_progress','completed','cancelled','pending')</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>actual_start_time / end_time</code></td><td>DATETIME</td><td>Nullable</td></tr>
+        <tr><td><code>completed_date</code></td><td>DATE</td><td>Nullable</td></tr>
+        <tr><td><code>notes / completion_notes</code></td><td>TEXT</td><td>Nullable</td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">regions</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>name</code></td><td>VARCHAR(255)</td><td>Region name</td></tr>
+        <tr><td><code>description</code></td><td>TEXT</td><td>Nullable</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- VISITS -->
+  <div class="section">
+    <h2 class="section-title">Visit Tables</h2>
+
+    <div class="table-group">
+      <div class="table-group-title">visits</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>merchant_id</code></td><td>VARCHAR(255)</td><td>Nullable &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>merchant_name</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>employee_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → employees.id &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>assignment_id</code></td><td>BIGINT UNSIGNED</td><td>Nullable &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>completed_at</code></td><td>TIMESTAMP</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>contact_person / phone_number</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+        <tr><td><code>visit_summary</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>action_points</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>evidence</code></td><td>JSON</td><td>Array of photo paths</td></tr>
+        <tr><td><code>signature</code></td><td>TEXT</td><td>Base64 encoded signature</td></tr>
+        <tr><td><code>other_terminals_found</code></td><td>JSON</td><td>Nullable</td></tr>
+        <tr><td><code>terminal</code></td><td>JSON</td><td>Terminal snapshot at time of visit</td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">visit_terminals</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>visit_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → visits.id &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>terminal_id</code></td><td>BIGINT UNSIGNED</td><td>References pos_terminals.id (nullable)</td></tr>
+        <tr><td><code>status</code></td><td>VARCHAR(100)</td><td>Default: active &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>condition</code></td><td>VARCHAR(100)</td><td>Nullable</td></tr>
+        <tr><td><code>serial_number</code></td><td>VARCHAR(191)</td><td>Nullable</td></tr>
+        <tr><td><code>terminal_model</code></td><td>VARCHAR(191)</td><td>Nullable</td></tr>
+        <tr><td><code>comments</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>outcome</code></td><td>VARCHAR(255)</td><td>Nullable</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- TICKETS -->
+  <div class="section">
+    <h2 class="section-title">Ticket &amp; Support Tables</h2>
+
+    <div class="table-group">
+      <div class="table-group-title">tickets</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>ticket_id</code></td><td>VARCHAR(255)</td><td>Unique. Format: TCK-YYYY-XXXXXX</td></tr>
+        <tr><td><code>ticket_type</code></td><td>ENUM('pos_terminal','internal')</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>assignment_type</code></td><td>ENUM('public','direct')</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>technician_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → employees.id &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>pos_terminal_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → pos_terminals.id</td></tr>
+        <tr><td><code>client_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → clients.id</td></tr>
+        <tr><td><code>assigned_to</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → employees.id &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>title</code></td><td>VARCHAR(255)</td><td></td></tr>
+        <tr><td><code>description</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>issue_type</code></td><td>VARCHAR(100)</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>priority</code></td><td>ENUM('low','medium','high','urgent')</td><td><span class="badge badge-idx">IDX</span> Default: medium</td></tr>
+        <tr><td><code>status</code></td><td>ENUM('open','in_progress','pending','resolved','closed','cancelled')</td><td><span class="badge badge-idx">IDX</span> Default: open</td></tr>
+        <tr><td><code>estimated_resolution_time</code></td><td>INT</td><td>Nullable (minutes)</td></tr>
+        <tr><td><code>resolution</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>attachments</code></td><td>JSON</td><td>Nullable</td></tr>
+        <tr><td><code>resolved_at</code></td><td>DATETIME</td><td>Nullable</td></tr>
+        <tr><td><code>mobile_created</code></td><td>BOOLEAN</td><td>Default: false</td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">ticket_steps (Staged Resolution)</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>ticket_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → tickets.id (cascade delete)</td></tr>
+        <tr><td><code>employee_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → employees.id</td></tr>
+        <tr><td><code>step_number</code></td><td>INT</td><td>Default: 1</td></tr>
+        <tr><td><code>status</code></td><td>ENUM('in_progress','completed','transferred','resolved')</td><td></td></tr>
+        <tr><td><code>description</code></td><td>TEXT</td><td>What was done</td></tr>
+        <tr><td><code>notes</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>resolution_notes</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>transferred_reason</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>transferred_to</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → employees.id (nullable)</td></tr>
+        <tr><td><code>completed_at</code></td><td>TIMESTAMP</td><td>Nullable</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ASSETS -->
+  <div class="section">
+    <h2 class="section-title">Asset Management Tables</h2>
+
+    <div class="table-group">
+      <div class="table-group-title">assets</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>name</code></td><td>VARCHAR(255)</td><td></td></tr>
+        <tr><td><code>category</code></td><td>VARCHAR(255)</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>brand / model / sku</code></td><td>VARCHAR(255)</td><td>Nullable. sku is unique.</td></tr>
+        <tr><td><code>unit_price</code></td><td>DECIMAL(10,2)</td><td>Default: 0</td></tr>
+        <tr><td><code>stock_quantity</code></td><td>INT</td><td>Default: 0</td></tr>
+        <tr><td><code>min_stock_level</code></td><td>INT</td><td>Default: 0 (triggers low_stock alert)</td></tr>
+        <tr><td><code>status</code></td><td>ENUM('active','inactive','discontinued')</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>is_requestable</code></td><td>BOOLEAN</td><td>Default: true &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>requires_approval</code></td><td>BOOLEAN</td><td>Default: true</td></tr>
+        <tr><td><code>specifications</code></td><td>JSON</td><td>Technical specs</td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">asset_requests</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>request_number</code></td><td>VARCHAR(255)</td><td>Unique. Format: REQ-YYYY-001</td></tr>
+        <tr><td><code>employee_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → employees.id &nbsp;<span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>status</code></td><td>ENUM('draft','pending','approved','rejected','fulfilled','cancelled')</td><td><span class="badge badge-idx">IDX</span></td></tr>
+        <tr><td><code>priority</code></td><td>ENUM('low','normal','high','urgent')</td><td></td></tr>
+        <tr><td><code>business_justification</code></td><td>TEXT</td><td>Required</td></tr>
+        <tr><td><code>needed_by_date</code></td><td>DATE</td><td>Nullable. Must be today or later.</td></tr>
+        <tr><td><code>total_estimated_cost</code></td><td>DECIMAL(12,2)</td><td>Default: 0</td></tr>
+        <tr><td><code>approved_by</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → employees.id</td></tr>
+        <tr><td><code>approved_at</code></td><td>TIMESTAMP</td><td>Nullable</td></tr>
+        <tr><td><code>rejection_reason</code></td><td>TEXT</td><td>Nullable</td></tr>
+        <tr><td><code>fulfilled_by / fulfilled_at</code></td><td>FK + TIMESTAMP</td><td>Nullable</td></tr>
+      </table>
+    </div>
+
+    <div class="table-group">
+      <div class="table-group-title">asset_request_items</div>
+      <table>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td><code class="pk">id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-pk">PK</span></td></tr>
+        <tr><td><code>asset_request_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → asset_requests.id</td></tr>
+        <tr><td><code>asset_id</code></td><td>BIGINT UNSIGNED</td><td><span class="badge badge-fk">FK</span> → assets.id</td></tr>
+        <tr><td><code>quantity_requested</code></td><td>INT</td><td>min: 1</td></tr>
+        <tr><td><code>unit_price_at_request</code></td><td>DECIMAL(10,2)</td><td>Price snapshot at time of request</td></tr>
+        <tr><td><code>total_price</code></td><td>DECIMAL(12,2)</td><td></td></tr>
+        <tr><td><code>item_status</code></td><td>VARCHAR(255)</td><td>Default: pending</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- RELATIONSHIPS SUMMARY -->
+  <div class="section">
+    <h2 class="section-title">Key Relationships Summary</h2>
+    <table>
+      <tr><th>From</th><th>Relationship</th><th>To</th></tr>
+      <tr><td>employees</td><td>belongs to</td><td>departments, roles</td></tr>
+      <tr><td>pos_terminals</td><td>belongs to</td><td>clients</td></tr>
+      <tr><td>job_assignments</td><td>belongs to</td><td>employees (technician), clients, regions, projects</td></tr>
+      <tr><td>visits</td><td>belongs to</td><td>employees; linked to job_assignments</td></tr>
+      <tr><td>visit_terminals</td><td>belongs to</td><td>visits; references pos_terminals</td></tr>
+      <tr><td>tickets</td><td>belongs to</td><td>employees (tech + assignee), pos_terminals, clients</td></tr>
+      <tr><td>ticket_steps</td><td>belongs to</td><td>tickets, employees</td></tr>
+      <tr><td>asset_requests</td><td>belongs to</td><td>employees; has many asset_request_items</td></tr>
+      <tr><td>asset_request_items</td><td>belongs to</td><td>asset_requests, assets</td></tr>
+      <tr><td>project_terminals</td><td>pivot between</td><td>projects, pos_terminals</td></tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

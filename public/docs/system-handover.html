@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revival Technologies — System Handover Document</title>
+<style>
+  :root{--blue:#1976D2;--dark:#1a1a2e;--light:#f8f9fa;--border:#e0e0e0;--text:#333;--muted:#666;--green:#388E3C;--red:#D32F2F;--orange:#F57C00;--purple:#7B1FA2;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:15px;color:var(--text);background:#fff;line-height:1.7;}
+  .cover{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;padding:80px 60px;min-height:300px;display:flex;flex-direction:column;justify-content:center;}
+  .cover h1{font-size:42px;font-weight:700;margin-bottom:12px;}
+  .cover .subtitle{font-size:20px;opacity:.8;margin-bottom:30px;}
+  .cover .meta{font-size:13px;opacity:.6;border-top:1px solid rgba(255,255,255,.2);padding-top:20px;margin-top:20px;}
+  .container{max-width:960px;margin:0 auto;padding:0 30px;}
+  .toc-wrap{background:var(--light);border-left:4px solid var(--blue);padding:30px 40px;margin:40px 0;}
+  .toc-wrap h2{font-size:18px;margin-bottom:16px;color:var(--blue);}
+  .toc-wrap ol{padding-left:20px;font-size:14px;}
+  .toc-wrap li{margin:5px 0;}
+  .section{margin:50px 0;padding-bottom:40px;border-bottom:1px solid var(--border);}
+  .section:last-child{border-bottom:none;}
+  h2.section-title{font-size:26px;color:var(--dark);margin-bottom:6px;padding-bottom:10px;border-bottom:3px solid var(--blue);display:inline-block;}
+  h3{font-size:19px;color:var(--blue);margin:30px 0 12px;}
+  h4{font-size:16px;color:var(--text);margin:20px 0 8px;font-weight:600;}
+  p{margin:10px 0;}
+  ul,ol{padding-left:24px;margin:10px 0;}
+  li{margin:5px 0;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;}
+  th{background:var(--dark);color:#fff;padding:9px 12px;text-align:left;font-weight:600;}
+  td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:nth-child(even) td{background:var(--light);}
+  code{background:#f4f4f4;border:1px solid #ddd;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px;}
+  .note{background:#E3F2FD;border-left:4px solid var(--blue);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .warn{background:#FFF3E0;border-left:4px solid var(--orange);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .tip{background:#E8F5E8;border-left:4px solid var(--green);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .highlight-box{background:#EDE7F6;border-left:4px solid var(--purple);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;}
+  .deliverable-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin:16px 0;}
+  .deliverable{background:var(--light);border:1px solid var(--border);border-radius:8px;padding:16px;}
+  .deliverable .d-icon{font-size:22px;margin-bottom:8px;}
+  .deliverable strong{display:block;font-size:14px;margin-bottom:4px;}
+  .deliverable span{font-size:13px;color:var(--muted);}
+  .sign-block{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:40px;}
+  .sign-line{border-top:2px solid var(--border);margin-top:50px;padding-top:10px;font-size:13px;color:var(--muted);}
+  .btn-print{display:inline-block;padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin:20px 0;}
+  @media print{.btn-print{display:none;}.cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.section{page-break-inside:avoid;}.sign-block{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>System Handover Document</h1>
+  <div class="subtitle">Revival Technologies MIAV System</div>
+  <div class="meta">Version 1.0 &nbsp;|&nbsp; March 2026 &nbsp;|&nbsp; Formal Delivery Document — Confidential</div>
+</div>
+
+<div class="container">
+  <button class="btn-print" onclick="window.print()">⬇ Download / Print as PDF</button>
+
+  <div class="toc-wrap">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li>Project Summary</li>
+      <li>Deliverables Overview</li>
+      <li>System Modules &amp; Features</li>
+      <li>User Roles Delivered</li>
+      <li>Infrastructure &amp; Server Details</li>
+      <li>Access &amp; Credentials Guide</li>
+      <li>Source Code &amp; Version Control</li>
+      <li>Third-Party Services</li>
+      <li>Known Issues &amp; Limitations</li>
+      <li>Post-Handover Support</li>
+      <li>Sign-Off</li>
+    </ol>
+  </div>
+
+  <!-- PROJECT SUMMARY -->
+  <div class="section">
+    <h2 class="section-title">1. Project Summary</h2>
+    <table>
+      <tr><th>Item</th><th>Detail</th></tr>
+      <tr><td>System Name</td><td>Revival Technologies MIAV System (Man In A Van)</td></tr>
+      <tr><td>Client</td><td>Revival Technologies</td></tr>
+      <tr><td>Developer</td><td>Revival Technologies Development Team</td></tr>
+      <tr><td>Handover Date</td><td>March 2026</td></tr>
+      <tr><td>System Version</td><td>1.0 (Production)</td></tr>
+      <tr><td>Primary Technology</td><td>Laravel 12 (PHP 8.2) + MySQL</td></tr>
+      <tr><td>Deployment</td><td>AWS EC2 — Ubuntu Linux</td></tr>
+    </table>
+
+    <h3>Purpose</h3>
+    <p>The MIAV system is a comprehensive field service management platform designed to manage POS terminal deployments across multiple regions. It enables administrators to assign jobs to field technicians, track terminal servicing, manage assets, and handle support tickets — all in real time via a web dashboard and mobile application.</p>
+  </div>
+
+  <!-- DELIVERABLES -->
+  <div class="section">
+    <h2 class="section-title">2. Deliverables Overview</h2>
+    <div class="deliverable-grid">
+      <div class="deliverable"><div class="d-icon">🌐</div><strong>Web Dashboard</strong><span>Full-featured browser portal for administrators, managers, and supervisors</span></div>
+      <div class="deliverable"><div class="d-icon">📱</div><strong>Mobile App API</strong><span>Complete REST API backend supporting the field technician mobile app</span></div>
+      <div class="deliverable"><div class="d-icon">🗄️</div><strong>Database</strong><span>MySQL database with complete schema, migrations, and initial data</span></div>
+      <div class="deliverable"><div class="d-icon">🔐</div><strong>Authentication System</strong><span>Role-based access control with web session and API token auth</span></div>
+      <div class="deliverable"><div class="d-icon">📊</div><strong>Reporting Module</strong><span>Custom report builder with export to PDF, Excel, and CSV</span></div>
+      <div class="deliverable"><div class="d-icon">📦</div><strong>Asset Management</strong><span>Full asset inventory, assignment, and request workflow</span></div>
+      <div class="deliverable"><div class="d-icon">🎫</div><strong>Ticketing System</strong><span>Support tickets with staged resolution and audit trail</span></div>
+      <div class="deliverable"><div class="d-icon">📄</div><strong>Documentation Hub</strong><span>Complete technical and operational documentation (this portal)</span></div>
+    </div>
+  </div>
+
+  <!-- MODULES -->
+  <div class="section">
+    <h2 class="section-title">3. System Modules &amp; Features</h2>
+
+    <h3>3.1 Dashboard &amp; Analytics</h3>
+    <ul>
+      <li>Role-specific dashboards (admin, manager, technician)</li>
+      <li>Real-time statistics: terminals, jobs, tickets, technicians</li>
+      <li>Regional performance charts (ApexCharts)</li>
+      <li>System health alerts</li>
+    </ul>
+
+    <h3>3.2 POS Terminal Management</h3>
+    <ul>
+      <li>Full CRUD for terminals with 30+ data fields</li>
+      <li>Bulk CSV/Excel import with column mapping</li>
+      <li>Export to CSV/Excel/PDF</li>
+      <li>Terminal status tracking (active, offline, maintenance, faulty, decommissioned)</li>
+      <li>Service history, notes, and scheduling</li>
+      <li>GPS coordinates with map integration support</li>
+      <li>Per-terminal analytics and statistics</li>
+    </ul>
+
+    <h3>3.3 Job Assignment Management</h3>
+    <ul>
+      <li>Create and assign field service jobs to technicians</li>
+      <li>Schedule jobs by region and date</li>
+      <li>Job lifecycle: assigned → in_progress → completed/cancelled</li>
+      <li>Check-in/check-out with location tracking</li>
+      <li>Photo and note documentation per job</li>
+    </ul>
+
+    <h3>3.4 Site Visit Reporting</h3>
+    <ul>
+      <li>Mobile-submitted visit reports with evidence photos</li>
+      <li>Terminal condition and status snapshot per visit</li>
+      <li>Customer signature capture</li>
+      <li>Offline-first: visits saved locally and synced on reconnect</li>
+      <li>Action points and follow-up tracking</li>
+    </ul>
+
+    <h3>3.5 Ticketing &amp; Support</h3>
+    <ul>
+      <li>Create tickets for POS terminal issues or internal issues</li>
+      <li>Priority levels: low, medium, high, urgent</li>
+      <li>Public tickets (any technician can attend) vs Direct (assigned to specific technician)</li>
+      <li>Staged resolution system: multi-step workflow with transfers between employees</li>
+      <li>Comment thread per ticket</li>
+      <li>Full status audit trail</li>
+      <li>Status flow: open → in_progress / pending → resolved / closed / cancelled</li>
+    </ul>
+
+    <h3>3.6 Asset Management</h3>
+    <ul>
+      <li>Asset inventory with categories, stock levels, and pricing</li>
+      <li>Low-stock alerts based on configurable minimum levels</li>
+      <li>Asset request workflow: submit → approved/rejected → fulfilled</li>
+      <li>Asset assignment to employees with return tracking</li>
+      <li>Same-day request support</li>
+    </ul>
+
+    <h3>3.7 Client Management</h3>
+    <ul>
+      <li>Full client profiles with contacts, contracts, and status</li>
+      <li>Linked terminals and projects per client</li>
+      <li>Client statistics and activity history</li>
+    </ul>
+
+    <h3>3.8 Reporting</h3>
+    <ul>
+      <li>Pre-built reports: assignments, terminal performance, technician productivity</li>
+      <li>Custom report builder with drag-and-drop field selection</li>
+      <li>Save and share report templates</li>
+      <li>Export to PDF, Excel, and CSV</li>
+    </ul>
+
+    <h3>3.9 Employee &amp; Access Management</h3>
+    <ul>
+      <li>Employee profiles with roles, departments, and permissions</li>
+      <li>Granular permission system (50+ individual permissions)</li>
+      <li>Role management with permission bundles</li>
+      <li>Account activation/deactivation</li>
+    </ul>
+  </div>
+
+  <!-- ROLES -->
+  <div class="section">
+    <h2 class="section-title">4. User Roles Delivered</h2>
+    <table>
+      <tr><th>Role</th><th>Primary Users</th><th>Key Access</th></tr>
+      <tr><td>Super Administrator</td><td>System owner</td><td>Full system access including settings and user management</td></tr>
+      <tr><td>Administrator</td><td>Operations team</td><td>All operational modules</td></tr>
+      <tr><td>Manager</td><td>Team leads</td><td>Assignments, team management, reports</td></tr>
+      <tr><td>Supervisor</td><td>Regional supervisors</td><td>Regional assignments and visits</td></tr>
+      <tr><td>Field Technician</td><td>Field staff (mobile app users)</td><td>Own jobs, visits, tickets, asset requests</td></tr>
+      <tr><td>Client User</td><td>Client contacts</td><td>Read-only view of their terminals, tickets, and projects</td></tr>
+    </table>
+  </div>
+
+  <!-- INFRASTRUCTURE -->
+  <div class="section">
+    <h2 class="section-title">5. Infrastructure &amp; Server Details</h2>
+    <table>
+      <tr><th>Item</th><th>Detail</th></tr>
+      <tr><td>Cloud Provider</td><td>Amazon Web Services (AWS)</td></tr>
+      <tr><td>Server IP</td><td>51.21.252.67</td></tr>
+      <tr><td>Operating System</td><td>Ubuntu Linux (LTS)</td></tr>
+      <tr><td>Web Server</td><td>Nginx</td></tr>
+      <tr><td>PHP Version</td><td>PHP-FPM 8.2</td></tr>
+      <tr><td>Production Path</td><td><code>/var/www/html/revival_production</code></td></tr>
+      <tr><td>Development Path</td><td><code>/var/www/html/revival_dev</code></td></tr>
+      <tr><td>Production Database</td><td>MySQL — production database</td></tr>
+      <tr><td>Development Database</td><td>MySQL — <code>miav_system_dev</code> (isolated)</td></tr>
+      <tr><td>SSH Access Method</td><td>PEM key file (RTLDEV.pem)</td></tr>
+      <tr><td>SSH User</td><td><code>ubuntu</code></td></tr>
+    </table>
+
+    <div class="warn">The SSH private key (RTLDEV.pem) must be stored securely. Do not share it via email or unsecured channels. Access to this key provides full server access.</div>
+  </div>
+
+  <!-- ACCESS -->
+  <div class="section">
+    <h2 class="section-title">6. Access &amp; Credentials Guide</h2>
+
+    <div class="note">For security, actual credential values are NOT stored in this document. They should be communicated through a secure channel and stored in a password manager.</div>
+
+    <h3>Access Credentials to Obtain</h3>
+    <table>
+      <tr><th>System</th><th>Type</th><th>Notes</th></tr>
+      <tr><td>Web Dashboard (Admin)</td><td>Email + Password</td><td>Login at <code>/login</code></td></tr>
+      <tr><td>Server SSH</td><td>PEM Key File (RTLDEV.pem)</td><td>Connect to ubuntu@51.21.252.67</td></tr>
+      <tr><td>MySQL Database</td><td>Username + Password</td><td>Stored in server's <code>.env</code> file</td></tr>
+      <tr><td>GitHub Repository</td><td>GitHub Account</td><td>Repository: moolah02/webportalMIAV</td></tr>
+      <tr><td>AWS Console</td><td>IAM Credentials</td><td>For server management</td></tr>
+    </table>
+
+    <h3>First Login Steps</h3>
+    <ol>
+      <li>Navigate to the web dashboard URL</li>
+      <li>Log in with the administrator credentials provided separately</li>
+      <li>Go to <strong>Admin → Employees</strong> to create additional user accounts</li>
+      <li>Assign roles and permissions per user from <strong>Admin → Roles</strong></li>
+      <li>Mobile app users will use the same email/password credentials via the app</li>
+    </ol>
+  </div>
+
+  <!-- SOURCE CODE -->
+  <div class="section">
+    <h2 class="section-title">7. Source Code &amp; Version Control</h2>
+    <table>
+      <tr><th>Item</th><th>Detail</th></tr>
+      <tr><td>Repository</td><td>GitHub — moolah02/webportalMIAV</td></tr>
+      <tr><td>Production Branch</td><td><code>main</code></td></tr>
+      <tr><td>Development Branch</td><td>Feature branches merged into <code>main</code></td></tr>
+      <tr><td>Deployment</td><td>Git pull on server → artisan migrate → cache clear</td></tr>
+    </table>
+
+    <div class="tip">Any developer working on the system should create a feature branch, test on dev, then raise a pull request to merge into <code>main</code> before deploying to production.</div>
+  </div>
+
+  <!-- THIRD PARTY -->
+  <div class="section">
+    <h2 class="section-title">8. Third-Party Services</h2>
+    <table>
+      <tr><th>Service</th><th>Purpose</th><th>Configuration</th></tr>
+      <tr><td>Amazon Web Services</td><td>Server hosting (EC2)</td><td>AWS account credentials</td></tr>
+      <tr><td>GitHub</td><td>Source code version control</td><td>Repository access</td></tr>
+      <tr><td>SMTP / Mail Provider</td><td>Email notifications, password resets</td><td>Configure in <code>.env</code> (MAIL_*)</td></tr>
+    </table>
+  </div>
+
+  <!-- KNOWN ISSUES -->
+  <div class="section">
+    <h2 class="section-title">9. Known Issues &amp; Limitations</h2>
+    <table>
+      <tr><th>Issue</th><th>Status</th><th>Notes</th></tr>
+      <tr><td>Login failure after logout on mobile app</td><td>Under investigation</td><td>Likely a mobile app config issue (API URL / HTTPS). Backend code is confirmed correct.</td></tr>
+      <tr><td>Password reset email</td><td>Placeholder</td><td>The forgot-password flow returns a success message but does not yet send a real email. Requires SMTP configuration and email template.</td></tr>
+    </table>
+  </div>
+
+  <!-- SUPPORT -->
+  <div class="section">
+    <h2 class="section-title">10. Post-Handover Support</h2>
+    <p>Post-handover support is governed by the separate <strong>SLA / Support Agreement</strong> document. Key points:</p>
+    <ul>
+      <li>Critical bugs (system down, data loss): response within agreed SLA window</li>
+      <li>Standard bugs and issues: raised as GitHub issues or via agreed support channel</li>
+      <li>New features or changes: require a separate change order / work agreement</li>
+      <li>Refer to the <strong>Maintenance &amp; Support Guide</strong> for routine operations (deployments, backups, etc.)</li>
+    </ul>
+  </div>
+
+  <!-- SIGN OFF -->
+  <div class="section">
+    <h2 class="section-title">11. Sign-Off</h2>
+    <p>By signing below, both parties confirm that the system has been delivered and accepted as described in this document.</p>
+
+    <div class="sign-block">
+      <div>
+        <strong>Delivered by:</strong>
+        <div class="sign-line">Signature</div>
+        <div class="sign-line">Name &amp; Title</div>
+        <div class="sign-line">Date</div>
+      </div>
+      <div>
+        <strong>Accepted by:</strong>
+        <div class="sign-line">Signature</div>
+        <div class="sign-line">Name &amp; Title</div>
+        <div class="sign-line">Date</div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;" class="note">This document is confidential. It should be stored securely and shared only with authorised personnel.</div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revival Technologies — Maintenance &amp; Support Guide</title>
+<style>
+  :root{--blue:#1976D2;--dark:#1a1a2e;--light:#f8f9fa;--border:#e0e0e0;--text:#333;--muted:#666;--green:#388E3C;--red:#D32F2F;--orange:#F57C00;--purple:#7B1FA2;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:15px;color:var(--text);background:#fff;line-height:1.7;}
+  .cover{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;padding:80px 60px;min-height:260px;display:flex;flex-direction:column;justify-content:center;}
+  .cover h1{font-size:42px;font-weight:700;margin-bottom:12px;}
+  .cover .subtitle{font-size:20px;opacity:.8;margin-bottom:30px;}
+  .cover .meta{font-size:13px;opacity:.6;border-top:1px solid rgba(255,255,255,.2);padding-top:20px;margin-top:20px;}
+  .container{max-width:960px;margin:0 auto;padding:0 30px;}
+  .toc-wrap{background:var(--light);border-left:4px solid var(--blue);padding:30px 40px;margin:40px 0;}
+  .toc-wrap h2{font-size:18px;margin-bottom:16px;color:var(--blue);}
+  .toc-wrap ol{padding-left:20px;font-size:14px;}
+  .toc-wrap li{margin:5px 0;}
+  .section{margin:50px 0;padding-bottom:40px;border-bottom:1px solid var(--border);}
+  .section:last-child{border-bottom:none;}
+  h2.section-title{font-size:26px;color:var(--dark);margin-bottom:6px;padding-bottom:10px;border-bottom:3px solid var(--blue);display:inline-block;}
+  h3{font-size:19px;color:var(--blue);margin:30px 0 12px;}
+  h4{font-size:16px;color:var(--text);margin:20px 0 8px;font-weight:600;}
+  p{margin:10px 0;}
+  ul,ol{padding-left:24px;margin:10px 0;}
+  li{margin:6px 0;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;}
+  th{background:var(--dark);color:#fff;padding:9px 12px;text-align:left;font-weight:600;}
+  td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:nth-child(even) td{background:var(--light);}
+  code{background:#f4f4f4;border:1px solid #ddd;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px;}
+  pre{background:#1a1a2e;color:#e0e0e0;padding:18px 20px;border-radius:8px;font-size:13px;overflow-x:auto;margin:14px 0;line-height:1.8;font-family:monospace;}
+  .note{background:#E3F2FD;border-left:4px solid var(--blue);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .warn{background:#FFF3E0;border-left:4px solid var(--orange);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .tip{background:#E8F5E8;border-left:4px solid var(--green);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .danger{background:#FFEBEE;border-left:4px solid var(--red);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .steps{margin:16px 0;}
+  .step{display:flex;gap:16px;margin:14px 0;align-items:flex-start;}
+  .step-num{background:var(--blue);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;margin-top:2px;}
+  .step-body{flex:1;}
+  .step-body strong{display:block;margin-bottom:4px;}
+  .btn-print{display:inline-block;padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin:20px 0;}
+  @media print{.btn-print{display:none;}.cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.section{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Maintenance &amp; Support Guide</h1>
+  <div class="subtitle">Revival Technologies MIAV System</div>
+  <div class="meta">Version 1.0 &nbsp;|&nbsp; March 2026 &nbsp;|&nbsp; Confidential — Operations Reference</div>
+</div>
+
+<div class="container">
+  <button class="btn-print" onclick="window.print()">⬇ Download / Print as PDF</button>
+
+  <div class="toc-wrap">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li>Routine Maintenance Schedule</li>
+      <li>Deploying Updates</li>
+      <li>Database Backups</li>
+      <li>Restoring from Backup</li>
+      <li>Monitoring &amp; Health Checks</li>
+      <li>Log Management</li>
+      <li>Troubleshooting Common Issues</li>
+      <li>Server Management</li>
+      <li>SSL Certificate Renewal</li>
+      <li>Emergency Procedures</li>
+    </ol>
+  </div>
+
+  <!-- ROUTINE -->
+  <div class="section">
+    <h2 class="section-title">1. Routine Maintenance Schedule</h2>
+    <table>
+      <tr><th>Frequency</th><th>Task</th><th>Command / Action</th></tr>
+      <tr><td>Daily</td><td>Check application error logs</td><td><code>tail -n 100 storage/logs/laravel.log</code></td></tr>
+      <tr><td>Daily</td><td>Verify database backup ran</td><td>Check backup file timestamp in backup directory</td></tr>
+      <tr><td>Weekly</td><td>Clear expired Sanctum tokens</td><td><code>php artisan sanctum:prune-expired</code></td></tr>
+      <tr><td>Weekly</td><td>Clear application cache</td><td><code>php artisan cache:clear</code></td></tr>
+      <tr><td>Monthly</td><td>Review disk usage</td><td><code>df -h</code> and <code>du -sh storage/</code></td></tr>
+      <tr><td>Monthly</td><td>Review slow query logs</td><td>MySQL slow query log</td></tr>
+      <tr><td>Monthly</td><td>Test backup restoration</td><td>Restore to dev environment and verify data</td></tr>
+      <tr><td>As needed</td><td>Deploy updates</td><td>See Section 2</td></tr>
+    </table>
+  </div>
+
+  <!-- DEPLOYING UPDATES -->
+  <div class="section">
+    <h2 class="section-title">2. Deploying Updates</h2>
+
+    <h3>2.1 Standard Code Deploy (Production)</h3>
+    <p>Use this procedure whenever new code is pushed to the <code>main</code> branch on GitHub.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Connect to the server via SSH</strong>
+          <pre>ssh -i "C:\Users\hp\Downloads\RTLDEV (1).pem" ubuntu@51.21.252.67</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Navigate to the production directory</strong>
+          <pre>cd /var/www/html/revival_production</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Pull the latest code</strong>
+          <pre>sudo -u www-data git -c safe.directory=$(pwd) pull origin main</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>Run any new database migrations</strong>
+          <pre>sudo -u www-data php artisan migrate --force</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body"><strong>Clear all caches</strong>
+          <pre>sudo -u www-data php artisan cache:clear
+sudo -u www-data php artisan config:clear
+sudo -u www-data php artisan view:clear
+sudo -u www-data php artisan route:clear</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">Before deploying to production, always deploy to the development environment first and verify everything works correctly.</div>
+
+    <h3>2.2 Deploy to Development First</h3>
+    <pre>cd /var/www/html/revival_dev
+sudo -u www-data git -c safe.directory=$(pwd) pull origin main
+sudo -u www-data php artisan migrate --force
+sudo -u www-data php artisan cache:clear</pre>
+
+    <h3>2.3 If Frontend Assets Changed (Vite)</h3>
+    <p>If CSS, JavaScript, or Vue components were modified, rebuild the assets:</p>
+    <pre>npm run build</pre>
+    <div class="warn">Frontend asset builds must be done locally and committed. The server does not run Node.js for builds.</div>
+  </div>
+
+  <!-- BACKUPS -->
+  <div class="section">
+    <h2 class="section-title">3. Database Backups</h2>
+
+    <h3>3.1 Manual Database Backup</h3>
+    <p>Run this command on the server to create a backup of the production database:</p>
+    <pre># Replace DB_NAME, DB_USER, DB_PASS with actual values from .env
+mysqldump -u DB_USER -pDB_PASS DB_NAME > /home/ubuntu/backups/miav_backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Compress the backup
+gzip /home/ubuntu/backups/miav_backup_*.sql</pre>
+
+    <h3>3.2 Automated Daily Backup (Recommended Setup)</h3>
+    <p>Add the following cron job to automate daily backups:</p>
+    <pre># Edit crontab: crontab -e
+0 2 * * * mysqldump -u DB_USER -pDB_PASS DB_NAME | gzip > /home/ubuntu/backups/miav_$(date +\%Y\%m\%d).sql.gz</pre>
+
+    <div class="note">Keep at least 30 days of backups. Older backups should be archived to S3 or another off-site location.</div>
+
+    <h3>3.3 Backup Storage Locations</h3>
+    <table>
+      <tr><th>Location</th><th>Retention</th><th>Purpose</th></tr>
+      <tr><td>Server (<code>/home/ubuntu/backups/</code>)</td><td>30 days</td><td>Quick restore</td></tr>
+      <tr><td>AWS S3 (recommended)</td><td>90 days</td><td>Off-site disaster recovery</td></tr>
+    </table>
+  </div>
+
+  <!-- RESTORE -->
+  <div class="section">
+    <h2 class="section-title">4. Restoring from Backup</h2>
+    <div class="danger">Restoration overwrites the current database. Always take a fresh backup of the current database before restoring from an old backup.</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Take a backup of current database (safety)</strong>
+          <pre>mysqldump -u DB_USER -pDB_PASS DB_NAME > /home/ubuntu/backups/pre_restore_backup.sql</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Decompress the backup file (if gzipped)</strong>
+          <pre>gunzip /path/to/backup_file.sql.gz</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Restore the database</strong>
+          <pre>mysql -u DB_USER -pDB_PASS DB_NAME &lt; /path/to/backup_file.sql</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>Clear Laravel caches</strong>
+          <pre>sudo -u www-data php artisan cache:clear
+sudo -u www-data php artisan config:clear</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body"><strong>Verify the application is working correctly</strong>
+          <p>Test login and key features on the web dashboard and via API.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONITORING -->
+  <div class="section">
+    <h2 class="section-title">5. Monitoring &amp; Health Checks</h2>
+
+    <h3>5.1 API Health Check</h3>
+    <p>The API exposes a public health check endpoint. No auth required:</p>
+    <pre>GET /api/test
+GET /api/public/status</pre>
+    <p>Expected response: <code>{"success": true, "status": "operational"}</code></p>
+
+    <h3>5.2 Server Monitoring</h3>
+    <pre># Check server CPU and memory
+top
+
+# Check disk space
+df -h
+
+# Check Nginx status
+sudo systemctl status nginx
+
+# Check PHP-FPM status
+sudo systemctl status php8.2-fpm
+
+# Check MySQL status
+sudo systemctl status mysql</pre>
+
+    <h3>5.3 Process Monitoring</h3>
+    <pre># Check if Nginx is listening on port 80/443
+sudo netstat -tlnp | grep -E '80|443'
+
+# Check active connections
+ss -s</pre>
+  </div>
+
+  <!-- LOGS -->
+  <div class="section">
+    <h2 class="section-title">6. Log Management</h2>
+
+    <h3>6.1 Laravel Application Logs</h3>
+    <pre># View latest errors (last 100 lines)
+tail -n 100 /var/www/html/revival_production/storage/logs/laravel.log
+
+# Watch logs in real-time
+tail -f /var/www/html/revival_production/storage/logs/laravel.log
+
+# Search for specific errors
+grep "ERROR" /var/www/html/revival_production/storage/logs/laravel.log | tail -20</pre>
+
+    <h3>6.2 Nginx Access &amp; Error Logs</h3>
+    <pre># Access log (all requests)
+tail -n 100 /var/log/nginx/access.log
+
+# Error log
+tail -n 100 /var/log/nginx/error.log</pre>
+
+    <h3>6.3 Log Rotation</h3>
+    <p>Laravel logs rotate daily by default. Nginx uses system logrotate. Logs older than 14 days are automatically compressed.</p>
+    <div class="note">If the <code>storage/logs/laravel.log</code> file grows very large, you can safely truncate it (after reviewing errors): <code>truncate -s 0 storage/logs/laravel.log</code></div>
+  </div>
+
+  <!-- TROUBLESHOOTING -->
+  <div class="section">
+    <h2 class="section-title">7. Troubleshooting Common Issues</h2>
+
+    <h3>Issue: API returns 500 Server Error</h3>
+    <ol>
+      <li>Check the Laravel log: <code>tail -n 50 storage/logs/laravel.log</code></li>
+      <li>Look for the error message and stack trace</li>
+      <li>Common causes: missing .env value, failed DB connection, missing migration</li>
+      <li>Try: <code>php artisan config:clear &amp;&amp; php artisan cache:clear</code></li>
+    </ol>
+
+    <h3>Issue: API returns 419 CSRF token mismatch</h3>
+    <p>This only affects web form submissions, not API requests. Clear session: <code>php artisan session:flush</code></p>
+
+    <h3>Issue: Migrations fail on deploy</h3>
+    <ol>
+      <li>Check the error output — often a missing column or duplicate migration</li>
+      <li>If a migration was already partially applied: check <code>migrations</code> table in DB</li>
+      <li>Fix the migration file and re-run, or manually apply the SQL if safe</li>
+    </ol>
+
+    <h3>Issue: Website shows blank page / 502 Bad Gateway</h3>
+    <pre># Check Nginx is running
+sudo systemctl status nginx
+sudo systemctl restart nginx
+
+# Check PHP-FPM is running
+sudo systemctl status php8.2-fpm
+sudo systemctl restart php8.2-fpm
+
+# Check Nginx config syntax
+sudo nginx -t</pre>
+
+    <h3>Issue: Git pull fails with "dubious ownership"</h3>
+    <pre>sudo -u www-data git -c safe.directory=/var/www/html/revival_production pull origin main</pre>
+
+    <h3>Issue: Application out of memory / slow</h3>
+    <pre># Check memory usage
+free -h
+
+# Clear all Laravel caches
+php artisan optimize:clear
+
+# Restart PHP-FPM to free memory
+sudo systemctl restart php8.2-fpm</pre>
+
+    <h3>Issue: Mobile app shows "Unable to connect to server"</h3>
+    <ol>
+      <li>Verify the server is running: <code>sudo systemctl status nginx</code></li>
+      <li>Check the API URL the mobile app is using matches the production URL</li>
+      <li>Test the health endpoint from a browser: <code>/api/public/status</code></li>
+      <li>Check SSL certificate is valid and not expired</li>
+      <li>Check firewall rules allow traffic on port 80 and 443</li>
+    </ol>
+
+    <h3>Issue: Login fails for a specific user</h3>
+    <ol>
+      <li>Check the user's account status in the web dashboard (Admin → Employees)</li>
+      <li>Ensure account status is set to "Active"</li>
+      <li>Reset their password from the admin panel if needed</li>
+    </ol>
+  </div>
+
+  <!-- SERVER MGMT -->
+  <div class="section">
+    <h2 class="section-title">8. Server Management</h2>
+
+    <h3>8.1 Restart Services</h3>
+    <pre># Restart Nginx (web server)
+sudo systemctl restart nginx
+
+# Restart PHP-FPM (PHP processor)
+sudo systemctl restart php8.2-fpm
+
+# Restart MySQL
+sudo systemctl restart mysql
+
+# Restart all three
+sudo systemctl restart nginx php8.2-fpm mysql</pre>
+
+    <h3>8.2 Reboot Server</h3>
+    <div class="warn">Rebooting the server will briefly take the application offline (typically 1–2 minutes). Notify users before doing so.</div>
+    <pre>sudo reboot</pre>
+
+    <h3>8.3 Check Server Uptime</h3>
+    <pre>uptime</pre>
+
+    <h3>8.4 Update Server Packages</h3>
+    <pre>sudo apt update && sudo apt upgrade -y</pre>
+    <div class="warn">Always test on dev before updating server packages, as PHP or Nginx upgrades can break the application.</div>
+  </div>
+
+  <!-- SSL -->
+  <div class="section">
+    <h2 class="section-title">9. SSL Certificate Renewal</h2>
+    <p>If using Let's Encrypt (Certbot):</p>
+    <pre># Check certificate expiry
+sudo certbot certificates
+
+# Renew certificate
+sudo certbot renew
+
+# Test auto-renewal (dry run)
+sudo certbot renew --dry-run</pre>
+    <p>Let's Encrypt certificates expire every 90 days. Certbot typically auto-renews via a cron job. Check if auto-renewal is configured:</p>
+    <pre>sudo systemctl status certbot.timer</pre>
+  </div>
+
+  <!-- EMERGENCY -->
+  <div class="section">
+    <h2 class="section-title">10. Emergency Procedures</h2>
+
+    <h3>10.1 Complete System Down</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Check server is reachable</strong> — try to SSH in. If SSH fails, check AWS console for server status.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Restart all services</strong><pre>sudo systemctl restart nginx php8.2-fpm mysql</pre></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Check logs for errors</strong><pre>tail -n 50 /var/www/html/revival_production/storage/logs/laravel.log
+tail -n 50 /var/log/nginx/error.log</pre></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>If a bad deployment caused the issue</strong> — revert to the previous commit:<pre>cd /var/www/html/revival_production
+sudo -u www-data git -c safe.directory=$(pwd) revert HEAD
+sudo -u www-data php artisan cache:clear</pre></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>If database is corrupted</strong> — restore from the most recent backup (see Section 4).</div></div>
+    </div>
+
+    <h3>10.2 Data Loss / Corruption</h3>
+    <ol>
+      <li>Stop writing to the database immediately if possible (take the app offline)</li>
+      <li>Take a current snapshot of the database (even if corrupted)</li>
+      <li>Identify the most recent clean backup</li>
+      <li>Restore from backup (see Section 4)</li>
+      <li>Inform affected users and document what data may have been lost</li>
+    </ol>
+
+    <div class="danger">Never attempt to fix data corruption by editing the database directly without a backup. Always snapshot first, then fix.</div>
+  </div>
+
+</div>
+</body>
+</html>

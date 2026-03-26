@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revival Technologies — SLA &amp; Support Agreement</title>
+<style>
+  :root{--blue:#1976D2;--dark:#1a1a2e;--light:#f8f9fa;--border:#e0e0e0;--text:#333;--muted:#666;--green:#388E3C;--red:#D32F2F;--orange:#F57C00;--purple:#7B1FA2;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:15px;color:var(--text);background:#fff;line-height:1.7;}
+  .cover{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;padding:80px 60px;min-height:280px;display:flex;flex-direction:column;justify-content:center;}
+  .cover h1{font-size:42px;font-weight:700;margin-bottom:12px;}
+  .cover .subtitle{font-size:20px;opacity:.8;margin-bottom:30px;}
+  .cover .meta{font-size:13px;opacity:.6;border-top:1px solid rgba(255,255,255,.2);padding-top:20px;margin-top:20px;}
+  .container{max-width:960px;margin:0 auto;padding:0 30px;}
+  .toc-wrap{background:var(--light);border-left:4px solid var(--blue);padding:30px 40px;margin:40px 0;}
+  .toc-wrap h2{font-size:18px;margin-bottom:16px;color:var(--blue);}
+  .toc-wrap ol{padding-left:20px;font-size:14px;}
+  .toc-wrap li{margin:5px 0;}
+  .section{margin:50px 0;padding-bottom:40px;border-bottom:1px solid var(--border);}
+  .section:last-child{border-bottom:none;}
+  h2.section-title{font-size:26px;color:var(--dark);margin-bottom:6px;padding-bottom:10px;border-bottom:3px solid var(--blue);display:inline-block;}
+  h3{font-size:19px;color:var(--blue);margin:30px 0 12px;}
+  h4{font-size:16px;color:var(--text);margin:20px 0 8px;font-weight:600;}
+  p{margin:10px 0;}
+  ul,ol{padding-left:24px;margin:10px 0;}
+  li{margin:6px 0;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;}
+  th{background:var(--dark);color:#fff;padding:10px 14px;text-align:left;font-weight:600;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:nth-child(even) td{background:var(--light);}
+  .note{background:#E3F2FD;border-left:4px solid var(--blue);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .warn{background:#FFF3E0;border-left:4px solid var(--orange);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0;font-size:14px;}
+  .tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0;}
+  .tier{border-radius:10px;padding:24px;text-align:center;}
+  .tier-basic{background:#E3F2FD;border:2px solid #90CAF9;}
+  .tier-standard{background:#E8F5E9;border:2px solid #A5D6A7;}
+  .tier-priority{background:#FCE4EC;border:2px solid #F48FB1;}
+  .tier h4{font-size:17px;margin-bottom:8px;}
+  .tier .tier-price{font-size:26px;font-weight:700;margin:10px 0;}
+  .tier ul{text-align:left;font-size:13px;}
+  .sign-block{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:40px;}
+  .sign-line{border-top:2px solid var(--border);margin-top:50px;padding-top:10px;font-size:13px;color:var(--muted);}
+  .legal{font-size:13px;color:var(--muted);margin:10px 0;line-height:1.6;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;}
+  .badge-critical{background:#FFEBEE;color:var(--red);}
+  .badge-high{background:#FFF3E0;color:var(--orange);}
+  .badge-medium{background:#E3F2FD;color:var(--blue);}
+  .badge-low{background:#E8F5E9;color:var(--green);}
+  .btn-print{display:inline-block;padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin:20px 0;}
+  @media print{.btn-print{display:none;}.cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.section{page-break-inside:avoid;}.tier-grid{page-break-inside:avoid;}.sign-block{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Service Level Agreement</h1>
+  <div class="subtitle">Revival Technologies MIAV System — Support Agreement</div>
+  <div class="meta">Version 1.0 &nbsp;|&nbsp; March 2026 &nbsp;|&nbsp; Confidential</div>
+</div>
+
+<div class="container">
+  <button class="btn-print" onclick="window.print()">⬇ Download / Print as PDF</button>
+
+  <div class="toc-wrap">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li>Agreement Overview</li>
+      <li>Definitions</li>
+      <li>Scope of Services</li>
+      <li>Support Tiers</li>
+      <li>Issue Severity &amp; Response Times</li>
+      <li>Support Hours</li>
+      <li>Responsibilities</li>
+      <li>Excluded Services</li>
+      <li>Uptime &amp; Availability</li>
+      <li>Issue Reporting Process</li>
+      <li>Escalation Process</li>
+      <li>Agreement Duration &amp; Renewal</li>
+      <li>Limitation of Liability</li>
+      <li>Sign-Off</li>
+    </ol>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="section">
+    <h2 class="section-title">1. Agreement Overview</h2>
+    <p>This Service Level Agreement ("Agreement") defines the terms, conditions, and service standards for the ongoing support and maintenance of the <strong>Revival Technologies MIAV System</strong> ("the System").</p>
+    <table>
+      <tr><th>Item</th><th>Detail</th></tr>
+      <tr><td>Service Provider</td><td>Revival Technologies Development Team</td></tr>
+      <tr><td>Client</td><td>Revival Technologies</td></tr>
+      <tr><td>System</td><td>MIAV System (Man In A Van) — Web Dashboard &amp; Mobile App Backend</td></tr>
+      <tr><td>Effective Date</td><td>March 2026</td></tr>
+      <tr><td>Agreement Type</td><td>Post-delivery support and maintenance</td></tr>
+    </table>
+  </div>
+
+  <!-- DEFINITIONS -->
+  <div class="section">
+    <h2 class="section-title">2. Definitions</h2>
+    <table>
+      <tr><th>Term</th><th>Definition</th></tr>
+      <tr><td>Incident</td><td>An unplanned interruption or degradation of the system or a feature</td></tr>
+      <tr><td>Bug</td><td>A defect in the delivered software causing incorrect or unexpected behaviour</td></tr>
+      <tr><td>Change Request</td><td>A request for new functionality or modification beyond the original scope</td></tr>
+      <tr><td>Response Time</td><td>Time from issue report receipt to initial acknowledgement and assessment</td></tr>
+      <tr><td>Resolution Time</td><td>Time from acknowledgement to issue being fixed and deployed</td></tr>
+      <tr><td>Business Hours</td><td>Monday–Friday, 08:00–17:00 (Client's local time zone), excluding public holidays</td></tr>
+      <tr><td>Uptime</td><td>Percentage of time the system is operational and accessible</td></tr>
+    </table>
+  </div>
+
+  <!-- SCOPE -->
+  <div class="section">
+    <h2 class="section-title">3. Scope of Services</h2>
+    <p>This agreement covers the following services:</p>
+
+    <h3>Included</h3>
+    <ul>
+      <li>Bug fixes for defects in the delivered system</li>
+      <li>Security patches for critical vulnerabilities</li>
+      <li>Database maintenance (migrations, optimisation)</li>
+      <li>Server deployment support (code updates, cache clearing)</li>
+      <li>Performance issue investigation</li>
+      <li>Technical support via agreed communication channels</li>
+      <li>Documentation updates for bug fixes and minor changes</li>
+    </ul>
+
+    <h3>Not Included (see Section 8)</h3>
+    <ul>
+      <li>New features or functionality changes</li>
+      <li>Third-party service issues (AWS outages, mobile OS updates)</li>
+      <li>Data entry errors by users</li>
+      <li>Mobile application development changes</li>
+    </ul>
+  </div>
+
+  <!-- SUPPORT TIERS -->
+  <div class="section">
+    <h2 class="section-title">4. Support Tiers</h2>
+    <p>Support is provided under one of the following tiers. The applicable tier is agreed separately.</p>
+
+    <div class="tier-grid">
+      <div class="tier tier-basic">
+        <h4>Basic</h4>
+        <div class="tier-price">Essential</div>
+        <ul>
+          <li>Business hours support only</li>
+          <li>Critical bug fixes</li>
+          <li>Email communication</li>
+          <li>48-hour response SLA</li>
+          <li>Monthly maintenance window</li>
+        </ul>
+      </div>
+      <div class="tier tier-standard">
+        <h4>Standard</h4>
+        <div class="tier-price">Recommended</div>
+        <ul>
+          <li>Business hours + extended support</li>
+          <li>All bug severity levels</li>
+          <li>Email + phone/chat support</li>
+          <li>24-hour response SLA</li>
+          <li>Bi-weekly maintenance window</li>
+          <li>Monthly system health report</li>
+        </ul>
+      </div>
+      <div class="tier tier-priority">
+        <h4>Priority</h4>
+        <div class="tier-price">Premium</div>
+        <ul>
+          <li>24/7 critical incident coverage</li>
+          <li>All issue types</li>
+          <li>Dedicated support channel</li>
+          <li>4-hour response SLA (critical)</li>
+          <li>Weekly maintenance window</li>
+          <li>Monthly health report + review call</li>
+          <li>Minor change requests included</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEVERITY & RESPONSE TIMES -->
+  <div class="section">
+    <h2 class="section-title">5. Issue Severity &amp; Response Times</h2>
+
+    <table>
+      <tr><th>Severity</th><th>Description</th><th>Examples</th><th>Response Time</th><th>Resolution Target</th></tr>
+      <tr>
+        <td><span class="badge badge-critical">Critical (P1)</span></td>
+        <td>System completely unavailable or major data loss</td>
+        <td>Website/API down, database corruption, login broken for all users</td>
+        <td>4 hours</td>
+        <td>24 hours</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-high">High (P2)</span></td>
+        <td>Key feature non-functional, significant user impact</td>
+        <td>Visits cannot be submitted, tickets not updating, reports failing</td>
+        <td>8 business hours</td>
+        <td>48–72 hours</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-medium">Medium (P3)</span></td>
+        <td>Feature partially working, workaround available</td>
+        <td>Filters not working, export missing a column, minor UI issue</td>
+        <td>24 business hours</td>
+        <td>5–7 business days</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-low">Low (P4)</span></td>
+        <td>Minor issue, cosmetic or informational</td>
+        <td>Typos, minor display inconsistencies, non-critical feature requests</td>
+        <td>48 business hours</td>
+        <td>Next maintenance window</td>
+      </tr>
+    </table>
+
+    <div class="note">Response times are measured from the time the issue is reported through the agreed support channel during supported hours. Issues reported outside business hours begin counting from the start of the next business day (Basic and Standard tiers).</div>
+  </div>
+
+  <!-- SUPPORT HOURS -->
+  <div class="section">
+    <h2 class="section-title">6. Support Hours</h2>
+    <table>
+      <tr><th>Tier</th><th>Standard Support</th><th>Critical Incidents</th></tr>
+      <tr><td>Basic</td><td>Mon–Fri 08:00–17:00</td><td>Business hours only</td></tr>
+      <tr><td>Standard</td><td>Mon–Fri 07:00–19:00</td><td>Mon–Fri 07:00–19:00</td></tr>
+      <tr><td>Priority</td><td>Mon–Fri 07:00–20:00</td><td>24/7 for Critical (P1) only</td></tr>
+    </table>
+
+    <p>Public holidays in the country of the service provider are excluded from business hours unless otherwise agreed.</p>
+  </div>
+
+  <!-- RESPONSIBILITIES -->
+  <div class="section">
+    <h2 class="section-title">7. Responsibilities</h2>
+
+    <h3>Service Provider Responsibilities</h3>
+    <ul>
+      <li>Respond to reported issues within agreed SLA timeframes</li>
+      <li>Investigate, diagnose, and resolve bugs in the delivered system</li>
+      <li>Deploy fixes to the production server following agreed change control process</li>
+      <li>Communicate progress and estimated resolution times</li>
+      <li>Maintain confidentiality of client data</li>
+      <li>Provide updated documentation for any changes made</li>
+    </ul>
+
+    <h3>Client Responsibilities</h3>
+    <ul>
+      <li>Report issues through the agreed channel with sufficient detail (steps to reproduce, screenshots, error messages)</li>
+      <li>Provide access to server and systems when required for investigation</li>
+      <li>Ensure server infrastructure (AWS EC2) remains active and paid</li>
+      <li>Maintain the SSH access key (RTLDEV.pem) securely</li>
+      <li>Ensure users are trained and do not misuse the system</li>
+      <li>Test and confirm fix resolution within 5 business days of deployment</li>
+      <li>Ensure domain name and SSL certificates remain active</li>
+    </ul>
+  </div>
+
+  <!-- EXCLUDED -->
+  <div class="section">
+    <h2 class="section-title">8. Excluded Services</h2>
+    <p>The following are <strong>not covered</strong> under this SLA and require a separate change order or agreement:</p>
+    <ul>
+      <li>New features, functionality, or modules not in the original delivery</li>
+      <li>Changes to the mobile application code</li>
+      <li>Third-party service outages (AWS, GitHub, email provider, etc.)</li>
+      <li>Issues caused by client-side changes to the server or database without prior coordination</li>
+      <li>Data recovery from user errors (e.g., accidental deletion of records)</li>
+      <li>Training sessions for new users</li>
+      <li>Hardware or network infrastructure management</li>
+      <li>Custom integrations with external systems</li>
+      <li>Issues arising from use of unsupported browser versions or mobile OS versions</li>
+    </ul>
+  </div>
+
+  <!-- UPTIME -->
+  <div class="section">
+    <h2 class="section-title">9. Uptime &amp; Availability</h2>
+    <p>The service provider commits to the following uptime targets for the production system:</p>
+    <table>
+      <tr><th>Tier</th><th>Monthly Uptime Target</th><th>Maximum Downtime / Month</th></tr>
+      <tr><td>Basic</td><td>99.0%</td><td>~7.3 hours</td></tr>
+      <tr><td>Standard</td><td>99.5%</td><td>~3.6 hours</td></tr>
+      <tr><td>Priority</td><td>99.9%</td><td>~43 minutes</td></tr>
+    </table>
+
+    <h4>Exclusions from Uptime Calculation</h4>
+    <ul>
+      <li>Scheduled maintenance windows (agreed in advance with minimum 24 hours notice)</li>
+      <li>Third-party infrastructure outages (AWS, DNS providers)</li>
+      <li>Issues caused by client-side changes</li>
+      <li>Force majeure events</li>
+    </ul>
+
+    <div class="note">Uptime is measured at the server/API level. Client internet connectivity issues are not within scope.</div>
+  </div>
+
+  <!-- REPORTING -->
+  <div class="section">
+    <h2 class="section-title">10. Issue Reporting Process</h2>
+    <p>All issues must be reported through the agreed support channel. When reporting, include:</p>
+
+    <ol>
+      <li><strong>Description:</strong> What happened vs what was expected</li>
+      <li><strong>Steps to reproduce:</strong> Exact steps taken before the issue occurred</li>
+      <li><strong>Severity:</strong> Your assessment of the impact (Critical / High / Medium / Low)</li>
+      <li><strong>Screenshots or video:</strong> Visual evidence of the issue</li>
+      <li><strong>Error messages:</strong> Exact text of any error messages shown</li>
+      <li><strong>User affected:</strong> Role and account email of the affected user</li>
+      <li><strong>Environment:</strong> Production or Development</li>
+    </ol>
+
+    <div class="tip">The more detail provided, the faster the issue can be diagnosed and resolved. Incomplete reports may result in delays while additional information is gathered.</div>
+  </div>
+
+  <!-- ESCALATION -->
+  <div class="section">
+    <h2 class="section-title">11. Escalation Process</h2>
+    <p>If an issue is not being resolved within the agreed SLA timeframe:</p>
+    <ol>
+      <li>Contact the assigned support representative and request an update</li>
+      <li>If no response within 2 hours of the SLA breach, escalate to the project lead</li>
+      <li>If still unresolved, escalate to senior management of the service provider</li>
+    </ol>
+    <p>Persistent SLA breaches should be documented and may be used to renegotiate the agreement or apply agreed penalties as specified in the commercial contract.</p>
+  </div>
+
+  <!-- DURATION -->
+  <div class="section">
+    <h2 class="section-title">12. Agreement Duration &amp; Renewal</h2>
+    <table>
+      <tr><th>Item</th><th>Detail</th></tr>
+      <tr><td>Initial Term</td><td>12 months from the effective date</td></tr>
+      <tr><td>Renewal</td><td>Automatically renews for 12-month terms unless either party gives 30 days written notice</td></tr>
+      <tr><td>Amendment</td><td>Changes to this agreement require written consent from both parties</td></tr>
+      <tr><td>Termination</td><td>Either party may terminate with 30 days written notice</td></tr>
+    </table>
+  </div>
+
+  <!-- LIABILITY -->
+  <div class="section">
+    <h2 class="section-title">13. Limitation of Liability</h2>
+    <p class="legal">The service provider's total liability under this Agreement shall not exceed the total fees paid by the client in the 3 months preceding the claim. In no event shall the service provider be liable for indirect, incidental, consequential, or punitive damages, including loss of business, revenue, or data.</p>
+    <p class="legal">The service provider warrants that the services will be performed with reasonable skill and care, and in compliance with good industry practice. No other warranties, express or implied, are provided.</p>
+    <p class="legal">This Agreement shall be governed by the laws of the jurisdiction in which the service provider is incorporated.</p>
+  </div>
+
+  <!-- SIGN OFF -->
+  <div class="section">
+    <h2 class="section-title">14. Sign-Off</h2>
+    <p>By signing below, both parties agree to the terms and conditions set out in this Service Level Agreement.</p>
+
+    <div class="sign-block">
+      <div>
+        <strong>Service Provider:</strong>
+        <div class="sign-line">Signature</div>
+        <div class="sign-line">Name &amp; Title</div>
+        <div class="sign-line">Date</div>
+        <div class="sign-line">Company</div>
+      </div>
+      <div>
+        <strong>Client:</strong>
+        <div class="sign-line">Signature</div>
+        <div class="sign-line">Name &amp; Title</div>
+        <div class="sign-line">Date</div>
+        <div class="sign-line">Company</div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;" class="note">This document is confidential and forms a legally binding agreement once signed by both parties. Each party should retain a signed copy.</div>
+  </div>
+
+</div>
+</body>
+</html>
