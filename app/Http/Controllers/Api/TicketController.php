@@ -529,8 +529,11 @@ class TicketController extends Controller
 
     private function authorizeUpdate($user, Ticket $ticket): void
     {
-        // Adjust to your policy. For now: techs can update their assigned tickets; clients cannot; admins/staff can.
         if (method_exists($user, 'isFieldTechnician') && $user->isFieldTechnician()) {
+            // Public tickets can be updated by any technician
+            if (isset($ticket->assignment_type) && $ticket->assignment_type === 'public') {
+                return;
+            }
             if ($ticket->assigned_to !== $user->id && $ticket->technician_id !== $user->id) {
                 abort(403, 'Not allowed to update this ticket.');
             }

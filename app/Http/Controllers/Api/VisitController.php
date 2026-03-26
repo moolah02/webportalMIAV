@@ -103,7 +103,7 @@ class VisitController extends Controller
             'merchant_id'              => ['required'],   // string "12" is fine; cast in DB if needed
             'merchant_name'            => ['required','string','max:255'],
             'employee_id'              => ['required','integer'],
-            'assignment_id'            => ['required','string','max:191'], // allows "ASN-..."
+            'assignment_id'            => ['required'], // accepts integer or string from mobile app
             'completed_at'             => ['required','date'],
 
             'merchant_contact_person'  => ['nullable','string','max:255'],

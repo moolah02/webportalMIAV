@@ -122,7 +122,7 @@ class AssetRequestController extends Controller
             'items.*.asset_id' => 'required|exists:assets,id',
             'items.*.quantity' => 'required|integer|min:1',
             'business_justification' => 'required|string',
-            'needed_by_date' => 'nullable|date|after:today',
+            'needed_by_date' => 'nullable|date|after_or_equal:today',
             'delivery_instructions' => 'nullable|string',
             'priority' => 'required|in:low,normal,high,urgent',
         ]);
