@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Documentation — Revival Technologies MIAV</title>
+<link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.18.2/swagger-ui.css">
+<style>
+  :root{--blue:#1976D2;--dark:#1a1a2e;--light:#f8f9fa;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;}
+
+  /* PASSWORD SCREEN */
+  #lock-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
+  .lock-box{background:#fff;border-radius:16px;padding:50px 40px;width:100%;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+  .lock-logo{width:70px;height:70px;background:linear-gradient(135deg,#1976D2,#0f3460);border-radius:16px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;}
+  .lock-logo svg{width:36px;height:36px;fill:#fff;}
+  .lock-box h1{font-size:22px;color:var(--dark);margin-bottom:6px;}
+  .lock-box p{font-size:14px;color:#666;margin-bottom:28px;}
+  .lock-box input{width:100%;padding:13px 16px;border:2px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none;transition:border-color .2s;}
+  .lock-box input:focus{border-color:var(--blue);}
+  .lock-box button{width:100%;margin-top:14px;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;}
+  .lock-box button:hover{background:#1565C0;}
+  .lock-err{color:#D32F2F;font-size:13px;margin-top:10px;min-height:20px;}
+
+  /* MAIN */
+  #main{display:none;}
+  .top-bar{background:linear-gradient(135deg,#1a1a2e 0%,#0f3460 100%);color:#fff;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .top-bar-title{font-size:18px;font-weight:700;}
+  .top-bar-sub{font-size:13px;opacity:.65;margin-top:2px;}
+  .top-bar a{color:rgba(255,255,255,.75);text-decoration:none;font-size:13px;}
+  .top-bar a:hover{color:#fff;}
+  .swagger-wrap{max-width:1400px;margin:0 auto;padding:24px 16px 60px;}
+
+  /* Override Swagger UI styles for branding */
+  .swagger-ui .topbar{display:none!important;}
+  .swagger-ui .info{margin:20px 0 10px;}
+  .swagger-ui .info .title{color:var(--dark);}
+  .swagger-ui .scheme-container{background:#fff;padding:16px 20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:16px;}
+  .swagger-ui .opblock-tag{font-size:16px;font-weight:700;color:var(--dark);}
+  .swagger-ui .btn.authorize{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .swagger-ui .btn.authorize svg{fill:#fff;}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD SCREEN -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-logo">
+      <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+    </div>
+    <h1>API Documentation</h1>
+    <p>Revival Technologies MIAV System<br>Enter your access password to continue.</p>
+    <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPw()">
+    <button onclick="checkPw()">Unlock</button>
+    <div class="lock-err" id="pw-err"></div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+  <div class="top-bar">
+    <div>
+      <div class="top-bar-title">Revival Technologies MIAV — API Documentation</div>
+      <div class="top-bar-sub">Interactive Swagger UI &nbsp;·&nbsp; OpenAPI 3.0 &nbsp;·&nbsp; Laravel Sanctum Bearer Token Auth</div>
+    </div>
+    <a href="index.html">← Back to Hub</a>
+  </div>
+  <div class="swagger-wrap">
+    <div id="swagger-ui"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/swagger-ui-dist@5.18.2/swagger-ui-bundle.js"></script>
+<script src="https://unpkg.com/swagger-ui-dist@5.18.2/swagger-ui-standalone-preset.js"></script>
+<script>
+const HASH = 'cGFzc3dvcmQxKg==';
+function checkPw(){
+  const val = document.getElementById('pw-input').value;
+  if(btoa(val) === HASH){
+    sessionStorage.setItem('rt_docs_auth','1');
+    document.getElementById('lock-screen').style.display='none';
+    document.getElementById('main').style.display='block';
+    initSwagger();
+  } else {
+    document.getElementById('pw-err').textContent='Incorrect password. Please try again.';
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+  }
+}
+if(sessionStorage.getItem('rt_docs_auth')==='1'){
+  document.getElementById('lock-screen').style.display='none';
+  document.getElementById('main').style.display='block';
+}
+document.getElementById('pw-input').focus();
+
+function initSwagger(){
+  const spec = {
+    openapi: '3.0.3',
+    info: {
+      title: 'Revival Technologies MIAV API',
+      version: '1.0.0',
+      description: 'REST API for the MIAV (Man In A Van) field service management system. All protected endpoints require a Bearer token obtained from `POST /api/auth/login`.',
+      contact: { name: 'Revival Technologies', email: 'support@revivaltechnologies.co.zw' }
+    },
+    servers: [
+      { url: 'http://51.21.252.67', description: 'Production Server' },
+      { url: 'http://51.21.252.67:8080', description: 'Development Server' }
+    ],
+    components: {
+      securitySchemes: {
+        BearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Sanctum API token. Obtain from POST /api/auth/login' }
+      },
+      schemas: {
+        Error: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: false },
+            message: { type: 'string' },
+            errors: { type: 'object' }
+          }
+        },
+        Success: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string' },
+            data: { type: 'object' }
+          }
+        },
+        Paginated: {
+          type: 'object',
+          properties: {
+            data: { type: 'array', items: { type: 'object' } },
+            current_page: { type: 'integer' },
+            last_page: { type: 'integer' },
+            per_page: { type: 'integer' },
+            total: { type: 'integer' }
+          }
+        },
+        User: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            name: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            role: { type: 'string', enum: ['admin','manager','field_technician','client_user'] },
+            is_active: { type: 'boolean' },
+            created_at: { type: 'string', format: 'date-time' }
+          }
+        },
+        Ticket: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            ticket_id: { type: 'string', example: 'TKT-00123' },
+            title: { type: 'string' },
+            description: { type: 'string' },
+            status: { type: 'string', enum: ['open','in_progress','pending','resolved','closed','cancelled'] },
+            priority: { type: 'string', enum: ['low','medium','high','critical'] },
+            ticket_type: { type: 'string', enum: ['general','pos_terminal','field_service'] },
+            assignment_type: { type: 'string', enum: ['direct','public'] },
+            assigned_to: { type: 'integer', nullable: true },
+            pos_terminal_id: { type: 'integer', nullable: true },
+            created_at: { type: 'string', format: 'date-time' }
+          }
+        },
+        Job: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            assignment_id: { type: 'string' },
+            technician_id: { type: 'integer' },
+            pos_terminal_id: { type: 'integer' },
+            client_id: { type: 'integer' },
+            status: { type: 'string', enum: ['pending','assigned','in_progress','completed','cancelled'] },
+            scheduled_date: { type: 'string', format: 'date' },
+            notes: { type: 'string', nullable: true },
+            created_at: { type: 'string', format: 'date-time' }
+          }
+        },
+        PosTerminal: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            terminal_id: { type: 'string' },
+            serial_number: { type: 'string' },
+            model: { type: 'string' },
+            status: { type: 'string', enum: ['active','inactive','maintenance','decommissioned'] },
+            client_id: { type: 'integer' },
+            region_id: { type: 'integer' },
+            is_active: { type: 'boolean' }
+          }
+        },
+        Asset: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            name: { type: 'string' },
+            asset_code: { type: 'string' },
+            category: { type: 'string' },
+            status: { type: 'string', enum: ['available','assigned','in_repair','retired'] },
+            assigned_to: { type: 'integer', nullable: true }
+          }
+        },
+        Client: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            company_name: { type: 'string' },
+            contact_name: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            phone: { type: 'string' },
+            region: { type: 'string' },
+            is_active: { type: 'boolean' }
+          }
+        },
+        Technician: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            name: { type: 'string' },
+            email: { type: 'string' },
+            phone: { type: 'string' },
+            region: { type: 'string' },
+            availability_status: { type: 'string', enum: ['available','busy','off_duty'] },
+            is_active: { type: 'boolean' }
+          }
+        },
+        Visit: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            assignment_id: { type: 'integer' },
+            technician_id: { type: 'integer' },
+            visit_date: { type: 'string', format: 'date' },
+            notes: { type: 'string' },
+            status: { type: 'string' },
+            created_at: { type: 'string', format: 'date-time' }
+          }
+        }
+      }
+    },
+    security: [{ BearerAuth: [] }],
+    tags: [
+      { name: 'Authentication', description: 'Login, logout, registration, and profile management' },
+      { name: 'Jobs & Assignments', description: 'Field job assignments — creation, status updates, lifecycle actions' },
+      { name: 'Tickets', description: 'Support tickets — creation, assignment, resolution, and audit trail' },
+      { name: 'POS Terminals', description: 'Terminal inventory — CRUD, import/export, statistics, services' },
+      { name: 'Assets', description: 'Asset inventory management and assignments' },
+      { name: 'Asset Requests', description: 'Requests for asset allocation' },
+      { name: 'Clients', description: 'Client records, terminals, projects, and statistics' },
+      { name: 'Technicians', description: 'Technician profiles, schedules, performance, and availability' },
+      { name: 'Visits', description: 'Site visit records and evidence uploads' },
+      { name: 'Dashboard', description: 'Dashboard statistics by role' },
+      { name: 'Reports', description: 'Report generation, export, and analytics' },
+      { name: 'Sync', description: 'Offline-first mobile sync endpoints' },
+      { name: 'Notifications', description: 'In-app notification management' },
+      { name: 'Uploads', description: 'File upload endpoints (photos, documents, avatars)' },
+      { name: 'Public', description: 'Unauthenticated public endpoints' },
+      { name: 'Utils', description: 'Utility endpoints for search and quick stats' },
+      { name: 'Webhooks', description: 'Webhook receivers for external system events' }
+    ],
+    paths: {
+
+      /* ===================== AUTHENTICATION ===================== */
+      '/api/auth/login': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Login',
+          security: [],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['email','password'], properties: {
+              email: { type: 'string', format: 'email', example: 'tech@example.com' },
+              password: { type: 'string', minLength: 6, example: 'secret123' }
+            }}}}
+          },
+          responses: {
+            200: { description: 'Login successful', content: { 'application/json': { schema: { type: 'object', properties: {
+              success: { type: 'boolean', example: true },
+              token: { type: 'string', description: 'Sanctum Bearer token' },
+              user: { $ref: '#/components/schemas/User' }
+            }}}}},
+            401: { description: 'Invalid credentials' },
+            403: { description: 'Account inactive' },
+            422: { description: 'Validation error' }
+          }
+        }
+      },
+      '/api/auth/logout': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Logout — revokes current token',
+          responses: { 200: { description: 'Logged out successfully' } }
+        }
+      },
+      '/api/auth/register': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Register new user (admin only)',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['name','email','password','role'], properties: {
+              name: { type: 'string' },
+              email: { type: 'string', format: 'email' },
+              password: { type: 'string', minLength: 8 },
+              password_confirmation: { type: 'string' },
+              role: { type: 'string', enum: ['admin','manager','field_technician','client_user'] },
+              phone: { type: 'string' },
+              region: { type: 'string' }
+            }}}}
+          },
+          responses: { 201: { description: 'User created' }, 422: { description: 'Validation error' } }
+        }
+      },
+      '/api/auth/forgot-password': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Send password reset email',
+          security: [],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['email'], properties: {
+              email: { type: 'string', format: 'email' }
+            }}}}
+          },
+          responses: { 200: { description: 'Reset email sent' }, 422: { description: 'Email not found' } }
+        }
+      },
+      '/api/auth/reset-password': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Reset password using token',
+          security: [],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['token','email','password'], properties: {
+              token: { type: 'string' },
+              email: { type: 'string', format: 'email' },
+              password: { type: 'string', minLength: 8 },
+              password_confirmation: { type: 'string' }
+            }}}}
+          },
+          responses: { 200: { description: 'Password reset successful' }, 422: { description: 'Invalid token or validation error' } }
+        }
+      },
+      '/api/auth/refresh': {
+        post: {
+          tags: ['Authentication'],
+          summary: 'Refresh — issue new token, revoke old',
+          responses: { 200: { description: 'New token issued', content: { 'application/json': { schema: { type: 'object', properties: {
+            success: { type: 'boolean' },
+            token: { type: 'string' }
+          }}}}}}
+        }
+      },
+      '/api/auth/profile': {
+        get: {
+          tags: ['Authentication'],
+          summary: 'Get authenticated user profile',
+          responses: { 200: { description: 'Profile data', content: { 'application/json': { schema: { $ref: '#/components/schemas/User' }}}}}
+        },
+        put: {
+          tags: ['Authentication'],
+          summary: 'Update profile (name, phone, etc.)',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', properties: {
+              name: { type: 'string' },
+              phone: { type: 'string' },
+              region: { type: 'string' }
+            }}}}
+          },
+          responses: { 200: { description: 'Profile updated' } }
+        }
+      },
+      '/api/auth/profile/password': {
+        patch: {
+          tags: ['Authentication'],
+          summary: 'Change own password',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['current_password','password'], properties: {
+              current_password: { type: 'string' },
+              password: { type: 'string', minLength: 8 },
+              password_confirmation: { type: 'string' }
+            }}}}
+          },
+          responses: { 200: { description: 'Password changed' }, 422: { description: 'Current password incorrect' } }
+        }
+      },
+      '/api/auth/user': {
+        get: {
+          tags: ['Authentication'],
+          summary: 'Get basic user data (alias for profile)',
+          responses: { 200: { description: 'User object' } }
+        }
+      },
+
+      /* ===================== JOBS & ASSIGNMENTS ===================== */
+      '/api/jobs': {
+        get: {
+          tags: ['Jobs & Assignments'],
+          summary: 'List all job assignments',
+          parameters: [
+            { name: 'status', in: 'query', schema: { type: 'string', enum: ['pending','assigned','in_progress','completed','cancelled'] } },
+            { name: 'technician_id', in: 'query', schema: { type: 'integer' } },
+            { name: 'per_page', in: 'query', schema: { type: 'integer', default: 25 } },
+            { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } }
+          ],
+          responses: { 200: { description: 'Paginated job list', content: { 'application/json': { schema: { $ref: '#/components/schemas/Paginated' }}}}}
+        },
+        post: {
+          tags: ['Jobs & Assignments'],
+          summary: 'Create a new job assignment',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['technician_id','pos_terminal_id','scheduled_date'], properties: {
+              technician_id: { type: 'integer' },
+              pos_terminal_id: { type: 'integer' },
+              client_id: { type: 'integer' },
+              scheduled_date: { type: 'string', format: 'date' },
+              notes: { type: 'string' },
+              priority: { type: 'string', enum: ['low','medium','high'] }
+            }}}}
+          },
+          responses: { 201: { description: 'Job created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Job' }}}}, 422: { description: 'Validation error' } }
+        }
+      },
+      '/api/jobs/mine': {
+        get: {
+          tags: ['Jobs & Assignments'],
+          summary: "Get authenticated technician's own assignments",
+          parameters: [
+            { name: 'status', in: 'query', schema: { type: 'string' } },
+            { name: 'include_completed', in: 'query', schema: { type: 'boolean', default: false } }
+          ],
+          responses: { 200: { description: 'List of assignments' } }
+        }
+      },
+      '/api/jobs/my-assignments': {
+        get: { tags: ['Jobs & Assignments'], summary: "Alias for GET /api/jobs/mine", responses: { 200: { description: 'List of assignments' } } }
+      },
+      '/api/jobs/export': {
+        get: {
+          tags: ['Jobs & Assignments'],
+          summary: 'Export jobs as CSV',
+          responses: { 200: { description: 'CSV file download', content: { 'text/csv': {} } } }
+        }
+      },
+      '/api/jobs/assignments': {
+        get: { tags: ['Jobs & Assignments'], summary: 'List assignments (alias for GET /api/jobs)', responses: { 200: { description: 'Job list' } } }
+      },
+      '/api/jobs/regions/{region}/terminals': {
+        get: {
+          tags: ['Jobs & Assignments'],
+          summary: 'Get terminals in a region for job assignment',
+          parameters: [
+            { name: 'region', in: 'path', required: true, schema: { type: 'integer' } },
+            { name: 'client_id', in: 'query', schema: { type: 'integer' } }
+          ],
+          responses: { 200: { description: 'Terminal list for the region' } }
+        }
+      },
+      '/api/jobs/{assignment}': {
+        get: {
+          tags: ['Jobs & Assignments'],
+          summary: 'Get single job assignment',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Job details' }, 404: { description: 'Not found' } }
+        },
+        put: {
+          tags: ['Jobs & Assignments'],
+          summary: 'Update job assignment',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            scheduled_date: { type: 'string', format: 'date' },
+            notes: { type: 'string' },
+            priority: { type: 'string' },
+            status: { type: 'string' }
+          }}}}},
+          responses: { 200: { description: 'Updated' }, 403: { description: 'Forbidden' } }
+        },
+        delete: {
+          tags: ['Jobs & Assignments'],
+          summary: 'Delete job assignment',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Deleted' }, 403: { description: 'Forbidden' } }
+        }
+      },
+      '/api/jobs/{assignment}/status': {
+        patch: {
+          tags: ['Jobs & Assignments'],
+          summary: 'Update job status',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['status'], properties: {
+            status: { type: 'string', enum: ['pending','assigned','in_progress','completed','cancelled'] }
+          }}}}},
+          responses: { 200: { description: 'Status updated' } }
+        }
+      },
+      '/api/jobs/{assignment}/start': {
+        post: {
+          tags: ['Jobs & Assignments'], summary: 'Start a job (set in_progress)',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Job started' } }
+        }
+      },
+      '/api/jobs/{assignment}/checkin': {
+        post: {
+          tags: ['Jobs & Assignments'], summary: 'Check in at job site',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { content: { 'application/json': { schema: { type: 'object', properties: {
+            latitude: { type: 'number', format: 'float' },
+            longitude: { type: 'number', format: 'float' }
+          }}}}},
+          responses: { 200: { description: 'Checked in' } }
+        }
+      },
+      '/api/jobs/{assignment}/checkout': {
+        post: {
+          tags: ['Jobs & Assignments'], summary: 'Check out from job site',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Checked out' } }
+        }
+      },
+      '/api/jobs/{assignment}/pause': {
+        post: {
+          tags: ['Jobs & Assignments'], summary: 'Pause a job',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { reason: { type: 'string' } }}}}},
+          responses: { 200: { description: 'Job paused' } }
+        }
+      },
+      '/api/jobs/{assignment}/complete': {
+        post: {
+          tags: ['Jobs & Assignments'], summary: 'Mark job as completed',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { content: { 'application/json': { schema: { type: 'object', properties: {
+            completion_notes: { type: 'string' },
+            outcome: { type: 'string' }
+          }}}}},
+          responses: { 200: { description: 'Job completed' } }
+        }
+      },
+      '/api/jobs/{assignment}/cancel': {
+        post: {
+          tags: ['Jobs & Assignments'], summary: 'Cancel a job',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { reason: { type: 'string' } }}}}},
+          responses: { 200: { description: 'Job cancelled' } }
+        }
+      },
+      '/api/jobs/{assignment}/location': {
+        post: {
+          tags: ['Jobs & Assignments'], summary: "Update technician's GPS location for this job",
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['latitude','longitude'], properties: {
+            latitude: { type: 'number' }, longitude: { type: 'number' },
+            accuracy: { type: 'number' }, timestamp: { type: 'string', format: 'date-time' }
+          }}}}},
+          responses: { 200: { description: 'Location updated' } }
+        }
+      },
+      '/api/jobs/{assignment}/notes': {
+        post: {
+          tags: ['Jobs & Assignments'], summary: 'Add a note to a job',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['note'], properties: { note: { type: 'string' } }}}}},
+          responses: { 201: { description: 'Note added' } }
+        }
+      },
+      '/api/jobs/{assignment}/photos': {
+        get: {
+          tags: ['Jobs & Assignments'], summary: 'List photos for a job',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Photos list' } }
+        },
+        post: {
+          tags: ['Jobs & Assignments'], summary: 'Upload photo for a job',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', required: ['photo'], properties: {
+            photo: { type: 'string', format: 'binary' },
+            caption: { type: 'string' },
+            photo_type: { type: 'string', enum: ['before','after','evidence'] }
+          }}}}},
+          responses: { 201: { description: 'Photo uploaded' } }
+        }
+      },
+      '/api/jobs/{assignment}/visits': {
+        get: {
+          tags: ['Jobs & Assignments'], summary: 'List site visits for an assignment',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Visit list' } }
+        }
+      },
+
+      /* ===================== TICKETS ===================== */
+      '/api/tickets': {
+        get: {
+          tags: ['Tickets'],
+          summary: 'List tickets',
+          parameters: [
+            { name: 'status', in: 'query', schema: { type: 'string', enum: ['open','in_progress','pending','resolved','closed','cancelled'] } },
+            { name: 'priority', in: 'query', schema: { type: 'string', enum: ['low','medium','high','critical'] } },
+            { name: 'assignment_type', in: 'query', schema: { type: 'string', enum: ['direct','public'] } },
+            { name: 'per_page', in: 'query', schema: { type: 'integer', default: 25 } }
+          ],
+          responses: { 200: { description: 'Ticket list', content: { 'application/json': { schema: { $ref: '#/components/schemas/Paginated' }}}}}
+        },
+        post: {
+          tags: ['Tickets'],
+          summary: 'Create a new ticket',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['title','description'], properties: {
+              title: { type: 'string', maxLength: 255 },
+              description: { type: 'string' },
+              priority: { type: 'string', enum: ['low','medium','high','critical'], default: 'medium' },
+              ticket_type: { type: 'string', enum: ['general','pos_terminal','field_service'], default: 'general' },
+              assignment_type: { type: 'string', enum: ['direct','public'], default: 'public' },
+              assigned_to: { type: 'integer', nullable: true, description: 'Required when assignment_type=direct' },
+              pos_terminal_id: { type: 'integer', nullable: true, description: 'Required when ticket_type=pos_terminal' },
+              due_date: { type: 'string', format: 'date', nullable: true }
+            }}}}
+          },
+          responses: { 201: { description: 'Ticket created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Ticket' }}}}, 422: { description: 'Validation error' } }
+        }
+      },
+      '/api/tickets/mine/list': {
+        get: {
+          tags: ['Tickets'], summary: "Get authenticated user's own tickets",
+          responses: { 200: { description: 'My tickets' } }
+        }
+      },
+      '/api/tickets/{ticket}': {
+        get: {
+          tags: ['Tickets'], summary: 'Get ticket details',
+          parameters: [{ name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Ticket detail' }, 404: { description: 'Not found' } }
+        },
+        put: {
+          tags: ['Tickets'], summary: 'Update ticket',
+          parameters: [{ name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            title: { type: 'string' }, description: { type: 'string' },
+            priority: { type: 'string', enum: ['low','medium','high','critical'] },
+            status: { type: 'string', enum: ['open','in_progress','pending','resolved','closed','cancelled'] },
+            assigned_to: { type: 'integer', nullable: true },
+            due_date: { type: 'string', format: 'date', nullable: true }
+          }}}}},
+          responses: { 200: { description: 'Updated' }, 403: { description: 'Not authorized to update this ticket' } }
+        },
+        delete: {
+          tags: ['Tickets'], summary: 'Delete ticket (admin only)',
+          parameters: [{ name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Deleted' }, 403: { description: 'Forbidden' } }
+        }
+      },
+      '/api/tickets/{ticket}/status': {
+        patch: {
+          tags: ['Tickets'], summary: 'Update ticket status',
+          parameters: [{ name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['status'], properties: {
+            status: { type: 'string', enum: ['open','in_progress','pending','resolved','closed','cancelled'] }
+          }}}}},
+          responses: { 200: { description: 'Status updated' } }
+        }
+      },
+      '/api/tickets/{ticket}/resolve': {
+        patch: {
+          tags: ['Tickets'], summary: 'Resolve a ticket',
+          parameters: [{ name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { content: { 'application/json': { schema: { type: 'object', properties: {
+            resolution_notes: { type: 'string' }
+          }}}}},
+          responses: { 200: { description: 'Ticket resolved' } }
+        }
+      },
+      '/api/tickets/{ticket}/comments': {
+        post: {
+          tags: ['Tickets'], summary: 'Add comment to ticket',
+          parameters: [{ name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['comment'], properties: {
+            comment: { type: 'string' }, is_internal: { type: 'boolean', default: false }
+          }}}}},
+          responses: { 201: { description: 'Comment added' } }
+        }
+      },
+      '/api/tickets/{ticket}/steps': {
+        post: {
+          tags: ['Tickets'], summary: 'Add a resolution step to ticket',
+          parameters: [{ name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['description'], properties: {
+            description: { type: 'string' },
+            assigned_to: { type: 'integer', nullable: true },
+            due_date: { type: 'string', format: 'date', nullable: true }
+          }}}}},
+          responses: { 201: { description: 'Step added' } }
+        }
+      },
+      '/api/tickets/{ticket}/steps/{step}/complete': {
+        patch: {
+          tags: ['Tickets'], summary: 'Mark a ticket step as complete',
+          parameters: [
+            { name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } },
+            { name: 'step', in: 'path', required: true, schema: { type: 'integer' } }
+          ],
+          requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { completion_notes: { type: 'string' } }}}}},
+          responses: { 200: { description: 'Step completed' } }
+        }
+      },
+      '/api/tickets/{ticket}/steps/{step}/transfer': {
+        post: {
+          tags: ['Tickets'], summary: 'Transfer a ticket step to another technician',
+          parameters: [
+            { name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } },
+            { name: 'step', in: 'path', required: true, schema: { type: 'integer' } }
+          ],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['assigned_to'], properties: {
+            assigned_to: { type: 'integer' }, reason: { type: 'string' }
+          }}}}},
+          responses: { 200: { description: 'Step transferred' } }
+        }
+      },
+      '/api/tickets/{ticket}/audit-trail': {
+        get: {
+          tags: ['Tickets'], summary: 'Get full audit trail for a ticket',
+          parameters: [{ name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Audit trail events' } }
+        }
+      },
+      '/api/tickets/{ticket}/history': {
+        get: {
+          tags: ['Tickets'], summary: 'Get status/change history for a ticket',
+          parameters: [{ name: 'ticket', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Ticket history' } }
+        }
+      },
+
+      /* ===================== POS TERMINALS ===================== */
+      '/api/pos-terminals': {
+        get: {
+          tags: ['POS Terminals'],
+          summary: 'List POS terminals',
+          parameters: [
+            { name: 'status', in: 'query', schema: { type: 'string', enum: ['active','inactive','maintenance','decommissioned'] } },
+            { name: 'client_id', in: 'query', schema: { type: 'integer' } },
+            { name: 'region_id', in: 'query', schema: { type: 'integer' } },
+            { name: 'search', in: 'query', schema: { type: 'string' } },
+            { name: 'per_page', in: 'query', schema: { type: 'integer', default: 25 } }
+          ],
+          responses: { 200: { description: 'Paginated terminal list', content: { 'application/json': { schema: { $ref: '#/components/schemas/Paginated' }}}}}
+        },
+        post: {
+          tags: ['POS Terminals'],
+          summary: 'Create a POS terminal',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['terminal_id','serial_number','model'], properties: {
+            terminal_id: { type: 'string' },
+            serial_number: { type: 'string' },
+            model: { type: 'string' },
+            client_id: { type: 'integer' },
+            region_id: { type: 'integer' },
+            status: { type: 'string', enum: ['active','inactive','maintenance','decommissioned'], default: 'active' },
+            location_description: { type: 'string' }
+          }}}}},
+          responses: { 201: { description: 'Terminal created' }, 422: { description: 'Validation error' } }
+        }
+      },
+      '/api/pos-terminals/search/{query}': {
+        get: {
+          tags: ['POS Terminals'], summary: 'Search terminals by keyword',
+          parameters: [{ name: 'query', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Matching terminals' } }
+        }
+      },
+      '/api/pos-terminals/by-client/{client}': {
+        get: {
+          tags: ['POS Terminals'], summary: 'Get terminals for a specific client',
+          parameters: [{ name: 'client', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Client terminals' } }
+        }
+      },
+      '/api/pos-terminals/by-region/{region}': {
+        get: {
+          tags: ['POS Terminals'], summary: 'Get terminals in a region',
+          parameters: [{ name: 'region', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Region terminals' } }
+        }
+      },
+      '/api/pos-terminals/export': {
+        get: { tags: ['POS Terminals'], summary: 'Export terminals to CSV/Excel', responses: { 200: { description: 'File download' } } }
+      },
+      '/api/pos-terminals/download-template': {
+        get: { tags: ['POS Terminals'], summary: 'Download import template CSV', responses: { 200: { description: 'Template CSV' } } }
+      },
+      '/api/pos-terminals/import': {
+        post: {
+          tags: ['POS Terminals'], summary: 'Import terminals from CSV/Excel',
+          requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', required: ['file'], properties: {
+            file: { type: 'string', format: 'binary' }
+          }}}}},
+          responses: { 200: { description: 'Import result' } }
+        }
+      },
+      '/api/pos-terminals/preview-import': {
+        post: {
+          tags: ['POS Terminals'], summary: 'Preview CSV import before committing',
+          requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', required: ['file'], properties: { file: { type: 'string', format: 'binary' } }}}}},
+          responses: { 200: { description: 'Preview rows' } }
+        }
+      },
+      '/api/pos-terminals/preview-import-enhanced': {
+        post: {
+          tags: ['POS Terminals'], summary: 'Enhanced preview with column mapping',
+          requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', required: ['file'], properties: { file: { type: 'string', format: 'binary' } }}}}},
+          responses: { 200: { description: 'Enhanced preview with column suggestions' } }
+        }
+      },
+      '/api/pos-terminals/column-mapping': {
+        get: { tags: ['POS Terminals'], summary: 'Get saved column mapping configuration', responses: { 200: { description: 'Column mappings' } } },
+        post: {
+          tags: ['POS Terminals'], summary: 'Save a column mapping',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            source_column: { type: 'string' }, target_column: { type: 'string' }
+          }}}}},
+          responses: { 201: { description: 'Mapping saved' } }
+        }
+      },
+      '/api/pos-terminals/column-mapping/{mapping}': {
+        delete: {
+          tags: ['POS Terminals'], summary: 'Delete a column mapping',
+          parameters: [{ name: 'mapping', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Deleted' } }
+        }
+      },
+      '/api/pos-terminals/column-mapping/{mapping}/toggle': {
+        patch: {
+          tags: ['POS Terminals'], summary: 'Toggle a column mapping active/inactive',
+          parameters: [{ name: 'mapping', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Toggled' } }
+        }
+      },
+      '/api/pos-terminals/filtered-stats': {
+        post: {
+          tags: ['POS Terminals'], summary: 'Get filtered statistics',
+          requestBody: { content: { 'application/json': { schema: { type: 'object', properties: {
+            client_id: { type: 'integer' }, region_id: { type: 'integer' }, status: { type: 'string' },
+            date_from: { type: 'string', format: 'date' }, date_to: { type: 'string', format: 'date' }
+          }}}}},
+          responses: { 200: { description: 'Filtered stats' } }
+        }
+      },
+      '/api/pos-terminals/statistics/comprehensive': {
+        get: { tags: ['POS Terminals'], summary: 'Comprehensive statistics overview', responses: { 200: { description: 'Stats' } } }
+      },
+      '/api/pos-terminals/statistics/distributions': {
+        get: { tags: ['POS Terminals'], summary: 'Distribution data (by region, client, status)', responses: { 200: { description: 'Distribution data' } } }
+      },
+      '/api/pos-terminals/statistics/service-timeline': {
+        get: { tags: ['POS Terminals'], summary: 'Service timeline chart data', responses: { 200: { description: 'Timeline data' } } }
+      },
+      '/api/pos-terminals/chart-data': {
+        get: { tags: ['POS Terminals'], summary: 'Chart data for terminal dashboard', responses: { 200: { description: 'Chart datasets' } } }
+      },
+      '/api/pos-terminals/pos-terminals/bulk': {
+        patch: {
+          tags: ['POS Terminals'], summary: 'Bulk update terminals by terminal_id',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            terminals: { type: 'array', items: { type: 'object' } }
+          }}}}},
+          responses: { 200: { description: 'Bulk update result' } }
+        }
+      },
+      '/api/pos-terminals/{terminal}': {
+        get: {
+          tags: ['POS Terminals'], summary: 'Get a single terminal',
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Terminal detail', content: { 'application/json': { schema: { $ref: '#/components/schemas/PosTerminal' }}}}, 404: { description: 'Not found' } }
+        },
+        put: {
+          tags: ['POS Terminals'], summary: 'Update a terminal',
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            model: { type: 'string' }, status: { type: 'string' }, client_id: { type: 'integer' }, region_id: { type: 'integer' }
+          }}}}},
+          responses: { 200: { description: 'Updated' } }
+        },
+        delete: {
+          tags: ['POS Terminals'], summary: 'Delete a terminal',
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Deleted' } }
+        }
+      },
+      '/api/pos-terminals/{terminal}/status': {
+        patch: {
+          tags: ['POS Terminals'], summary: "Update terminal's status",
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['status'], properties: {
+            status: { type: 'string', enum: ['active','inactive','maintenance','decommissioned'] }
+          }}}}},
+          responses: { 200: { description: 'Status updated' } }
+        }
+      },
+      '/api/pos-terminals/{terminal}/statistics': {
+        get: {
+          tags: ['POS Terminals'], summary: 'Statistics for a specific terminal',
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Terminal statistics' } }
+        }
+      },
+      '/api/pos-terminals/{terminal}/history': {
+        get: {
+          tags: ['POS Terminals'], summary: 'Change history for a terminal',
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'History records' } }
+        }
+      },
+      '/api/pos-terminals/{terminal}/notes': {
+        post: {
+          tags: ['POS Terminals'], summary: 'Add a note to a terminal',
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['note'], properties: { note: { type: 'string' } }}}}},
+          responses: { 201: { description: 'Note added' } }
+        }
+      },
+      '/api/pos-terminals/{terminal}/tickets': {
+        post: {
+          tags: ['POS Terminals'], summary: 'Create a ticket for this terminal',
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['title','description'], properties: {
+            title: { type: 'string' }, description: { type: 'string' }, priority: { type: 'string', enum: ['low','medium','high','critical'] }
+          }}}}},
+          responses: { 201: { description: 'Ticket created' } }
+        }
+      },
+      '/api/pos-terminals/{terminal}/services': {
+        post: {
+          tags: ['POS Terminals'], summary: 'Schedule a service for a terminal',
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['service_date','service_type'], properties: {
+            service_date: { type: 'string', format: 'date' },
+            service_type: { type: 'string' },
+            technician_id: { type: 'integer' },
+            notes: { type: 'string' }
+          }}}}},
+          responses: { 201: { description: 'Service scheduled' } }
+        }
+      },
+      '/api/pos-terminals/{terminal}/service-report': {
+        post: {
+          tags: ['POS Terminals'], summary: 'Create a service report for a terminal',
+          parameters: [{ name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            report_date: { type: 'string', format: 'date' },
+            findings: { type: 'string' },
+            actions_taken: { type: 'string' },
+            technician_id: { type: 'integer' }
+          }}}}},
+          responses: { 201: { description: 'Service report created' } }
+        }
+      },
+      '/api/pos-terminals/{terminal}/reports/{type}': {
+        get: {
+          tags: ['POS Terminals'], summary: 'Generate a report for a terminal',
+          parameters: [
+            { name: 'terminal', in: 'path', required: true, schema: { type: 'integer' } },
+            { name: 'type', in: 'path', required: true, schema: { type: 'string', enum: ['service','visit','full'] } }
+          ],
+          responses: { 200: { description: 'Report data' } }
+        }
+      },
+      '/api/pos-terminals/id/{id}': {
+        put: {
+          tags: ['POS Terminals'], summary: 'Update terminal by numeric DB id (PUT or PATCH)',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' }}}},
+          responses: { 200: { description: 'Updated' } }
+        }
+      },
+      '/api/pos-terminals/pos-terminals/{terminalId}': {
+        put: {
+          tags: ['POS Terminals'], summary: 'Update terminal by terminal_id string (PUT or PATCH)',
+          parameters: [{ name: 'terminalId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' }}}},
+          responses: { 200: { description: 'Updated' } }
+        }
+      },
+
+      /* ===================== ASSETS ===================== */
+      '/api/assets': {
+        get: {
+          tags: ['Assets'],
+          summary: 'List all assets',
+          parameters: [
+            { name: 'category', in: 'query', schema: { type: 'string' } },
+            { name: 'status', in: 'query', schema: { type: 'string', enum: ['available','assigned','in_repair','retired'] } },
+            { name: 'per_page', in: 'query', schema: { type: 'integer', default: 25 } }
+          ],
+          responses: { 200: { description: 'Asset list' } }
+        }
+      },
+      '/api/assets/categories': {
+        get: { tags: ['Assets'], summary: 'List asset categories', responses: { 200: { description: 'Categories' } } }
+      },
+      '/api/assets/statistics': {
+        get: { tags: ['Assets'], summary: 'Asset inventory statistics', responses: { 200: { description: 'Stats' } } }
+      },
+      '/api/assets/my-assignments': {
+        get: { tags: ['Assets'], summary: "Authenticated user's assigned assets", responses: { 200: { description: 'Assets assigned to me' } } }
+      },
+      '/api/assets/requests': {
+        get: { tags: ['Assets'], summary: 'List asset requests', responses: { 200: { description: 'Requests list' } } },
+        post: {
+          tags: ['Assets'], summary: 'Create an asset request',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['asset_id'], properties: {
+            asset_id: { type: 'integer' }, reason: { type: 'string' }, needed_by_date: { type: 'string', format: 'date' }
+          }}}}},
+          responses: { 201: { description: 'Request created' } }
+        }
+      },
+      '/api/assets/{asset}': {
+        get: {
+          tags: ['Assets'], summary: 'Get asset details',
+          parameters: [{ name: 'asset', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Asset detail', content: { 'application/json': { schema: { $ref: '#/components/schemas/Asset' }}}}, 404: { description: 'Not found' } }
+        }
+      },
+      '/api/assets/{asset}/request': {
+        post: {
+          tags: ['Assets'], summary: 'Request a specific asset',
+          parameters: [{ name: 'asset', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { content: { 'application/json': { schema: { type: 'object', properties: {
+            reason: { type: 'string' }, needed_by_date: { type: 'string', format: 'date' }
+          }}}}},
+          responses: { 201: { description: 'Request created' } }
+        }
+      },
+      '/api/assets/assignments/{assignment}/return': {
+        post: {
+          tags: ['Assets'], summary: 'Return an assigned asset',
+          parameters: [{ name: 'assignment', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { return_notes: { type: 'string' } }}}}},
+          responses: { 200: { description: 'Asset returned' } }
+        }
+      },
+
+      /* ===================== ASSET REQUESTS ===================== */
+      '/api/asset-requests': {
+        get: {
+          tags: ['Asset Requests'], summary: 'List asset requests',
+          parameters: [{ name: 'status', in: 'query', schema: { type: 'string' } }],
+          responses: { 200: { description: 'Request list' } }
+        },
+        post: {
+          tags: ['Asset Requests'], summary: 'Submit a new asset request',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['asset_id'], properties: {
+            asset_id: { type: 'integer' },
+            reason: { type: 'string' },
+            needed_by_date: { type: 'string', format: 'date', description: 'Must be today or later' }
+          }}}}},
+          responses: { 201: { description: 'Request created' }, 422: { description: 'Validation error' } }
+        }
+      },
+      '/api/asset-requests/available-assets': {
+        get: { tags: ['Asset Requests'], summary: 'List available assets for requesting', responses: { 200: { description: 'Available assets' } } }
+      },
+      '/api/asset-requests/stats': {
+        get: { tags: ['Asset Requests'], summary: 'Asset request statistics', responses: { 200: { description: 'Stats' } } }
+      },
+      '/api/asset-requests/{id}': {
+        get: {
+          tags: ['Asset Requests'], summary: 'Get a single asset request',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Request detail' }, 404: { description: 'Not found' } }
+        }
+      },
+      '/api/asset-requests/{id}/cancel': {
+        post: {
+          tags: ['Asset Requests'], summary: 'Cancel an asset request',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Request cancelled' } }
+        }
+      },
+
+      /* ===================== CLIENTS ===================== */
+      '/api/clients': {
+        get: {
+          tags: ['Clients'], summary: 'List all clients',
+          parameters: [{ name: 'per_page', in: 'query', schema: { type: 'integer', default: 25 } }],
+          responses: { 200: { description: 'Client list', content: { 'application/json': { schema: { $ref: '#/components/schemas/Paginated' }}}}}
+        },
+        post: {
+          tags: ['Clients'], summary: 'Create a client',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['company_name'], properties: {
+            company_name: { type: 'string' }, contact_name: { type: 'string' },
+            email: { type: 'string', format: 'email' }, phone: { type: 'string' }, region: { type: 'string' }
+          }}}}},
+          responses: { 201: { description: 'Client created' }, 422: { description: 'Validation error' } }
+        }
+      },
+      '/api/clients/{client}': {
+        get: {
+          tags: ['Clients'], summary: 'Get client details',
+          parameters: [{ name: 'client', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Client detail', content: { 'application/json': { schema: { $ref: '#/components/schemas/Client' }}}}}
+        },
+        put: {
+          tags: ['Clients'], summary: 'Update a client',
+          parameters: [{ name: 'client', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            company_name: { type: 'string' }, contact_name: { type: 'string' }, email: { type: 'string' }, phone: { type: 'string' }
+          }}}}},
+          responses: { 200: { description: 'Updated' } }
+        },
+        delete: {
+          tags: ['Clients'], summary: 'Delete a client',
+          parameters: [{ name: 'client', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Deleted' } }
+        }
+      },
+      '/api/clients/{client}/terminals': {
+        get: {
+          tags: ['Clients'], summary: "Get client's POS terminals",
+          parameters: [{ name: 'client', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Terminal list' } }
+        }
+      },
+      '/api/clients/{client}/projects': {
+        get: {
+          tags: ['Clients'], summary: "Get client's projects",
+          parameters: [{ name: 'client', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Projects list' } }
+        }
+      },
+      '/api/clients/{client}/statistics': {
+        get: {
+          tags: ['Clients'], summary: "Get client's statistics",
+          parameters: [{ name: 'client', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Stats' } }
+        }
+      },
+
+      /* ===================== TECHNICIANS ===================== */
+      '/api/technicians': {
+        get: {
+          tags: ['Technicians'], summary: 'List technicians',
+          parameters: [
+            { name: 'availability', in: 'query', schema: { type: 'string', enum: ['available','busy','off_duty'] } },
+            { name: 'region', in: 'query', schema: { type: 'string' } }
+          ],
+          responses: { 200: { description: 'Technician list' } }
+        },
+        post: {
+          tags: ['Technicians'], summary: 'Create a technician',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['name','email'], properties: {
+            name: { type: 'string' }, email: { type: 'string', format: 'email' },
+            phone: { type: 'string' }, region: { type: 'string' }
+          }}}}},
+          responses: { 201: { description: 'Created' } }
+        }
+      },
+      '/api/technicians/{technician}': {
+        get: {
+          tags: ['Technicians'], summary: 'Get technician details',
+          parameters: [{ name: 'technician', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Technician detail', content: { 'application/json': { schema: { $ref: '#/components/schemas/Technician' }}}}}
+        },
+        put: {
+          tags: ['Technicians'], summary: 'Update a technician',
+          parameters: [{ name: 'technician', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            name: { type: 'string' }, phone: { type: 'string' }, region: { type: 'string' }
+          }}}}},
+          responses: { 200: { description: 'Updated' } }
+        },
+        delete: {
+          tags: ['Technicians'], summary: 'Delete a technician',
+          parameters: [{ name: 'technician', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Deleted' } }
+        }
+      },
+      '/api/technicians/{technician}/availability': {
+        patch: {
+          tags: ['Technicians'], summary: "Update technician's availability",
+          parameters: [{ name: 'technician', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['availability_status'], properties: {
+            availability_status: { type: 'string', enum: ['available','busy','off_duty'] }
+          }}}}},
+          responses: { 200: { description: 'Availability updated' } }
+        }
+      },
+      '/api/technicians/{technician}/assignments': {
+        get: {
+          tags: ['Technicians'], summary: "Get technician's job assignments",
+          parameters: [{ name: 'technician', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Assignments' } }
+        }
+      },
+      '/api/technicians/{technician}/location': {
+        get: {
+          tags: ['Technicians'], summary: "Get technician's last known location",
+          parameters: [{ name: 'technician', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Location coordinates' } }
+        }
+      },
+      '/api/technicians/{technician}/performance': {
+        get: {
+          tags: ['Technicians'], summary: "Get technician's performance metrics",
+          parameters: [{ name: 'technician', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Performance data' } }
+        }
+      },
+      '/api/technicians/{technician}/schedule': {
+        get: {
+          tags: ['Technicians'], summary: "Get technician's schedule",
+          parameters: [{ name: 'technician', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Schedule' } }
+        }
+      },
+
+      /* ===================== VISITS ===================== */
+      '/api/visits': {
+        get: { tags: ['Visits'], summary: 'List site visits', responses: { 200: { description: 'Visit list' } } },
+        post: {
+          tags: ['Visits'], summary: 'Create a site visit record',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['assignment_id','visit_date'], properties: {
+            assignment_id: { type: 'integer', description: 'Must be integer. DB column is unsignedBigInteger.' },
+            visit_date: { type: 'string', format: 'date' },
+            notes: { type: 'string' },
+            outcome: { type: 'string' }
+          }}}}},
+          responses: { 201: { description: 'Visit created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Visit' }}}}, 422: { description: 'Validation error' } }
+        }
+      },
+      '/api/visits/all': {
+        get: { tags: ['Visits'], summary: 'List all visits (admin)', responses: { 200: { description: 'All visits' } } }
+      },
+      '/api/visits/{visit}': {
+        get: {
+          tags: ['Visits'], summary: 'Get visit details',
+          parameters: [{ name: 'visit', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Visit detail' } }
+        }
+      },
+      '/api/visits/{visit}/evidence': {
+        post: {
+          tags: ['Visits'], summary: 'Upload evidence for a visit',
+          parameters: [{ name: 'visit', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', required: ['file'], properties: {
+            file: { type: 'string', format: 'binary' }, caption: { type: 'string' }
+          }}}}},
+          responses: { 201: { description: 'Evidence uploaded' } }
+        }
+      },
+      '/api/assignments/{assignmentId}/visits': {
+        get: {
+          tags: ['Visits'], summary: 'List visits for a specific assignment',
+          parameters: [{ name: 'assignmentId', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Visit list' } }
+        },
+        post: {
+          tags: ['Visits'], summary: 'Create a visit for a specific assignment',
+          parameters: [{ name: 'assignmentId', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            visit_date: { type: 'string', format: 'date' }, notes: { type: 'string' }
+          }}}}},
+          responses: { 201: { description: 'Visit created' } }
+        }
+      },
+
+      /* ===================== DASHBOARD ===================== */
+      '/api/dashboard': {
+        get: { tags: ['Dashboard'], summary: 'Dashboard data (role-aware)', responses: { 200: { description: 'Dashboard data' } } }
+      },
+      '/api/dashboard/admin': {
+        get: { tags: ['Dashboard'], summary: 'Admin dashboard statistics', responses: { 200: { description: 'Admin stats' } } }
+      },
+      '/api/dashboard/manager': {
+        get: { tags: ['Dashboard'], summary: 'Manager dashboard statistics', responses: { 200: { description: 'Manager stats' } } }
+      },
+      '/api/dashboard/employee': {
+        get: { tags: ['Dashboard'], summary: 'Employee dashboard data', responses: { 200: { description: 'Employee stats' } } }
+      },
+      '/api/dashboard/technician': {
+        get: { tags: ['Dashboard'], summary: 'Technician dashboard data', responses: { 200: { description: 'Technician stats' } } }
+      },
+      '/api/dashboard/stats': {
+        get: { tags: ['Dashboard'], summary: 'Quick stats summary', responses: { 200: { description: 'Stats summary' } } }
+      },
+
+      /* ===================== REPORTS ===================== */
+      '/api/reports': {
+        get: { tags: ['Reports'], summary: 'Reports index', responses: { 200: { description: 'Reports overview' } } }
+      },
+      '/api/reports/dashboard': {
+        get: { tags: ['Reports'], summary: 'Dashboard-level report stats', responses: { 200: { description: 'Stats' } } }
+      },
+      '/api/reports/assignments': {
+        get: { tags: ['Reports'], summary: 'Assignment reports', responses: { 200: { description: 'Assignment data' } } }
+      },
+      '/api/reports/terminals': {
+        get: { tags: ['Reports'], summary: 'Terminal-focused reports', responses: { 200: { description: 'Terminal report' } } }
+      },
+      '/api/reports/technician-performance': {
+        get: { tags: ['Reports'], summary: 'Technician performance report', responses: { 200: { description: 'Performance data' } } }
+      },
+      '/api/reports/my-performance': {
+        get: { tags: ['Reports'], summary: "Authenticated user's own performance", responses: { 200: { description: 'My performance' } } }
+      },
+      '/api/reports/builder': {
+        get: { tags: ['Reports'], summary: 'Get report builder configuration/data', responses: { 200: { description: 'Builder config' } } }
+      },
+      '/api/reports/builder/generate': {
+        post: {
+          tags: ['Reports'], summary: 'Generate a custom report from the builder',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            fields: { type: 'array', items: { type: 'string' } },
+            filters: { type: 'object' },
+            date_from: { type: 'string', format: 'date' },
+            date_to: { type: 'string', format: 'date' }
+          }}}}},
+          responses: { 200: { description: 'Generated report' } }
+        }
+      },
+      '/api/reports/custom-report': {
+        post: {
+          tags: ['Reports'], summary: 'Generate a fully custom report',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' }}}},
+          responses: { 200: { description: 'Custom report' } }
+        }
+      },
+      '/api/reports/performance-metrics': {
+        get: { tags: ['Reports'], summary: 'Performance metrics across technicians', responses: { 200: { description: 'Metrics' } } }
+      },
+      '/api/reports/service-analytics': {
+        get: { tags: ['Reports'], summary: 'Service analytics', responses: { 200: { description: 'Analytics' } } }
+      },
+      '/api/reports/terminal-analytics': {
+        get: { tags: ['Reports'], summary: 'Terminal-level analytics', responses: { 200: { description: 'Analytics' } } }
+      },
+      '/api/reports/trends-analysis': {
+        get: { tags: ['Reports'], summary: 'Trends analysis over time', responses: { 200: { description: 'Trends data' } } }
+      },
+      '/api/reports/export/{type}': {
+        get: {
+          tags: ['Reports'], summary: 'Export report as CSV/Excel',
+          parameters: [{ name: 'type', in: 'path', required: true, schema: { type: 'string', enum: ['csv','excel','pdf'] } }],
+          responses: { 200: { description: 'File download' } }
+        }
+      },
+      '/api/report/templates': {
+        get: { tags: ['Reports'], summary: 'List report templates', responses: { 200: { description: 'Templates' } } },
+        post: {
+          tags: ['Reports'], summary: 'Create a report template',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['name'], properties: {
+            name: { type: 'string' }, description: { type: 'string' }, config: { type: 'object' }
+          }}}}},
+          responses: { 201: { description: 'Template created' } }
+        }
+      },
+      '/api/report/templates/{id}': {
+        get: {
+          tags: ['Reports'], summary: 'Get a report template',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Template' } }
+        },
+        put: {
+          tags: ['Reports'], summary: 'Update a report template',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' }}}},
+          responses: { 200: { description: 'Updated' } }
+        },
+        delete: {
+          tags: ['Reports'], summary: 'Delete a report template',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Deleted' } }
+        }
+      },
+      '/api/report/templates/{id}/duplicate': {
+        post: {
+          tags: ['Reports'], summary: 'Duplicate a report template',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 201: { description: 'Duplicated' } }
+        }
+      },
+      '/api/report/templates/tags/list': {
+        get: { tags: ['Reports'], summary: 'List all template tags', responses: { 200: { description: 'Tag list' } } }
+      },
+      '/api/report/fields': {
+        get: { tags: ['Reports'], summary: 'Get available fields for report builder', responses: { 200: { description: 'Field list' } } }
+      },
+      '/api/report/preview': {
+        post: {
+          tags: ['Reports'], summary: 'Preview a report',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' }}}},
+          responses: { 200: { description: 'Preview data' } }
+        }
+      },
+      '/api/report/export': {
+        post: {
+          tags: ['Reports'], summary: 'Export a report (POST with body)',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' }}}},
+          responses: { 200: { description: 'Export file' } }
+        }
+      },
+
+      /* ===================== SYNC ===================== */
+      '/api/sync/assignments': {
+        get: { tags: ['Sync'], summary: 'Sync assignments for offline mobile', parameters: [{ name: 'last_sync', in: 'query', schema: { type: 'string', format: 'date-time' } }], responses: { 200: { description: 'Delta since last sync' } } }
+      },
+      '/api/sync/tickets': {
+        get: { tags: ['Sync'], summary: 'Sync tickets for offline mobile', parameters: [{ name: 'last_sync', in: 'query', schema: { type: 'string', format: 'date-time' } }], responses: { 200: { description: 'Delta since last sync' } } }
+      },
+      '/api/sync/terminals': {
+        get: { tags: ['Sync'], summary: 'Sync terminals for offline mobile', responses: { 200: { description: 'Terminal data' } } }
+      },
+      '/api/sync/clients': {
+        get: { tags: ['Sync'], summary: 'Sync clients for offline mobile', responses: { 200: { description: 'Client data' } } }
+      },
+      '/api/sync/assets': {
+        get: { tags: ['Sync'], summary: 'Sync assets for offline mobile', responses: { 200: { description: 'Asset data' } } }
+      },
+      '/api/sync/full-sync': {
+        get: { tags: ['Sync'], summary: 'Full data sync bundle (all entities)', responses: { 200: { description: 'Full sync payload' } } }
+      },
+      '/api/sync/timestamp': {
+        get: { tags: ['Sync'], summary: 'Get current server timestamp for sync baseline', responses: { 200: { description: 'Server timestamp' } } }
+      },
+      '/api/sync/bulk-sync': {
+        post: {
+          tags: ['Sync'], summary: 'Bulk sync — push offline changes to server',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            visits: { type: 'array', items: { $ref: '#/components/schemas/Visit' } },
+            status_updates: { type: 'array', items: { type: 'object' } }
+          }}}}},
+          responses: { 200: { description: 'Sync result with conflicts' } }
+        }
+      },
+      '/api/sync/bulk-update': {
+        post: {
+          tags: ['Sync'], summary: 'Bulk status update for multiple assignments',
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['updates'], properties: {
+            updates: { type: 'array', items: { type: 'object', properties: {
+              id: { type: 'integer' }, status: { type: 'string' }
+            }}}
+          }}}}},
+          responses: { 200: { description: 'Bulk update result' } }
+        }
+      },
+
+      /* ===================== NOTIFICATIONS ===================== */
+      '/api/notifications': {
+        get: { tags: ['Notifications'], summary: 'List all notifications for current user', responses: { 200: { description: 'Notification list' } } }
+      },
+      '/api/notifications/unread': {
+        get: { tags: ['Notifications'], summary: 'List unread notifications', responses: { 200: { description: 'Unread notifications' } } }
+      },
+      '/api/notifications/count': {
+        get: { tags: ['Notifications'], summary: 'Get unread notification count', responses: { 200: { description: 'Count', content: { 'application/json': { schema: { type: 'object', properties: { count: { type: 'integer' } }}}}}}}
+      },
+      '/api/notifications/mark-all-read': {
+        post: { tags: ['Notifications'], summary: 'Mark all notifications as read', responses: { 200: { description: 'All marked read' } } }
+      },
+      '/api/notifications/{notification}/read': {
+        post: {
+          tags: ['Notifications'], summary: 'Mark a single notification as read',
+          parameters: [{ name: 'notification', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Marked read' } }
+        }
+      },
+
+      /* ===================== UPLOADS ===================== */
+      '/api/upload/photo': {
+        post: {
+          tags: ['Uploads'], summary: 'Upload a photo',
+          requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', required: ['photo'], properties: { photo: { type: 'string', format: 'binary' } }}}}},
+          responses: { 200: { description: 'Upload result with URL' } }
+        }
+      },
+      '/api/upload/document': {
+        post: {
+          tags: ['Uploads'], summary: 'Upload a document',
+          requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', required: ['document'], properties: { document: { type: 'string', format: 'binary' } }}}}},
+          responses: { 200: { description: 'Upload result with URL' } }
+        }
+      },
+      '/api/upload/avatar': {
+        post: {
+          tags: ['Uploads'], summary: 'Upload a profile avatar',
+          requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', required: ['avatar'], properties: { avatar: { type: 'string', format: 'binary' } }}}}},
+          responses: { 200: { description: 'Upload result with URL' } }
+        }
+      },
+      '/api/upload/attachment': {
+        post: {
+          tags: ['Uploads'], summary: 'Upload a general attachment',
+          requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', required: ['file'], properties: { file: { type: 'string', format: 'binary' } }}}}},
+          responses: { 200: { description: 'Upload result with URL' } }
+        }
+      },
+
+      /* ===================== PUBLIC ===================== */
+      '/api/public/status': {
+        get: { tags: ['Public'], summary: 'API health/status check', security: [], responses: { 200: { description: 'API is online' } } }
+      },
+      '/api/public/app-version': {
+        get: { tags: ['Public'], summary: 'Get current mobile app version info', security: [], responses: { 200: { description: 'Version info and update flags' } } }
+      },
+      '/api/public/maintenance': {
+        get: { tags: ['Public'], summary: 'Check if system is in maintenance mode', security: [], responses: { 200: { description: 'Maintenance status' } } }
+      },
+
+      /* ===================== UTILS ===================== */
+      '/api/utils/search': {
+        get: {
+          tags: ['Utils'], summary: 'Global search across entities',
+          parameters: [{ name: 'q', in: 'query', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Search results grouped by entity type' } }
+        }
+      },
+      '/api/utils/quick-stats': {
+        get: { tags: ['Utils'], summary: 'Quick summary stats for sidebar/header', responses: { 200: { description: 'Quick stats' } } }
+      },
+      '/api/utils/dashboard-stats': {
+        get: { tags: ['Utils'], summary: 'Dashboard statistics bundle', responses: { 200: { description: 'Stats bundle' } } }
+      },
+
+      /* ===================== WEBHOOKS ===================== */
+      '/api/webhooks/job-completion': {
+        post: {
+          tags: ['Webhooks'], summary: 'Receive job completion event from external system',
+          security: [],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            job_id: { type: 'string' }, completed_at: { type: 'string', format: 'date-time' }, outcome: { type: 'string' }
+          }}}}},
+          responses: { 200: { description: 'Webhook accepted' } }
+        }
+      },
+      '/api/webhooks/terminal-update': {
+        post: {
+          tags: ['Webhooks'], summary: 'Receive terminal status update from external system',
+          security: [],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+            terminal_id: { type: 'string' }, status: { type: 'string' }, updated_at: { type: 'string', format: 'date-time' }
+          }}}}},
+          responses: { 200: { description: 'Webhook accepted' } }
+        }
+      }
+    }
+  };
+
+  SwaggerUIBundle({
+    spec: spec,
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+    plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+    layout: 'StandaloneLayout',
+    defaultModelsExpandDepth: 1,
+    defaultModelExpandDepth: 2,
+    displayRequestDuration: true,
+    filter: true,
+    tryItOutEnabled: false
+  });
+}
+
+// Auto-init if already authenticated
+if(sessionStorage.getItem('rt_docs_auth')==='1'){
+  window.addEventListener('load', initSwagger);
+}
+</script>
+</body>
+</html>
