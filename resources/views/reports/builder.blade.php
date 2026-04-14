@@ -482,6 +482,9 @@
                         <button @click="exportReport('csv');open=false">
                             <span>&#128196;</span> Download CSV
                         </button>
+                        <button @click="exportReport('pdf');open=false">
+                            <span>&#128240;</span> Download PDF
+                        </button>
                     </div>
                 </div>
 

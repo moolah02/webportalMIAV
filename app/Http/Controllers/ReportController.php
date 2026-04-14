@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 
 class ReportController extends Controller
@@ -100,8 +101,10 @@ class ReportController extends Controller
             switch ($validated['format']) {
                 case 'csv':
                     return $this->exportCsv($results, $filename);
+                case 'pdf':
+                    return $this->exportPdf($results, $filename, $validated);
                 default:
-                    throw new Exception('Only CSV export is implemented in this simplified version');
+                    throw new Exception('Unsupported export format: ' . $validated['format']);
             }
 
         } catch (Exception $e) {
@@ -134,6 +137,22 @@ class ReportController extends Controller
         };
 
         return Response::stream($callback, 200, $headers);
+    }
+
+    private function exportPdf($results, string $filename, array $config)
+    {
+        $columns = $results->isNotEmpty() ? array_keys((array) $results->first()) : [];
+
+        $pdf = Pdf::loadView('reports.builder-pdf', [
+            'results'   => $results,
+            'columns'   => $columns,
+            'filename'  => $filename,
+            'baseTable' => $config['base']['table'] ?? '',
+            'rowCount'  => $results->count(),
+            'generatedAt' => now()->format('d M Y, H:i'),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download($filename . '.pdf');
     }
 
     public function getAvailableFields(): JsonResponse
