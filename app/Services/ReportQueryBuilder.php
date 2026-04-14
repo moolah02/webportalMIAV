@@ -532,7 +532,7 @@ class ReportQueryBuilder
                 'this_month'   => 'This Month',
                 'custom'       => 'Custom Range'
             ],
-            'regions' => DB::table('regions')->where('is_active', 1)->pluck('name', 'id'),
+            'regions' => DB::table('regions')->where('is_active', 1)->pluck('name', 'name'),
             'clients' => DB::table('clients')->where('status', 'active')->pluck('company_name', 'id'),
             'projects' => DB::table('projects')->where('status', 'active')->pluck('project_name', 'id')
         ];

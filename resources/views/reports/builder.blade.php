@@ -464,13 +464,11 @@
 
                 <span :title="fields.length === 0 ? 'Add at least one column from the left panel first' : 'Run your report'">
                 <button @click="runReport()" :disabled="loading || fields.length === 0" class="rb-btn rb-btn-primary rb-btn-run">
-                    <template x-if="!loading">&#9654;&nbsp;Run Report</template>
-                    <template x-if="loading">
-                        <span style="display:flex;align-items:center;gap:6px;">
-                            <span style="width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:rb-spin .7s linear infinite;display:inline-block;"></span>
-                            Running…
-                        </span>
-                    </template>
+                    <span x-show="!loading">&#9654;&nbsp;Run Report</span>
+                    <span x-show="loading" style="display:flex;align-items:center;gap:6px;">
+                        <span style="width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:rb-spin .7s linear infinite;display:inline-block;"></span>
+                        Running…
+                    </span>
                 </button>
                 </span>
 
@@ -917,7 +915,13 @@ document.addEventListener('alpine:init', () => {
       const where = [];
       if (this.config.regionId) {
         const bf = this.availableFields[this.config.baseTable]?.fields || [];
-        where.push({ column: bf.some(f=>f.name==='region_id') ? this.config.baseTable+'.region_id' : 'pos_terminals.region_id', operator:'=', value:this.config.regionId });
+        if (bf.some(f => f.name === 'region_id')) {
+          // Table has FK region_id — filter via regions.name (auto-join handles the JOIN)
+          where.push({ column: 'regions.name', operator: '=', value: this.config.regionId });
+        } else {
+          // Table stores region as a plain string column (e.g. pos_terminals.region)
+          where.push({ column: this.config.baseTable + '.region', operator: '=', value: this.config.regionId });
+        }
       }
       if (this.config.clientId) {
         const bf = this.availableFields[this.config.baseTable]?.fields || [];
