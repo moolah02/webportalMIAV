@@ -498,6 +498,10 @@
                     &#128193;&nbsp;Templates
                 </button>
 
+                <a href="{{ route('reports.history') }}" class="rb-btn rb-btn-outline">
+                    &#128221;&nbsp;History
+                </a>
+
                 <button x-show="fields.length > 0" @click="clearAll()" class="rb-btn rb-btn-danger">
                     &#128465;&nbsp;Clear
                 </button>

@@ -1034,6 +1034,7 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
 
     Route::middleware('auth')->group(function () {
         Route::get('/reports/builder', [ReportBuilderController::class, 'index'])->name('reports.builder');
+        Route::get('/reports/history', [ReportController::class, 'history'])->name('reports.history');
         Route::post('/reports/run', [ReportBuilderController::class, 'run'])->name('reports.run');
         Route::get('/reports/export/csv', [ReportBuilderController::class, 'exportCsv'])->name('reports.export.csv');
         Route::post('/reports/run-custom', [ReportBuilderController::class, 'runCustom'])->name('reports.run.custom');

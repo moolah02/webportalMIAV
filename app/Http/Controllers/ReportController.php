@@ -46,10 +46,14 @@ class ReportController extends Controller
 
             // Log the report run
             ReportRun::create([
-                'user_id' => $user->id,
-                'payload' => $validated,
+                'user_id'      => $user->id,
+                'payload'      => $validated,
                 'result_count' => $results->count(),
-                'executed_at' => now()
+                'executed_at'  => now(),
+                'action'       => 'preview',
+                'format'       => null,
+                'ip_address'   => $request->ip(),
+                'user_agent'   => $request->userAgent(),
             ]);
 
             return response()->json([
@@ -90,10 +94,14 @@ class ReportController extends Controller
 
             // Log the export
             ReportRun::create([
-                'user_id' => $user->id,
-                'payload' => array_merge($validated, ['action' => 'export']),
+                'user_id'      => $user->id,
+                'payload'      => $validated,
                 'result_count' => $results->count(),
-                'executed_at' => now()
+                'executed_at'  => now(),
+                'action'       => 'export',
+                'format'       => $validated['format'],
+                'ip_address'   => $request->ip(),
+                'user_agent'   => $request->userAgent(),
             ]);
 
             $filename = $validated['filename'] ?? 'report_' . date('Y-m-d_H-i-s');
@@ -153,6 +161,15 @@ class ReportController extends Controller
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download($filename . '.pdf');
+    }
+
+    public function history(Request $request)
+    {
+        $runs = ReportRun::with('user')
+            ->orderByDesc('executed_at')
+            ->paginate(50);
+
+        return view('reports.history', compact('runs'));
     }
 
     public function getAvailableFields(): JsonResponse

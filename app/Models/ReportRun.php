@@ -11,7 +11,11 @@ class ReportRun extends Model
         'user_id',
         'payload',
         'result_count',
-        'executed_at'
+        'executed_at',
+        'action',
+        'format',
+        'ip_address',
+        'user_agent',
     ];
 
     protected $casts = [
