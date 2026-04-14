@@ -103,6 +103,7 @@
          selectedClient: null,
          clientInfo: null,
          selectedProjectType: '',
+         otherProjectType: '',
          startDate: '{{ date('Y-m-d') }}',
          durationDays: 30,
          budget: null,
@@ -272,7 +273,7 @@
                                         <div class="fs-2 mb-2">🔧</div>
                                         <div class="fw-bold">Maintenance & Repairs</div>
                                         <small class="text-muted">Regular upkeep and servicing</small>
-                                        <input type="radio" name="project_type" value="maintenance"
+                                        <input type="radio" name="_project_type_radio" value="maintenance"
                                                :checked="selectedProjectType === 'maintenance'" hidden>
                                     </div>
                                 </div>
@@ -281,7 +282,7 @@
                                         <div class="fs-2 mb-2">📦</div>
                                         <div class="fw-bold">Installation & Setup</div>
                                         <small class="text-muted">New terminal deployment</small>
-                                        <input type="radio" name="project_type" value="installation"
+                                        <input type="radio" name="_project_type_radio" value="installation"
                                                :checked="selectedProjectType === 'installation'" hidden>
                                     </div>
                                 </div>
@@ -290,11 +291,31 @@
                                         <div class="fs-2 mb-2">💬</div>
                                         <div class="fw-bold">Support & Troubleshooting</div>
                                         <small class="text-muted">Issue resolution</small>
-                                        <input type="radio" name="project_type" value="support"
+                                        <input type="radio" name="_project_type_radio" value="support"
                                                :checked="selectedProjectType === 'support'" hidden>
                                     </div>
                                 </div>
+                                <div class="col-md-4" @click="selectProjectType('other')">
+                                    <div class="project-type-card" :class="selectedProjectType === 'other' ? 'selected' : ''">
+                                        <div class="fs-2 mb-2">📝</div>
+                                        <div class="fw-bold">Other</div>
+                                        <small class="text-muted">Specify project type below</small>
+                                        <input type="radio" name="_project_type_radio" value="other"
+                                               :checked="selectedProjectType === 'other'" hidden>
+                                    </div>
+                                </div>
                             </div>
+                            <!-- Other type text input -->
+                            <div class="mt-3" x-show="selectedProjectType === 'other'" x-cloak>
+                                <input type="text"
+                                       class="form-control"
+                                       placeholder="Describe the project type (e.g. Audit, Training, Migration…)"
+                                       x-model="otherProjectType"
+                                       maxlength="100">
+                            </div>
+                            <!-- Hidden input that carries the final value -->
+                            <input type="hidden" name="project_type"
+                                   :value="selectedProjectType === 'other' ? otherProjectType : selectedProjectType">
                         </div>
 
                         <hr class="my-4">

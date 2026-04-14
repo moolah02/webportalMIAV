@@ -142,7 +142,7 @@ public function store(Request $request)
     $request->validate([
         'project_name' => 'required|string|max:255',
         'client_id' => 'required|exists:clients,id',
-        'project_type' => 'required|in:discovery,servicing,support,maintenance,installation,upgrade,decommission',
+        'project_type' => 'required|string|max:100',
         'priority' => 'required|in:low,normal,high,emergency',
         'description' => 'nullable|string',
         'start_date' => 'nullable|date|after_or_equal:today',
@@ -307,7 +307,7 @@ public function store(Request $request)
         $request->validate([
             'project_name' => 'required|string|max:255',
             'client_id' => 'required|exists:clients,id',
-            'project_type' => 'required|in:discovery,servicing,support,maintenance,installation,upgrade,decommission',
+            'project_type' => 'required|string|max:100',
             'priority' => 'required|in:low,normal,high,emergency',
             'description' => 'nullable|string',
             'start_date' => 'nullable|date',
