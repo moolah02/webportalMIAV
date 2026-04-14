@@ -10,7 +10,7 @@ class ReportQueryBuilder
     // Allowlisted tables and columns (must match actual DB schema)
     private const ALLOWED_TABLES = [
         'pos_terminals' => [
-            'id', 'client_id', 'merchant_name', 'merchant_contact_person',
+            'id', 'terminal_id', 'client_id', 'merchant_name', 'merchant_contact_person',
             'merchant_phone', 'physical_address', 'region', 'city', 'province', 'area', 'business_type',
             'installation_date', 'terminal_model', 'serial_number', 'status', 'last_service_date',
             'created_at', 'updated_at', 'current_status'
