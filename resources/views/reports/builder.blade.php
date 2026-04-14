@@ -314,6 +314,22 @@
 .rb-btn:disabled { opacity:.4; cursor:not-allowed; }
 .rb-btn-primary  { background:var(--rb-accent); color:#fff; border-color:var(--rb-accent); }
 .rb-btn-primary:hover:not(:disabled)  { background:var(--rb-accent-h); }
+/* Run Report gets extra size so it's immediately obvious */
+.rb-btn-run {
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    box-shadow: 0 2px 6px rgba(79,70,229,.35);
+}
+.rb-btn-run:disabled {
+    opacity: 1;
+    background: #c7d2fe;
+    border-color: #c7d2fe;
+    color: #6366f1;
+    cursor: not-allowed;
+    box-shadow: none;
+}
 .rb-btn-export   { background:#059669; color:#fff; border-color:#059669; }
 .rb-btn-export:hover:not(:disabled)   { background:#047857; }
 .rb-btn-outline  { background:#fff; color:#374151; border-color:var(--rb-border); }
@@ -446,7 +462,8 @@
             </div>
             <div class="rb-topbar-right">
 
-                <button @click="runReport()" :disabled="loading || fields.length === 0" class="rb-btn rb-btn-primary">
+                <span :title="fields.length === 0 ? 'Add at least one column from the left panel first' : 'Run your report'">
+                <button @click="runReport()" :disabled="loading || fields.length === 0" class="rb-btn rb-btn-primary rb-btn-run">
                     <template x-if="!loading">&#9654;&nbsp;Run Report</template>
                     <template x-if="loading">
                         <span style="display:flex;align-items:center;gap:6px;">
@@ -455,6 +472,7 @@
                         </span>
                     </template>
                 </button>
+                </span>
 
                 <div style="position:relative;" x-data="{ open:false }">
                     <button @click="open=!open"

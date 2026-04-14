@@ -178,7 +178,7 @@ class AssetRequestController extends Controller
     {
         $request->validate([
             'business_justification' => 'required|string',
-    'needed_by_date' => 'nullable|date|after:today',
+    'needed_by_date' => 'nullable|date|after_or_equal:today',
     'delivery_instructions' => 'nullable|string',
     'priority' => 'required|in:low,normal,high,urgent',
         ]);

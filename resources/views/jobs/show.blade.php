@@ -7,7 +7,7 @@
 <div class="container-fluid py-4">
     {{-- Back Button --}}
     <div class="mb-3">
-        <a href="{{ url()->previous() }}" class="btn btn-back">
+        <a href="{{ route('jobs.index') }}" class="btn btn-back">
             ← Back to Assignments
         </a>
     </div>

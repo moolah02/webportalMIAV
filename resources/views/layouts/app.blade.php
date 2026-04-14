@@ -351,8 +351,34 @@
       border-left-color: #e53e3e;
     }
 
+    /* Hamburger button */
+    .hamburger-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      color: #4a5568;
+      font-size: 22px;
+      line-height: 1;
+      margin-right: 10px;
+    }
+    .hamburger-btn:hover { background: #f0f4f8; }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 999;
+    }
+    .sidebar-overlay.active { display: block; }
+
     /* Responsive */
     @media(max-width: 768px){
+      .hamburger-btn { display: inline-flex; align-items: center; }
       .sidebar {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
@@ -374,12 +400,12 @@
 
       /* Responsive logo adjustments */
       .sidebar-header {
-        padding: 20px 16px; /* Reduce padding on mobile */
+        padding: 20px 16px;
         gap: 8px;
       }
 
       .sidebar-logo {
-        height: 48px; /* Smaller on mobile but still prominent */
+        height: 48px;
         max-width: 100px;
       }
 
@@ -612,10 +638,16 @@
       </nav>
     </div>
 
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
     <!-- Main content -->
     <div class="main-content">
       <div class="content-header">
-        <h1 class="page-title">{{ $title ?? 'Dashboard' }}</h1>
+        <div style="display:flex;align-items:center;">
+          <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Open navigation">&#9776;</button>
+          <h1 class="page-title">{{ $title ?? 'Dashboard' }}</h1>
+        </div>
         <div class="user-info" style="position: relative;">
           <div style="display: flex; align-items: center; gap: 12px;">
             <div style="text-align: right;">
@@ -695,6 +727,20 @@
         dropdown.style.display = 'none';
       }
     });
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    }
 
     function toggleMenu(header) {
       const submenu = header.nextElementSibling;
