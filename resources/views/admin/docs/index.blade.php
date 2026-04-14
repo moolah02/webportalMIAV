@@ -4,60 +4,61 @@
 @section('content')
 <div>
     {{-- Header --}}
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid #e5e7eb;">
+    <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
         <div>
-            <h1 style="margin:0;color:#111827;font-size:28px;font-weight:600;letter-spacing:-0.025em;">Documentation Manager</h1>
-            <p style="color:#6b7280;margin:4px 0 0 0;font-size:15px;">Edit the content of each public documentation page from here.</p>
+            <h1 class="m-0 text-gray-900 text-3xl font-semibold tracking-tight">Documentation Manager</h1>
+            <p class="text-gray-500 mt-1 mb-0 text-[15px]">Edit the content of each public documentation page from here.</p>
         </div>
-        <a href="{{ url('/docs') }}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:500;font-size:14px;">
+        <a href="{{ url('/docs') }}" target="_blank"
+           class="inline-flex items-center gap-1.5 bg-[#1a3a5c] text-white px-5 py-2.5 rounded-lg no-underline font-medium text-sm hover:bg-[#152e4a] transition-colors">
             🔗 View Live Docs
         </a>
     </div>
 
     @if(session('success'))
-        <div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:14px 18px;border-radius:8px;margin-bottom:24px;font-size:14px;">
+        <div class="bg-emerald-50 border border-emerald-300 text-emerald-700 px-4 py-3 rounded-lg mb-6 text-sm">
             ✅ {{ session('success') }}
         </div>
     @endif
 
     {{-- Pages table --}}
-    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <table class="w-full border-collapse text-sm">
             <thead>
-                <tr style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
-                    <th style="padding:14px 20px;text-align:left;font-weight:600;color:#374151;">Page</th>
-                    <th style="padding:14px 20px;text-align:left;font-weight:600;color:#374151;">Slug</th>
-                    <th style="padding:14px 20px;text-align:left;font-weight:600;color:#374151;">Last Edited</th>
-                    <th style="padding:14px 20px;text-align:left;font-weight:600;color:#374151;">Edited By</th>
-                    <th style="padding:14px 20px;text-align:right;font-weight:600;color:#374151;">Actions</th>
+                <tr class="bg-gray-50 border-b border-gray-200">
+                    <th class="px-5 py-3.5 text-left font-semibold text-gray-700">Page</th>
+                    <th class="px-5 py-3.5 text-left font-semibold text-gray-700">Slug</th>
+                    <th class="px-5 py-3.5 text-left font-semibold text-gray-700">Last Edited</th>
+                    <th class="px-5 py-3.5 text-left font-semibold text-gray-700">Edited By</th>
+                    <th class="px-5 py-3.5 text-right font-semibold text-gray-700">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($pages as $page)
-                <tr style="border-bottom:1px solid #f3f4f6;">
-                    <td style="padding:16px 20px;">
-                        <div style="font-weight:600;color:#111827;">{{ $page->title }}</div>
+                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td class="px-5 py-4">
+                        <div class="font-semibold text-gray-900">{{ $page->title }}</div>
                         @if($page->subtitle)
-                            <div style="color:#6b7280;font-size:12px;margin-top:2px;">{{ Str::limit($page->subtitle, 80) }}</div>
+                            <div class="text-gray-500 text-xs mt-0.5">{{ Str::limit($page->subtitle, 80) }}</div>
                         @endif
                     </td>
-                    <td style="padding:16px 20px;">
-                        <code style="background:#f3f4f6;padding:3px 8px;border-radius:4px;font-size:12px;color:#374151;">{{ $page->slug }}</code>
+                    <td class="px-5 py-4">
+                        <code class="bg-gray-100 px-2 py-0.5 rounded text-xs text-gray-700">{{ $page->slug }}</code>
                     </td>
-                    <td style="padding:16px 20px;color:#6b7280;">
+                    <td class="px-5 py-4 text-gray-500">
                         {{ $page->updated_at ? $page->updated_at->format('d M Y, H:i') : '—' }}
                     </td>
-                    <td style="padding:16px 20px;color:#6b7280;">
+                    <td class="px-5 py-4 text-gray-500">
                         {{ $page->editor?->name ?? '—' }}
                     </td>
-                    <td style="padding:16px 20px;text-align:right;">
-                        <div style="display:inline-flex;gap:8px;">
+                    <td class="px-5 py-4 text-right">
+                        <div class="inline-flex gap-2">
                             <a href="{{ url('/docs/' . $page->slug) }}" target="_blank"
-                               style="background:#f3f4f6;color:#374151;padding:7px 14px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:500;">
+                               class="bg-gray-100 text-gray-700 px-3.5 py-1.5 rounded-md no-underline text-xs font-medium hover:bg-gray-200 transition-colors">
                                 👁 View
                             </a>
                             <a href="{{ route('admin.docs.edit', $page->slug) }}"
-                               style="background:#1a3a5c;color:#fff;padding:7px 14px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:500;">
+                               class="bg-[#1a3a5c] text-white px-3.5 py-1.5 rounded-md no-underline text-xs font-medium hover:bg-[#152e4a] transition-colors">
                                 ✏️ Edit
                             </a>
                         </div>
@@ -65,8 +66,8 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" style="padding:40px;text-align:center;color:#9ca3af;">
-                        No documentation pages found. Run <code>php artisan db:seed --class=DocPageSeeder</code> to populate them.
+                    <td colspan="5" class="px-5 py-10 text-center text-gray-400">
+                        No documentation pages found. Run <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">php artisan db:seed --class=DocPageSeeder</code> to populate them.
                     </td>
                 </tr>
                 @endforelse
