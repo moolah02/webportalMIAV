@@ -430,6 +430,51 @@
 .rb-confirm { max-width:380px; }
 .rb-confirm-icon { font-size:36px; text-align:center; margin-bottom:12px; }
 .rb-confirm p { font-size:14px; color:var(--rb-sub); margin:0 0 20px; line-height:1.6; }
+
+/* ─── Chart panel ────────────────────────────────────────────── */
+.rb-chart-panel {
+    background: var(--rb-surface);
+    border: 1px solid var(--rb-border);
+    border-radius: var(--rb-radius);
+    box-shadow: var(--rb-shadow);
+    flex-shrink: 0;
+    height: 268px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.rb-chart-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--rb-border);
+    background: var(--rb-muted);
+    flex-shrink: 0;
+    gap: 8px; flex-wrap: wrap;
+}
+.rb-chart-title {
+    font-size: 12px; font-weight: 700; color: var(--rb-sub);
+    text-transform: uppercase; letter-spacing: .06em;
+}
+.rb-chart-body { flex: 1; min-height: 0; padding: 10px 14px; position: relative; }
+.rb-chart-select {
+    height: 26px; padding: 0 6px;
+    border: 1px solid var(--rb-border); border-radius: 6px;
+    font-size: 11px; color: var(--rb-text); background: var(--rb-surface);
+    cursor: pointer; max-width: 140px;
+}
+.rb-chart-type-group {
+    display: flex; align-items: center; gap: 2px;
+    background: var(--rb-muted); border: 1px solid var(--rb-border);
+    border-radius: 7px; padding: 2px;
+}
+.rb-chart-type-btn {
+    padding: 3px 9px; border: none; background: none; border-radius: 5px;
+    cursor: pointer; font-size: 13px; transition: all .12s; color: var(--rb-sub);
+    font-family: inherit;
+}
+.rb-chart-type-btn:hover { background: #e2e8f0; color: var(--rb-text); }
+.rb-chart-type-active { background: #fff !important; color: var(--rb-accent) !important; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.rb-btn-chart-on { background: #eff6ff !important; color: #1d4ed8 !important; border-color: #93c5fd !important; }
 </style>
 
 <div x-data="reportBuilder()" x-cloak>
@@ -487,6 +532,14 @@
                         </button>
                     </div>
                 </div>
+
+                <button @click="toggleChart()"
+                        :disabled="!reportData || reportData.length===0"
+                        :class="{ 'rb-btn-chart-on': showChart }"
+                        class="rb-btn rb-btn-outline"
+                        :title="showChart ? 'Hide chart' : 'Show chart'">
+                    &#128200;&nbsp;Chart
+                </button>
 
                 @if($canManageTemplates)
                 <button @click="showSaveModal=true" :disabled="fields.length===0" class="rb-btn rb-btn-outline">
@@ -659,6 +712,38 @@
                     </div>
                 </div>
 
+                {{-- Chart Panel --}}
+                <div class="rb-chart-panel" x-show="showChart && reportData && reportData.length > 0">
+                    <div class="rb-chart-head">
+                        <div class="rb-chart-title">&#128200; Visualisation</div>
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <div style="display:flex;align-items:center;gap:5px;" x-show="reportColumns.length > 1">
+                                <select x-model="chartLabelCol" @change="renderChart()" class="rb-chart-select" title="Label / X-axis column">
+                                    <template x-for="col in reportColumns" :key="col">
+                                        <option :value="col" x-text="col"></option>
+                                    </template>
+                                </select>
+                                <span style="font-size:11px;color:#94a3b8;">&#8594;</span>
+                                <select x-model="chartValueCol" @change="renderChart()" class="rb-chart-select" title="Value / Y-axis column">
+                                    <template x-for="col in reportColumns" :key="col">
+                                        <option :value="col" x-text="col"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="rb-chart-type-group">
+                                <button @click="chartType='bar';renderChart()"      :class="{'rb-chart-type-active':chartType==='bar'}"      class="rb-chart-type-btn" title="Bar">Bar</button>
+                                <button @click="chartType='line';renderChart()"     :class="{'rb-chart-type-active':chartType==='line'}"     class="rb-chart-type-btn" title="Line">Line</button>
+                                <button @click="chartType='pie';renderChart()"      :class="{'rb-chart-type-active':chartType==='pie'}"      class="rb-chart-type-btn" title="Pie">Pie</button>
+                                <button @click="chartType='doughnut';renderChart()" :class="{'rb-chart-type-active':chartType==='doughnut'}" class="rb-chart-type-btn" title="Doughnut">Ring</button>
+                            </div>
+                            <button @click="showChart=false;destroyChart()" class="rb-btn rb-btn-ghost" style="padding:4px 8px;font-size:16px;line-height:1;">&#215;</button>
+                        </div>
+                    </div>
+                    <div class="rb-chart-body">
+                        <canvas id="rb-chart-canvas"></canvas>
+                    </div>
+                </div>
+
                 {{-- Results --}}
                 <div class="rb-results">
                     <div class="rb-results-head">
@@ -809,6 +894,7 @@
 
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
 document.addEventListener('alpine:init', () => {
@@ -845,6 +931,12 @@ document.addEventListener('alpine:init', () => {
     saveForm: { name:'', description:'', isGlobal:false },
     reportData:    null,
     reportColumns: [],
+
+    showChart:     false,
+    chartType:     'bar',
+    chartInstance: null,
+    chartLabelCol: '',
+    chartValueCol: '',
 
     init() { /* templates load lazily */ },
 
@@ -902,7 +994,82 @@ document.addEventListener('alpine:init', () => {
     clearAll() {
       this.fields = []; this.reportData = null; this.reportColumns = [];
       this.errorMessage = ''; this.successMessage = '';
+      this.destroyChart();
     },
+
+    // ── Chart ─────────────────────────────────────────────────────────
+    toggleChart() {
+      if (!this.reportData || !this.reportData.length) return;
+      this.showChart = !this.showChart;
+      if (this.showChart) {
+        this.chartLabelCol = '';
+        this.chartValueCol = '';
+        this.renderChart();
+      } else {
+        this.destroyChart();
+      }
+    },
+
+    detectChartCols() {
+      if (!this.reportData || !this.reportColumns.length) return;
+      const sample  = this.reportData.slice(0, 10);
+      const numCols = this.reportColumns.filter(col => {
+        const vals = sample.map(r => r[col]).filter(v => v !== null && v !== '' && v !== undefined);
+        return vals.length > 0 && vals.every(v => !isNaN(parseFloat(v)) && isFinite(v));
+      });
+      const labelCols = this.reportColumns.filter(col => !numCols.includes(col));
+      if (!this.chartLabelCol || !this.reportColumns.includes(this.chartLabelCol))
+        this.chartLabelCol = labelCols[0] || this.reportColumns[0] || '';
+      if (!this.chartValueCol || !this.reportColumns.includes(this.chartValueCol))
+        this.chartValueCol = numCols[0] || this.reportColumns[this.reportColumns.length - 1] || '';
+    },
+
+    destroyChart() {
+      if (this.chartInstance) { this.chartInstance.destroy(); this.chartInstance = null; }
+    },
+
+    renderChart() {
+      if (!this.reportData || !this.reportData.length) return;
+      this.detectChartCols();
+      this.destroyChart();
+      this.$nextTick(() => {
+        const canvas = document.getElementById('rb-chart-canvas');
+        if (!canvas || !window.Chart) return;
+        const slice  = this.reportData.slice(0, 50);
+        const labels = slice.map(r => String(r[this.chartLabelCol] ?? '—'));
+        const values = slice.map(r => Number(r[this.chartValueCol] ?? 0));
+        const isPie  = (this.chartType === 'pie' || this.chartType === 'doughnut');
+        const pal    = ['#4f46e5','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1'];
+        this.chartInstance = new Chart(canvas.getContext('2d'), {
+          type: this.chartType,
+          data: {
+            labels,
+            datasets: [{
+              label:           this.chartValueCol,
+              data:            values,
+              backgroundColor: isPie ? labels.map((_,i) => pal[i%pal.length]+'cc') : 'rgba(79,70,229,.65)',
+              borderColor:     isPie ? labels.map((_,i) => pal[i%pal.length])      : '#4f46e5',
+              borderWidth:     isPie ? 2 : 1.5,
+              borderRadius:    isPie ? 0 : 4,
+              tension:         0.35,
+            }]
+          },
+          options: {
+            responsive:          true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend:  { display: isPie, position: 'right', labels: { font: { size: 11 }, boxWidth: 12 } },
+              tooltip: { mode: 'index', intersect: false },
+            },
+            scales: isPie ? {} : {
+              x: { ticks: { maxRotation: 40, font: { size: 10 } }, grid: { display: false } },
+              y: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.05)' }, beginAtZero: true },
+            }
+          }
+        });
+      });
+    },
+    // ── End chart ─────────────────────────────────────────────────────
 
     hasAggregates() {
       return this.fields.some(f => f.aggregate && f.aggregate !== '');
@@ -952,8 +1119,15 @@ document.addEventListener('alpine:init', () => {
         const text = await res.text();
         if (text.trim().startsWith('<!')) { this.errorMessage = 'Session expired — please refresh.'; return; }
         const r = JSON.parse(text);
-        if (r.success) { this.reportData = r.data; this.reportColumns = r.data.length ? Object.keys(r.data[0]) : []; }
-        else this.errorMessage = r.error || 'Unknown error';
+        if (r.success) {
+          this.reportData    = r.data;
+          this.reportColumns = r.data.length ? Object.keys(r.data[0]) : [];
+          if (this.showChart && r.data.length > 0) {
+            this.chartLabelCol = '';
+            this.chartValueCol = '';
+            this.renderChart();
+          }
+        } else this.errorMessage = r.error || 'Unknown error';
       } catch(e) { this.errorMessage = 'Request failed: '+e.message; }
       finally { this.loading = false; }
     },
