@@ -27,8 +27,8 @@ class ReportQueryBuilder
             'contact_person', 'phone_number', 'visit_summary', 'action_points', 'created_at', 'updated_at'
         ],
         'visit_terminals' => [
-            'id', 'visit_id', 'terminal_id', 'status', 'condition', 'serial_number', 'device_type',
-            'comments', 'created_at', 'updated_at'
+            'id', 'visit_id', 'terminal_id', 'status', 'condition', 'serial_number', 'terminal_model',
+            'device_type', 'comments', 'created_at', 'updated_at'
         ],
         'tickets' => [
             'id', 'ticket_id', 'technician_id', 'pos_terminal_id', 'client_id', 'visit_id',
@@ -109,16 +109,17 @@ class ReportQueryBuilder
             }
         }
 
-        // Build select fields
+        // Build select fields — wrap in DB::raw() so Laravel does NOT re-quote
+        // the backtick-quoted strings we generate ourselves.
         $selectFields = [];
         foreach ($config['select'] as $field) {
-            $selectFields[] = $this->buildSelectField($field);
+            $selectFields[] = DB::raw($this->buildSelectField($field));
         }
         $query->select($selectFields);
 
-        // Apply grouping
+        // Apply grouping — wrap as DB::raw so column refs aren't re-quoted
         if (!empty($config['group_by'])) {
-            $query->groupBy($config['group_by']);
+            $query->groupBy(array_map(fn($g) => DB::raw($this->quoteExpression($g)), $config['group_by']));
         }
 
         // Apply WHERE filters
@@ -126,10 +127,10 @@ class ReportQueryBuilder
             $this->applyWhereFilters($query, $config['where']);
         }
 
-        // Apply ordering
+        // Apply ordering — wrap as DB::raw so column refs aren't re-quoted
         if (!empty($config['order_by'])) {
             foreach ($config['order_by'] as $order) {
-                $query->orderBy($order['expr'], $order['dir'] ?? 'ASC');
+                $query->orderBy(DB::raw($this->quoteExpression($order['expr'])), $order['dir'] ?? 'ASC');
             }
         }
 
