@@ -154,6 +154,56 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
 
 /* ── Pagination override ─────────────────────────────────── */
 .rh-pagination { padding: 14px 16px; border-top: 1px solid var(--rh-border); background: var(--rh-muted); }
+
+/* ── Action buttons ──────────────────────────────────────── */
+.rh-action-group { display: flex; gap: 4px; align-items: center; flex-wrap: nowrap; }
+.rh-action-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 9px; border-radius: 6px; border: 1px solid var(--rh-border);
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    background: #fff; color: #374151; white-space: nowrap;
+    transition: all .12s; text-decoration: none;
+}
+.rh-action-btn:hover { background: var(--rh-muted); border-color: #cbd5e1; }
+.rh-action-btn-run  { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.rh-action-btn-run:hover  { background: #dbeafe; }
+.rh-action-btn-csv  { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.rh-action-btn-csv:hover  { background: #dcfce7; }
+.rh-action-btn-pdf  { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.rh-action-btn-pdf:hover  { background: #ffedd5; }
+.rh-action-btn-tpl  { background: #faf5ff; color: #7c3aed; border-color: #ddd6fe; }
+.rh-action-btn-tpl:hover  { background: #ede9fe; }
+
+/* ── Col names tooltip ───────────────────────────────────── */
+.rh-col-names { font-size:11px; color:#6366f1; cursor:help; border-bottom:1px dashed #a5b4fc; }
+
+/* ── Modal overlay ───────────────────────────────────────── */
+.rh-modal-backdrop {
+    position:fixed; inset:0; background:rgba(15,23,42,.5);
+    backdrop-filter:blur(2px); display:flex;
+    align-items:center; justify-content:center; z-index:500;
+}
+.rh-modal-box {
+    background:#fff; border-radius:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.2);
+    padding:26px; width:420px; max-width:92vw;
+}
+.rh-modal-box h3 { margin:0 0 18px; font-size:16px; font-weight:700; color:var(--rh-text); }
+.rh-modal-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--rh-sub); display:block; margin-bottom:4px; }
+.rh-modal-input {
+    width:100%; padding:9px 12px; border:1px solid var(--rh-border); border-radius:8px;
+    font-size:14px; box-sizing:border-box; transition:border-color .15s;
+    font-family:inherit;
+}
+.rh-modal-input:focus { outline:none; border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,.1); }
+.rh-toast {
+    position:fixed; bottom:24px; right:24px; z-index:600;
+    background:#0f172a; color:#fff; padding:12px 18px;
+    border-radius:10px; font-size:13px; font-weight:600;
+    box-shadow:0 8px 24px rgba(0,0,0,.2); pointer-events:none;
+    animation: rh-fadein .2s ease;
+}
+@keyframes rh-fadein { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 </style>
 @endpush
 
@@ -167,7 +217,8 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
     $maxRows      = $collection->max('result_count') ?: 1;
 @endphp
 
-<div class="rh-page">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<div class="rh-page" id="rh-app">
 
     {{-- ── Top bar ──────────────────────────────────────────── --}}
     <div class="rh-topbar">
@@ -230,6 +281,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
                     <th>Rows Returned</th>
                     <th>IP Address</th>
                     <th>When</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -238,11 +290,13 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
                     $payload  = is_array($run->payload) ? $run->payload : [];
                     $srcTable = $payload['base']['table'] ?? null;
                     $colCount = isset($payload['select']) ? count($payload['select']) : 0;
+                    $colNames = isset($payload['select']) ? collect($payload['select'])->pluck('as')->implode(', ') : '';
                     $isExport = $run->action === 'export';
                     $initials = $run->user
                         ? strtoupper(substr($run->user->first_name ?? '?', 0, 1) . substr($run->user->last_name ?? '', 0, 1))
                         : '??';
                     $rowPct = $maxRows > 0 ? min(100, round(($run->result_count / $maxRows) * 100)) : 0;
+                    $payloadJson = json_encode($payload);
                 @endphp
                 <tr>
                     {{-- User --}}
@@ -285,9 +339,10 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
 
                     {{-- Columns --}}
                     <td>
-                        <span style="font-size:13px; font-weight:600; color:#374151;">{{ $colCount ?: '—' }}</span>
                         @if($colCount > 0)
-                            <span style="font-size:11px; color:#94a3b8;"> col{{ $colCount !== 1 ? 's' : '' }}</span>
+                            <span class="rh-col-names" title="{{ $colNames }}">{{ $colCount }} col{{ $colCount !== 1 ? 's' : '' }}</span>
+                        @else
+                            <span style="color:#94a3b8;">—</span>
                         @endif
                     </td>
 
@@ -315,10 +370,40 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
                             <span style="color:#94a3b8;">—</span>
                         @endif
                     </td>
+
+                    {{-- Actions --}}
+                    <td>
+                        @if(!empty($payload['select']))
+                        <div class="rh-action-group">
+                            <button class="rh-action-btn rh-action-btn-run"
+                                    onclick="rhRerun({{ $payloadJson }})"
+                                    title="Load this report in the Report Builder">
+                                &#9654; Re-run
+                            </button>
+                            <button class="rh-action-btn rh-action-btn-csv"
+                                    onclick="rhExport({{ $payloadJson }}, 'csv', this)"
+                                    title="Download as CSV">
+                                CSV
+                            </button>
+                            <button class="rh-action-btn rh-action-btn-pdf"
+                                    onclick="rhExport({{ $payloadJson }}, 'pdf', this)"
+                                    title="Download as PDF">
+                                PDF
+                            </button>
+                            <button class="rh-action-btn rh-action-btn-tpl"
+                                    onclick="rhOpenSaveTemplate({{ $payloadJson }})"
+                                    title="Save this report as a named template">
+                                &#128190; Save
+                            </button>
+                        </div>
+                        @else
+                            <span style="color:#94a3b8;font-size:11px;">—</span>
+                        @endif
+                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7">
+                    <td colspan="8">
                         <div class="rh-empty">
                             <div class="rh-empty-icon">&#128202;</div>
                             <p class="rh-empty-title">No report activity yet</p>
@@ -338,5 +423,150 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
         @endif
     </div>
 
+{{-- ── Save-as-template modal ─────────────────────────────── --}}
+<div id="rh-tpl-modal" class="rh-modal-backdrop" style="display:none;">
+    <div class="rh-modal-box">
+        <h3>&#128190; Save as Template</h3>
+        <div style="margin-bottom:12px;">
+            <label class="rh-modal-label">Template Name *</label>
+            <input id="rh-tpl-name" type="text" class="rh-modal-input" placeholder="e.g. Monthly Visits Report">
+        </div>
+        <div style="margin-bottom:20px;">
+            <label class="rh-modal-label">Description (optional)</label>
+            <textarea id="rh-tpl-desc" rows="2" class="rh-modal-input" style="resize:vertical;height:60px;"></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button onclick="rhCloseSaveTemplate()" class="rh-btn rh-btn-outline">Cancel</button>
+            <button id="rh-tpl-save-btn" onclick="rhSaveTemplate()" class="rh-btn rh-btn-primary">Save Template</button>
+        </div>
+    </div>
+</div>
+
+{{-- ── Toast ─────────────────────────────────────────────── --}}
+<div id="rh-toast" class="rh-toast" style="display:none;"></div>
+
 </div>
 @endsection
+
+@push('scripts')
+<script>
+let _rhTplPayload = null;
+
+function rhToast(msg, ok) {
+    const t = document.getElementById('rh-toast');
+    t.textContent = msg;
+    t.style.background = ok === false ? '#dc2626' : '#0f172a';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3200);
+}
+
+function rhRerun(payload) {
+    sessionStorage.setItem('rb_load_run', JSON.stringify(payload));
+    window.location.href = '{{ route("reports.builder") }}';
+}
+
+async function rhExport(payload, format, btn) {
+    const orig = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '…';
+    try {
+        const p = { ...payload, format, filename: 'report_' + new Date().toISOString().slice(0,10), download_all: true };
+        const res = await fetch('/api/report/export', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(p)
+        });
+        if (res.ok) {
+            const blob = await res.blob();
+            const url  = URL.createObjectURL(blob);
+            const a    = Object.assign(document.createElement('a'), { href: url, download: p.filename + '.' + format });
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            rhToast('Download started', true);
+        } else {
+            const r = await res.json().catch(() => ({}));
+            rhToast('Export failed: ' + (r.error || res.statusText), false);
+        }
+    } catch(e) { rhToast('Export failed: ' + e.message, false); }
+    finally { btn.disabled = false; btn.textContent = orig; }
+}
+
+function rhOpenSaveTemplate(payload) {
+    _rhTplPayload = payload;
+    document.getElementById('rh-tpl-name').value = '';
+    document.getElementById('rh-tpl-desc').value = '';
+    document.getElementById('rh-tpl-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('rh-tpl-name').focus(), 50);
+}
+
+function rhCloseSaveTemplate() {
+    document.getElementById('rh-tpl-modal').style.display = 'none';
+    _rhTplPayload = null;
+}
+
+async function rhSaveTemplate() {
+    const name = document.getElementById('rh-tpl-name').value.trim();
+    if (!name) { document.getElementById('rh-tpl-name').focus(); return; }
+    const desc = document.getElementById('rh-tpl-desc').value.trim();
+    const btn  = document.getElementById('rh-tpl-save-btn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    // Reconstruct UI-format payload from server-format payload
+    const p = _rhTplPayload;
+    const fields = (p.select || []).map(item => ({
+        label:      item.aggregate
+                        ? item.as.replace(new RegExp('^' + item.aggregate + '\\('), '').replace(/\)$/, '')
+                        : item.as,
+        expression: item.expr,
+        category:   item.aggregate ? 'measures' : 'dimensions',
+        aggregate:  item.aggregate || '',
+    }));
+    const config = { baseTable: p.base?.table || 'pos_terminals', regionId: '', clientId: '', dateColumn: '', dateFrom: '', dateTo: '', limit: p.limit || 100 };
+    (p.where || []).forEach(w => {
+        if (w.operator === 'between_dates') {
+            config.dateColumn = w.column;
+            config.dateFrom = w.value?.from || '';
+            config.dateTo   = w.value?.to   || '';
+        }
+    });
+
+    try {
+        const res = await fetch('/api/report/templates', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ name, description: desc, is_global: false, payload: { fields, ...config } })
+        });
+        const r = await res.json().catch(() => ({}));
+        if (r.success) {
+            rhCloseSaveTemplate();
+            rhToast('Template "' + name + '" saved! Load it from the Report Builder.');
+        } else {
+            rhToast('Save failed: ' + (r.error || 'Unknown error'), false);
+        }
+    } catch(e) { rhToast('Save failed: ' + e.message, false); }
+    finally { btn.disabled = false; btn.textContent = 'Save Template'; }
+}
+
+// Close modal on backdrop click
+document.getElementById('rh-tpl-modal').addEventListener('click', function(e) {
+    if (e.target === this) rhCloseSaveTemplate();
+});
+
+// Close modal on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') rhCloseSaveTemplate(); });
+
+// Enter key submits the template form
+document.getElementById('rh-tpl-name').addEventListener('keydown', e => { if (e.key === 'Enter') rhSaveTemplate(); });
+</script>
+@endpush

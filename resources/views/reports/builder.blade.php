@@ -938,7 +938,34 @@ document.addEventListener('alpine:init', () => {
     chartLabelCol: '',
     chartValueCol: '',
 
-    init() { /* templates load lazily */ },
+    init() {
+      // Load a run payload from history page (via Re-run button)
+      const runData = sessionStorage.getItem('rb_load_run');
+      if (runData) {
+        sessionStorage.removeItem('rb_load_run');
+        try {
+          const p = JSON.parse(runData);
+          if (p.base?.table) this.config.baseTable = p.base.table;
+          if (p.limit)       this.config.limit      = p.limit;
+          this.fields = (p.select || []).map(item => ({
+            label:      item.aggregate
+                          ? item.as.replace(new RegExp('^'+item.aggregate+'\\('), '').replace(/\)$/, '')
+                          : item.as,
+            expression: item.expr,
+            category:   item.aggregate ? 'measures' : 'dimensions',
+            aggregate:  item.aggregate || '',
+          }));
+          (p.where || []).forEach(w => {
+            if (w.operator === 'between_dates') {
+              this.config.dateColumn = w.column;
+              this.config.dateFrom   = w.value?.from || '';
+              this.config.dateTo     = w.value?.to   || '';
+            }
+          });
+          this.successMessage = 'Report loaded from history \u2014 click Run Report to execute.';
+        } catch(e) {}
+      }
+    },
 
     tableVisible(table) {
       if (!this.fieldSearch) return true;
