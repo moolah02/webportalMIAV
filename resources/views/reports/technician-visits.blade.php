@@ -483,8 +483,8 @@
                 <i class="fas fa-calendar-day"></i>
             </div>
             <div class="stat-content">
-                <h3>7</h3>
-                <p>Total Visits</p>
+                <h3>{{ $stats['today_visits'] ?? 0 }}</h3>
+                <p>Today's Visits</p>
             </div>
         </div>
         <div class="stat-card success">
@@ -492,7 +492,7 @@
                 <i class="fas fa-check-circle"></i>
             </div>
             <div class="stat-content">
-                <h3>5</h3>
+                <h3>{{ $stats['working_terminals'] ?? 0 }}</h3>
                 <p>Working Terminals</p>
             </div>
         </div>
@@ -501,7 +501,7 @@
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
             <div class="stat-content">
-                <h3>2</h3>
+                <h3>{{ $stats['issues_found'] ?? 0 }}</h3>
                 <p>Issues Found</p>
             </div>
         </div>
@@ -510,8 +510,8 @@
                 <i class="fas fa-times-circle"></i>
             </div>
             <div class="stat-content">
-                <h3>1</h3>
-                <p>Down Terminals</p>
+                <h3>{{ $stats['not_seen'] ?? 0 }}</h3>
+                <p>Not Seen</p>
             </div>
         </div>
     </div>

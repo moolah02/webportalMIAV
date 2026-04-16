@@ -27,6 +27,7 @@ use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\PosTerminalImportController;
 use App\Http\Controllers\SystemReportsController;
 use App\Http\Controllers\DocsController;
+use App\Http\Controllers\AuditTrailController;
 use App\Http\Controllers\Admin\DocPageController;
 use Illuminate\Support\Facades\Auth;
 
@@ -284,6 +285,7 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         Route::put('/assignment/{assignment}', [JobAssignmentController::class, 'update'])->name('assignment.update');
         Route::post('/assignment/{assignment}/cancel', [JobAssignmentController::class, 'cancel'])->name('assignment.cancel');
         Route::post('/assignment/{assignment}/status', [JobAssignmentController::class, 'updateStatus'])->name('assignment.updateStatus');
+        Route::post('/assignment/{assignment}/complete', [JobAssignmentController::class, 'complete'])->name('assignment.complete');
         Route::get('/assignment/export', [JobAssignmentController::class, 'export'])->name('assignment.export');
     });
 
@@ -304,6 +306,11 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
     // API route for status updates
     Route::put('/api/assignments/{assignmentId}/status', [JobAssignmentController::class, 'updateStatus'])
         ->middleware('permission:view_jobs,manage_jobs,assign_jobs,all');
+
+    // Standalone complete route (used by JS in assignment.blade.php)
+    Route::post('/assignments/{assignmentId}/complete', [JobAssignmentController::class, 'complete'])
+        ->middleware('permission:view_jobs,manage_jobs,assign_jobs,all')
+        ->name('assignments.complete');
 
     // ==============================================
     // TECHNICIAN MANAGEMENT ROUTES
@@ -500,6 +507,14 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->middleware('permission:export_reports,approve_requests,all')
             ->name('export');
     });
+
+    // ==============================================
+    // AUDIT TRAIL
+    // ==============================================
+
+    Route::get('/audit-trail', [AuditTrailController::class, 'index'])
+        ->middleware('permission:all,approve_requests')
+        ->name('audit-trail.index');
 
     // ==============================================
     // EMPLOYEE MANAGEMENT ROUTES - UPDATED PERMISSIONS

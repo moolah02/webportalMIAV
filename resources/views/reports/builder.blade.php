@@ -632,6 +632,45 @@
         </div>
 
         {{-- ═══════════════════════════════════════════════
+             HAVING FILTER STRIP (shown when aggregates used)
+        ════════════════════════════════════════════════ --}}
+        <div class="rb-strip" x-show="hasAggregates()" x-cloak style="flex-wrap:wrap; gap:8px; align-items:flex-start;">
+            <div class="rb-strip-group" style="width:100%; padding-bottom:4px;">
+                <label style="font-weight:600; color:#4f46e5;">&#931; Aggregate Filters (HAVING)</label>
+                <button type="button" class="rb-btn rb-btn-secondary" style="margin-left:auto;"
+                    @click="having.push({ fn:'COUNT', column:'*', operator:'>', value:'' })">+ Add Filter</button>
+            </div>
+            <template x-for="(h, idx) in having" :key="idx">
+                <div class="rb-strip-group" style="gap:6px; align-items:center;">
+                    <select class="rb-strip-select" x-model="h.fn">
+                        <template x-for="fn in havingFunctions" :key="fn">
+                            <option :value="fn" x-text="fn"></option>
+                        </template>
+                    </select>
+                    <span style="color:#6b7280;">(</span>
+                    <select class="rb-strip-select" x-model="h.column">
+                        <option value="*">* (all)</option>
+                        <template x-for="f in fields" :key="f.expression">
+                            <option :value="f.expression" x-text="f.label"></option>
+                        </template>
+                    </select>
+                    <span style="color:#6b7280;">)</span>
+                    <select class="rb-strip-select" x-model="h.operator" style="width:60px;">
+                        <template x-for="op in havingOperators" :key="op">
+                            <option :value="op" x-text="op"></option>
+                        </template>
+                    </select>
+                    <input type="number" class="rb-strip-input" x-model="h.value" placeholder="value" style="width:80px;">
+                    <button type="button" class="rb-btn" style="background:#fee2e2; color:#dc2626; padding:2px 8px;"
+                        @click="having.splice(idx, 1)">&times;</button>
+                </div>
+            </template>
+            <div x-show="having.length === 0" style="color:#9ca3af; font-size:0.85rem; padding:4px 0;">
+                No aggregate filters. Click "+ Add Filter" to filter by aggregate values (e.g. COUNT() &gt; 5).
+            </div>
+        </div>
+
+        {{-- ═══════════════════════════════════════════════
              MAIN BODY
         ════════════════════════════════════════════════ --}}
         <div class="rb-body">
@@ -928,6 +967,11 @@ document.addEventListener('alpine:init', () => {
       limit:      100,
     },
 
+    having: [],
+
+    havingOperators: ['=', '!=', '<', '<=', '>', '>='],
+    havingFunctions: ['COUNT', 'SUM', 'AVG', 'MIN', 'MAX'],
+
     saveForm: { name:'', description:'', isGlobal:false },
     reportData:    null,
     reportColumns: [],
@@ -1131,7 +1175,8 @@ document.addEventListener('alpine:init', () => {
       if (this.config.dateColumn && (this.config.dateFrom || this.config.dateTo)) {
         where.push({ column:this.config.dateColumn, operator:'between_dates', value:{from:this.config.dateFrom||null, to:this.config.dateTo||null} });
       }
-      return { base:{table:this.config.baseTable}, select, joins:[], group_by, where, limit:this.config.limit };
+      const having = this.having.filter(h => h.fn && h.column && h.operator && h.value !== '');
+      return { base:{table:this.config.baseTable}, select, joins:[], group_by, where, limit:this.config.limit, ...(having.length ? { having: having.map(h => ({ column: h.fn+'('+h.column+')', operator: h.operator, value: parseFloat(h.value) })) } : {}) };
     },
 
     async runReport() {

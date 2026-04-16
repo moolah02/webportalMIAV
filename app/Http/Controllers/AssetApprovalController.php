@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AssetRequest;
 use App\Models\AssetRequestItem;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -62,10 +63,10 @@ class AssetApprovalController extends Controller
     public function show($id)
     {
         $assetRequest = AssetRequest::with([
-            'items.asset', 
-            'employee.department', 
-            'employee.role', 
-            'approver', 
+            'items.asset',
+            'employee.department',
+            'employee.role',
+            'approver',
             'fulfiller'
         ])->findOrFail($id);
 
@@ -78,7 +79,7 @@ class AssetApprovalController extends Controller
     public function approve($id, Request $request)
     {
         $assetRequest = AssetRequest::findOrFail($id);
-        
+
         // Check if request can be approved
         if ($assetRequest->status !== 'pending') {
             return redirect()->back()->with('error', 'This request cannot be approved.');
@@ -100,26 +101,32 @@ class AssetApprovalController extends Controller
 
                 $totalApprovedValue = 0;
                 $hasApprovedItems = false;
-                
+
                 foreach ($request->item_approvals as $itemId => $approval) {
                     $item = AssetRequestItem::find($itemId);
                     if ($item && $item->asset_request_id == $assetRequest->id) {
                         $quantityApproved = (int) $approval['quantity_approved'];
-                        
+
+                        // Cap approved quantity to available stock
+                        $availableStock = $item->asset->stock_quantity ?? 0;
+                        if ($quantityApproved > $availableStock) {
+                            $quantityApproved = $availableStock;
+                        }
+
                         // Determine item status
                         $itemStatus = 'rejected';
                         if ($quantityApproved > 0) {
                             $hasApprovedItems = true;
                             $itemStatus = ($quantityApproved >= $item->quantity_requested) ? 'approved' : 'partially_approved';
                         }
-                        
+
                         $item->update([
                             'quantity_approved' => $quantityApproved,
                             'item_status' => $itemStatus
                         ]);
 
                         $totalApprovedValue += $quantityApproved * $item->unit_price_at_request;
-                        
+
                         Log::info("Updated item {$itemId}: approved={$quantityApproved}, status={$itemStatus}");
                     }
                 }
@@ -142,18 +149,18 @@ class AssetApprovalController extends Controller
                 ]);
 
                 $totalApprovedValue = 0;
-                
+
                 foreach ($assetRequest->items as $item) {
                     // Use available stock or requested quantity, whichever is smaller
                     $quantityToApprove = min($item->quantity_requested, $item->asset->stock_quantity ?? $item->quantity_requested);
-                    
+
                     $item->update([
                         'quantity_approved' => $quantityToApprove,
                         'item_status' => 'approved'
                     ]);
 
                     $totalApprovedValue += $quantityToApprove * $item->unit_price_at_request;
-                    
+
                     Log::info("Quick approved item {$item->id}: approved={$quantityToApprove}, status=approved");
                 }
 
@@ -170,6 +177,14 @@ class AssetApprovalController extends Controller
             }
 
             Log::info('Updated main request: ' . $assetRequest->id . ' to status: ' . $assetRequest->status);
+
+            ActivityLog::log(
+                'approved',
+                "Asset request #{$assetRequest->id} approved by " . (auth()->user()->full_name ?? 'Admin'),
+                $assetRequest,
+                ['status' => 'pending'],
+                ['status' => $assetRequest->status, 'approved_by' => auth()->id()]
+            );
 
             DB::commit();
 
@@ -189,7 +204,7 @@ class AssetApprovalController extends Controller
     public function reject($id, Request $request)
     {
         $assetRequest = AssetRequest::findOrFail($id);
-        
+
         if ($assetRequest->status !== 'pending') {
             return redirect()->back()->with('error', 'This request cannot be rejected.');
         }
@@ -214,6 +229,14 @@ class AssetApprovalController extends Controller
                 'item_status' => 'rejected',
                 'quantity_approved' => 0
             ]);
+
+            ActivityLog::log(
+                'rejected',
+                "Asset request #{$assetRequest->id} rejected by " . (auth()->user()->full_name ?? 'Admin'),
+                $assetRequest,
+                ['status' => 'pending'],
+                ['status' => 'rejected', 'rejection_reason' => $request->rejection_reason]
+            );
 
             DB::commit();
 
@@ -256,10 +279,10 @@ class AssetApprovalController extends Controller
                 if ($request->action === 'approve') {
                     // Auto-approve all items with requested quantities
                     $totalApprovedValue = 0;
-                    
+
                     foreach ($assetRequest->items as $item) {
                         $quantityToApprove = min($item->quantity_requested, $item->asset->stock_quantity ?? $item->quantity_requested);
-                        
+
                         $item->update([
                             'quantity_approved' => $quantityToApprove,
                             'item_status' => 'approved'
@@ -332,7 +355,7 @@ class AssetApprovalController extends Controller
     {
         $totalProcessed = AssetRequest::whereIn('status', ['approved', 'rejected', 'fulfilled'])->count();
         $approved = AssetRequest::whereIn('status', ['approved', 'fulfilled'])->count();
-        
+
         return $totalProcessed > 0 ? round(($approved / $totalProcessed) * 100, 1) : 0;
     }
 
@@ -380,7 +403,7 @@ class AssetApprovalController extends Controller
 
         $callback = function() use ($requests) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV headers
             fputcsv($file, [
                 'Request Number',
@@ -421,7 +444,7 @@ class AssetApprovalController extends Controller
     public function fulfill($id, Request $request)
 {
     $assetRequest = AssetRequest::findOrFail($id);
-    
+
     if ($assetRequest->status !== 'approved') {
         return redirect()->back()->with('error', 'Only approved requests can be fulfilled.');
     }
@@ -478,8 +501,8 @@ class AssetApprovalController extends Controller
 
         DB::commit();
 
-        $message = $request->boolean('create_assignments', true) 
-            ? 'Request fulfilled and assets assigned to employee successfully!' 
+        $message = $request->boolean('create_assignments', true)
+            ? 'Request fulfilled and assets assigned to employee successfully!'
             : 'Request fulfilled successfully!';
 
         return redirect()->route('asset-approvals.index')->with('success', $message);

@@ -1,0 +1,69 @@
+0000	77 61 72 6e 69 6e 67 3a  20 75 6e 61 62 6c 65 20   warning: unable 
+0010	74 6f 20 75 6e 6c 69 6e  6b 20 27 73 63 72 69 70   to unlink 'scrip
+0020	74 73 2f 63 68 65 63 6b  5f 61 64 6d 69 6e 5f 70   ts/check_admin_p
+0030	65 72 6d 69 73 73 69 6f  6e 2e 70 68 70 27 3a 20   ermission.php': 
+0040	50 65 72 6d 69 73 73 69  6f 6e 20 64 65 6e 69 65   Permission denie
+0050	64 0a 77 61 72 6e 69 6e  67 3a 20 75 6e 61 62 6c   d.warning: unabl
+0060	65 20 74 6f 20 75 6e 6c  69 6e 6b 20 27 73 63 72   e to unlink 'scr
+0070	69 70 74 73 2f 63 72 65  61 74 65 5f 61 64 6d 69   ipts/create_admi
+0080	6e 2e 70 68 70 27 3a 20  50 65 72 6d 69 73 73 69   n.php': Permissi
+0090	6f 6e 20 64 65 6e 69 65  64 0a 77 61 72 6e 69 6e   on denied.warnin
+00a0	67 3a 20 75 6e 61 62 6c  65 20 74 6f 20 75 6e 6c   g: unable to unl
+00b0	69 6e 6b 20 27 73 63 72  69 70 74 73 2f 63 72 65   ink 'scripts/cre
+00c0	61 74 65 5f 65 6d 70 6c  6f 79 65 65 5f 61 64 6d   ate_employee_adm
+00d0	69 6e 2e 70 68 70 27 3a  20 50 65 72 6d 69 73 73   in.php': Permiss
+00e0	69 6f 6e 20 64 65 6e 69  65 64 0a 77 61 72 6e 69   ion denied.warni
+00f0	6e 67 3a 20 75 6e 61 62  6c 65 20 74 6f 20 75 6e   ng: unable to un
+0100	6c 69 6e 6b 20 27 73 63  72 69 70 74 73 2f 64 75   link 'scripts/du
+0110	6d 70 5f 72 6f 75 74 65  73 2e 70 68 70 27 3a 20   mp_routes.php': 
+0120	50 65 72 6d 69 73 73 69  6f 6e 20 64 65 6e 69 65   Permission denie
+0130	64 0a 4d 09 73 74 6f 72  61 67 65 2f 61 70 70 2f   d.M.storage/app/
+0140	2e 67 69 74 69 67 6e 6f  72 65 0a 4d 09 73 74 6f   .gitignore.M.sto
+0150	72 61 67 65 2f 61 70 70  2f 70 72 69 76 61 74 65   rage/app/private
+0160	2f 2e 67 69 74 69 67 6e  6f 72 65 0a 4d 09 73 74   /.gitignore.M.st
+0170	6f 72 61 67 65 2f 61 70  70 2f 70 75 62 6c 69 63   orage/app/public
+0180	2f 2e 67 69 74 69 67 6e  6f 72 65 0a 4d 09 73 74   /.gitignore.M.st
+0190	6f 72 61 67 65 2f 66 72  61 6d 65 77 6f 72 6b 2f   orage/framework/
+01a0	2e 67 69 74 69 67 6e 6f  72 65 0a 4d 09 73 74 6f   .gitignore.M.sto
+01b0	72 61 67 65 2f 66 72 61  6d 65 77 6f 72 6b 2f 63   rage/framework/c
+01c0	61 63 68 65 2f 2e 67 69  74 69 67 6e 6f 72 65 0a   ache/.gitignore.
+01d0	4d 09 73 74 6f 72 61 67  65 2f 66 72 61 6d 65 77   M.storage/framew
+01e0	6f 72 6b 2f 63 61 63 68  65 2f 64 61 74 61 2f 2e   ork/cache/data/.
+01f0	67 69 74 69 67 6e 6f 72  65 0a 4d 09 73 74 6f 72   gitignore.M.stor
+0200	61 67 65 2f 66 72 61 6d  65 77 6f 72 6b 2f 73 65   age/framework/se
+0210	73 73 69 6f 6e 73 2f 2e  67 69 74 69 67 6e 6f 72   ssions/.gitignor
+0220	65 0a 4d 09 73 74 6f 72  61 67 65 2f 66 72 61 6d   e.M.storage/fram
+0230	65 77 6f 72 6b 2f 74 65  73 74 69 6e 67 2f 2e 67   ework/testing/.g
+0240	69 74 69 67 6e 6f 72 65  0a 4d 09 73 74 6f 72 61   itignore.M.stora
+0250	67 65 2f 66 72 61 6d 65  77 6f 72 6b 2f 76 69 65   ge/framework/vie
+0260	77 73 2f 2e 67 69 74 69  67 6e 6f 72 65 0a 4d 09   ws/.gitignore.M.
+0270	73 74 6f 72 61 67 65 2f  6c 6f 67 73 2f 2e 67 69   storage/logs/.gi
+0280	74 69 67 6e 6f 72 65 0a  59 6f 75 72 20 62 72 61   tignore.Your bra
+0290	6e 63 68 20 69 73 20 62  65 68 69 6e 64 20 27 6f   nch is behind 'o
+02a0	72 69 67 69 6e 2f 66 69  78 2f 73 65 73 73 69 6f   rigin/fix/sessio
+02b0	6e 73 2d 66 61 6c 6c 62  61 63 6b 27 20 62 79 20   ns-fallback' by 
+02c0	31 20 63 6f 6d 6d 69 74  2c 20 61 6e 64 20 63 61   1 commit, and ca
+02d0	6e 20 62 65 20 66 61 73  74 2d 66 6f 72 77 61 72   n be fast-forwar
+02e0	64 65 64 2e 0a 20 20 28  75 73 65 20 22 67 69 74   ded..  (use "git
+02f0	20 70 75 6c 6c 22 20 74  6f 20 75 70 64 61 74 65    pull" to update
+0300	20 79 6f 75 72 20 6c 6f  63 61 6c 20 62 72 61 6e    your local bran
+0310	63 68 29 0a 48 45 41 44  20 69 73 20 6e 6f 77 20   ch).HEAD is now 
+0320	61 74 20 63 62 64 38 63  61 65 20 46 69 78 20 76   at cbd8cae Fix v
+0330	69 73 69 74 73 20 41 50  49 20 35 30 30 3a 20 72   isits API 500: r
+0340	65 73 74 6f 72 65 20 76  69 73 69 74 5f 74 65 72   estore visit_ter
+0350	6d 69 6e 61 6c 73 20 73  74 61 74 75 73 20 2b 20   minals status + 
+0360	4a 53 4f 4e 20 61 75 74  68 20 66 61 69 6c 75 72   JSON auth failur
+0370	65 73 0a 53 77 69 74 63  68 65 64 20 74 6f 20 62   es.Switched to b
+0380	72 61 6e 63 68 20 27 66  69 78 2f 73 65 73 73 69   ranch 'fix/sessi
+0390	6f 6e 73 2d 66 61 6c 6c  62 61 63 6b 27 0a 0a 20   ons-fallback'.. 
+03a0	20 20 49 4e 46 4f 20 20  52 75 6e 6e 69 6e 67 20     INFO  Running 
+03b0	6d 69 67 72 61 74 69 6f  6e 73 2e 20 20 0a 0a 20   migrations.  .. 
+03c0	20 32 30 32 36 5f 30 31  5f 32 31 5f 31 35 30 30    2026_01_21_1500
+03d0	30 30 5f 63 72 65 61 74  65 5f 76 69 73 69 74 5f   00_create_visit_
+03e0	74 65 72 6d 69 6e 61 6c  73 5f 74 61 62 6c 65 20   terminals_table 
+03f0	2e 2e 2e 2e 2e 2e 2e 2e  2e 2e 2e 2e 2e 2e 2e 20   ............... 
+0400	32 39 30 2e 38 39 6d 73  20 44 4f 4e 45 0a 0a 0a   290.89ms DONE...
+0410	20 20 20 49 4e 46 4f 20  20 41 70 70 6c 69 63 61      INFO  Applica
+0420	74 69 6f 6e 20 63 61 63  68 65 20 63 6c 65 61 72   tion cache clear
+0430	65 64 20 73 75 63 63 65  73 73 66 75 6c 6c 79 2e   ed successfully.
+0440	20 20 0a 0a                                          ..

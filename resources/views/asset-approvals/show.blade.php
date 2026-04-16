@@ -95,6 +95,7 @@
               <tr>
                 <th>Asset</th>
                 <th class="t-center">Requested</th>
+                <th class="t-center">In Stock</th>
                 <th class="t-right">Unit Price</th>
                 <th class="t-right">Subtotal</th>
                 <th class="t-center">Item Status</th>
@@ -108,6 +109,15 @@
                   <div class="small muted">{{ $item->asset->brand }} {{ $item->asset->model }}</div>
                 </td>
                 <td class="t-center">{{ $item->quantity_requested }}</td>
+                <td class="t-center">
+                  @php $stock = $item->asset->stock_quantity ?? 0; @endphp
+                  <span style="font-weight:600; color:{{ $stock >= $item->quantity_requested ? '#2e7d32' : ($stock > 0 ? '#e65100' : '#c62828') }}">
+                    {{ $stock }}
+                    @if($stock < $item->quantity_requested)
+                      <span style="font-size:11px; display:block; font-weight:400;">⚠️ Low stock</span>
+                    @endif
+                  </span>
+                </td>
                 <td class="t-right">${{ number_format($item->unit_price_at_request, 2) }}</td>
                 <td class="t-right">${{ number_format($item->total_price, 2) }}</td>
                 <td class="t-center">
@@ -116,7 +126,7 @@
               </tr>
               @endforeach
               <tr class="tfoot">
-                <td colspan="3" class="t-right strong">Grand Total:</td>
+                <td colspan="4" class="t-right strong">Grand Total:</td>
                 <td class="t-right strong primary">${{ number_format($assetRequest->total_estimated_cost, 2) }}</td>
                 <td></td>
               </tr>
@@ -134,6 +144,16 @@
         @if($assetRequest->approval_notes || $assetRequest->rejection_reason)
           <div class="pill mt-12 {{ $assetRequest->status === 'rejected' ? 'pill-danger' : 'pill-success' }}">
             {{ $assetRequest->approval_notes ?? $assetRequest->rejection_reason }}
+          </div>
+        @endif
+
+        @if($assetRequest->status === 'approved')
+          <div style="margin-top:16px; padding-top:16px; border-top:1px solid #e5e7eb;">
+            <p style="font-size:13px; color:#6b7280; margin-bottom:8px;">Ready to assign the approved assets to the requester?</p>
+            <a href="{{ route('assets.index', ['tab' => 'assign', 'employee_id' => $assetRequest->employee_id, 'from_request' => $assetRequest->id]) }}"
+               class="btn btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+              📦 Assign Assets Now
+            </a>
           </div>
         @endif
       </div>

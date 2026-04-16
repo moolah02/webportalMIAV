@@ -12,7 +12,7 @@
             <tr>
                 <td>
                     <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Select Asset</label>
-                    <select name="asset_id" id="quick_asset_select" required 
+                    <select name="asset_id" id="quick_asset_select" required
                             style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
                         <option value="">Choose an asset...</option>
                         @foreach($availableAssets as $asset)
@@ -24,7 +24,7 @@
                 </td>
                 <td>
                     <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Select Employee</label>
-                    <select name="employee_id" id="quick_employee_select" required 
+                    <select name="employee_id" id="quick_employee_select" required
                             style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
                         <option value="">Choose an employee...</option>
                         @foreach($employees as $employee)
@@ -36,12 +36,12 @@
                 </td>
                 <td>
                     <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Quantity</label>
-                    <input type="number" name="quantity" id="quick_quantity" min="1" value="1" required 
+                    <input type="number" name="quantity" id="quick_quantity" min="1" value="1" required
                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
                 </td>
                 <td>
                     <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Condition</label>
-                    <select name="condition_when_assigned" required 
+                    <select name="condition_when_assigned" required
                             style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
                         @foreach($conditionOptions as $value => $label)
                             <option value="{{ $value }}" {{ $value === 'good' ? 'selected' : '' }}>{{ $label }}</option>
@@ -179,7 +179,7 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 600;">Quantity</label>
-                            <input type="number" name="quantity" id="detailed_quantity" min="1" value="1" required 
+                            <input type="number" name="quantity" id="detailed_quantity" min="1" value="1" required
                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                         </div>
 
@@ -196,20 +196,20 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 600;">Assignment Date</label>
-                            <input type="date" name="assignment_date" value="{{ now()->format('Y-m-d') }}" required 
+                            <input type="date" name="assignment_date" value="{{ now()->format('Y-m-d') }}" required
                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                         </div>
 
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 600;">Expected Return Date</label>
-                            <input type="date" name="expected_return_date" 
+                            <input type="date" name="expected_return_date"
                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                         </div>
                     </div>
 
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 600;">Assignment Notes</label>
-                        <textarea name="assignment_notes" rows="3" placeholder="Optional notes about this assignment..." 
+                        <textarea name="assignment_notes" rows="3" placeholder="Optional notes about this assignment..."
                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
                     </div>
                 </div>
@@ -290,4 +290,25 @@ document.addEventListener('keydown', function(event) {
         closeDetailedAssignModal();
     }
 });
+
+// Pre-select employee if coming from an approved asset request
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const employeeId = params.get('employee_id');
+    const fromRequest = params.get('from_request');
+
+    if (employeeId) {
+        const sel = document.getElementById('quick_employee_select');
+        if (sel) sel.value = employeeId;
+        const detailSel = document.getElementById('detailed_employee_id');
+        if (detailSel) detailSel.value = employeeId;
+    }
+    if (fromRequest) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background:#dbeafe;border:1px solid #93c5fd;color:#1e40af;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;';
+        banner.innerHTML = `📦 You're assigning assets from <strong>Approved Request #${fromRequest}</strong>. Employee has been pre-selected below.`;
+        const form = document.getElementById('quickAssignForm');
+        if (form) form.parentNode.insertBefore(banner, form);
+    }
+})();
 </script>

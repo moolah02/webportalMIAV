@@ -74,7 +74,7 @@ class TicketController extends Controller
             ->get();
 
         $technicians = Employee::whereHas('role', function($query) {
-            $query->where('name', 'Technician');
+            $query->whereRaw('LOWER(name) = ?', ['technician']);
         })->select('id', 'first_name', 'last_name')
         ->orderBy('first_name')
         ->get();
@@ -105,10 +105,16 @@ class TicketController extends Controller
 
         // Validation rules based on ticket_type and assignment_type
         if ($validated['ticket_type'] === 'pos_terminal' && empty($validated['pos_terminal_id'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'POS Terminal is required for POS Terminal tickets'], 422);
+            }
             return back()->withErrors(['pos_terminal_id' => 'POS Terminal is required for POS Terminal tickets']);
         }
 
         if ($validated['assignment_type'] === 'direct' && empty($validated['assigned_to'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Assigned employee is required for direct tickets'], 422);
+            }
             return back()->withErrors(['assigned_to' => 'Assigned employee is required for direct tickets']);
         }
 
@@ -117,6 +123,12 @@ class TicketController extends Controller
 
         // Set default status
         $validated['status'] = 'open';
+
+        // Map estimated_resolution_days to the model's field name
+        if (isset($validated['estimated_resolution_days'])) {
+            $validated['estimated_resolution_time'] = $validated['estimated_resolution_days'];
+            unset($validated['estimated_resolution_days']);
+        }
 
         $ticket = Ticket::create($validated);
 
@@ -157,7 +169,7 @@ class TicketController extends Controller
             ->get();
 
         $technicians = Employee::whereHas('role', function($query) {
-            $query->where('name', 'Technician');
+            $query->whereRaw('LOWER(name) = ?', ['technician']);
         })->select('id', 'first_name', 'last_name')
         ->orderBy('first_name')
         ->get();
@@ -188,16 +200,28 @@ class TicketController extends Controller
 
         // Validation rules based on ticket_type and assignment_type
         if ($validated['ticket_type'] === 'pos_terminal' && empty($validated['pos_terminal_id'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'POS Terminal is required for POS Terminal tickets'], 422);
+            }
             return back()->withErrors(['pos_terminal_id' => 'POS Terminal is required for POS Terminal tickets']);
         }
 
         if ($validated['assignment_type'] === 'direct' && empty($validated['assigned_to'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Assigned employee is required for direct tickets'], 422);
+            }
             return back()->withErrors(['assigned_to' => 'Assigned employee is required for direct tickets']);
         }
 
         // Set resolved_at timestamp if status is being changed to resolved
         if (isset($validated['status']) && $validated['status'] === 'resolved' && $ticket->status !== 'resolved') {
             $validated['resolved_at'] = now();
+        }
+
+        // Map estimated_resolution_days to the model's field name
+        if (isset($validated['estimated_resolution_days'])) {
+            $validated['estimated_resolution_time'] = $validated['estimated_resolution_days'];
+            unset($validated['estimated_resolution_days']);
         }
 
         $ticket->update($validated);

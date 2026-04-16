@@ -395,9 +395,9 @@ class AssetController extends Controller
             // Merge category-specific validation rules
             $rules = array_merge($rules, $category->getValidationRulesArray());
 
-            // Force stock_quantity to 1 for categories requiring individual entry
+            // Individual entry categories still allow any positive quantity
             if ($category->requires_individual_entry) {
-                $rules['stock_quantity'] = 'required|integer|in:1';
+                $rules['stock_quantity'] = 'required|integer|min:1';
             }
         }
 
@@ -413,11 +413,6 @@ class AssetController extends Controller
         }
 
         try {
-            // Force stock_quantity to 1 for individual entry categories
-            if ($category && $category->requires_individual_entry) {
-                $request->merge(['stock_quantity' => 1]);
-            }
-
             $asset = Asset::create([
                 'name' => $request->name,
                 'category' => $request->category,
@@ -510,9 +505,9 @@ class AssetController extends Controller
             // Merge category-specific validation rules
             $rules = array_merge($rules, $category->getValidationRulesArray());
 
-            // Force stock_quantity to 1 for categories requiring individual entry
+            // Individual entry categories still allow any positive quantity
             if ($category->requires_individual_entry) {
-                $rules['stock_quantity'] = 'required|integer|in:1';
+                $rules['stock_quantity'] = 'required|integer|min:1';
             }
         }
 
@@ -528,11 +523,6 @@ class AssetController extends Controller
         }
 
         try {
-            // Force stock_quantity to 1 for individual entry categories
-            if ($category && $category->requires_individual_entry) {
-                $request->merge(['stock_quantity' => 1]);
-            }
-
             $asset->update([
                 'name' => $request->name,
                 'category' => $request->category,

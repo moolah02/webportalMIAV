@@ -1,0 +1,48 @@
+0000	46 72 6f 6d 20 68 74 74  70 73 3a 2f 2f 67 69 74   From https://git
+0010	68 75 62 2e 63 6f 6d 2f  6d 6f 6f 6c 61 68 30 32   hub.com/moolah02
+0020	2f 77 65 62 70 6f 72 74  61 6c 4d 49 41 56 0a 20   /webportalMIAV. 
+0030	2a 20 62 72 61 6e 63 68  20 20 20 20 20 20 20 20   * branch        
+0040	20 20 20 20 66 69 78 2f  73 65 73 73 69 6f 6e 73       fix/sessions
+0050	2d 66 61 6c 6c 62 61 63  6b 20 2d 3e 20 46 45 54   -fallback -> FET
+0060	43 48 5f 48 45 41 44 0a  68 69 6e 74 3a 20 59 6f   CH_HEAD.hint: Yo
+0070	75 20 68 61 76 65 20 64  69 76 65 72 67 65 6e 74   u have divergent
+0080	20 62 72 61 6e 63 68 65  73 20 61 6e 64 20 6e 65    branches and ne
+0090	65 64 20 74 6f 20 73 70  65 63 69 66 79 20 68 6f   ed to specify ho
+00a0	77 20 74 6f 20 72 65 63  6f 6e 63 69 6c 65 20 74   w to reconcile t
+00b0	68 65 6d 2e 0a 68 69 6e  74 3a 20 59 6f 75 20 63   hem..hint: You c
+00c0	61 6e 20 64 6f 20 73 6f  20 62 79 20 72 75 6e 6e   an do so by runn
+00d0	69 6e 67 20 6f 6e 65 20  6f 66 20 74 68 65 20 66   ing one of the f
+00e0	6f 6c 6c 6f 77 69 6e 67  20 63 6f 6d 6d 61 6e 64   ollowing command
+00f0	73 20 73 6f 6d 65 74 69  6d 65 20 62 65 66 6f 72   s sometime befor
+0100	65 0a 68 69 6e 74 3a 20  79 6f 75 72 20 6e 65 78   e.hint: your nex
+0110	74 20 70 75 6c 6c 3a 0a  68 69 6e 74 3a 20 0a 68   t pull:.hint: .h
+0120	69 6e 74 3a 20 20 20 67  69 74 20 63 6f 6e 66 69   int:   git confi
+0130	67 20 70 75 6c 6c 2e 72  65 62 61 73 65 20 66 61   g pull.rebase fa
+0140	6c 73 65 20 20 23 20 6d  65 72 67 65 0a 68 69 6e   lse  # merge.hin
+0150	74 3a 20 20 20 67 69 74  20 63 6f 6e 66 69 67 20   t:   git config 
+0160	70 75 6c 6c 2e 72 65 62  61 73 65 20 74 72 75 65   pull.rebase true
+0170	20 20 20 23 20 72 65 62  61 73 65 0a 68 69 6e 74      # rebase.hint
+0180	3a 20 20 20 67 69 74 20  63 6f 6e 66 69 67 20 70   :   git config p
+0190	75 6c 6c 2e 66 66 20 6f  6e 6c 79 20 20 20 20 20   ull.ff only     
+01a0	20 20 23 20 66 61 73 74  2d 66 6f 72 77 61 72 64     # fast-forward
+01b0	20 6f 6e 6c 79 0a 68 69  6e 74 3a 20 0a 68 69 6e    only.hint: .hin
+01c0	74 3a 20 59 6f 75 20 63  61 6e 20 72 65 70 6c 61   t: You can repla
+01d0	63 65 20 22 67 69 74 20  63 6f 6e 66 69 67 22 20   ce "git config" 
+01e0	77 69 74 68 20 22 67 69  74 20 63 6f 6e 66 69 67   with "git config
+01f0	20 2d 2d 67 6c 6f 62 61  6c 22 20 74 6f 20 73 65    --global" to se
+0200	74 20 61 20 64 65 66 61  75 6c 74 0a 68 69 6e 74   t a default.hint
+0210	3a 20 70 72 65 66 65 72  65 6e 63 65 20 66 6f 72   : preference for
+0220	20 61 6c 6c 20 72 65 70  6f 73 69 74 6f 72 69 65    all repositorie
+0230	73 2e 20 59 6f 75 20 63  61 6e 20 61 6c 73 6f 20   s. You can also 
+0240	70 61 73 73 20 2d 2d 72  65 62 61 73 65 2c 20 2d   pass --rebase, -
+0250	2d 6e 6f 2d 72 65 62 61  73 65 2c 0a 68 69 6e 74   -no-rebase,.hint
+0260	3a 20 6f 72 20 2d 2d 66  66 2d 6f 6e 6c 79 20 6f   : or --ff-only o
+0270	6e 20 74 68 65 20 63 6f  6d 6d 61 6e 64 20 6c 69   n the command li
+0280	6e 65 20 74 6f 20 6f 76  65 72 72 69 64 65 20 74   ne to override t
+0290	68 65 20 63 6f 6e 66 69  67 75 72 65 64 20 64 65   he configured de
+02a0	66 61 75 6c 74 20 70 65  72 0a 68 69 6e 74 3a 20   fault per.hint: 
+02b0	69 6e 76 6f 63 61 74 69  6f 6e 2e 0a 66 61 74 61   invocation..fata
+02c0	6c 3a 20 4e 65 65 64 20  74 6f 20 73 70 65 63 69   l: Need to speci
+02d0	66 79 20 68 6f 77 20 74  6f 20 72 65 63 6f 6e 63   fy how to reconc
+02e0	69 6c 65 20 64 69 76 65  72 67 65 6e 74 20 62 72   ile divergent br
+02f0	61 6e 63 68 65 73 2e 0a                            anches..

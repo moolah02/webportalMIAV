@@ -127,6 +127,11 @@ class ReportQueryBuilder
             $this->applyWhereFilters($query, $config['where']);
         }
 
+        // Apply HAVING filters (for aggregate conditions on grouped queries)
+        if (!empty($config['having'])) {
+            $this->applyHavingFilters($query, $config['having']);
+        }
+
         // Apply ordering — wrap as DB::raw so column refs aren't re-quoted
         if (!empty($config['order_by'])) {
             foreach ($config['order_by'] as $order) {
@@ -292,6 +297,32 @@ class ReportQueryBuilder
                     }
                     break;
             }
+        }
+    }
+
+    private function applyHavingFilters($query, array $filters): void
+    {
+        foreach ($filters as $filter) {
+            if (empty($filter['column']) || empty($filter['operator'])) {
+                continue;
+            }
+            $column   = $filter['column'];
+            $operator = $filter['operator'];
+            $value    = $filter['value'] ?? null;
+
+            // Only allow safe operators for HAVING
+            $safeOps = ['=', '!=', '<', '>', '<=', '>='];
+            if (!in_array($operator, $safeOps)) {
+                continue;
+            }
+
+            // column must be an aggregate expression like COUNT(*) or SUM(table.col)
+            // We allow aggregate functions with optional table.col argument
+            if (!preg_match('/^(COUNT|SUM|AVG|MIN|MAX)\s*\(/i', $column)) {
+                throw new InvalidArgumentException('HAVING column must be an aggregate expression: ' . $column);
+            }
+
+            $query->havingRaw(DB::raw($column) . ' ' . $operator . ' ?', [$value]);
         }
     }
 

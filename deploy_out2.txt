@@ -1,0 +1,26 @@
+warning: unable to unlink 'scripts/check_admin_permission.php': Permission denied
+warning: unable to unlink 'scripts/create_admin.php': Permission denied
+warning: unable to unlink 'scripts/create_employee_admin.php': Permission denied
+warning: unable to unlink 'scripts/dump_routes.php': Permission denied
+M	storage/app/.gitignore
+M	storage/app/private/.gitignore
+M	storage/app/public/.gitignore
+M	storage/framework/.gitignore
+M	storage/framework/cache/.gitignore
+M	storage/framework/cache/data/.gitignore
+M	storage/framework/sessions/.gitignore
+M	storage/framework/testing/.gitignore
+M	storage/framework/views/.gitignore
+M	storage/logs/.gitignore
+Your branch is behind 'origin/fix/sessions-fallback' by 1 commit, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+HEAD is now at cbd8cae Fix visits API 500: restore visit_terminals status + JSON auth failures
+Switched to branch 'fix/sessions-fallback'
+
+   INFO  Running migrations.  
+
+  2026_01_21_150000_create_visit_terminals_table ............... 290.89ms DONE
+
+
+   INFO  Application cache cleared successfully.  
+

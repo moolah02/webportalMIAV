@@ -131,7 +131,7 @@ class BusinessLicenseController extends Controller
             'expired_licenses'  => BusinessLicense::customerIssued()->expired()->count(),
             'expiring_soon'     => BusinessLicense::customerIssued()->expiringSoon(15)->count(),
             'unique_customers'  => BusinessLicense::customerIssued()->whereNotNull('customer_email')->distinct('customer_email')->count(),
-            'total_revenue'     => BusinessLicense::customerIssued()->where('status', 'active')->sum('annual_revenue') ?? 0,
+            'total_revenue'     => BusinessLicense::customerIssued()->where('status', 'active')->sum('revenue_amount') ?? 0,
         ];
     }
 

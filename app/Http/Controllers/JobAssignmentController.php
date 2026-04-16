@@ -311,11 +311,11 @@ public function store(Request $request)
                 'success' => true,
                 'message' => 'Job assignment created successfully!',
                 'assignment_id' => $assignmentId,
-                'redirect' => route('jobs.assignment.index')
+                'redirect' => route('jobs.assignment')
             ]);
         }
 
-        return redirect()->route('jobs.assignment.index')
+        return redirect()->route('jobs.assignment')
                         ->with('success', 'Job assignment created successfully! Assignment ID: ' . $assignmentId);
 
     } catch (\Exception $e) {

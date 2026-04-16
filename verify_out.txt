@@ -1,0 +1,30 @@
+HTTP/1.1 500 Internal Server Error
+Date: Wed, 21 Jan 2026 12:21:26 GMT
+Server: Apache/2.4.58 (Ubuntu)
+Vary: Authorization
+Cache-Control: no-cache, private
+Access-Control-Allow-Origin: *
+Connection: close
+Transfer-Encoding: chunked
+Content-Type: application/json
+
+{
+    "message": "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'is_active' in 'where clause' (Connection: mysql, SQL: select * from `employees` where `is_active` = 1)",
+    "exception": "Illuminate\\Database\\QueryException",
+    "file": "/var/www/html/revival_dev/vendor/laravel/framework/src/Illuminate/Database/Connection.php",
+    "line": 824,
+    "trace": [
+        {
+            "file": "/var/www/html/revival_dev/vendor/laravel/framework/src/Illuminate/Database/Connection.php",
+            "line": 778,
+            "function": "runQueryCallback",
+            "class": "Illuminate\\Database\\Connection",
+            "type": "->"
+        },
+        {
+            "file": "/var/www/html/revival_dev/vendor/laravel/framework/src/Illuminate/Database/Connection.php",
+            "line": 397,
+            "function": "run",
+            "class": "Illuminate\\Database\\Connection",
+            "type": "->"
+        },

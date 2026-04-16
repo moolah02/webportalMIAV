@@ -37,7 +37,16 @@
       "Bash(\"c:\\\\xampp4\\\\mysql\\\\bin\\\\mysql.exe\" -u root miav_system -e \"SHOW COLUMNS FROM assets;\")",
       "Bash(dir:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(git status:*)",
+      "Bash(php -l:*)",
+      "Bash(find c:/xampp4/htdocs/dashboard/Revival_Technologies -type f \\\\\\(-iname *revival* -o -iname *logo* \\\\\\))",
+      "Read(//c/xampp4/htdocs/dashboard/Revival_Technologies/**)",
+      "Bash(python3 -c \":*)",
+      "Bash(sort -k2)",
+      "Read(//c/xampp4/htdocs/dashboard/**)",
+      "Bash(sudo mysql:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []

@@ -245,11 +245,16 @@
                        hover:bg-gray-50 hover:text-gray-700 transition-all duration-150 cursor-pointer bg-transparent border-l-0 border-r-0 border-b-0">
           <span class="w-5 text-center text-base">⚙️</span> Administration
         </button>
-        <div class="submenu {{ request()->routeIs('settings.*','admin.*') ? 'show' : '' }}">
+        <div class="submenu {{ request()->routeIs('settings.*','admin.*','audit-trail.*') ? 'show' : '' }}">
           <a href="{{ route('settings.index') }}"
              class="flex items-center gap-3 pl-8 pr-4 py-2.5 text-sm font-medium border-l-[3px] transition-all duration-150
                     {{ request()->routeIs('settings.*') ? 'bg-blue-50 text-blue-700 border-blue-400 font-semibold' : 'text-gray-500 border-transparent hover:bg-gray-50 hover:text-gray-800' }}">
             <span class="w-4 text-center text-sm">🔧</span> System Settings
+          </a>
+          <a href="{{ route('audit-trail.index') }}"
+             class="flex items-center gap-3 pl-8 pr-4 py-2.5 text-sm font-medium border-l-[3px] transition-all duration-150
+                    {{ request()->routeIs('audit-trail.*') ? 'bg-blue-50 text-blue-700 border-blue-400 font-semibold' : 'text-gray-500 border-transparent hover:bg-gray-50 hover:text-gray-800' }}">
+            <span class="w-4 text-center text-sm">🔍</span> Audit Trail
           </a>
         </div>
 
