@@ -2,140 +2,134 @@
 
 @section('content')
 <div>
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px;">
+    {{-- Header --}}
+    <div class="flex items-start justify-between mb-5">
         <div>
-            <h3 style="margin: 0;">Edit {{ $client->company_name }}</h3>
-            <p style="color: #666; margin: 5px 0 0 0;">Update client information and settings</p>
+            <h2 class="page-title">Edit {{ $client->company_name }}</h2>
+            <p class="page-subtitle mt-1">Update client information and settings</p>
         </div>
-        <div style="display: flex; gap: 10px;">
-
-            <a href="{{ route('clients.index') }}" class="btn">← Back to List</a>
-        </div>
+        <a href="{{ route('clients.index') }}" class="btn-secondary btn-sm">&#8592; Back to List</a>
     </div>
 
-    <!-- Form -->
-    <div class="content-card">
+    <div class="ui-card">
         <form action="{{ route('clients.update', $client) }}" method="POST">
             @csrf
             @method('PUT')
+            <div class="ui-card-body flex flex-col gap-6">
 
-            <!-- Company Information -->
-            <div style="margin-block-end: 30px;">
-                <h4 style="margin-block-end: 15px; color: #333;">🏢 Company Information</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Company Name *</label>
-                        <input type="text" name="company_name" value="{{ old('company_name', $client->company_name) }}"
-                               required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        @error('company_name')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                        @enderror
+                {{-- Company Information --}}
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Company Information</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="ui-label">Company Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="company_name"
+                                   value="{{ old('company_name', $client->company_name) }}"
+                                   required class="ui-input w-full">
+                            @error('company_name')
+                                <div class="text-red-500 text-xs mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="ui-label">Client Code <span class="text-red-500">*</span></label>
+                            <input type="text" name="client_code"
+                                   value="{{ old('client_code', $client->client_code) }}"
+                                   required class="ui-input w-full">
+                            @error('client_code')
+                                <div class="text-red-500 text-xs mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="ui-label">Status</label>
+                            <select name="status" class="ui-select w-full">
+                                <option value="active"   {{ old('status', $client->status) == 'active'   ? 'selected' : '' }}>Active</option>
+                                <option value="inactive" {{ old('status', $client->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </div>
                     </div>
+                </div>
 
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Client Code *</label>
-                        <input type="text" name="client_code" value="{{ old('client_code', $client->client_code) }}"
-                               required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        @error('client_code')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                        @enderror
+                {{-- Contact Information --}}
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Contact Information</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="ui-label">Contact Person</label>
+                            <input type="text" name="contact_person"
+                                   value="{{ old('contact_person', $client->contact_person) }}"
+                                   class="ui-input w-full">
+                        </div>
+                        <div>
+                            <label class="ui-label">Email Address</label>
+                            <input type="email" name="email"
+                                   value="{{ old('email', $client->email) }}"
+                                   class="ui-input w-full">
+                            @error('email')
+                                <div class="text-red-500 text-xs mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="ui-label">Phone Number</label>
+                            <input type="text" name="phone"
+                                   value="{{ old('phone', $client->phone) }}"
+                                   class="ui-input w-full">
+                        </div>
                     </div>
+                </div>
 
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status</label>
-                        <select name="status" style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            <option value="active" {{ old('status', $client->status) == 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="inactive" {{ old('status', $client->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                        </select>
+                {{-- Location Information --}}
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Location Information</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="ui-label">City</label>
+                            <input type="text" name="city"
+                                   value="{{ old('city', $client->city) }}"
+                                   class="ui-input w-full">
+                        </div>
+                        <div>
+                            <label class="ui-label">Region</label>
+                            <select name="region" class="ui-select w-full">
+                                <option value="">Select Region</option>
+                                @foreach(['North','South','East','West','Central'] as $r)
+                                <option value="{{ $r }}" {{ old('region', $client->region) == $r ? 'selected' : '' }}>{{ $r }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="ui-label">Address</label>
+                        <textarea name="address" rows="3" class="ui-input w-full">{{ old('address', $client->address) }}</textarea>
+                    </div>
+                </div>
+
+                {{-- Contract Information --}}
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Contract Information</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="ui-label">Contract Start Date</label>
+                            <input type="date" name="contract_start_date"
+                                   value="{{ old('contract_start_date', $client->contract_start_date?->format('Y-m-d')) }}"
+                                   class="ui-input w-full">
+                        </div>
+                        <div>
+                            <label class="ui-label">Contract End Date</label>
+                            <input type="date" name="contract_end_date"
+                                   value="{{ old('contract_end_date', $client->contract_end_date?->format('Y-m-d')) }}"
+                                   class="ui-input w-full">
+                            @error('contract_end_date')
+                                <div class="text-red-500 text-xs mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Contact Information -->
-            <div style="margin-block-end: 30px;">
-                <h4 style="margin-block-end: 15px; color: #333;">👤 Contact Information</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contact Person</label>
-                        <input type="text" name="contact_person" value="{{ old('contact_person', $client->contact_person) }}"
-                               style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                    </div>
-
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Email Address</label>
-                        <input type="email" name="email" value="{{ old('email', $client->email) }}"
-                               style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        @error('email')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Phone Number</label>
-                        <input type="text" name="phone" value="{{ old('phone', $client->phone) }}"
-                               style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Location Information -->
-            <div style="margin-block-end: 30px;">
-                <h4 style="margin-block-end: 15px; color: #333;">📍 Location Information</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">City</label>
-                        <input type="text" name="city" value="{{ old('city', $client->city) }}"
-                               style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                    </div>
-
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Region</label>
-                        <select name="region" style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            <option value="">Select Region</option>
-                            <option value="North" {{ old('region', $client->region) == 'North' ? 'selected' : '' }}>North</option>
-                            <option value="South" {{ old('region', $client->region) == 'South' ? 'selected' : '' }}>South</option>
-                            <option value="East" {{ old('region', $client->region) == 'East' ? 'selected' : '' }}>East</option>
-                            <option value="West" {{ old('region', $client->region) == 'West' ? 'selected' : '' }}>West</option>
-                            <option value="Central" {{ old('region', $client->region) == 'Central' ? 'selected' : '' }}>Central</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div style="margin-block-start: 15px;">
-                    <label style="display: block; margin-block-end: 5px; font-weight: 500;">Address</label>
-                    <textarea name="address" rows="3"
-                              style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">{{ old('address', $client->address) }}</textarea>
-                </div>
-            </div>
-
-            <!-- Contract Information -->
-            <div style="margin-block-end: 30px;">
-                <h4 style="margin-block-end: 15px; color: #333;">📋 Contract Information</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contract Start Date</label>
-                        <input type="date" name="contract_start_date"
-                               value="{{ old('contract_start_date', $client->contract_start_date?->format('Y-m-d')) }}"
-                               style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                    </div>
-
-                    <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contract End Date</label>
-                        <input type="date" name="contract_end_date"
-                               value="{{ old('contract_end_date', $client->contract_end_date?->format('Y-m-d')) }}"
-                               style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                        @error('contract_end_date')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit Buttons -->
-            <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 20px; border-block-start: 1px solid #eee;">
-                <a href="{{ route('clients.show', $client) }}" class="btn">Cancel</a>
-                <button type="submit" class="btn btn-primary">Update Client</button>
+            {{-- Footer actions --}}
+            <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-end gap-3">
+                <a href="{{ route('clients.show', $client) }}" class="btn-secondary btn-sm">Cancel</a>
+                <button type="submit" class="btn-primary btn-sm">Update Client</button>
             </div>
         </form>
     </div>

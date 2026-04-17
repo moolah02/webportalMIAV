@@ -1,3 +1,6 @@
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+$path = 'c:\xampp4\htdocs\dashboard\Revival_Technologies\resources\views\dashboard.blade.php'
+$content = @'
 @extends('layouts.app')
 
 @section('content')
@@ -156,7 +159,7 @@
                     </div>
                 </div>
                 <div class="ui-card-body">
-                    <div class="h-[300px] relative">
+                    <div style="height: 300px; position: relative;">
                         <canvas id="statusChart"></canvas>
                     </div>
                 </div>
@@ -169,7 +172,7 @@
                     <a href="{{ route('business-licenses.index') }}" class="btn-secondary btn-sm">View All Licenses</a>
                 </div>
                 <div class="ui-card-body">
-                    <div class="h-[250px] relative">
+                    <div style="height: 250px; position: relative;">
                         <canvas id="licenseChart"></canvas>
                     </div>
                 </div>
@@ -181,7 +184,7 @@
                     <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4C8; Monthly Growth Trends</h4>
                 </div>
                 <div class="ui-card-body">
-                    <div class="h-[250px] relative">
+                    <div style="height: 250px; position: relative;">
                         <canvas id="trendsChart"></canvas>
                     </div>
                 </div>
@@ -227,7 +230,7 @@
                 <div class="ui-card-header">
                     <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4CB; Recent Activity</h4>
                 </div>
-                <div class="ui-card-body overflow-y-auto max-h-[400px]">
+                <div class="ui-card-body overflow-y-auto" style="max-height: 400px;">
                     @forelse($stats['recent_activity'] as $activity)
                     <div class="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
                         <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0" style="background: {{ $activity['color'] }};">
@@ -623,3 +626,6 @@ style.textContent = `@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; }
 document.head.appendChild(style);
 </script>
 @endsection
+'@
+[IO.File]::WriteAllText($path, $content, $utf8NoBom)
+Write-Host "Done. Lines: $((Get-Content $path).Count)"

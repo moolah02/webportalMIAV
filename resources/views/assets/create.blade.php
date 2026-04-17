@@ -1,65 +1,55 @@
 @extends('layouts.app')
 
 @section('content')
-<div>
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
-        <div>
-            <h2 style="margin: 0; color: #333;">📦 Add New Asset</h2>
-            <p style="color: #666; margin: 5px 0 0 0;">Add a new asset to the company inventory</p>
-        </div>
-        <a href="{{ route('assets.index') }}" class="btn">← Back to Assets</a>
+{{-- Header --}}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="page-title">Add New Asset</h1>
+        <p class="page-subtitle">Add a new asset to the company inventory</p>
     </div>
+    <a href="{{ route('assets.index') }}" class="btn-secondary btn-sm">Back to Assets</a>
+</div>
 
-    <!-- Error/Success Messages -->
-    @if(session('error'))
-        <div style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #c62828;">
-            <strong>Error:</strong> {{ session('error') }}
-        </div>
-    @endif
+{{-- Flash messages --}}
+@if(session('error'))
+    <div class="flash-error mb-4">{{ session('error') }}</div>
+@endif
+@if(session('success'))
+    <div class="flash-success mb-4">{{ session('success') }}</div>
+@endif
+@if($errors->any())
+    <div class="flash-error mb-4">
+        <strong>Validation Errors:</strong>
+        <ul class="mt-1 ml-4 list-disc">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
-    @if(session('success'))
-        <div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2e7d32;">
-            <strong>Success:</strong> {{ session('success') }}
-        </div>
-    @endif
+<form action="{{ route('assets.store') }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    @if($errors->any())
-        <div style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #c62828;">
-            <strong>Validation Errors:</strong>
-            <ul style="margin: 10px 0 0 20px;">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+        {{-- Main Form --}}
+        <div class="lg:col-span-2 space-y-5">
 
-    <form action="{{ route('assets.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-            <!-- Main Form -->
-            <div>
-                <!-- Basic Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📋 Basic Information</h4>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
+            {{-- Basic Information --}}
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h3 class="text-sm font-semibold text-gray-900">Basic Information</h3>
+                </div>
+                <div class="ui-card-body">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Asset Name *</label>
-                            <input type="text" name="name" value="{{ old('name') }}" required
-                                   placeholder="e.g., Company Vehicle"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('name')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
+                            <label class="ui-label">Asset Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g., Company Vehicle" class="ui-input w-full">
+                            @error('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
-
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Category *</label>
-                            <select name="category" id="categorySelect" required
-                                    style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                            <label class="ui-label">Category <span class="text-red-500">*</span></label>
+                            <select name="category" id="categorySelect" required class="ui-select w-full">
                                 <option value="">Select Category</option>
                                 @foreach($assetCategories as $category)
                                     <option value="{{ $category->name }}" {{ old('category') == $category->name ? 'selected' : '' }}>
@@ -67,68 +57,49 @@
                                     </option>
                                 @endforeach
                             </select>
-                            @error('category')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
+                            @error('category')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
-
                         <div id="brandField">
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Brand</label>
-                            <input type="text" name="brand" value="{{ old('brand') }}"
-                                   placeholder="e.g., Toyota, Dell, Apple"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                            <label class="ui-label">Brand</label>
+                            <input type="text" name="brand" value="{{ old('brand') }}" placeholder="e.g., Toyota, Dell, Apple" class="ui-input w-full">
                         </div>
-
                         <div id="modelField">
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Model</label>
-                            <input type="text" name="model" value="{{ old('model') }}"
-                                   placeholder="e.g., Corolla, Latitude 5420"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                            <label class="ui-label">Model</label>
+                            <input type="text" name="model" value="{{ old('model') }}" placeholder="e.g., Corolla, Latitude 5420" class="ui-input w-full">
                         </div>
                     </div>
-
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Description</label>
-                        <textarea name="description" rows="3" placeholder="Detailed description of the asset..."
-                                  style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">{{ old('description') }}</textarea>
-                        @error('description')
-                            <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                        @enderror
+                        <label class="ui-label">Description</label>
+                        <textarea name="description" rows="3" placeholder="Detailed description of the asset..." class="ui-input w-full">{{ old('description') }}</textarea>
+                        @error('description')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
                 </div>
+            </div>
 
-                <!-- Dynamic Category-Specific Fields (loaded via AJAX based on selected category) -->
-                @include('assets.partials.dynamic-fields')
+            {{-- Dynamic Category-Specific Fields --}}
+            @include('assets.partials.dynamic-fields')
 
-                <!-- Inventory & Status -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📋 Inventory & Status</h4>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
+            {{-- Inventory & Status --}}
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h3 class="text-sm font-semibold text-gray-900">Inventory & Status</h3>
+                </div>
+                <div class="ui-card-body space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Stock Quantity *</label>
-                            <input type="number" name="stock_quantity" value="{{ old('stock_quantity', 1) }}" required min="0"
-                                   placeholder="e.g., 1"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('stock_quantity')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
+                            <label class="ui-label">Stock Quantity <span class="text-red-500">*</span></label>
+                            <input type="number" name="stock_quantity" value="{{ old('stock_quantity', 1) }}" required min="0" placeholder="e.g., 1" class="ui-input w-full">
+                            @error('stock_quantity')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
-
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Min Stock Level *</label>
-                            <input type="number" name="min_stock_level" value="{{ old('min_stock_level', 0) }}" required min="0"
-                                   placeholder="e.g., 0"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
-                            @error('min_stock_level')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
+                            <label class="ui-label">Min Stock Level <span class="text-red-500">*</span></label>
+                            <input type="number" name="min_stock_level" value="{{ old('min_stock_level', 0) }}" required min="0" placeholder="e.g., 0" class="ui-input w-full">
+                            @error('min_stock_level')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
-
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status *</label>
-                        <select name="status" required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                        <label class="ui-label">Status <span class="text-red-500">*</span></label>
+                        <select name="status" required class="ui-select w-full">
                             @foreach($assetStatuses as $status)
                                 <option value="{{ $status->slug }}" {{ old('status', 'asset-active') == $status->slug ? 'selected' : '' }}>
                                     {{ $status->icon }} {{ $status->name }}
@@ -137,110 +108,47 @@
                         </select>
                     </div>
                 </div>
-
-                <!-- Hidden fields with default values -->
-                <input type="hidden" name="unit_price" value="0">
-                <input type="hidden" name="currency" value="USD">
             </div>
 
-            <!-- Settings Sidebar -->
-            <div>
-                <!-- Request Settings -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 15px; color: #333;">⚙️ Request Settings</h4>
-
-                    <div style="margin-block-end: 15px;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" name="is_requestable" value="1" {{ old('is_requestable', true) ? 'checked' : '' }}>
-                            <span>Available for Request</span>
-                        </label>
-                        <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Employees can request this asset</div>
-                    </div>
-
-                    <div style="margin-block-end: 15px;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" name="requires_approval" value="1" {{ old('requires_approval', true) ? 'checked' : '' }}>
-                            <span>Requires Approval</span>
-                        </label>
-                        <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Requests need manager approval</div>
-                    </div>
-                </div>
-
-                <!-- Submit Buttons -->
-                <div class="content-card">
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button type="submit" class="btn btn-primary" style="inline-size: 100%; padding: 15px;">
-                            Create Asset
-                        </button>
-                        <a href="{{ route('assets.index') }}" class="btn" style="inline-size: 100%; text-align: center;">
-                            Cancel
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <input type="hidden" name="unit_price" value="0">
+            <input type="hidden" name="currency" value="USD">
         </div>
-    </form>
-</div>
 
-<style>
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
+        {{-- Settings Sidebar --}}
+        <div class="space-y-5">
 
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
+            {{-- Request Settings --}}
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h3 class="text-sm font-semibold text-gray-900">Request Settings</h3>
+                </div>
+                <div class="ui-card-body space-y-4">
+                    <div>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="is_requestable" value="1" {{ old('is_requestable', true) ? 'checked' : '' }} class="rounded border-gray-300 text-[#1a3a5c]">
+                            <span class="text-sm text-gray-700">Available for Request</span>
+                        </label>
+                        <p class="text-xs text-gray-500 mt-1 ml-5">Employees can request this asset</p>
+                    </div>
+                    <div>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="requires_approval" value="1" {{ old('requires_approval', true) ? 'checked' : '' }} class="rounded border-gray-300 text-[#1a3a5c]">
+                            <span class="text-sm text-gray-700">Requires Approval</span>
+                        </label>
+                        <p class="text-xs text-gray-500 mt-1 ml-5">Requests need manager approval</p>
+                    </div>
+                </div>
+            </div>
 
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
+            {{-- Submit --}}
+            <div class="ui-card">
+                <div class="ui-card-body flex flex-col gap-2">
+                    <button type="submit" class="btn-primary w-full text-center py-3">Create Asset</button>
+                    <a href="{{ route('assets.index') }}" class="btn-secondary w-full text-center">Cancel</a>
+                </div>
+            </div>
 
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-
-.btn-small {
-    padding: 8px 12px;
-    font-size: 14px;
-}
-
-/* Animation for showing/hiding category fields */
-.category-fields {
-    animation: slideIn 0.3s ease-in-out;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-</style>
-
+        </div>
+    </div>
+</form>
 @endsection

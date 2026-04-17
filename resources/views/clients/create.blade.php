@@ -2,32 +2,26 @@
 
 @section('content')
 <div>
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
+    {{-- Header --}}
+    <div class="flex items-start justify-between mb-5">
         <div>
-            <h2 style="margin: 0; color: #333;">👥 Add New Client</h2>
-            <p style="color: #666; margin: 5px 0 0 0;">Add a new client to your business</p>
+            <h2 class="page-title">Add New Client</h2>
+            <p class="page-subtitle mt-1">Add a new client to your business</p>
         </div>
-        <a href="{{ route('clients.index') }}" class="btn">← Back to Clients</a>
+        <a href="{{ route('clients.index') }}" class="btn-secondary btn-sm">&#8592; Back to Clients</a>
     </div>
 
-    <!-- Error/Success Messages -->
+    {{-- Flash messages --}}
     @if(session('error'))
-        <div style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #c62828;">
-            <strong>Error:</strong> {{ session('error') }}
-        </div>
+        <div class="flash-error mb-4">{{ session('error') }}</div>
     @endif
-
     @if(session('success'))
-        <div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2e7d32;">
-            <strong>Success:</strong> {{ session('success') }}
-        </div>
+        <div class="flash-success mb-4">{{ session('success') }}</div>
     @endif
-
     @if($errors->any())
-        <div style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #c62828;">
+        <div class="flash-error mb-4">
             <strong>Validation Errors:</strong>
-            <ul style="margin: 10px 0 0 20px;">
+            <ul class="mt-2 ml-4 list-disc text-sm">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -37,139 +31,139 @@
 
     <form action="{{ route('clients.store') }}" method="POST" id="clientForm">
         @csrf
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-            <!-- Main Form -->
-            <div>
-                <!-- Basic Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">🏢 Company Information</h4>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
+            {{-- Main form (2/3) --}}
+            <div class="lg:col-span-2 flex flex-col gap-5">
+
+                {{-- Company Information --}}
+                <div class="ui-card">
+                    <div class="ui-card-header">
+                        <h4 class="text-sm font-semibold text-gray-800 m-0">Company Information</h4>
+                    </div>
+                    <div class="ui-card-body grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Company Name *</label>
+                            <label class="ui-label">Company Name <span class="text-red-500">*</span></label>
                             <input type="text" name="company_name" value="{{ old('company_name') }}" required
-                                   placeholder="e.g., Acme Corporation"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                                   placeholder="e.g., Acme Corporation" class="ui-input w-full">
                             @error('company_name')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
+                                <div class="text-red-500 text-xs mt-1">{{ $message }}</div>
                             @enderror
                         </div>
-                        
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contact Person *</label>
+                            <label class="ui-label">Contact Person <span class="text-red-500">*</span></label>
                             <input type="text" name="contact_person" value="{{ old('contact_person') }}" required
-                                   placeholder="e.g., John Smith"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                                   placeholder="e.g., John Smith" class="ui-input w-full">
                             @error('contact_person')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
+                                <div class="text-red-500 text-xs mt-1">{{ $message }}</div>
                             @enderror
                         </div>
-
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Email Address *</label>
+                            <label class="ui-label">Email Address <span class="text-red-500">*</span></label>
                             <input type="email" name="email" value="{{ old('email') }}" required
-                                   placeholder="john@example.com"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                                   placeholder="john@example.com" class="ui-input w-full">
                             @error('email')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
+                                <div class="text-red-500 text-xs mt-1">{{ $message }}</div>
                             @enderror
                         </div>
-
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Phone Number</label>
+                            <label class="ui-label">Phone Number</label>
                             <input type="tel" name="phone" value="{{ old('phone') }}"
-                                   placeholder="+1 (555) 123-4567"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                                   placeholder="+1 (555) 123-4567" class="ui-input w-full">
                             @error('phone')
-                                <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
+                                <div class="text-red-500 text-xs mt-1">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
                 </div>
 
-                <!-- Address Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📍 Address Information</h4>
-                    
-                    <div style="margin-block-end: 20px;">
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Address</label>
-                        <textarea name="address" rows="3" placeholder="123 Main Street, Suite 100"
-                                  style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">{{ old('address') }}</textarea>
+                {{-- Address Information --}}
+                <div class="ui-card">
+                    <div class="ui-card-header">
+                        <h4 class="text-sm font-semibold text-gray-800 m-0">Address Information</h4>
                     </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="ui-card-body flex flex-col gap-4">
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">City</label>
-                            <input type="text" name="city" value="{{ old('city') }}"
-                                   placeholder="New York"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                            <label class="ui-label">Address</label>
+                            <textarea name="address" rows="3" placeholder="123 Main Street, Suite 100"
+                                      class="ui-input w-full">{{ old('address') }}</textarea>
                         </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Region</label>
-                            <input type="text" name="region" value="{{ old('region') }}"
-                                   placeholder="e.g., North America, Europe"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="ui-label">City</label>
+                                <input type="text" name="city" value="{{ old('city') }}"
+                                       placeholder="New York" class="ui-input w-full">
+                            </div>
+                            <div>
+                                <label class="ui-label">Region</label>
+                                <input type="text" name="region" value="{{ old('region') }}"
+                                       placeholder="e.g., North America" class="ui-input w-full">
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Contract Information -->
-                <div class="content-card">
-                    <h4 style="margin-block-end: 20px; color: #333;">📋 Contract Information</h4>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                {{-- Contract Information --}}
+                <div class="ui-card">
+                    <div class="ui-card-header">
+                        <h4 class="text-sm font-semibold text-gray-800 m-0">Contract Information</h4>
+                    </div>
+                    <div class="ui-card-body grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contract Start Date</label>
+                            <label class="ui-label">Contract Start Date</label>
                             <input type="date" name="contract_start_date" value="{{ old('contract_start_date') }}"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="ui-input w-full">
                         </div>
-
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 500;">Contract End Date</label>
+                            <label class="ui-label">Contract End Date</label>
                             <input type="date" name="contract_end_date" value="{{ old('contract_end_date') }}"
-                                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="ui-input w-full">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Settings Sidebar -->
-            <div>
-                <!-- Client Status -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 15px; color: #333;">⚙️ Client Status</h4>
-                    
-                    <div style="margin-block-end: 15px;">
-                        <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status *</label>
-                        <select name="status" required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+            {{-- Sidebar (1/3) --}}
+            <div class="flex flex-col gap-5">
+
+                {{-- Status --}}
+                <div class="ui-card">
+                    <div class="ui-card-header">
+                        <h4 class="text-sm font-semibold text-gray-800 m-0">Client Status</h4>
+                    </div>
+                    <div class="ui-card-body">
+                        <label class="ui-label">Status <span class="text-red-500">*</span></label>
+                        <select name="status" required class="ui-select w-full">
                             <option value="prospect" {{ old('status', 'prospect') == 'prospect' ? 'selected' : '' }}>Prospect</option>
-                            <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="active"   {{ old('status') == 'active'   ? 'selected' : '' }}>Active</option>
                             <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                            <option value="lost" {{ old('status') == 'lost' ? 'selected' : '' }}>Lost</option>
+                            <option value="lost"     {{ old('status') == 'lost'     ? 'selected' : '' }}>Lost</option>
                         </select>
-                        <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Set the current relationship status</div>
+                        <p class="text-xs text-gray-500 mt-1.5">Set the current relationship status</p>
                     </div>
                 </div>
 
-                <!-- Client Code Info -->
-                <div class="content-card" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 15px; color: #333;">🔖 Client Code</h4>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center;">
-                        <div style="font-size: 12px; color: #666; margin-block-end: 5px;">Auto-generated</div>
-                        <div style="font-weight: bold; color: #2196f3;">Will be created automatically</div>
-                        <div style="font-size: 12px; color: #666; margin-block-start: 5px;">Based on company name</div>
+                {{-- Client Code --}}
+                <div class="ui-card">
+                    <div class="ui-card-header">
+                        <h4 class="text-sm font-semibold text-gray-800 m-0">Client Code</h4>
+                    </div>
+                    <div class="ui-card-body">
+                        <div class="bg-gray-50 rounded-lg p-4 text-center">
+                            <div class="text-xs text-gray-500 mb-1">Auto-generated</div>
+                            <div class="text-sm font-semibold text-[#1a3a5c]" id="codePreview">Will be created automatically</div>
+                            <div class="text-xs text-gray-400 mt-1">Based on company name</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Submit Buttons -->
-                <div class="content-card">
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button type="submit" class="btn btn-primary" style="inline-size: 100%; padding: 15px;">
-                            🎉 Add Client
+                {{-- Submit --}}
+                <div class="ui-card">
+                    <div class="ui-card-body flex flex-col gap-2.5">
+                        <button type="submit" id="submitBtn" class="btn-primary w-full justify-center">
+                            Add Client
                         </button>
-                        <a href="{{ route('clients.index') }}" class="btn" style="inline-size: 100%; text-align: center;">
+                        <a href="{{ route('clients.index') }}" class="btn-secondary w-full text-center">
                             Cancel
                         </a>
                     </div>
@@ -179,81 +173,20 @@
     </form>
 </div>
 
-<style>
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-</style>
-
 <script>
-// Form validation and UX improvements
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('clientForm');
-    
-    // Auto-generate preview of client code based on company name
     const companyNameInput = document.querySelector('input[name="company_name"]');
-    if (companyNameInput) {
+    const codePreview = document.getElementById('codePreview');
+    if (companyNameInput && codePreview) {
         companyNameInput.addEventListener('input', function() {
-            const companyName = this.value;
-            const prefix = companyName.replace(/[^A-Za-z]/g, '').substring(0, 3).toUpperCase();
-            const preview = prefix ? prefix + 'XXXX' : 'Will be created automatically';
-            
-            const codeDisplay = document.querySelector('.content-card:nth-child(2) .font-weight-bold');
-            if (codeDisplay) {
-                codeDisplay.textContent = preview;
-            }
+            const prefix = this.value.replace(/[^A-Za-z]/g, '').substring(0, 3).toUpperCase();
+            codePreview.textContent = prefix ? prefix + 'XXXX' : 'Will be created automatically';
         });
     }
-    
-    // Form submission
-    form.addEventListener('submit', function(e) {
-        const companyName = document.querySelector('input[name="company_name"]').value;
-        const contactPerson = document.querySelector('input[name="contact_person"]').value;
-        const email = document.querySelector('input[name="email"]').value;
-        
-        if (!companyName || !contactPerson || !email) {
-            e.preventDefault();
-            alert('Please fill in all required fields');
-            return;
-        }
-        
-        // Show loading state
-        const submitBtn = document.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '⏳ Creating Client...';
-        submitBtn.disabled = true;
+    document.getElementById('clientForm').addEventListener('submit', function() {
+        const btn = document.getElementById('submitBtn');
+        btn.textContent = 'Creating Client...';
+        btn.disabled = true;
     });
 });
 </script>

@@ -1,336 +1,208 @@
-{{-- 
-==============================================
-EMPLOYEE EDIT VIEW
-File: resources/views/employees/edit.blade.php
-==============================================
---}}
 @extends('layouts.app')
 
 @section('content')
 <div>
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
+    <div class="flex items-start justify-between mb-5">
         <div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <a href="{{ route('employees.show', $employee) }}" class="btn" style="text-decoration: none;">
-                    ← Back to Profile
-                </a>
-                <div>
-                    <h2 style="margin: 0; color: #333;">Edit {{ $employee->first_name }} {{ $employee->last_name }}</h2>
-                    <p style="color: #666; margin: 5px 0 0 0;">Update employee information and permissions</p>
-                </div>
-            </div>
+            <h2 class="page-title">Edit {{ $employee->first_name }} {{ $employee->last_name }}</h2>
+            <p class="page-subtitle mt-1">Update employee information and permissions</p>
         </div>
+        <a href="{{ route('employees.show', $employee) }}" class="btn-secondary btn-sm">&#8592; Back to Profile</a>
     </div>
 
-    <form method="POST" action="{{ route('employees.update', $employee) }}">
+    <form method="POST" action="{{ route('employees.update', $employee) }}" id="editForm">
         @csrf
         @method('PUT')
-        
-        <div style="display: grid; grid-template-columns: 1fr 350px; gap: 30px;">
-            <!-- Main Form -->
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                
-                <!-- Personal Information -->
-                <div class="content-card">
-                    <h4 style="margin: 0 0 20px 0; color: #333; display: flex; align-items: center; gap: 8px;">
-                        👤 Personal Information
-                    </h4>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+            {{-- Main Form (2/3) --}}
+            <div class="lg:col-span-2 flex flex-col gap-5">
+
+                <div class="ui-card">
+                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Personal Information</h4></div>
+                    <div class="ui-card-body grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label for="first_name" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">First Name *</label>
-                            <input type="text" id="first_name" name="first_name" value="{{ old('first_name', $employee->first_name) }}" 
-                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
-                            @error('first_name')
-                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
+                            <label class="ui-label">First Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="first_name" value="{{ old('first_name', $employee->first_name) }}" required class="ui-input w-full">
+                            @error('first_name')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                         </div>
-                        
                         <div>
-                            <label for="last_name" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Last Name *</label>
-                            <input type="text" id="last_name" name="last_name" value="{{ old('last_name', $employee->last_name) }}" 
-                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
-                            @error('last_name')
-                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
+                            <label class="ui-label">Last Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="last_name" value="{{ old('last_name', $employee->last_name) }}" required class="ui-input w-full">
+                            @error('last_name')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                         </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
-                            <label for="email" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Email Address *</label>
-                            <input type="email" id="email" name="email" value="{{ old('email', $employee->email) }}" 
-                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
-                            @error('email')
-                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
+                            <label class="ui-label">Email Address <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" value="{{ old('email', $employee->email) }}" required class="ui-input w-full">
+                            @error('email')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                         </div>
-                        
                         <div>
-                            <label for="phone" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Phone Number</label>
-                            <input type="text" id="phone" name="phone" value="{{ old('phone', $employee->phone) }}" 
-                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" 
-                                   placeholder="+1 (555) 123-4567">
-                            @error('phone')
-                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
+                            <label class="ui-label">Phone Number</label>
+                            <input type="text" name="phone" value="{{ old('phone', $employee->phone) }}" placeholder="+1 (555) 123-4567" class="ui-input w-full">
+                            @error('phone')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                         </div>
                     </div>
                 </div>
 
-                <!-- Role & Department -->
-                <div class="content-card">
-                    <h4 style="margin: 0 0 20px 0; color: #333; display: flex; align-items: center; gap: 8px;">
-                        🔑 Role & Department
-                    </h4>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 20px; margin-block-end: 20px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="ui-card">
+                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Role &amp; Department</h4></div>
+                    <div class="ui-card-body flex flex-col gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label for="role_id" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Primary Role *</label>
-                                <select id="role_id" name="role_id" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
+                                <label class="ui-label">Primary Role <span class="text-red-500">*</span></label>
+                                <select name="role_id" required class="ui-select w-full">
                                     <option value="">Select Primary Role</option>
                                     @php
-                                        try {
-                                            $roles = \App\Models\Role::all();
-                                            $employeeRoleIds = $employee->roles->pluck('id')->toArray();
-                                        } catch (\Exception $e) {
-                                            $roles = collect();
-                                            $employeeRoleIds = [];
-                                        }
+                                        try { $roles = \App\Models\Role::all(); $employeeRoleIds = $employee->roles->pluck('id')->toArray(); }
+                                        catch (\Exception $e) { $roles = collect(); $employeeRoleIds = []; }
                                     @endphp
                                     @foreach($roles as $role)
-                                        <option value="{{ $role->id }}" {{ old('role_id', $employee->role_id) == $role->id ? 'selected' : '' }}>
-                                            {{ ucfirst(str_replace('_', ' ', $role->name)) }}
-                                            @if(is_array($role->permissions) && in_array('all', $role->permissions))
-                                                (Super Admin)
-                                            @endif
-                                        </option>
+                                    <option value="{{ $role->id }}" {{ old('role_id', $employee->role_id) == $role->id ? 'selected' : '' }}>
+                                        {{ ucfirst(str_replace('_', ' ', $role->name)) }}{{ is_array($role->permissions) && in_array('all', $role->permissions) ? ' (Super Admin)' : '' }}
+                                    </option>
                                     @endforeach
                                 </select>
-                                @error('role_id')
-                                    <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                                @enderror
+                                @error('role_id')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                             </div>
-
                             <div>
-                            <label for="department_id" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Department</label>
-                            <select id="department_id" name="department_id" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
-                                <option value="">Select Department</option>
-                                @php
-                                    try {
-                                        $departments = \App\Models\Department::all();
-                                    } catch (\Exception $e) {
-                                        $departments = collect([
-                                            (object)['id' => 1, 'name' => 'IT'],
-                                            (object)['id' => 2, 'name' => 'Operations'],
-                                            (object)['id' => 3, 'name' => 'Management'],
-                                        ]);
-                                    }
-                                @endphp
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}" {{ old('department_id', $employee->department_id) == $dept->id ? 'selected' : '' }}>
-                                        {{ $dept->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('department_id')
-                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
+                                <label class="ui-label">Department</label>
+                                <select name="department_id" class="ui-select w-full">
+                                    <option value="">Select Department</option>
+                                    @php
+                                        try { $departments = \App\Models\Department::all(); }
+                                        catch (\Exception $e) { $departments = collect([(object)['id'=>1,'name'=>'IT']]); }
+                                    @endphp
+                                    @foreach($departments as $dept)
+                                    <option value="{{ $dept->id }}" {{ old('department_id', $employee->department_id) == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="ui-label">Status <span class="text-red-500">*</span></label>
+                                <select name="status" required class="ui-select w-full">
+                                    <option value="active"   {{ old('status', $employee->status) == 'active'   ? 'selected' : '' }}>Active</option>
+                                    <option value="inactive" {{ old('status', $employee->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                    <option value="pending"  {{ old('status', $employee->status) == 'pending'  ? 'selected' : '' }}>Pending</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="ui-label">Hire Date</label>
+                                <input type="date" name="hire_date"
+                                       value="{{ old('hire_date', $employee->hire_date ? \Carbon\Carbon::parse($employee->hire_date)->format('Y-m-d') : '') }}"
+                                       class="ui-input w-full">
+                            </div>
                         </div>
-                        </div>
-
-                        <!-- Additional Roles Section -->
                         <div>
-                            <label style="display: block; margin-block-end: 10px; font-weight: 500; color: #333;">Additional Roles (Optional)</label>
-                            <div style="border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #F8F9FA;">
-                                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
-                                    Current roles:
-                                    @if($employee->roles->count() > 0)
-                                        <strong>{{ $employee->roles->pluck('name')->join(', ') }}</strong>
-                                    @else
-                                        <strong style="color: #d32f2f;">No roles assigned</strong>
-                                    @endif
-                                </p>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                            <label class="ui-label mb-2">Additional Roles <span class="text-gray-400 font-normal">(Optional)</span></label>
+                            <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                <p class="text-xs text-gray-500 mb-3">Current: <strong>{{ $employee->roles->count() > 0 ? $employee->roles->pluck('name')->join(', ') : 'None' }}</strong></p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     @foreach($roles as $role)
-                                        <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #E0E0E0; transition: all 0.2s;"
-                                               onmouseover="this.style.borderColor='#1976D2'; this.style.background='#F0F7FF';"
-                                               onmouseout="this.style.borderColor='#E0E0E0'; this.style.background='white';">
-                                            <input type="checkbox"
-                                                   name="additional_roles[]"
-                                                   value="{{ $role->id }}"
-                                                   {{ in_array($role->id, old('additional_roles', $employeeRoleIds)) ? 'checked' : '' }}
-                                                   style="cursor: pointer; width: 16px; height: 16px;">
-                                            <span style="font-size: 14px; color: #333;">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</span>
-                                        </label>
+                                    <label class="flex items-center gap-2.5 px-3 py-2 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-[#1a3a5c] hover:bg-blue-50 transition-all">
+                                        <input type="checkbox" name="additional_roles[]" value="{{ $role->id }}"
+                                               {{ in_array($role->id, old('additional_roles', $employeeRoleIds)) ? 'checked' : '' }}
+                                               class="w-4 h-4 cursor-pointer">
+                                        <span class="text-sm text-gray-700">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</span>
+                                    </label>
                                     @endforeach
                                 </div>
                             </div>
-                            @error('additional_roles')
-                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div>
-                            <label for="status" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Status *</label>
-                            <select id="status" name="status" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;" required>
-                                <option value="active" {{ old('status', $employee->status) == 'active' ? 'selected' : '' }}>Active</option>
-                                <option value="inactive" {{ old('status', $employee->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                <option value="pending" {{ old('status', $employee->status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                            </select>
-                            @error('status')
-                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div>
-                            <label for="hire_date" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Hire Date</label>
-                            <input type="date" id="hire_date" name="hire_date" 
-                                   value="{{ old('hire_date', $employee->hire_date ? \Carbon\Carbon::parse($employee->hire_date)->format('Y-m-d') : '') }}" 
-                                   style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
-                            @error('hire_date')
-                                <div style="color: #d32f2f; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
-                            @enderror
                         </div>
                     </div>
                 </div>
 
-                <!-- Preferences -->
-                <div class="content-card">
-                    <h4 style="margin: 0 0 20px 0; color: #333; display: flex; align-items: center; gap: 8px;">
-                        ⚙️ Preferences
-                    </h4>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="ui-card">
+                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Preferences</h4></div>
+                    <div class="ui-card-body grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label for="time_zone" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Time Zone</label>
-                            <select id="time_zone" name="time_zone" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
-                                <option value="UTC" {{ old('time_zone', $employee->time_zone) == 'UTC' ? 'selected' : '' }}>UTC</option>
-                                <option value="America/New_York" {{ old('time_zone', $employee->time_zone) == 'America/New_York' ? 'selected' : '' }}>Eastern Time</option>
-                                <option value="America/Chicago" {{ old('time_zone', $employee->time_zone) == 'America/Chicago' ? 'selected' : '' }}>Central Time</option>
-                                <option value="America/Denver" {{ old('time_zone', $employee->time_zone) == 'America/Denver' ? 'selected' : '' }}>Mountain Time</option>
-                                <option value="America/Los_Angeles" {{ old('time_zone', $employee->time_zone) == 'America/Los_Angeles' ? 'selected' : '' }}>Pacific Time</option>
+                            <label class="ui-label">Time Zone</label>
+                            <select name="time_zone" class="ui-select w-full">
+                                <option value="UTC"                 {{ old('time_zone', $employee->time_zone) == 'UTC'                 ? 'selected' : '' }}>UTC</option>
+                                <option value="America/New_York"   {{ old('time_zone', $employee->time_zone) == 'America/New_York'   ? 'selected' : '' }}>Eastern Time</option>
+                                <option value="America/Chicago"    {{ old('time_zone', $employee->time_zone) == 'America/Chicago'    ? 'selected' : '' }}>Central Time</option>
+                                <option value="America/Denver"     {{ old('time_zone', $employee->time_zone) == 'America/Denver'     ? 'selected' : '' }}>Mountain Time</option>
+                                <option value="America/Los_Angeles"{{ old('time_zone', $employee->time_zone) == 'America/Los_Angeles'? 'selected' : '' }}>Pacific Time</option>
                             </select>
                         </div>
-                        
                         <div>
-                            <label for="language" style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Language</label>
-                            <select id="language" name="language" style="inline-size: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <label class="ui-label">Language</label>
+                            <select name="language" class="ui-select w-full">
                                 <option value="en" {{ old('language', $employee->language) == 'en' ? 'selected' : '' }}>English</option>
                                 <option value="es" {{ old('language', $employee->language) == 'es' ? 'selected' : '' }}>Spanish</option>
                                 <option value="fr" {{ old('language', $employee->language) == 'fr' ? 'selected' : '' }}>French</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div style="margin-block-start: 20px;">
-                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                            <input type="checkbox" name="two_factor_enabled" value="1" 
-                                   {{ old('two_factor_enabled', $employee->two_factor_enabled) ? 'checked' : '' }}
-                                   style="inline-size: 18px; height: 18px;">
-                            <span style="font-weight: 500; color: #333;">Enable Two-Factor Authentication</span>
-                        </label>
+                        <div class="sm:col-span-2">
+                            <label class="flex items-center gap-2.5 cursor-pointer">
+                                <input type="checkbox" name="two_factor_enabled" value="1"
+                                       {{ old('two_factor_enabled', $employee->two_factor_enabled) ? 'checked' : '' }} class="w-4 h-4">
+                                <span class="text-sm font-medium text-gray-700">Enable Two-Factor Authentication</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Sidebar -->
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                
-                <!-- Current Role Info -->
-                <div class="content-card">
-                    <h4 style="margin: 0 0 15px 0; color: #333;">Current Role</h4>
-                    @php
-                        try {
-                            $currentRole = \App\Models\Role::find($employee->role_id);
-                        } catch (\Exception $e) {
-                            $currentRole = null;
-                        }
-                    @endphp
-                    
-                    @if($currentRole)
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-block-end: 10px;">
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">
-                                    {{ ucfirst(str_replace('_', ' ', $currentRole->name)) }}
-                                </span>
+            {{-- Sidebar (1/3) --}}
+            <div class="flex flex-col gap-5">
+
+                <div class="ui-card">
+                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Current Role</h4></div>
+                    <div class="ui-card-body">
+                        @php try { $currentRole = \App\Models\Role::find($employee->role_id); } catch (\Exception $e) { $currentRole = null; } @endphp
+                        @if($currentRole)
+                            <div class="bg-gray-50 rounded-lg p-3 flex flex-wrap gap-2 items-center">
+                                <span class="badge badge-blue">{{ ucfirst(str_replace('_', ' ', $currentRole->name)) }}</span>
                                 @if(is_array($currentRole->permissions) && in_array('all', $currentRole->permissions))
-                                    <span style="background: #ffebee; color: #d32f2f; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">
-                                        Super Admin
-                                    </span>
+                                    <span class="badge badge-red">Super Admin</span>
                                 @endif
                             </div>
-                            <div style="font-size: 12px; color: #666;">
-                                Permissions: {{ is_array($currentRole->permissions) ? count($currentRole->permissions) : 0 }}
-                            </div>
-                        </div>
-                    @else
-                        <div style="background: #ffebee; color: #d32f2f; padding: 15px; border-radius: 8px; text-align: center;">
-                            <strong>No Role Assigned</strong>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Actions -->
-                <div class="content-card">
-                    <h4 style="margin: 0 0 15px 0; color: #333;">Actions</h4>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button type="submit" class="btn btn-primary" style="inline-size: 100%; justify-content: center;">
-                            ✅ Save Changes
-                        </button>
-                        
-                        <a href="{{ route('employees.show', $employee) }}" class="btn" style="inline-size: 100%; text-align: center; text-decoration: none;">
-                            ❌ Cancel
-                        </a>
-                        
-                        <button type="button" onclick="resetPassword()" class="btn" style="inline-size: 100%; background: #ff9800; color: white; border-color: #ff9800;">
-                            🔑 Reset Password
-                        </button>
+                            <p class="text-xs text-gray-400 mt-2">{{ is_array($currentRole->permissions) ? count($currentRole->permissions) : 0 }} permission(s)</p>
+                        @else
+                            <div class="bg-red-50 text-red-700 text-sm p-3 rounded-lg text-center">No Role Assigned</div>
+                        @endif
                     </div>
                 </div>
 
-                <!-- Employee Stats -->
-                <div class="content-card">
-                    <h4 style="margin: 0 0 15px 0; color: #333;">Employee Stats</h4>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-block-end: 1px solid #f0f0f0;">
-                            <span style="font-size: 12px; color: #666;">Employee ID</span>
-                            <span style="font-size: 14px; color: #333; font-weight: 500;">{{ $employee->employee_number ?? $employee->id }}</span>
+                <div class="ui-card">
+                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Actions</h4></div>
+                    <div class="ui-card-body flex flex-col gap-2.5">
+                        <button type="submit" class="btn-primary w-full justify-center">Save Changes</button>
+                        <a href="{{ route('employees.show', $employee) }}" class="btn-secondary w-full text-center">Cancel</a>
+                        <button type="button" onclick="resetPassword()" class="w-full px-3 py-2 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors cursor-pointer">Reset Password</button>
+                    </div>
+                </div>
+
+                <div class="ui-card">
+                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Employee Stats</h4></div>
+                    <div class="ui-card-body flex flex-col divide-y divide-gray-100">
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-xs text-gray-500">Employee ID</span>
+                            <span class="text-sm font-medium text-gray-900">{{ $employee->employee_number ?? $employee->id }}</span>
                         </div>
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-block-end: 1px solid #f0f0f0;">
-                            <span style="font-size: 12px; color: #666;">Member Since</span>
-                            <span style="font-size: 14px; color: #333; font-weight: 500;">{{ $employee->created_at->format('M Y') }}</span>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-xs text-gray-500">Member Since</span>
+                            <span class="text-sm font-medium text-gray-900">{{ $employee->created_at->format('M Y') }}</span>
                         </div>
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-block-end: 1px solid #f0f0f0;">
-                            <span style="font-size: 12px; color: #666;">Last Updated</span>
-                            <span style="font-size: 14px; color: #333; font-weight: 500;">{{ $employee->updated_at->diffForHumans() }}</span>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-xs text-gray-500">Last Updated</span>
+                            <span class="text-sm font-medium text-gray-900">{{ $employee->updated_at->diffForHumans() }}</span>
                         </div>
-                        
                         @if($employee->last_login_at)
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
-                            <span style="font-size: 12px; color: #666;">Last Login</span>
-                            <span style="font-size: 14px; color: #333; font-weight: 500;">{{ \Carbon\Carbon::parse($employee->last_login_at)->diffForHumans() }}</span>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-xs text-gray-500">Last Login</span>
+                            <span class="text-sm font-medium text-gray-900">{{ \Carbon\Carbon::parse($employee->last_login_at)->diffForHumans() }}</span>
                         </div>
                         @endif
                     </div>
                 </div>
 
-                <!-- Quick Tips -->
-                <div class="content-card" style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);">
-                    <h4 style="margin: 0 0 15px 0; color: #333;">💡 Quick Tips</h4>
-                    <div style="font-size: 14px; line-height: 1.5; color: #666;">
-                        <p style="margin: 0 0 10px;">• <strong>Role changes</strong> take effect immediately</p>
-                        <p style="margin: 0 0 10px;">• <strong>Email changes</strong> require verification</p>
-                        <p style="margin: 0 0 10px;">• <strong>Status changes</strong> affect system access</p>
-                        <p style="margin: 0;">• Use <strong>Reset Password</strong> for login issues</p>
+                <div class="ui-card bg-blue-50 border-blue-200">
+                    <div class="ui-card-body text-sm text-gray-600 space-y-1.5">
+                        <p><strong class="text-gray-800">Role changes</strong> take effect immediately</p>
+                        <p><strong class="text-gray-800">Email changes</strong> require verification</p>
+                        <p><strong class="text-gray-800">Status changes</strong> affect system access</p>
+                        <p>Use <strong class="text-gray-800">Reset Password</strong> for login issues</p>
                     </div>
                 </div>
             </div>
@@ -338,110 +210,15 @@ File: resources/views/employees/edit.blade.php
     </form>
 </div>
 
-<style>
-.content-card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.btn {
-    padding: 12px 20px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-
-input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: #2196f3;
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-}
-
-input[type="checkbox"] {
-    accent-color: #2196f3;
-}
-
-.form-group {
-    margin-block-end: 20px;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-@media (max-inline-size: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
-
 <script>
 function resetPassword() {
-    if (confirm('Are you sure you want to reset this employee\'s password? They will receive an email with instructions.')) {
-        // For now, just show an alert - you can implement actual password reset later
-        alert('Password reset functionality will be implemented soon. For now, you can manually update their password in the database.');
+    if (confirm('Reset this employee\'s password?')) {
+        alert('Password reset functionality will be implemented soon.');
     }
 }
-
-// Auto-save draft functionality (optional)
-let formData = {};
-const form = document.querySelector('form');
-
-if (form) {
-    const inputs = form.querySelectorAll('input, select, textarea');
-    
-    inputs.forEach(input => {
-        input.addEventListener('change', function() {
-            formData[this.name] = this.value;
-            // You could save to localStorage or send to server here
-        });
-    });
-}
-
-// Warn about unsaved changes
-window.addEventListener('beforeunload', function(e) {
-    if (Object.keys(formData).length > 0) {
-        e.preventDefault();
-        e.returnValue = '';
-    }
-});
-
-// Clear form data when form is submitted
-if (form) {
-    form.addEventListener('submit', function() {
-        formData = {};
-    });
-}
+let formDirty = false;
+document.getElementById('editForm').addEventListener('change', function() { formDirty = true; });
+document.getElementById('editForm').addEventListener('submit', function() { formDirty = false; });
+window.addEventListener('beforeunload', function(e) { if (formDirty) { e.preventDefault(); e.returnValue = ''; } });
 </script>
 @endsection
