@@ -815,6 +815,14 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
             ->middleware('permission:manage_visits,all')
             ->name('edit_terminal');
 
+        Route::get('/create-manual', [SiteVisitController::class, 'create'])
+            ->middleware('permission:manage_visits,all')
+            ->name('createManual');
+
+        Route::post('/manual', [SiteVisitController::class, 'storeManual'])
+            ->middleware('permission:manage_visits,all')
+            ->name('storeManual');
+
         Route::get('/{visit}', [SiteVisitController::class, 'show'])
             ->middleware('permission:view_visits,manage_visits,all')
             ->name('show');

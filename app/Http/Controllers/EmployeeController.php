@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Models\ActivityLog;
 
 
 
@@ -238,6 +239,7 @@ public function store(Request $request)
             'roles' => $employee->roles->pluck('name')->toArray()
         ]);
 
+        ActivityLog::log('created', "Employee '{$employee->first_name} {$employee->last_name}' ({$employeeNumber}) created", $employee);
         return redirect()
             ->route('employees.index')
             ->with('success', "Employee created successfully! Employee Number: {$employeeNumber}");
@@ -357,6 +359,7 @@ public function update(Request $request, Employee $employee)
             'roles' => $employee->fresh()->roles->pluck('name')->toArray()
         ]);
 
+        ActivityLog::log('updated', "Employee '{$employee->first_name} {$employee->last_name}' updated", $employee);
         return redirect()->route('employees.index')->with('success', 'Employee updated successfully!');
     });
 }

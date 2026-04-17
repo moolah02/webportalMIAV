@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
+use App\Models\ActivityLog;
 
 class SiteVisitController extends Controller
 {
@@ -240,6 +241,8 @@ class SiteVisitController extends Controller
 
             DB::commit();
 
+            ActivityLog::log('created', count($created) . " site visit(s) logged by technician #{$validated['technician_id']}", null, [], ['count' => count($created), 'job_assignment_id' => $validated['job_assignment_id'] ?? null]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Site visit(s) created successfully',
@@ -254,6 +257,76 @@ class SiteVisitController extends Controller
                 'message' => 'Failed to create visit(s): '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Show form to manually log a single site visit (web form)
+     * GET /site-visits/create-manual
+     */
+    public function create()
+    {
+        $technicians = Employee::whereHas('roles', function ($q) {
+            $q->whereIn('name', ['technician', 'field_technician', 'Technician']);
+        })->orWhere('department', 'like', '%tech%')
+          ->orderBy('first_name')
+          ->get(['id', 'first_name', 'last_name', 'employee_number']);
+
+        if ($technicians->isEmpty()) {
+            $technicians = Employee::orderBy('first_name')->get(['id', 'first_name', 'last_name', 'employee_number']);
+        }
+
+        $terminals = PosTerminal::with('client')
+            ->orderBy('terminal_id')
+            ->get(['id', 'terminal_id', 'merchant_name', 'client_id']);
+
+        $assignments = JobAssignment::whereIn('status', ['pending', 'in_progress', 'assigned'])
+            ->latest()
+            ->limit(100)
+            ->get(['id', 'assignment_id', 'status']);
+
+        return view('visits.create', compact('technicians', 'terminals', 'assignments'));
+    }
+
+    /**
+     * Store a single manually-submitted site visit (from web form)
+     * POST /site-visits/manual
+     */
+    public function storeManual(Request $request)
+    {
+        $validated = $request->validate([
+            'technician_id'         => ['required', 'exists:employees,id'],
+            'pos_terminal_id'       => ['required', 'exists:pos_terminals,id'],
+            'job_assignment_id'     => ['nullable', 'exists:job_assignments,id'],
+            'started_at'            => ['required', 'date'],
+            'ended_at'              => ['nullable', 'date', 'after_or_equal:started_at'],
+            'terminal_status'       => ['required', 'in:working,not_working,needs_maintenance,not_found'],
+            'condition_notes'       => ['nullable', 'string', 'max:1000'],
+            'issues_found'          => ['nullable', 'string', 'max:1000'],
+            'corrective_action'     => ['nullable', 'string', 'max:1000'],
+            'visit_summary'         => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $visit = TechnicianVisit::create([
+            'technician_id'     => $validated['technician_id'],
+            'pos_terminal_id'   => $validated['pos_terminal_id'],
+            'job_assignment_id' => $validated['job_assignment_id'] ?? null,
+            'started_at'        => $validated['started_at'],
+            'ended_at'          => $validated['ended_at'] ?? null,
+            'terminal_status'   => $validated['terminal_status'],
+            'condition_notes'   => $validated['condition_notes'] ?? null,
+            'issues_found'      => $validated['issues_found'] ?? null,
+            'corrective_action' => $validated['corrective_action'] ?? null,
+            'visit_summary'     => $validated['visit_summary'] ?? null,
+        ]);
+
+        ActivityLog::log(
+            'created',
+            "Manual site visit logged for terminal #{$visit->pos_terminal_id} by technician #{$visit->technician_id}",
+            $visit
+        );
+
+        return redirect()->route('visits.index')
+            ->with('success', 'Site visit logged successfully.');
     }
 
     /**

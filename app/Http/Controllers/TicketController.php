@@ -9,6 +9,7 @@ use App\Models\PosTerminal;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog;
 
 class TicketController extends Controller
 {
@@ -141,6 +142,8 @@ class TicketController extends Controller
             'description' => 'Ticket created and opened',
         ]);
 
+        ActivityLog::log('created', "Ticket #{$ticket->ticket_id} created: {$ticket->title}", $ticket);
+
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Ticket created successfully',
@@ -226,6 +229,8 @@ class TicketController extends Controller
 
         $ticket->update($validated);
 
+        ActivityLog::log('updated', "Ticket #{$ticket->ticket_id} updated (status: {$ticket->status})", $ticket);
+
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Ticket updated successfully',
@@ -238,7 +243,10 @@ class TicketController extends Controller
 
     public function destroy(Ticket $ticket)
     {
+        $summary = $ticket->ticket_id . ': ' . $ticket->title;
         $ticket->delete();
+
+        ActivityLog::log('deleted', "Ticket #{$summary} deleted");
 
         if (request()->expectsJson()) {
             return response()->json(['message' => 'Ticket deleted successfully']);
@@ -259,7 +267,10 @@ class TicketController extends Controller
             $validated['resolved_at'] = now();
         }
 
+        $oldStatus = $ticket->status;
         $ticket->update($validated);
+
+        ActivityLog::log('status_changed', "Ticket #{$ticket->ticket_id} status: {$oldStatus} → {$validated['status']}", $ticket, ['status' => $oldStatus], ['status' => $validated['status']]);
 
         if ($request->expectsJson()) {
             return response()->json([

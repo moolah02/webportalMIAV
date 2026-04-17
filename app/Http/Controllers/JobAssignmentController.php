@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\ActivityLog;
 
 class JobAssignmentController extends Controller
 {
@@ -300,6 +301,8 @@ public function store(Request $request)
 
         DB::commit();
 
+        ActivityLog::log('created', "Job assignment '{$assignmentId}' created", $assignment);
+
         \Log::info('Assignment created successfully', [
             'id' => $assignment->id,
             'assignment_id' => $assignment->assignment_id
@@ -364,6 +367,8 @@ public function complete($assignmentId)
         $updateData['actual_end_time'] = Carbon::now();
 
         $assignment->update($updateData);
+
+        ActivityLog::log('completed', "Job assignment '{$assignment->assignment_id}' marked as completed", $assignment);
 
         return response()->json([
             'success' => true,
@@ -485,6 +490,8 @@ public function generateReport($assignmentId)
             }
 
             $assignment->update(['status' => 'cancelled']);
+
+            ActivityLog::log('cancelled', "Job assignment '{$assignment->assignment_id}' cancelled", $assignment);
 
             return response()->json([
                 'success' => true,

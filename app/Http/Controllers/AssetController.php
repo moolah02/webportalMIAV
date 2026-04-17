@@ -10,6 +10,7 @@ use App\Models\Department;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\ActivityLog;
 
 class AssetController extends Controller
 {
@@ -434,6 +435,7 @@ class AssetController extends Controller
                 'assigned_quantity' => 0,
             ]);
 
+            ActivityLog::log('created', "Asset '{$asset->name}' created (qty: {$asset->stock_quantity})", $asset);
             return redirect()->route('assets.index')
                 ->with('success', 'Asset created successfully!');
 
@@ -543,6 +545,7 @@ class AssetController extends Controller
                 'specifications' => $request->input('specifications', []),
             ]);
 
+            ActivityLog::log('updated', "Asset '{$asset->name}' updated (qty: {$asset->stock_quantity})", $asset);
             return redirect()->route('assets.show', $asset)
                 ->with('success', 'Asset updated successfully!');
 
@@ -609,8 +612,10 @@ class AssetController extends Controller
                 return back()->with('error', 'Cannot delete asset with pending or approved requests.');
             }
 
+            $assetName = $asset->name;
             $asset->delete();
 
+            ActivityLog::log('deleted', "Asset '{$assetName}' deleted");
             return redirect()->route('assets.index')
                 ->with('success', 'Asset deleted successfully!');
 

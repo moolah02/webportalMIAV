@@ -135,11 +135,12 @@
                        hover:bg-gray-50 hover:text-gray-700 transition-all duration-150 cursor-pointer bg-transparent border-l-0 border-r-0 border-b-0">
           <span class="w-5 text-center text-base">🔧</span> Field Operations
         </button>
-        <div class="submenu {{ request()->routeIs('deployment.*','jobs.*','tickets.*','visits.*') ? 'show' : '' }}">
+        <div class="submenu {{ request()->routeIs('deployment.*','jobs.*','tickets.*','visits.*','site_visits.*') ? 'show' : '' }}">
           @foreach([
             ['deployment.hierarchical', '🚀', 'Terminal Deployment', 'deployment.*'],
             ['jobs.index',              '📋', 'All Job Assignments', 'jobs.*'],
             ['visits.index',            '📝', 'Site Visits',         'visits.*'],
+            ['site_visits.createManual','➕', 'Log a Visit',         'site_visits.createManual'],
             ['tickets.index',           '🎫', 'Support Tickets',     'tickets.*'],
           ] as [$route, $icon, $label, $pattern])
           <a href="{{ route($route) }}"
