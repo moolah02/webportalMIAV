@@ -4,10 +4,6 @@
 @section('content')
 <div>
     <div class="flex items-start justify-between mb-5">
-        <div>
-            <h2 class="page-title">Employee Onboarding</h2>
-            <p class="page-subtitle mt-1">Add a new employee to the company</p>
-        </div>
         <a href="{{ route('employees.index') }}" class="btn-secondary btn-sm">&#8592; Back to Employees</a>
     </div>
 

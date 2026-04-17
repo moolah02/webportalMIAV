@@ -6,10 +6,6 @@
 <div>
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-        <div>
-            <h1 class="page-title">Visit #{{ $visit->id }}</h1>
-            <p class="page-subtitle">Full visit details and terminal information</p>
-        </div>
         <a href="{{ route('visits.index') }}" class="btn-secondary">&#x2190; All Visits</a>
     </div>
 

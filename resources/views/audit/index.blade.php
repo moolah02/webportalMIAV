@@ -6,7 +6,7 @@
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
         <div>
-            <h1 class="m-0 text-gray-900 text-2xl font-semibold">ðŸ” Audit Trail</h1>
+            <h1 class="m-0 text-gray-900 text-2xl font-semibold">&#x1F50D; Audit Trail</h1>
             <p class="text-gray-500 text-sm mt-1">Complete history of all system actions, categorised by area</p>
         </div>
     </div>

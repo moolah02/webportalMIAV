@@ -4,12 +4,8 @@
 @section('title', 'Client Management')
 
 @section('content')
-{{-- Header --}}
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <h1 class="page-title">Client Management</h1>
-        <p class="page-subtitle">Manage your clients and business relationships</p>
-    </div>
+{{-- Actions --}}
+<div class="flex justify-end items-center mb-6">
     <a href="{{ route('clients.create') }}" class="btn-primary">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
         Add New Client

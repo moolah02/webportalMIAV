@@ -3,22 +3,18 @@
 @section('title', 'System Analytics')
 
 @section('content')
-{{-- Header --}}
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <h1 class="page-title">System Analytics Dashboard</h1>
-        <p class="page-subtitle">Comprehensive system performance and analytics</p>
-    </div>
+{{-- Actions --}}
+<div class="flex justify-end items-center mb-6">
     <div class="flex items-center gap-2">
         <button onclick="exportFullReport()" class="btn-primary">&#x1F4CA; Export Full Report</button>
-        <button onclick="printDashboard()" class="btn-secondary">&#x1F5A8;ï¸ Print</button>
+        <button onclick="printDashboard()" class="btn-secondary">&#x1F5A8;&#xFE0F; Print</button>
     </div>
 </div>
 
 {{-- Key Metrics --}}
 <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-5">
     <div class="stat-card border-l-4 border-blue-500">
-        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 text-xl">ðŸ¢</div>
+        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F3E2;</div>
         <div>
             <div class="stat-number text-blue-600">{{ $systemOverview['total_clients'] }}</div>
             <div class="stat-label">Total Clients</div>
@@ -505,7 +501,6 @@
         </div>
     </div>
 </div>
-
 
 <style>
 /* Tab navigation & show/hide &#x2014; required by switchTab() JS */

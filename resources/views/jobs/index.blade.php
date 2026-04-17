@@ -4,12 +4,8 @@
 @section('title', 'Job Assignments')
 
 @section('content')
-{{-- Header --}}
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <h1 class="page-title">Technician Assignments</h1>
-        <p class="page-subtitle">Manage and track field assignments</p>
-    </div>
+{{-- Actions --}}
+<div class="flex justify-end items-center mb-6">
 </div>
 
 {{-- Stats --}}

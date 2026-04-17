@@ -6,10 +6,6 @@
 <div>
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-        <div>
-            <h1 class="page-title">&#x1F465; Team Management</h1>
-            <p class="page-subtitle">Manage your team members and performance</p>
-        </div>
         <a href="{{ route('employees.create') }}" class="btn-primary">+ Add Team Member</a>
     </div>
 

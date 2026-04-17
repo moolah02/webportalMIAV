@@ -316,6 +316,9 @@
             </svg>
           </button>
           <h1 class="text-xl font-bold text-gray-900">@yield('title', 'Dashboard')</h1>
+          @hasSection('header-actions')
+          <div class="flex items-center gap-2 ml-4">@yield('header-actions')</div>
+          @endif
         </div>
 
         {{-- User info --}}

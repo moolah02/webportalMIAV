@@ -130,10 +130,6 @@
 @section('content')
 <div class="container">
     <div class="page-header">
-        <div>
-            <h1 class="page-title">🛒 Asset Catalog</h1>
-            <p class="page-subtitle">Browse and request company assets</p>
-        </div>
         <div style="display: flex; gap: 12px; align-items: center;">
             <a href="{{ route('asset-requests.cart') }}" class="btn btn-secondary">
                 🛒 Cart 

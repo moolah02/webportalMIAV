@@ -6,10 +6,6 @@
 <div>
     {{-- Header --}}
     <div class="flex items-start justify-between mb-5">
-        <div>
-            <h2 class="page-title">{{ $client->company_name }}</h2>
-            <p class="page-subtitle mt-1">Client details &amp; history</p>
-        </div>
         <div class="flex gap-2 flex-wrap">
             <a href="{{ route('clients.index') }}" class="btn-secondary btn-sm">&#8592; Back to Clients</a>
             <a href="{{ route('clients.edit', ['client' => $client->id]) }}" class="btn-primary btn-sm">Edit</a>

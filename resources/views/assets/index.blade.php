@@ -6,12 +6,8 @@
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-{{-- Header --}}
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <h1 class="page-title">&#x1F4E6; Asset Management</h1>
-        <p class="page-subtitle">Manage company assets and track assignments</p>
-    </div>
+{{-- Actions --}}
+<div class="flex justify-end items-center mb-6">
 </div>
 
 {{-- Flash Messages --}}
@@ -19,7 +15,7 @@
 <div class="flash-success mb-5">&#x2705; {{ session('success') }}</div>
 @endif
 @if(session('error'))
-<div class="flash-error mb-5">âŒ {{ session('error') }}</div>
+<div class="flash-error mb-5">&#x274C; {{ session('error') }}</div>
 @endif
 
 {{-- Tab Navigation --}}
@@ -57,7 +53,7 @@
 {{-- Filter + Actions Bar --}}
 <div class="filter-bar">
     <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">ðŸ”</span>
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">&#x1F50D;</span>
         <input type="text" id="assetSearch" placeholder="Search assets..." class="ui-input pl-9 w-56">
     </div>
     <div>
@@ -168,7 +164,7 @@
 <div id="returnAssetModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1003;justify-content:center;align-items:center;">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
         <div class="bg-[#1a3a5c] text-white px-5 py-4 rounded-t-xl flex items-center gap-3">
-            <span>&#x21A9;ï¸</span><span class="font-semibold">Return Asset</span>
+            <span>&#x21A9;&#xFE0F;</span><span class="font-semibold">Return Asset</span>
             <button onclick="closeReturnModal()" class="ml-auto text-white/80 hover:text-white text-2xl leading-none">&times;</button>
         </div>
         <div class="p-5">
@@ -217,13 +213,13 @@
                                 <input type="radio" name="update_asset_status" value="maintenance"> &#x1F527; Maintenance
                             </label>
                             <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg cursor-pointer text-sm hover:bg-gray-50">
-                                <input type="radio" name="update_asset_status" value="damaged"> &#x26A0;ï¸ Damaged
+                                <input type="radio" name="update_asset_status" value="damaged"> &#x26A0;&#xFE0F; Damaged
                             </label>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-5 pt-4 border-t border-gray-100">
-                    <button type="submit" class="btn-primary flex-1 justify-center">&#x21A9;ï¸ Process Return</button>
+                    <button type="submit" class="btn-primary flex-1 justify-center">&#x21A9;&#xFE0F; Process Return</button>
                     <button type="button" onclick="closeReturnModal()" class="btn-secondary">Cancel</button>
                 </div>
             </form>

@@ -5,10 +5,6 @@
 <div>
     {{-- Header --}}
     <div class="flex items-start justify-between mb-5">
-        <div>
-            <h2 class="page-title">Edit {{ $client->company_name }}</h2>
-            <p class="page-subtitle mt-1">Update client information and settings</p>
-        </div>
         <a href="{{ route('clients.index') }}" class="btn-secondary btn-sm">&#8592; Back to List</a>
     </div>
 

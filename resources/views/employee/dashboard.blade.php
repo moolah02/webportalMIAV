@@ -6,10 +6,6 @@
 <div>
     {{-- Welcome Header --}}
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-        <div>
-            <h1 class="page-title">Welcome back, {{ auth()->user()->first_name ?? auth()->user()->name ?? 'Employee' }}! &#x1F44B;</h1>
-            <p class="page-subtitle">Your job assignments and requests for today</p>
-        </div>
         <div class="flex gap-2">
             @if(Route::has('jobs.mine'))
             <a href="{{ route('jobs.mine') }}" class="btn-primary btn-sm">&#x1F4CB; My Jobs</a>

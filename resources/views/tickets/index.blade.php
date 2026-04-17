@@ -49,10 +49,6 @@
 
 {{-- Page header --}}
 <div class="flex justify-between items-center mb-6">
-    <div>
-        <h1 class="page-title">&#x1F3AB; Support Tickets</h1>
-        <p class="page-subtitle">Manage and track all support requests</p>
-    </div>
     <button class="btn-primary" onclick="openCreateTicketModal()">&#x2795; New Ticket</button>
 </div>
 
@@ -190,8 +186,8 @@
                     </td>
                     <td>
                         <div class="flex gap-1.5 flex-wrap">
-                            <button class="btn-secondary btn-sm" onclick="viewTicketDetails({{ $ticket->id }})">ðŸ‘ View</button>
-                            <button class="btn-primary btn-sm" onclick="editTicketFromTable({{ $ticket->id }})">âœï¸ Edit</button>
+                            <button class="btn-secondary btn-sm" onclick="viewTicketDetails({{ $ticket->id }})">&#x1F441; View</button>
+                            <button class="btn-primary btn-sm" onclick="editTicketFromTable({{ $ticket->id }})">&#x270F; Edit</button>
                             @if($ticket->status === 'open')
                                 <button class="btn-success btn-sm" onclick="updateTicketStatus({{ $ticket->id }}, 'resolved')">&#x2705; Resolve</button>
                             @endif

@@ -6,10 +6,6 @@
 <div class="max-w-4xl mx-auto">
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-        <div>
-            <h1 class="page-title">Add New POS Terminal</h1>
-            <p class="page-subtitle">Register a new terminal for client management</p>
-        </div>
         <a href="{{ route('pos-terminals.index') }}" class="btn-secondary">&#x2190; Back to Terminals</a>
     </div>
 

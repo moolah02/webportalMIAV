@@ -6,7 +6,6 @@
     <!-- Header -->
     <div class="page-header">
         <div class="header-content">
-            <h1 class="page-title">⚙️ Column Mapping Management</h1>
             <p class="page-description">Create and manage CSV column mappings for different bank formats</p>
         </div>
         <div class="header-actions">

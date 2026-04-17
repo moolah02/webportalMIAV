@@ -4,10 +4,6 @@
 @section('content')
 {{-- Header --}}
 <div class="flex items-center justify-between mb-6">
-    <div>
-        <h1 class="page-title">Add New Asset</h1>
-        <p class="page-subtitle">Add a new asset to the company inventory</p>
-    </div>
     <a href="{{ route('assets.index') }}" class="btn-secondary btn-sm">Back to Assets</a>
 </div>
 

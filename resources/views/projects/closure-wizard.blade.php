@@ -6,11 +6,9 @@
 @section('content')
 <div class="container-fluid py-4">
     {{-- Page Header --}}
-    <h2 class="page-title mb-4">
         <i class="fas fa-archive"></i>
         Project Closure Wizard - {{ $project->project_name }}
     </h2>
-    <p class="page-subtitle">{{ $project->project_code }} • {{ $project->client->company_name }}</p>
 
     {{-- Progress Steps --}}
     <div class="card mb-4">

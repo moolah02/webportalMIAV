@@ -4,10 +4,6 @@
 @section('content')
 {{-- Header --}}
 <div class="flex items-center justify-between mb-6">
-    <div>
-        <h1 class="page-title">Edit Asset</h1>
-        <p class="page-subtitle">Update asset information and settings</p>
-    </div>
     <div class="flex gap-3">
         <a href="{{ route('assets.show', $asset) }}" class="btn-secondary btn-sm">View Asset</a>
         <a href="{{ route('assets.index') }}" class="btn-secondary btn-sm">Back to Assets</a>

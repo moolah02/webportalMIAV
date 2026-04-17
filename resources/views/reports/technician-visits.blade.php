@@ -462,10 +462,6 @@
 <div class="dashboard-container">
     <!-- Compact Header -->
     <div class="dashboard-header">
-        <div>
-            <h1 class="page-title">Technician Visit Reports</h1>
-            <p class="page-subtitle">Real-time field visit tracking and analytics</p>
-        </div>
         <div class="data-actions">
             <button class="btn-compact btn-outline" onclick="refreshData()">
                 <i class="fas fa-sync-alt"></i> Refresh

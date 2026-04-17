@@ -32,7 +32,6 @@ $pBadge = [
             {{-- Title / Status / Actions row --}}
             <div class="flex flex-wrap justify-between items-start gap-4 mb-6">
                 <div class="flex-1 min-w-[280px]">
-                    <h2 class="page-title mb-2">Assignment {{ $assignment->assignment_id }}</h2>
                     <div class="flex gap-2 flex-wrap">
                         <span class="badge {{ $sBadge }}">{{ \Illuminate\Support\Str::headline($assignment->status) }}</span>
                         <span class="badge {{ $pBadge }}">{{ \Illuminate\Support\Str::headline($assignment->priority) }}</span>

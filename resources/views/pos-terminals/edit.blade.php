@@ -6,10 +6,6 @@
 <div class="max-w-4xl mx-auto">
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-        <div>
-            <h1 class="page-title">Edit Terminal {{ $posTerminal->terminal_id }}</h1>
-            <p class="page-subtitle">Update terminal information and settings</p>
-        </div>
         <div class="flex gap-2">
             <a href="{{ route('pos-terminals.show', $posTerminal) }}" class="btn-secondary">View Details</a>
             <a href="{{ route('pos-terminals.index') }}" class="btn-secondary">&#x2190; Back</a>

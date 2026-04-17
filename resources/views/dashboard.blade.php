@@ -5,8 +5,6 @@
 <div>
     {{-- Welcome Header --}}
     <div class="mb-5">
-        <h2 class="page-title">Welcome back, {{ auth()->user()->first_name }}!</h2>
-        <p class="page-subtitle mt-1">Here's what's happening with your POS terminal network and business licenses today</p>
     </div>
 
     {{-- System Alerts --}}

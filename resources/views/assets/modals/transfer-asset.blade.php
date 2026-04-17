@@ -369,7 +369,6 @@ document.getElementById('transferAssetForm').addEventListener('submit', function
   });
 });
 
-
 // Close modal when clicking outside
 document.addEventListener('click', function(event) {
     const modal = document.getElementById('transferAssetModal');

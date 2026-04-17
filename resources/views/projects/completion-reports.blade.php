@@ -6,8 +6,6 @@
 
 <div class="container-fluid py-4">
     {{-- Page Header --}}
-    <h2 class="page-title mb-4">Project Completion & Reports</h2>
-    <p class="page-subtitle">Manage project completions and generate reports</p>
 
     {{-- Statistics Cards --}}
     <div class="stats-grid mb-4">

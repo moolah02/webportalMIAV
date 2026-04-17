@@ -171,7 +171,6 @@
                     </div>
                 </div>
 
-
                 <!-- Company Additional Information -->
                 <div class="content-card" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📝 Additional Information</h4>

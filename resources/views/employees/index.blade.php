@@ -4,12 +4,8 @@
 @section('title', 'Employee Management')
 
 @section('content')
-{{-- Header --}}
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <h1 class="page-title">&#x1F465; Employee Management</h1>
-        <p class="page-subtitle">Manage employee onboarding and permissions</p>
-    </div>
+{{-- Actions --}}
+<div class="flex justify-end items-center mb-6">
     <a href="{{ route('employees.create') }}" class="btn-primary">+ Onboard New Employee</a>
 </div>
 
@@ -43,7 +39,7 @@
         </div>
     </div>
     <div class="stat-card border-l-4 border-purple-500">
-        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">â³</div>
+        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">&#x23F3;</div>
         <div>
             <div class="stat-number text-purple-600">{{ $pendingOnboarding }}</div>
             <div class="stat-label">Pending Onboarding</div>
@@ -161,9 +157,9 @@
                     </td>
                     <td>
                         <div class="flex items-center gap-1">
-                            <button onclick="location.href='{{ route('employees.show', $employee) }}'" class="btn-secondary btn-sm" title="View">ðŸ‘ï¸</button>
-                            <button onclick="location.href='{{ route('employees.edit', $employee) }}'" class="btn-secondary btn-sm" title="Edit">âœï¸</button>
-                            <button onclick="quickActions({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}', '{{ $employee->email }}')" class="btn-secondary btn-sm" title="More Actions">&#x2699;ï¸</button>
+                            <button onclick="location.href='{{ route('employees.show', $employee) }}'" class="btn-secondary btn-sm" title="View">&#x1F441;</button>
+                            <button onclick="location.href='{{ route('employees.edit', $employee) }}'" class="btn-secondary btn-sm" title="Edit">&#x270F;</button>
+                            <button onclick="quickActions({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}', '{{ $employee->email }}')" class="btn-secondary btn-sm" title="More Actions">&#x2699;&#xFE0F;</button>
                         </div>
                     </td>
                 </tr>
@@ -190,7 +186,7 @@
 <div id="quickActionsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-sm relative">
         <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 rounded-t-xl flex items-center gap-3">
-            <span>&#x2699;ï¸</span>
+            <span>&#x2699;&#xFE0F;</span>
             <span id="modalEmployeeName" class="text-sm font-semibold text-gray-900">Quick Actions</span>
             <button onclick="closeQuickActions()" class="ml-auto text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         </div>
@@ -200,7 +196,7 @@
                 <div><div class="text-sm font-semibold">View Profile</div><div class="text-xs opacity-75">See complete employee details</div></div>
             </button>
             <button id="editEmployeeBtn" class="flex items-center gap-3 p-4 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition text-left w-full">
-                <span class="text-xl">âœï¸</span>
+                <span class="text-xl">&#x270F;</span>
                 <div><div class="text-sm font-semibold">Edit Employee</div><div class="text-xs opacity-75">Update employee information</div></div>
             </button>
             <button onclick="sendEmail()" class="flex items-center gap-3 p-4 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 transition text-left w-full">

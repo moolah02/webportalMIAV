@@ -3,13 +3,9 @@
 @section('title', 'Site Visit Management')
 
 @section('content')
-{{-- Header --}}
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <h1 class="page-title">Site Visit Management</h1>
-        <p class="page-subtitle">Comprehensive field visit tracking and reporting</p>
-    </div>
-    <a href="{{ url()->previous() }}" class="btn-secondary">â† Back</a>
+{{-- Actions --}}
+<div class="flex justify-end items-center mb-6">
+    <a href="{{ url()->previous() }}" class="btn-secondary">&#x2190; Back</a>
 </div>
 
 {{-- Filters --}}
@@ -47,7 +43,7 @@
 {{-- Results --}}
 @if($visits->isEmpty())
 <div class="empty-state">
-    <div class="empty-state-icon">ðŸ”</div>
+    <div class="empty-state-icon">&#x1F50D;</div>
     <p class="empty-state-msg">No visits found. Try adjusting your filter criteria.</p>
 </div>
 @else
@@ -149,7 +145,7 @@
                             @endif
                         </td>
                         <td class="text-center">
-                            <a href="{{ route('visits.show', $v) }}" class="btn-secondary btn-sm">ðŸ‘ View</a>
+                            <a href="{{ route('visits.show', $v) }}" class="btn-secondary btn-sm">&#x1F441; View</a>
                         </td>
                     </tr>
                 @endforeach

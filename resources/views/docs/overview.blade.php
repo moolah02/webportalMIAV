@@ -115,7 +115,6 @@
                             └─▶ Staged Resolution Steps
                                     └─▶ Ticket Resolved ──▶ Audit Trail
 
-
 Employee Hired
     └─▶ Roles Assigned (Permissions granted)
             └─▶ Jobs Assigned

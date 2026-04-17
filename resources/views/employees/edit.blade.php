@@ -4,10 +4,6 @@
 @section('content')
 <div>
     <div class="flex items-start justify-between mb-5">
-        <div>
-            <h2 class="page-title">Edit {{ $employee->first_name }} {{ $employee->last_name }}</h2>
-            <p class="page-subtitle mt-1">Update employee information and permissions</p>
-        </div>
         <a href="{{ route('employees.show', $employee) }}" class="btn-secondary btn-sm">&#8592; Back to Profile</a>
     </div>
 

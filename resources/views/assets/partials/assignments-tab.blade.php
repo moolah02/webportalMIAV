@@ -5,7 +5,6 @@
 
 <meta name="app-base-url" content="{{ url('/') }}">
 
-
 <!-- Assignment Statistics Cards -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-block-end: 30px;">
     <div class="metric-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
@@ -762,7 +761,6 @@ function loadEmployeesForTransfer(currentEmployeeId) {
   });
 }
 
-
 // View Assignment Details Functions
 function viewAssignmentDetails(assignmentId) {
     currentAssignmentForDetails = assignmentId;
@@ -956,7 +954,6 @@ document.getElementById('transferAssetForm').addEventListener('submit', function
     submitBtn.disabled = false;
   });
 });
-
 
 // Auto-update asset status based on condition
 document.getElementById('return_condition')?.addEventListener('change', function() {

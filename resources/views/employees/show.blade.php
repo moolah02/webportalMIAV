@@ -5,10 +5,6 @@
 <div>
     {{-- Header --}}
     <div class="flex items-start justify-between mb-5">
-        <div>
-            <h2 class="page-title">{{ $employee->first_name }} {{ $employee->last_name }}</h2>
-            <p class="page-subtitle mt-1">Employee Profile</p>
-        </div>
         <div class="flex gap-2 flex-wrap">
             <a href="{{ route('employees.index') }}" class="btn-secondary btn-sm">&#8592; Back to Employees</a>
             <a href="{{ route('employees.edit', $employee) }}" class="btn-primary btn-sm">Edit Profile</a>
