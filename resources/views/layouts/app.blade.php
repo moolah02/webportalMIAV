@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <title>{{ config('app.name', 'Revival Technologies') }} â€“ {{ $title ?? 'Dashboard' }}</title>
+  <title>{{ config('app.name', 'Revival Technologies') }} – {{ $title ?? 'Dashboard' }}</title>
 
   <link rel="icon"       type="image/jpeg" href="{{ asset('logo/revival-logo.jpeg') }}">
   <link rel="shortcut icon" type="image/jpeg" href="{{ asset('logo/revival-logo.jpeg') }}">
@@ -21,7 +21,7 @@
   <!-- jQuery (needed by some inner pages) -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <!-- Bootstrap â€“ kept while inner pages still use .btn/.card/etc. -->
+  <!-- Bootstrap – kept while inner pages still use .btn/.card/etc. -->
   <link  href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -38,7 +38,7 @@
     /* Chevron arrow on section headers */
     .nav-section { position: relative; }
     .nav-section::after {
-      content: 'â€º';
+      content: '›';
       position: absolute; right: 10px; top: 50%;
       transform: translateY(-50%);
       font-size: 12px; font-weight: 700;
@@ -91,12 +91,12 @@
           <a href="{{ route('dashboard') }}"
              class="flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium transition-all duration-150
                     {{ request()->routeIs('dashboard') ? 'bg-[#1a3a5c] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
-            <span class="text-sm leading-none w-4 text-center">ðŸ“Š</span> Company Dashboard
+            <span class="text-sm leading-none w-4 text-center">📊</span> Company Dashboard
           </a>
           <a href="{{ route('employee.dashboard') }}"
              class="flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium transition-all duration-150
                     {{ request()->routeIs('employee.dashboard') ? 'bg-[#1a3a5c] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
-            <span class="text-sm leading-none w-4 text-center">ðŸ“ˆ</span> Employee Dashboard
+            <span class="text-sm leading-none w-4 text-center">📈</span> Employee Dashboard
           </a>
         </div>
 
@@ -104,16 +104,16 @@
         <div class="px-2 pt-2">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
-            <span class="text-sm leading-none w-4 text-center">ðŸ’¼</span> Assets
+            <span class="text-sm leading-none w-4 text-center">💼</span> Assets
           </button>
           <div class="submenu {{ request()->routeIs('assets.*','asset-requests.*','asset-approvals.*','pos-terminals.*','business-licenses.*') ? 'show' : '' }}">
             @foreach([
-              ['assets.index',           'ðŸ¢', 'Internal Assets',   'assets.*'],
-              ['pos-terminals.index',    'ðŸ’³', 'POS Terminals',     'pos-terminals.*'],
-              ['asset-requests.catalog', 'ðŸ›’', 'Request Assets',    'asset-requests.catalog'],
-              ['asset-requests.index',   'ðŸ“‹', 'My Requests',       'asset-requests.index'],
-              ['asset-approvals.index',  'âœ…', 'Asset Approvals',   'asset-approvals.*'],
-              ['business-licenses.index','ðŸ“„', 'Business Licenses', 'business-licenses.*'],
+              ['assets.index',           '🏢', 'Internal Assets',   'assets.*'],
+              ['pos-terminals.index',    '💳', 'POS Terminals',     'pos-terminals.*'],
+              ['asset-requests.catalog', '🛒', 'Request Assets',    'asset-requests.catalog'],
+              ['asset-requests.index',   '📋', 'My Requests',       'asset-requests.index'],
+              ['asset-approvals.index',  '✅', 'Asset Approvals',   'asset-approvals.*'],
+              ['business-licenses.index','📄', 'Business Licenses', 'business-licenses.*'],
             ] as [$route, $icon, $label, $pattern])
             <a href="{{ route($route) }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150
@@ -128,15 +128,15 @@
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
-            <span class="text-sm leading-none w-4 text-center">ðŸ”§</span> Field Operations
+            <span class="text-sm leading-none w-4 text-center">🔧</span> Field Operations
           </button>
           <div class="submenu {{ request()->routeIs('deployment.*','jobs.*','tickets.*','visits.*','site_visits.*') ? 'show' : '' }}">
             @foreach([
-              ['deployment.hierarchical', 'ðŸš€', 'Terminal Deployment', 'deployment.*'],
-              ['jobs.index',              'ðŸ“‹', 'Job Assignments',     'jobs.*'],
-              ['visits.index',            'ðŸ“', 'Site Visits',         'visits.*'],
-              ['site_visits.createManual','âž•', 'Log a Visit',         'site_visits.createManual'],
-              ['tickets.index',           'ðŸŽ«', 'Support Tickets',     'tickets.*'],
+              ['deployment.hierarchical', '🚀', 'Terminal Deployment', 'deployment.*'],
+              ['jobs.index',              '📋', 'Job Assignments',     'jobs.*'],
+              ['visits.index',            '📝', 'Site Visits',         'visits.*'],
+              ['site_visits.createManual','➕', 'Log a Visit',         'site_visits.createManual'],
+              ['tickets.index',           '🎫', 'Support Tickets',     'tickets.*'],
             ] as [$route, $icon, $label, $pattern])
             <a href="{{ route($route) }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150
@@ -151,13 +151,13 @@
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
-            <span class="text-sm leading-none w-4 text-center">ðŸ“‹</span> Projects
+            <span class="text-sm leading-none w-4 text-center">📋</span> Projects
           </button>
           <div class="submenu {{ request()->routeIs('projects.*') ? 'show' : '' }}">
             @foreach([
-              ['projects.index',           'ðŸ“Š', 'All Projects',    'projects.index'],
-              ['projects.create',          'âž•', 'New Project',     'projects.create'],
-              ['projects.closure-reports', 'ðŸ“„', 'Closure Reports', 'projects.completion-reports'],
+              ['projects.index',           '📊', 'All Projects',    'projects.index'],
+              ['projects.create',          '➕', 'New Project',     'projects.create'],
+              ['projects.closure-reports', '📄', 'Closure Reports', 'projects.completion-reports'],
             ] as [$route, $icon, $label, $pattern])
             <a href="{{ route($route) }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150
@@ -172,12 +172,12 @@
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
-            <span class="text-sm leading-none w-4 text-center">ðŸ‘¥</span> Clients
+            <span class="text-sm leading-none w-4 text-center">👥</span> Clients
           </button>
           <div class="submenu {{ request()->routeIs('clients.*','client-dashboards.*') ? 'show' : '' }}">
             @foreach([
-              ['clients.index',           'ðŸ¢', 'Clients',           'clients.*'],
-              ['client-dashboards.index', 'ðŸ“Š', 'Client Dashboards', 'client-dashboards.*'],
+              ['clients.index',           '🏢', 'Clients',           'clients.*'],
+              ['client-dashboards.index', '📊', 'Client Dashboards', 'client-dashboards.*'],
             ] as [$route, $icon, $label, $pattern])
             <a href="{{ route($route) }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150
@@ -192,12 +192,12 @@
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
-            <span class="text-sm leading-none w-4 text-center">ðŸ‘¤</span> Employees
+            <span class="text-sm leading-none w-4 text-center">👤</span> Employees
           </button>
           <div class="submenu {{ request()->routeIs('employees.*','roles.*') ? 'show' : '' }}">
             @foreach([
-              ['employees.index', 'ðŸ‘¥', 'Employees',       'employees.*'],
-              ['roles.index',     'ðŸ”', 'Role Management', 'roles.*'],
+              ['employees.index', '👥', 'Employees',       'employees.*'],
+              ['roles.index',     '🔐', 'Role Management', 'roles.*'],
             ] as [$route, $icon, $label, $pattern])
             <a href="{{ route($route) }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150
@@ -212,17 +212,17 @@
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
-            <span class="text-sm leading-none w-4 text-center">ðŸ”§</span> Technician Portal
+            <span class="text-sm leading-none w-4 text-center">🔧</span> Technician Portal
           </button>
           <div class="submenu {{ request()->routeIs('technician.*') ? 'show' : '' }}">
             <a href="{{ route('employee.dashboard') }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150
                     {{ request()->routeIs('employee.dashboard') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
-              <span class="text-xs leading-none w-3.5 text-center">ðŸ“ˆ</span> My Dashboard
+              <span class="text-xs leading-none w-3.5 text-center">📈</span> My Dashboard
             </a>
             <a href="{{ route('jobs.mine') }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150 text-gray-500 hover:bg-gray-100 hover:text-gray-800">
-              <span class="text-xs leading-none w-3.5 text-center">ðŸ“‹</span> My Assignments
+              <span class="text-xs leading-none w-3.5 text-center">📋</span> My Assignments
             </a>
           </div>
         </div>
@@ -231,13 +231,13 @@
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
-            <span class="text-sm leading-none w-4 text-center">ðŸ“Š</span> Reports
+            <span class="text-sm leading-none w-4 text-center">📊</span> Reports
           </button>
           <div class="submenu {{ request()->routeIs('reports.*') ? 'show' : '' }}">
             @foreach([
-              ['reports.index',            'ðŸ“ˆ', 'Reports Dashboard', 'reports.index'],
-              ['reports.technician-visits','ðŸ”§', 'Technician Visits', 'reports.technician-visits'],
-              ['reports.builder',          'ðŸ—', 'Report Builder',    'reports.builder'],
+              ['reports.index',            '📈', 'Reports Dashboard', 'reports.index'],
+              ['reports.technician-visits','🔧', 'Technician Visits', 'reports.technician-visits'],
+              ['reports.builder',          '🏗', 'Report Builder',    'reports.builder'],
             ] as [$route, $icon, $label, $pattern])
             <a href="{{ route($route) }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150
@@ -252,18 +252,18 @@
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
-            <span class="text-sm leading-none w-4 text-center">âš™ï¸</span> Administration
+            <span class="text-sm leading-none w-4 text-center">⚙️</span> Administration
           </button>
           <div class="submenu {{ request()->routeIs('settings.*','admin.*','audit-trail.*') ? 'show' : '' }}">
             <a href="{{ route('settings.index') }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150
                     {{ request()->routeIs('settings.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
-              <span class="text-xs leading-none w-3.5 text-center">ðŸ”§</span> System Settings
+              <span class="text-xs leading-none w-3.5 text-center">🔧</span> System Settings
             </a>
             <a href="{{ route('audit-trail.index') }}"
                class="flex items-center gap-2 pl-6 pr-2 py-2 rounded-md text-xs font-medium transition-all duration-150
                     {{ request()->routeIs('audit-trail.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
-              <span class="text-xs leading-none w-3.5 text-center">ðŸ”</span> Audit Trail
+              <span class="text-xs leading-none w-3.5 text-center">🔍</span> Audit Trail
             </a>
           </div>
         </div>
@@ -272,18 +272,18 @@
         <div class="px-2 pt-3 mt-2 border-t border-gray-100 space-y-0.5">
           <a href="{{ url('/docs') }}" target="_blank"
              class="flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-all duration-150">
-            <span class="text-sm leading-none w-4 text-center">ðŸ“š</span> Documentation
+            <span class="text-sm leading-none w-4 text-center">📚</span> Documentation
           </a>
           <a href="{{ route('employee.profile') }}"
              class="flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium transition-all duration-150
                     {{ request()->routeIs('employee.profile*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
-            <span class="text-sm leading-none w-4 text-center">ðŸ‘¤</span> My Profile
+            <span class="text-sm leading-none w-4 text-center">👤</span> My Profile
           </a>
           <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit"
                     class="w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150 bg-transparent border-none cursor-pointer">
-              <span class="text-sm leading-none w-4 text-center">ðŸšª</span> Sign Out
+              <span class="text-sm leading-none w-4 text-center">🚪</span> Sign Out
             </button>
           </form>
         </div>
@@ -327,7 +327,7 @@
                     onclick="toggleNotifDropdown(event)"
                     class="relative w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 border border-gray-200 text-lg hover:bg-gray-200 transition-colors"
                     aria-label="Notifications">
-              ðŸ””
+              🔔
               <span id="notifBadge"
                     class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
                 0
@@ -343,13 +343,13 @@
               </div>
               <div id="notifList" class="overflow-y-auto max-h-80 divide-y divide-gray-50">
                 <div class="px-4 py-8 text-center text-gray-400 text-sm" id="notifEmpty">
-                  <div class="text-3xl mb-1">ðŸ””</div>
+                  <div class="text-3xl mb-1">🔔</div>
                   No new notifications
                 </div>
               </div>
               <div class="border-t border-gray-100 px-4 py-2.5 text-center">
                 <a href="{{ route('notifications.index') }}" class="text-xs text-blue-600 hover:underline font-medium">
-                  View all notifications â†’
+                  View all notifications →
                 </a>
               </div>
             </div>
@@ -366,20 +366,20 @@
           <button type="button"
                   onclick="toggleUserDropdown(event)"
                   class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 border border-gray-200 text-lg hover:bg-gray-200 transition-colors">
-            ðŸ‘¤
+            👤
           </button>
           {{-- Dropdown --}}
           <div id="userDropdown"
                class="hidden absolute top-14 right-0 w-48 bg-white rounded-xl border border-gray-200 shadow-lg z-50 overflow-hidden">
             <a href="{{ route('employee.profile') }}"
                class="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">
-              <span>ðŸ‘¤</span> My Profile
+              <span>👤</span> My Profile
             </a>
             <form method="POST" action="{{ route('logout') }}">
               @csrf
               <button type="submit"
                       class="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 cursor-pointer bg-transparent border-none">
-                <span>ðŸšª</span> Sign Out
+                <span>🚪</span> Sign Out
               </button>
             </form>
           </div>
@@ -391,7 +391,7 @@
 
         @if(session('success'))
         <div class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 mb-5 text-sm">
-          <span class="text-lg shrink-0">âœ…</span>
+          <span class="text-lg shrink-0">✅</span>
           <span class="flex-1">{{ session('success') }}</span>
           <button onclick="this.closest('div').remove()" class="shrink-0 text-green-600 hover:text-green-900 text-xl leading-none bg-transparent border-none cursor-pointer">&times;</button>
         </div>
@@ -399,7 +399,7 @@
 
         @if(session('error'))
         <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-lg px-4 py-3 mb-5 text-sm">
-          <span class="text-lg shrink-0">âŒ</span>
+          <span class="text-lg shrink-0">❌</span>
           <span class="flex-1">{{ session('error') }}</span>
           <button onclick="this.closest('div').remove()" class="shrink-0 text-red-600 hover:text-red-900 text-xl leading-none bg-transparent border-none cursor-pointer">&times;</button>
         </div>
@@ -407,7 +407,7 @@
 
         @if(session('warning'))
         <div class="flex items-center gap-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg px-4 py-3 mb-5 text-sm">
-          <span class="text-lg shrink-0">âš ï¸</span>
+          <span class="text-lg shrink-0">⚠️</span>
           <span class="flex-1">{{ session('warning') }}</span>
           <button onclick="this.closest('div').remove()" class="shrink-0 text-yellow-600 hover:text-yellow-900 text-xl leading-none bg-transparent border-none cursor-pointer">&times;</button>
         </div>
@@ -522,7 +522,7 @@
           const list  = document.getElementById('notifList');
           const empty = document.getElementById('notifEmpty');
           if (!data.notifications || data.notifications.length === 0) {
-            list.innerHTML = '<div class="px-4 py-8 text-center text-gray-400 text-sm"><div class="text-3xl mb-1">ðŸ””</div>No new notifications</div>';
+            list.innerHTML = '<div class="px-4 py-8 text-center text-gray-400 text-sm"><div class="text-3xl mb-1">🔔</div>No new notifications</div>';
             return;
           }
           const typeColors = {
