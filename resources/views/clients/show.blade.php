@@ -1,5 +1,6 @@
 {{-- resources/views/clients/show.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Client Details')
 
 @section('content')
 <div>

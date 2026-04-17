@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'System Settings')
 
 @section('content')
 <style>

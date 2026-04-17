@@ -1,5 +1,6 @@
 {{-- File: resources/views/asset-approvals/index.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Asset Approvals')
 
 @section('content')
     {{-- Ensure BASE is available for JS to build correct form actions --}}

@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <title>{{ config('app.name', 'Revival Technologies') }} – {{ $title ?? 'Dashboard' }}</title>
+  <title>{{ config('app.name', 'Revival Technologies') }} – @yield('title', 'Dashboard')</title>
 
   <link rel="icon"       type="image/jpeg" href="{{ asset('logo/revival-logo.jpeg') }}">
   <link rel="shortcut icon" type="image/jpeg" href="{{ asset('logo/revival-logo.jpeg') }}">
@@ -65,7 +65,7 @@
 
 <body class="bg-gray-50 text-gray-800 antialiased">
 
-  <!-- â”€â”€â”€ Layout shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <!-- &#x2500;&#x2500;&#x2500; Layout shell &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; -->
   <div class="flex min-h-screen">
 
     {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -85,7 +85,7 @@
 
       <nav class="pb-4 pt-1">
 
-        {{-- â”€â”€ Dashboards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Dashboards &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-2 pb-1">
           <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-400 px-2 mb-1">Overview</p>
           <a href="{{ route('dashboard') }}"
@@ -100,7 +100,7 @@
           </a>
         </div>
 
-        {{-- â”€â”€ Assets Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Assets Management &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-2">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
@@ -124,7 +124,7 @@
           </div>
         </div>
 
-        {{-- â”€â”€ Field Operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Field Operations &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
@@ -147,7 +147,7 @@
           </div>
         </div>
 
-        {{-- â”€â”€ Project Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Project Management &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
@@ -168,7 +168,7 @@
           </div>
         </div>
 
-        {{-- â”€â”€ Client Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Client Management &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
@@ -188,7 +188,7 @@
           </div>
         </div>
 
-        {{-- â”€â”€ Employee Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Employee Management &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
@@ -208,7 +208,7 @@
           </div>
         </div>
 
-        {{-- â”€â”€ Technician Portal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Technician Portal &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
@@ -227,7 +227,7 @@
           </div>
         </div>
 
-        {{-- â”€â”€ Reports & Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Reports & Analytics &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
@@ -248,7 +248,7 @@
           </div>
         </div>
 
-        {{-- â”€â”€ Administration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Administration &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-1">
           <button onclick="toggleMenu(this)"
                   class="nav-section w-full flex items-center gap-2 px-2 py-2 rounded-md text-[10px] font-semibold uppercase tracking-widest text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-150 cursor-pointer bg-transparent border-none">
@@ -268,7 +268,7 @@
           </div>
         </div>
 
-        {{-- â”€â”€ Bottom links â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- &#x2500;&#x2500; Bottom links &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-3 mt-2 border-t border-gray-100 space-y-0.5">
           <a href="{{ url('/docs') }}" target="_blank"
              class="flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-all duration-150">
@@ -315,13 +315,13 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </button>
-          <h1 class="text-xl font-bold text-gray-900">{{ $title ?? 'Dashboard' }}</h1>
+          <h1 class="text-xl font-bold text-gray-900">@yield('title', 'Dashboard')</h1>
         </div>
 
         {{-- User info --}}
         <div class="relative flex items-center gap-3">
 
-          {{-- â”€â”€ Bell notification button â”€â”€ --}}
+          {{-- &#x2500;&#x2500; Bell notification button &#x2500;&#x2500; --}}
           <div class="relative" id="notifWrapper">
             <button type="button" id="notifBtn"
                     onclick="toggleNotifDropdown(event)"
@@ -354,7 +354,7 @@
               </div>
             </div>
           </div>
-          {{-- â”€â”€ End bell â”€â”€ --}}
+          {{-- &#x2500;&#x2500; End bell &#x2500;&#x2500; --}}
           <div class="text-right hidden sm:block">
             <p class="text-sm font-semibold text-gray-800 leading-tight">{{ auth()->user()->full_name }}</p>
             <span class="inline-block text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-3 py-0.5 mt-0.5">
@@ -422,7 +422,7 @@
   @stack('scripts')
 
   <script>
-    /* â”€â”€â”€ User dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* &#x2500;&#x2500;&#x2500; User dropdown &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; */
     function toggleUserDropdown(e) {
       if (e) e.stopPropagation();
       document.getElementById('userDropdown').classList.toggle('hidden');
@@ -435,7 +435,7 @@
       }
     });
 
-    /* â”€â”€â”€ Mobile sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* &#x2500;&#x2500;&#x2500; Mobile sidebar &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; */
     function toggleSidebar() {
       document.querySelector('.sidebar').classList.toggle('open');
       document.getElementById('sidebarOverlay').classList.toggle('hidden');
@@ -445,7 +445,7 @@
       document.getElementById('sidebarOverlay').classList.add('hidden');
     }
 
-    /* â”€â”€â”€ Accordion nav sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* &#x2500;&#x2500;&#x2500; Accordion nav sections &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; */
     function toggleMenu(header) {
       const submenu = header.nextElementSibling;
       const isOpen  = header.classList.contains('open');
@@ -478,7 +478,7 @@
       });
     });
 
-    /* â”€â”€â”€ Notification bell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* &#x2500;&#x2500;&#x2500; Notification bell &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; */
     const NOTIF_POLL_MS = 30000; // poll every 30s
 
     function toggleNotifDropdown(e) {

@@ -1,5 +1,6 @@
 {{-- resources/views/visits/show.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Visit Details')
 
 @section('content')
 <div>

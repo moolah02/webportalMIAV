@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'New Project')
 
 @section('content')
 <!-- Alpine.js for React-like reactivity -->

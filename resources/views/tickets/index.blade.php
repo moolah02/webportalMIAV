@@ -1,8 +1,9 @@
 @extends('layouts.app')
+@section('title', 'Support Tickets')
 
 @push('styles')
 <style>
-    /* â”€â”€ Modals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* &#x2500;&#x2500; Modals &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; */
     .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
     .modal.show { display: flex; align-items: center; justify-content: center; }
     .modal-content { background: white; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
@@ -16,7 +17,7 @@
     .form-group-full { grid-column: 1 / -1; }
     textarea.ui-input { min-height: 90px; resize: vertical; }
 
-    /* â”€â”€ Badges â€” referenced by JS-generated HTML â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* &#x2500;&#x2500; Badges &#x2014; referenced by JS-generated HTML &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; */
     .status-badge, .priority-badge, .issue-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
     .status-open { background: #dbeafe; color: #1e40af; }
     .status-in-progress { background: #fef3c7; color: #92400e; }
@@ -35,7 +36,7 @@
     .issue-replacement_needed { background: #ffe4e6; color: #9f1239; }
     .issue-other { background: #f3f4f6; color: #374151; }
 
-    /* â”€â”€ Table cell helpers â€” referenced by JS filter queries â”€â”€ */
+    /* &#x2500;&#x2500; Table cell helpers &#x2014; referenced by JS filter queries &#x2500;&#x2500; */
     .ticket-id { font-family: monospace; font-weight: 600; color: #1a3a5c; font-size: 13px; }
     .ticket-title { font-weight: 600; color: #111827; font-size: 14px; margin-bottom: 2px; }
     .ticket-description { color: #6b7280; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -49,10 +50,10 @@
 {{-- Page header --}}
 <div class="flex justify-between items-center mb-6">
     <div>
-        <h1 class="page-title">ðŸŽ« Support Tickets</h1>
+        <h1 class="page-title">&#x1F3AB; Support Tickets</h1>
         <p class="page-subtitle">Manage and track all support requests</p>
     </div>
-    <button class="btn-primary" onclick="openCreateTicketModal()">âž• New Ticket</button>
+    <button class="btn-primary" onclick="openCreateTicketModal()">&#x2795; New Ticket</button>
 </div>
 
 {{-- Stats --}}
@@ -192,7 +193,7 @@
                             <button class="btn-secondary btn-sm" onclick="viewTicketDetails({{ $ticket->id }})">ðŸ‘ View</button>
                             <button class="btn-primary btn-sm" onclick="editTicketFromTable({{ $ticket->id }})">âœï¸ Edit</button>
                             @if($ticket->status === 'open')
-                                <button class="btn-success btn-sm" onclick="updateTicketStatus({{ $ticket->id }}, 'resolved')">âœ… Resolve</button>
+                                <button class="btn-success btn-sm" onclick="updateTicketStatus({{ $ticket->id }}, 'resolved')">&#x2705; Resolve</button>
                             @endif
                         </div>
                     </td>
@@ -201,7 +202,7 @@
                 <tr>
                     <td colspan="8">
                         <div class="empty-state">
-                            <div class="empty-state-icon">ðŸŽ«</div>
+                            <div class="empty-state-icon">&#x1F3AB;</div>
                             <div class="empty-state-msg">No tickets found</div>
                         </div>
                     </td>

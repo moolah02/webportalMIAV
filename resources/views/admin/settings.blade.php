@@ -1,5 +1,6 @@
 ?>
 @extends('layouts.app')
+@section('title', 'Admin: Settings')
 @section('content')
 <div class="bg-white rounded-lg p-5">
     <h3>System Settings</h3>

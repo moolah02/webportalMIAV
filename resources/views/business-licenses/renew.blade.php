@@ -1,5 +1,6 @@
 {{-- File: resources/views/business-licenses/renew.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Renew License')
 
 @section('content')
 <div>

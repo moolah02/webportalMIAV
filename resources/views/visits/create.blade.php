@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Log a Visit')
 
 @section('content')
 <div>

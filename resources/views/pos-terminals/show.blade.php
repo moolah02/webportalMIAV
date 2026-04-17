@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Terminal Details')
 
 @section('content')
 <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">

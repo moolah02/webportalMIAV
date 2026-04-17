@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'POS Terminals')
 
 @section('content')
 <div style="max-width: 1400px; margin: 0 auto; padding: 20px;">

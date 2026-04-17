@@ -1,5 +1,6 @@
 ?>
 @extends('layouts.app')
+@section('title', 'Approvals')
 @section('content')
 <div style="background: white; border-radius: 8px; padding: 20px;">
     <h3>Pending Approvals</h3>

@@ -5,6 +5,7 @@ File: resources/views/roles/index.blade.php
 ==============================================
 --}}
 @extends('layouts.app')
+@section('title', 'Role Management')
 
 @section('content')
 <div>

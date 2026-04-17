@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Add Employee')
 
 @section('content')
 <div>

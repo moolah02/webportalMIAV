@@ -1,5 +1,6 @@
 {{-- File: resources/views/asset-approvals/show.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Approval Details')
 
 @section('content')
 <div class="container">

@@ -9,14 +9,14 @@
 {{-- Header --}}
 <div class="flex justify-between items-center mb-6">
     <div>
-        <h1 class="page-title">ðŸ“¦ Asset Management</h1>
+        <h1 class="page-title">&#x1F4E6; Asset Management</h1>
         <p class="page-subtitle">Manage company assets and track assignments</p>
     </div>
 </div>
 
 {{-- Flash Messages --}}
 @if(session('success'))
-<div class="flash-success mb-5">âœ… {{ session('success') }}</div>
+<div class="flash-success mb-5">&#x2705; {{ session('success') }}</div>
 @endif
 @if(session('error'))
 <div class="flash-error mb-5">âŒ {{ session('error') }}</div>
@@ -28,25 +28,25 @@
         @php $tb = 'inline-flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap'; @endphp
         <a href="{{ route('assets.index', ['tab' => 'assets']) }}"
            class="{{ $tb }} {{ $activeTab === 'assets' ? 'border-[#1a3a5c] text-[#1a3a5c]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-            ðŸ“¦ All Assets
+            &#x1F4E6; All Assets
             @if(isset($stats))
             <span class="{{ $activeTab === 'assets' ? 'bg-[#1a3a5c] text-white' : 'bg-gray-100 text-gray-600' }} px-2 py-0.5 rounded-full text-xs font-medium">{{ $stats['total_assets'] }}</span>
             @endif
         </a>
         <a href="{{ route('assets.index', ['tab' => 'assignments']) }}"
            class="{{ $tb }} {{ $activeTab === 'assignments' ? 'border-[#1a3a5c] text-[#1a3a5c]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-            ðŸ‘¥ Current Assignments
+            &#x1F465; Current Assignments
             @if(isset($assignmentStats))
             <span class="{{ $activeTab === 'assignments' ? 'bg-[#1a3a5c] text-white' : 'bg-gray-100 text-gray-600' }} px-2 py-0.5 rounded-full text-xs font-medium">{{ $assignmentStats['active_assignments'] }}</span>
             @endif
         </a>
         <a href="{{ route('assets.index', ['tab' => 'history']) }}"
            class="{{ $tb }} {{ $activeTab === 'history' ? 'border-[#1a3a5c] text-[#1a3a5c]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-            ðŸ“‹ Assignment History
+            &#x1F4CB; Assignment History
         </a>
         <a href="{{ route('assets.index', ['tab' => 'assign']) }}"
            class="{{ $tb }} {{ $activeTab === 'assign' ? 'border-[#1a3a5c] text-[#1a3a5c]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-            ðŸŽ¯ Assign Assets
+            &#x1F3AF; Assign Assets
         </a>
     </nav>
 </div>
@@ -70,7 +70,7 @@
             <option value="other">Other</option>
         </select>
     </div>
-    <a href="{{ route('assets.export') }}" class="btn-secondary ml-auto">ðŸ“Š Export CSV</a>
+    <a href="{{ route('assets.export') }}" class="btn-secondary ml-auto">&#x1F4CA; Export CSV</a>
     <a href="{{ route('assets.create') }}" class="btn-primary">+ Add New Asset</a>
 </div>
 
@@ -79,7 +79,7 @@
     <div class="ui-card-header">
         <div class="flex items-center gap-2">
             <span class="text-sm font-semibold text-gray-800">Asset Inventory</span>
-            <span class="text-xs text-gray-400">â€¢</span>
+            <span class="text-xs text-gray-400">&#x2022;</span>
             <span class="text-xs text-gray-500">{{ isset($assets) ? ($assets->count() ?? 0) : 0 }} items</span>
         </div>
     </div>
@@ -101,15 +101,15 @@
                         <td>
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl flex-shrink-0 leading-none">
-                                    @if(strtolower($asset->category ?? '') === 'laptop') ðŸ’»
-                                    @elseif(strtolower($asset->category ?? '') === 'phone') ðŸ“±
-                                    @elseif(strtolower($asset->category ?? '') === 'equipment') ðŸ”§
-                                    @elseif(strtolower($asset->category ?? '') === 'furniture') ðŸª‘
-                                    @else ðŸ“¦ @endif
+                                    @if(strtolower($asset->category ?? '') === 'laptop') &#x1F4BB;
+                                    @elseif(strtolower($asset->category ?? '') === 'phone') &#x1F4F1;
+                                    @elseif(strtolower($asset->category ?? '') === 'equipment') &#x1F527;
+                                    @elseif(strtolower($asset->category ?? '') === 'furniture') &#x1FA91;
+                                    @else &#x1F4E6; @endif
                                 </div>
                                 <div>
                                     <div class="text-sm font-semibold text-gray-900">{{ $asset->name }}</div>
-                                    <div class="text-xs text-gray-400">ID: #{{ $asset->id ?? 'N/A' }}{{ ($asset->sku ?? false) ? ' â€¢ SKU: '.$asset->sku : '' }}</div>
+                                    <div class="text-xs text-gray-400">ID: #{{ $asset->id ?? 'N/A' }}{{ ($asset->sku ?? false) ? ' &#x2022; SKU: '.$asset->sku : '' }}</div>
                                     @if($asset->description ?? false)<div class="text-xs text-gray-400 truncate max-w-xs">{{ $asset->description }}</div>@endif
                                 </div>
                             </div>
@@ -140,7 +140,7 @@
                 @else
                     <tr><td colspan="5">
                         <div class="empty-state">
-                            <div class="empty-state-icon">ðŸ“¦</div>
+                            <div class="empty-state-icon">&#x1F4E6;</div>
                             <p class="empty-state-msg">No assets found. <a href="{{ route('assets.create') }}" class="text-[#1a3a5c] underline">Add your first asset</a>.</p>
                         </div>
                     </td></tr>
@@ -150,7 +150,7 @@
     </div>
     @if(isset($assets) && method_exists($assets,'hasPages') && $assets->hasPages())
     <div class="px-5 py-3 border-t border-gray-100 flex justify-between items-center text-sm text-gray-500">
-        <span>Showing {{ $assets->firstItem() ?? 0 }}â€“{{ $assets->lastItem() ?? 0 }} of {{ $assets->total() }}</span>
+        <span>Showing {{ $assets->firstItem() ?? 0 }}&#x2013;{{ $assets->lastItem() ?? 0 }} of {{ $assets->total() }}</span>
         {{ $assets->links() }}
     </div>
     @endif
@@ -168,7 +168,7 @@
 <div id="returnAssetModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1003;justify-content:center;align-items:center;">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
         <div class="bg-[#1a3a5c] text-white px-5 py-4 rounded-t-xl flex items-center gap-3">
-            <span>â†©ï¸</span><span class="font-semibold">Return Asset</span>
+            <span>&#x21A9;ï¸</span><span class="font-semibold">Return Asset</span>
             <button onclick="closeReturnModal()" class="ml-auto text-white/80 hover:text-white text-2xl leading-none">&times;</button>
         </div>
         <div class="p-5">
@@ -196,10 +196,10 @@
                             <label class="ui-label">Condition Returned <span class="text-red-400">*</span></label>
                             <select name="condition_when_returned" id="return_condition" required class="ui-select w-full">
                                 <option value="">Select condition...</option>
-                                <option value="new">New â€“ Like brand new</option>
-                                <option value="good">Good â€“ Minor wear, fully functional</option>
-                                <option value="fair">Fair â€“ Noticeable wear, some issues</option>
-                                <option value="poor">Poor â€“ Significant damage</option>
+                                <option value="new">New &#x2013; Like brand new</option>
+                                <option value="good">Good &#x2013; Minor wear, fully functional</option>
+                                <option value="fair">Fair &#x2013; Noticeable wear, some issues</option>
+                                <option value="poor">Poor &#x2013; Significant damage</option>
                             </select>
                         </div>
                     </div>
@@ -211,19 +211,19 @@
                         <label class="ui-label">Update Asset Status</label>
                         <div class="grid grid-cols-3 gap-2">
                             <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg cursor-pointer text-sm hover:bg-gray-50">
-                                <input type="radio" name="update_asset_status" value="available" checked> ðŸ“¦ Available
+                                <input type="radio" name="update_asset_status" value="available" checked> &#x1F4E6; Available
                             </label>
                             <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg cursor-pointer text-sm hover:bg-gray-50">
-                                <input type="radio" name="update_asset_status" value="maintenance"> ðŸ”§ Maintenance
+                                <input type="radio" name="update_asset_status" value="maintenance"> &#x1F527; Maintenance
                             </label>
                             <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg cursor-pointer text-sm hover:bg-gray-50">
-                                <input type="radio" name="update_asset_status" value="damaged"> âš ï¸ Damaged
+                                <input type="radio" name="update_asset_status" value="damaged"> &#x26A0;ï¸ Damaged
                             </label>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-5 pt-4 border-t border-gray-100">
-                    <button type="submit" class="btn-primary flex-1 justify-center">â†©ï¸ Process Return</button>
+                    <button type="submit" class="btn-primary flex-1 justify-center">&#x21A9;ï¸ Process Return</button>
                     <button type="button" onclick="closeReturnModal()" class="btn-secondary">Cancel</button>
                 </div>
             </form>
@@ -235,7 +235,7 @@
 <div id="transferAssetModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1004;justify-content:center;align-items:center;">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
         <div class="bg-orange-500 text-white px-5 py-4 rounded-t-xl flex items-center gap-3">
-            <span>ðŸ”„</span><span class="font-semibold">Transfer Asset</span>
+            <span>&#x1F504;</span><span class="font-semibold">Transfer Asset</span>
             <button onclick="closeTransferModal()" class="ml-auto text-white/80 hover:text-white text-2xl leading-none">&times;</button>
         </div>
         <div class="p-5">
@@ -285,7 +285,7 @@
                     </div>
                 </div>
                 <div class="flex gap-3 mt-5 pt-4 border-t border-gray-100">
-                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors">ðŸ”„ Process Transfer</button>
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors">&#x1F504; Process Transfer</button>
                     <button type="button" onclick="closeTransferModal()" class="btn-secondary">Cancel</button>
                 </div>
             </form>
@@ -297,7 +297,7 @@
 <div id="assignmentDetailsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto relative">
         <div class="bg-[#1a3a5c] text-white px-5 py-4 rounded-t-xl flex items-center gap-3">
-            <span>ðŸ“‹</span>
+            <span>&#x1F4CB;</span>
             <span id="detailsModalTitle" class="font-semibold">Assignment Details</span>
             <button onclick="closeDetailsModal()" class="ml-auto text-white/80 hover:text-white text-2xl leading-none">&times;</button>
         </div>

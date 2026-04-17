@@ -1,5 +1,6 @@
 {{-- resources/views/reports/history.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Reports History')
 
 @push('styles')
 <style>

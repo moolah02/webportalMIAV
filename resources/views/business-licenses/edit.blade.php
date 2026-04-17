@@ -1,5 +1,6 @@
 {{-- File: resources/views/business-licenses/edit.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Edit Business License')
 
 @section('content')
 <div>

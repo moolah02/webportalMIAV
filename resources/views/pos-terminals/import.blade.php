@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Import Terminals')
 
 @section('content')
 <div class="container-fluid">

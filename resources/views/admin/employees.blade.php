@@ -1,5 +1,6 @@
 ?>
 @extends('layouts.app')
+@section('title', 'Admin: Employees')
 @section('content')
 <div class="bg-white rounded-lg p-5">
     <h3>Employee Management</h3>

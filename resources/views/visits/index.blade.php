@@ -91,12 +91,12 @@
                             @endif
                         </td>
                         <td>
-                            <div class="text-sm font-semibold text-gray-900">{{ $v->merchant_name ?? 'â€”' }}</div>
+                            <div class="text-sm font-semibold text-gray-900">{{ $v->merchant_name ?? '&#x2014;' }}</div>
                             <div class="text-xs text-gray-400">ID: {{ $v->merchant_id }}</div>
                         </td>
                         <td class="text-sm text-gray-700">{{ optional($v->employee)->full_name ?? $v->employee_id }}</td>
                         <td>
-                            <span class="text-xs font-medium text-gray-600">{{ $v->assignment_id ?? 'â€”' }}</span>
+                            <span class="text-xs font-medium text-gray-600">{{ $v->assignment_id ?? '&#x2014;' }}</span>
                         </td>
                         <td>
                             @php $completeTerminal = $v->getCompleteTerminalInfo(); @endphp
@@ -105,11 +105,11 @@
                                 <details class="mt-1 text-xs">
                                     <summary class="cursor-pointer text-[#1a3a5c] hover:underline select-none">View Details</summary>
                                     <div class="mt-1 bg-gray-50 border border-gray-200 rounded p-2 space-y-1">
-                                        <div><span class="text-gray-500">Terminal ID:</span> <span class="font-medium">{{ $completeTerminal['terminal_id'] ?? 'â€”' }}</span></div>
-                                        <div><span class="text-gray-500">Status:</span> <span class="font-medium">{{ $completeTerminal['status'] ?? ($completeTerminal['current_status'] ?? 'â€”') }}</span></div>
-                                        <div><span class="text-gray-500">Condition:</span> <span class="font-medium">{{ $completeTerminal['condition_status'] ?? $completeTerminal['condition'] ?? 'â€”' }}</span></div>
-                                        <div><span class="text-gray-500">Model:</span> <span class="font-medium">{{ $completeTerminal['terminal_model'] ?? 'â€”' }}</span></div>
-                                        <div><span class="text-gray-500">Serial:</span> <span class="font-medium">{{ $completeTerminal['serial_number'] ?? 'â€”' }}</span></div>
+                                        <div><span class="text-gray-500">Terminal ID:</span> <span class="font-medium">{{ $completeTerminal['terminal_id'] ?? '&#x2014;' }}</span></div>
+                                        <div><span class="text-gray-500">Status:</span> <span class="font-medium">{{ $completeTerminal['status'] ?? ($completeTerminal['current_status'] ?? '&#x2014;') }}</span></div>
+                                        <div><span class="text-gray-500">Condition:</span> <span class="font-medium">{{ $completeTerminal['condition_status'] ?? $completeTerminal['condition'] ?? '&#x2014;' }}</span></div>
+                                        <div><span class="text-gray-500">Model:</span> <span class="font-medium">{{ $completeTerminal['terminal_model'] ?? '&#x2014;' }}</span></div>
+                                        <div><span class="text-gray-500">Serial:</span> <span class="font-medium">{{ $completeTerminal['serial_number'] ?? '&#x2014;' }}</span></div>
                                         @if(!empty($completeTerminal['issues']))
                                             <div><span class="text-gray-500">Issues:</span> <span class="text-red-600 font-medium">{{ $completeTerminal['issues'] }}</span></div>
                                         @endif
@@ -131,14 +131,14 @@
                         <td>
                             @if(count($evidence))
                                 <details class="text-xs">
-                                    <summary class="cursor-pointer text-[#1a3a5c] hover:underline select-none">ðŸ“Ž {{ count($evidence) }} {{ count($evidence) === 1 ? 'File' : 'Files' }}</summary>
+                                    <summary class="cursor-pointer text-[#1a3a5c] hover:underline select-none">&#x1F4CE; {{ count($evidence) }} {{ count($evidence) === 1 ? 'File' : 'Files' }}</summary>
                                     <div class="mt-1 bg-gray-50 border border-gray-200 rounded p-2 space-y-1">
                                         @foreach($evidence as $idx => $item)
                                             <div>
                                                 @if(\Illuminate\Support\Str::startsWith($item, ['http://', 'https://', '/storage/']))
-                                                    <a href="{{ $item }}" target="_blank" rel="noopener" class="text-[#1a3a5c] hover:underline">ðŸ“Ž Evidence {{ $idx + 1 }}</a>
+                                                    <a href="{{ $item }}" target="_blank" rel="noopener" class="text-[#1a3a5c] hover:underline">&#x1F4CE; Evidence {{ $idx + 1 }}</a>
                                                 @else
-                                                    <span class="text-gray-500">ðŸ“„ {{ \Illuminate\Support\Str::limit($item, 35) }}</span>
+                                                    <span class="text-gray-500">&#x1F4C4; {{ \Illuminate\Support\Str::limit($item, 35) }}</span>
                                                 @endif
                                             </div>
                                         @endforeach

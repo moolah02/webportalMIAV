@@ -1,4 +1,5 @@
 ﻿@extends('layouts.app')
+@section('title', 'Audit Trail')
 
 @section('content')
 <div>
@@ -169,7 +170,7 @@
                                     <div class="text-xs text-gray-400">#{{ $log->model_id }}</div>
                                 @endif
                             @else
-                                <span class="text-gray-400">â€”</span>
+                                <span class="text-gray-400">&#x2014;</span>
                             @endif
                         </td>
                         <td class="px-4 py-3 max-w-xs">
@@ -199,12 +200,12 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{{ $log->ip_address ?? 'â€”' }}</td>
+                        <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{{ $log->ip_address ?? '&#x2014;' }}</td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="7" class="px-4 py-12 text-center text-gray-400">
-                            <div class="text-4xl mb-3">ðŸ“‹</div>
+                            <div class="text-4xl mb-3">&#x1F4CB;</div>
                             <div class="font-medium">No audit log entries found</div>
                             <div class="text-sm mt-1">Activity will appear here as users perform actions.</div>
                         </td>

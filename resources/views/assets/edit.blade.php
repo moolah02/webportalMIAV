@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Edit Asset')
 
 @section('content')
 {{-- Header --}}

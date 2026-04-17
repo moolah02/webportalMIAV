@@ -1,5 +1,6 @@
 {{-- resources/views/projects/completion-reports.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Completion Reports')
 
 @section('content')
 

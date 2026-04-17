@@ -1,5 +1,6 @@
 {{-- resources/views/manager/team.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Team Management')
 
 @section('content')
 <div>

@@ -5,6 +5,7 @@ File: resources/views/roles/create.blade.php
 ==============================================
 --}}
 @extends('layouts.app')
+@section('title', 'Create Role')
 
 @section('content')
 <div>

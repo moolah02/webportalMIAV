@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Asset Details')
 
 @section('content')
 {{-- Header --}}

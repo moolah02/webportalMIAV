@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Manage Roles')
 
 @section('content')
 <style>

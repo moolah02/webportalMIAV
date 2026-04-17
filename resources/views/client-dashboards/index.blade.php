@@ -1,5 +1,6 @@
 {{-- resources/views/clients/index.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Client Dashboards')
 
 @section('content')
 <div>

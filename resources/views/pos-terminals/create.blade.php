@@ -1,5 +1,6 @@
 {{-- resources/views/pos-terminals/create.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Add POS Terminal')
 
 @section('content')
 <div class="max-w-4xl mx-auto">

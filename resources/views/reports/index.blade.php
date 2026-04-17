@@ -10,8 +10,8 @@
         <p class="page-subtitle">Comprehensive system performance and analytics</p>
     </div>
     <div class="flex items-center gap-2">
-        <button onclick="exportFullReport()" class="btn-primary">ðŸ“Š Export Full Report</button>
-        <button onclick="printDashboard()" class="btn-secondary">ðŸ–¨ï¸ Print</button>
+        <button onclick="exportFullReport()" class="btn-primary">&#x1F4CA; Export Full Report</button>
+        <button onclick="printDashboard()" class="btn-secondary">&#x1F5A8;ï¸ Print</button>
     </div>
 </div>
 
@@ -26,7 +26,7 @@
         </div>
     </div>
     <div class="stat-card border-l-4 border-green-500">
-        <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0 text-xl">ðŸ’»</div>
+        <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F4BB;</div>
         <div>
             <div class="stat-number text-green-600">{{ $systemOverview['total_terminals'] }}</div>
             <div class="stat-label">POS Terminals</div>
@@ -34,7 +34,7 @@
         </div>
     </div>
     <div class="stat-card border-l-4 border-orange-400">
-        <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0 text-xl">ðŸ‘¥</div>
+        <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F465;</div>
         <div>
             <div class="stat-number text-orange-500">{{ $systemOverview['total_employees'] }}</div>
             <div class="stat-label">Employees</div>
@@ -42,7 +42,7 @@
         </div>
     </div>
     <div class="stat-card border-l-4 border-purple-500">
-        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 text-xl">ðŸ“‹</div>
+        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F4CB;</div>
         <div>
             <div class="stat-number text-purple-600">{{ $systemOverview['active_projects'] }}</div>
             <div class="stat-label">Active Projects</div>
@@ -50,7 +50,7 @@
         </div>
     </div>
     <div class="stat-card border-l-4 border-red-500">
-        <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0 text-xl">ðŸŽ«</div>
+        <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F3AB;</div>
         <div>
             <div class="stat-number text-red-600">{{ $systemOverview['open_tickets'] }}</div>
             <div class="stat-label">Open Tickets</div>
@@ -58,7 +58,7 @@
         </div>
     </div>
     <div class="stat-card border-l-4 border-teal-500">
-        <div class="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0 text-xl">ðŸ’°</div>
+        <div class="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F4B0;</div>
         <div>
             <div class="stat-number text-teal-600">${{ number_format($systemOverview['revenue_impact'] / 1000) }}K</div>
             <div class="stat-label">Revenue Impact</div>
@@ -508,7 +508,7 @@
 
 
 <style>
-/* Tab navigation & show/hide â€” required by switchTab() JS */
+/* Tab navigation & show/hide &#x2014; required by switchTab() JS */
 .tab-navigation { display: flex; flex-wrap: wrap; gap: 2px; }
 .tab-button {
     padding: 10px 16px; border: none; background: none; cursor: pointer;

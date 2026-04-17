@@ -5,6 +5,7 @@ File: resources/views/roles/show.blade.php
 ==============================================
 --}}
 @extends('layouts.app')
+@section('title', 'Role Details')
 
 @section('content')
 <div>
