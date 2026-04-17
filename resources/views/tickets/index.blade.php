@@ -2,589 +2,217 @@
 
 @push('styles')
 <style>
-    .container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 24px;
-    }
+    /* â”€â”€ Modals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+    .modal.show { display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: white; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 17px; font-weight: 700; color: #111827; }
+    .modal-close { background: none; border: none; font-size: 22px; color: #6b7280; cursor: pointer; line-height: 1; padding: 0; }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; justify-content: flex-end; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group-full { grid-column: 1 / -1; }
+    textarea.ui-input { min-height: 90px; resize: vertical; }
 
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 32px;
-        background: white;
-        padding: 24px 32px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
+    /* â”€â”€ Badges â€” referenced by JS-generated HTML â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .status-badge, .priority-badge, .issue-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+    .status-open { background: #dbeafe; color: #1e40af; }
+    .status-in-progress { background: #fef3c7; color: #92400e; }
+    .status-resolved { background: #d1fae5; color: #065f46; }
+    .status-closed { background: #dcfce7; color: #166534; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .priority-critical { background: #fee2e2; color: #991b1b; }
+    .priority-high { background: #fef3c7; color: #92400e; }
+    .priority-medium { background: #dbeafe; color: #1e40af; }
+    .priority-low { background: #d1fae5; color: #065f46; }
+    .issue-hardware_malfunction { background: #fee2e2; color: #991b1b; }
+    .issue-software_issue { background: #dbeafe; color: #1e40af; }
+    .issue-network_connectivity { background: #fef3c7; color: #92400e; }
+    .issue-user_training { background: #cffafe; color: #164e63; }
+    .issue-maintenance_required { background: #fef9c3; color: #713f12; }
+    .issue-replacement_needed { background: #ffe4e6; color: #9f1239; }
+    .issue-other { background: #f3f4f6; color: #374151; }
 
-    .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #2c3e50;
-    }
-
-    .btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-primary {
-        background: #2c3e50;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #34495e;
-        transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-        background: #6c757d;
-        color: white;
-    }
-
-    .btn-secondary:hover {
-        background: #5a6268;
-    }
-
-    .btn-success {
-        background: #28a745;
-        color: white;
-    }
-
-    .btn-success:hover {
-        background: #218838;
-    }
-
-    .btn-warning {
-        background: #ffc107;
-        color: #212529;
-    }
-
-    .btn-danger {
-        background: #dc3545;
-        color: white;
-    }
-
-    .btn-sm {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-
-    /* Filters Section */
-    .filters-section {
-        background: white;
-        padding: 24px 32px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        margin-bottom: 24px;
-    }
-
-    .filters-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        align-items: end;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .form-label {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 6px;
-        font-size: 14px;
-    }
-
-    .form-control {
-        padding: 10px 14px;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        font-size: 14px;
-        transition: border-color 0.2s ease;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #2c3e50;
-        box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
-    }
-
-    /* Stats Cards */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 24px;
-        margin-bottom: 32px;
-    }
-
-    .stat-card {
-        background: white;
-        padding: 24px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        border-left: 4px solid;
-    }
-
-    .stat-card.open { border-left-color: #007bff; }
-    .stat-card.in-progress { border-left-color: #ffc107; }
-    .stat-card.resolved { border-left-color: #28a745; }
-    .stat-card.critical { border-left-color: #dc3545; }
-
-    .stat-number {
-        font-size: 32px;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
-
-    .stat-label {
-        color: #6c757d;
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    /* Tickets Table */
-    .tickets-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        overflow: hidden;
-    }
-
-    .section-header {
-        padding: 20px 32px;
-        border-bottom: 1px solid #dee2e6;
-        background: #f8f9fa;
-    }
-
-    .section-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #495057;
-    }
-
-    .table-container {
-        overflow-x: auto;
-    }
-
-    .tickets-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .tickets-table th {
-        background: #f8f9fa;
-        padding: 16px;
-        text-align: left;
-        font-weight: 600;
-        color: #495057;
-        border-bottom: 2px solid #dee2e6;
-        font-size: 13px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .tickets-table td {
-        padding: 16px;
-        border-bottom: 1px solid #dee2e6;
-        vertical-align: top;
-    }
-
-    .tickets-table tbody tr:hover {
-        background: #f8f9fa;
-    }
-
-    .ticket-id {
-        font-family: monospace;
-        font-weight: 600;
-        color: #2c3e50;
-    }
-
-    .ticket-title {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 4px;
-    }
-
-    .ticket-description {
-        color: #6c757d;
-        font-size: 13px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    /* Status Badges */
-    .status-badge, .priority-badge, .issue-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: inline-block;
-    }
-
-    /* Status Colors */
-    .status-open { background: #cfe2ff; color: #004085; }
-    .status-in-progress { background: #fff3cd; color: #664d03; }
-    .status-resolved { background: #d1edff; color: #0c5460; }
-    .status-closed { background: #d4edda; color: #155724; }
-    .status-cancelled { background: #f8d7da; color: #721c24; }
-
-    /* Priority Colors */
-    .priority-critical { background: #f8d7da; color: #721c24; }
-    .priority-high { background: #fff3cd; color: #664d03; }
-    .priority-medium { background: #cfe2ff; color: #004085; }
-    .priority-low { background: #d4edda; color: #155724; }
-
-    /* Issue Type Colors */
-    .issue-hardware_malfunction { background: #f8d7da; color: #721c24; }
-    .issue-software_issue { background: #cfe2ff; color: #004085; }
-    .issue-network_connectivity { background: #fff3cd; color: #664d03; }
-    .issue-user_training { background: #d1ecf1; color: #0c5460; }
-    .issue-maintenance_required { background: #ffeaa7; color: #6c5ce7; }
-    .issue-replacement_needed { background: #fab1a0; color: #e17055; }
-    .issue-other { background: #e9ecef; color: #495057; }
-
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        backdrop-filter: blur(4px);
-    }
-
-    .modal.show {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal-content {
-        background: white;
-        border-radius: 12px;
-        max-width: 800px;
-        width: 90%;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    }
-
-    .modal-header {
-        padding: 24px 32px;
-        border-bottom: 1px solid #dee2e6;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .modal-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: #2c3e50;
-    }
-
-    .modal-close {
-        background: none;
-        border: none;
-        font-size: 24px;
-        color: #6c757d;
-        cursor: pointer;
-        padding: 4px;
-    }
-
-    .modal-body {
-        padding: 32px;
-    }
-
-    .modal-footer {
-        padding: 24px 32px;
-        border-top: 1px solid #dee2e6;
-        display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-    }
-
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-
-    .form-group-full {
-        grid-column: 1 / -1;
-    }
-
-    textarea.form-control {
-        min-height: 100px;
-        resize: vertical;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .container {
-            padding: 16px;
-        }
-
-        .page-header {
-            flex-direction: column;
-            gap: 16px;
-            text-align: center;
-        }
-
-        .filters-row {
-            grid-template-columns: 1fr;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .tickets-table {
-            font-size: 14px;
-        }
-
-        .tickets-table th,
-        .tickets-table td {
-            padding: 12px 8px;
-        }
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #6c757d;
-    }
-
-    .empty-state-icon {
-        font-size: 64px;
-        margin-bottom: 16px;
-        opacity: 0.5;
-    }
-
-    .ticket-meta {
-        font-size: 12px;
-        color: #6c757d;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .technician-info {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .technician-avatar {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: #2c3e50;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        font-weight: 600;
-    }
+    /* â”€â”€ Table cell helpers â€” referenced by JS filter queries â”€â”€ */
+    .ticket-id { font-family: monospace; font-weight: 600; color: #1a3a5c; font-size: 13px; }
+    .ticket-title { font-weight: 600; color: #111827; font-size: 14px; margin-bottom: 2px; }
+    .ticket-description { color: #6b7280; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .ticket-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+    .technician-avatar { width: 24px; height: 24px; border-radius: 50%; background: #1a3a5c; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
 </style>
 @endpush
 
 @section('content')
-<div class="container">
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1 class="page-title">🎫 Support Tickets</h1>
-        <button class="btn btn-primary" onclick="openCreateTicketModal()">
-            ➕ Create New Ticket
-        </button>
-    </div>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-        <div class="stat-card open">
-            <div class="stat-number" id="openTickets">{{ $stats['open'] ?? 0 }}</div>
+{{-- Page header --}}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="page-title">ðŸŽ« Support Tickets</h1>
+        <p class="page-subtitle">Manage and track all support requests</p>
+    </div>
+    <button class="btn-primary" onclick="openCreateTicketModal()">âž• New Ticket</button>
+</div>
+
+{{-- Stats --}}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+    <div class="stat-card border-l-4 border-blue-500">
+        <div>
+            <div class="stat-number text-blue-600" id="openTickets">{{ $stats['open'] ?? 0 }}</div>
             <div class="stat-label">Open Tickets</div>
         </div>
-        <div class="stat-card in-progress">
-            <div class="stat-number" id="inProgressTickets">{{ $stats['in_progress'] ?? 0 }}</div>
+    </div>
+    <div class="stat-card border-l-4 border-yellow-400">
+        <div>
+            <div class="stat-number text-yellow-600" id="inProgressTickets">{{ $stats['in_progress'] ?? 0 }}</div>
             <div class="stat-label">In Progress</div>
         </div>
-        <div class="stat-card resolved">
-            <div class="stat-number" id="resolvedTickets">{{ $stats['resolved'] ?? 0 }}</div>
+    </div>
+    <div class="stat-card border-l-4 border-green-500">
+        <div>
+            <div class="stat-number text-green-600" id="resolvedTickets">{{ $stats['resolved'] ?? 0 }}</div>
             <div class="stat-label">Resolved This Month</div>
         </div>
-        <div class="stat-card critical">
-            <div class="stat-number" id="criticalTickets">{{ $stats['critical'] ?? 0 }}</div>
+    </div>
+    <div class="stat-card border-l-4 border-red-500">
+        <div>
+            <div class="stat-number text-red-600" id="criticalTickets">{{ $stats['critical'] ?? 0 }}</div>
             <div class="stat-label">Critical Priority</div>
-        </div>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="filters-section">
-        <div class="filters-row">
-            <div class="form-group">
-                <label class="form-label">Status</label>
-                <select class="form-control" id="statusFilter">
-                    <option value="">All Status</option>
-                    <option value="open">Open</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Priority</label>
-                <select class="form-control" id="priorityFilter">
-                    <option value="">All Priorities</option>
-                    <option value="critical">Critical</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Issue Type</label>
-                <select class="form-control" id="issueTypeFilter">
-                    <option value="">All Types</option>
-                    <option value="hardware_malfunction">Hardware Malfunction</option>
-                    <option value="software_issue">Software Issue</option>
-                    <option value="network_connectivity">Network Connectivity</option>
-                    <option value="user_training">User Training</option>
-                    <option value="maintenance_required">Maintenance Required</option>
-                    <option value="replacement_needed">Replacement Needed</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Search</label>
-                <input type="text" class="form-control" id="searchInput" placeholder="Search tickets...">
-            </div>
-            <div class="form-group">
-                <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tickets Table -->
-    <div class="tickets-section">
-        <div class="section-header">
-            <h2 class="section-title">All Tickets</h2>
-        </div>
-        <div class="table-container">
-            <table class="tickets-table" id="ticketsTable">
-                <thead>
-                    <tr>
-                        <th>Ticket ID</th>
-                        <th>Title & Description</th>
-                        <th>Issue Type</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Technician</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="ticketsTableBody">
-                    @forelse($tickets as $ticket)
-                        <tr>
-                            <td>
-                                <span class="ticket-id">{{ $ticket->ticket_id }}</span>
-                            </td>
-                            <td>
-                                <div class="ticket-title">{{ $ticket->title }}</div>
-                                <div class="ticket-description">{{ Str::limit($ticket->description, 100) }}</div>
-                                @if($ticket->posTerminal)
-                                    <div class="ticket-meta">Terminal: {{ $ticket->posTerminal->terminal_id }}</div>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="issue-badge issue-{{ $ticket->issue_type }}">
-                                    {{ ucwords(str_replace('_', ' ', $ticket->issue_type)) }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="priority-badge priority-{{ $ticket->priority }}">
-                                    {{ ucfirst($ticket->priority) }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="status-badge status-{{ str_replace('_', '-', $ticket->status) }}">
-                                    {{ ucwords(str_replace('_', ' ', $ticket->status)) }}
-                                </span>
-                            </td>
-                            <td>
-                                @if($ticket->assignedTo)
-                                    <div class="technician-info">
-                                        <div class="technician-avatar">{{ substr($ticket->assignedTo->first_name, 0, 1) }}</div>
-                                        <span>{{ $ticket->assignedTo->first_name }} {{ $ticket->assignedTo->last_name }}</span>
-                                    </div>
-                                @else
-                                    <span style="color: #6c757d;">Unassigned</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div>{{ $ticket->created_at->format('M j, Y') }}</div>
-                                <div class="ticket-meta">{{ $ticket->created_at->format('g:i A') }}</div>
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-sm btn-secondary" onclick="viewTicketDetails({{ $ticket->id }})">
-                                        👁️ View
-                                    </button>
-                                    <button class="btn btn-sm btn-primary" onclick="editTicketFromTable({{ $ticket->id }})">
-                                        ✏️ Edit
-                                    </button>
-                                    @if($ticket->status === 'open')
-                                        <button class="btn btn-sm btn-success" onclick="updateTicketStatus({{ $ticket->id }}, 'resolved')">
-                                            ✅ Resolve
-                                        </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="empty-state">
-                                <div class="empty-state-icon">🎫</div>
-                                <div>No tickets found</div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
     </div>
 </div>
 
-<!-- Create/Edit Ticket Modal -->
+{{-- Filters --}}
+<div class="filter-bar">
+    <div class="flex-1 min-w-[140px]">
+        <label class="ui-label">Status</label>
+        <select class="ui-select" id="statusFilter">
+            <option value="">All Status</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+            <option value="cancelled">Cancelled</option>
+        </select>
+    </div>
+    <div class="flex-1 min-w-[140px]">
+        <label class="ui-label">Priority</label>
+        <select class="ui-select" id="priorityFilter">
+            <option value="">All Priorities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+        </select>
+    </div>
+    <div class="flex-1 min-w-[160px]">
+        <label class="ui-label">Issue Type</label>
+        <select class="ui-select" id="issueTypeFilter">
+            <option value="">All Types</option>
+            <option value="hardware_malfunction">Hardware Malfunction</option>
+            <option value="software_issue">Software Issue</option>
+            <option value="network_connectivity">Network Connectivity</option>
+            <option value="user_training">User Training</option>
+            <option value="maintenance_required">Maintenance Required</option>
+            <option value="replacement_needed">Replacement Needed</option>
+            <option value="other">Other</option>
+        </select>
+    </div>
+    <div class="flex-1 min-w-[160px]">
+        <label class="ui-label">Search</label>
+        <input type="text" class="ui-input" id="searchInput" placeholder="Search tickets...">
+    </div>
+    <div class="flex items-end">
+        <button class="btn-secondary" onclick="clearFilters()">Clear</button>
+    </div>
+</div>
+
+{{-- Tickets table --}}
+<div class="ui-card overflow-hidden">
+    <div class="ui-card-header">
+        <span class="font-semibold text-gray-800 text-sm">All Tickets</span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="ui-table" id="ticketsTable">
+            <thead>
+                <tr>
+                    <th>Ticket ID</th>
+                    <th>Title &amp; Description</th>
+                    <th>Issue Type</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Technician</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="ticketsTableBody">
+                @forelse($tickets as $ticket)
+                <tr>
+                    <td><span class="ticket-id">{{ $ticket->ticket_id }}</span></td>
+                    <td>
+                        <div class="ticket-title">{{ $ticket->title }}</div>
+                        <div class="ticket-description">{{ Str::limit($ticket->description, 100) }}</div>
+                        @if($ticket->posTerminal)
+                            <div class="ticket-meta">Terminal: {{ $ticket->posTerminal->terminal_id }}</div>
+                        @endif
+                    </td>
+                    <td>
+                        <span class="issue-badge issue-{{ $ticket->issue_type }}">
+                            {{ ucwords(str_replace('_', ' ', $ticket->issue_type)) }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="priority-badge priority-{{ $ticket->priority }}">
+                            {{ ucfirst($ticket->priority) }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ str_replace('_', '-', $ticket->status) }}">
+                            {{ ucwords(str_replace('_', ' ', $ticket->status)) }}
+                        </span>
+                    </td>
+                    <td>
+                        @if($ticket->assignedTo)
+                            <div class="flex items-center gap-2">
+                                <span class="technician-avatar">{{ substr($ticket->assignedTo->first_name, 0, 1) }}</span>
+                                <span class="text-sm text-gray-700">{{ $ticket->assignedTo->first_name }} {{ $ticket->assignedTo->last_name }}</span>
+                            </div>
+                        @else
+                            <span class="text-gray-400 text-sm">Unassigned</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="text-sm text-gray-700">{{ $ticket->created_at->format('M j, Y') }}</div>
+                        <div class="ticket-meta">{{ $ticket->created_at->format('g:i A') }}</div>
+                    </td>
+                    <td>
+                        <div class="flex gap-1.5 flex-wrap">
+                            <button class="btn-secondary btn-sm" onclick="viewTicketDetails({{ $ticket->id }})">ðŸ‘ View</button>
+                            <button class="btn-primary btn-sm" onclick="editTicketFromTable({{ $ticket->id }})">âœï¸ Edit</button>
+                            @if($ticket->status === 'open')
+                                <button class="btn-success btn-sm" onclick="updateTicketStatus({{ $ticket->id }}, 'resolved')">âœ… Resolve</button>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">ðŸŽ«</div>
+                            <div class="empty-state-msg">No tickets found</div>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{-- Create / Edit Ticket Modal --}}
 <div id="ticketModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -596,12 +224,12 @@
                 @csrf
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Title *</label>
-                        <input type="text" class="form-control" id="ticketTitle" required>
+                        <label class="ui-label">Title *</label>
+                        <input type="text" class="ui-input" id="ticketTitle" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Priority *</label>
-                        <select class="form-control" id="ticketPriority" required>
+                        <label class="ui-label">Priority *</label>
+                        <select class="ui-select" id="ticketPriority" required>
                             <option value="">Select Priority</option>
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
@@ -610,24 +238,24 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Ticket Type *</label>
-                        <select class="form-control" id="ticketType" required>
+                        <label class="ui-label">Ticket Type *</label>
+                        <select class="ui-select" id="ticketType" required>
                             <option value="">Select Type</option>
                             <option value="pos_terminal">POS Terminal</option>
                             <option value="internal">Internal</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Assignment Type *</label>
-                        <select class="form-control" id="ticketAssignmentType" required>
+                        <label class="ui-label">Assignment Type *</label>
+                        <select class="ui-select" id="ticketAssignmentType" required>
                             <option value="">Select Assignment</option>
                             <option value="public">Public (Any Employee)</option>
                             <option value="direct">Direct (Specific Employee)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Issue Type *</label>
-                        <select class="form-control" id="ticketIssueType" required>
+                        <label class="ui-label">Issue Type *</label>
+                        <select class="ui-select" id="ticketIssueType" required>
                             <option value="">Select Issue Type</option>
                             <option value="hardware_malfunction">Hardware Malfunction</option>
                             <option value="software_issue">Software Issue</option>
@@ -639,8 +267,8 @@
                         </select>
                     </div>
                     <div class="form-group" id="posTerminalField">
-                        <label class="form-label">POS Terminal *</label>
-                        <select class="form-control" id="ticketPosTerminal" required>
+                        <label class="ui-label">POS Terminal *</label>
+                        <select class="ui-select" id="ticketPosTerminal" required>
                             <option value="">Select Terminal</option>
                             @foreach($posTerminals as $terminal)
                                 <option value="{{ $terminal->id }}">{{ $terminal->terminal_id }} - {{ $terminal->merchant_name }}</option>
@@ -648,8 +276,8 @@
                         </select>
                     </div>
                     <div class="form-group" id="assignedToField" style="display: none;">
-                        <label class="form-label">Assigned To *</label>
-                        <select class="form-control" id="ticketAssignedTo" required>
+                        <label class="ui-label">Assigned To *</label>
+                        <select class="ui-select" id="ticketAssignedTo" required>
                             <option value="">Select Employee</option>
                             @foreach($technicians as $technician)
                                 <option value="{{ $technician->id }}">{{ $technician->first_name }} {{ $technician->last_name }}</option>
@@ -657,81 +285,75 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Est. Resolution Time (Days)</label>
-                        <input type="number" class="form-control" id="ticketEstimatedDays" min="0">
+                        <label class="ui-label">Est. Resolution Time (Days)</label>
+                        <input type="number" class="ui-input" id="ticketEstimatedDays" min="0">
                     </div>
                 </div>
                 <div class="form-group form-group-full">
-                    <label class="form-label">Description *</label>
-                    <textarea class="form-control" id="ticketDescription" required placeholder="Please provide a detailed description of the issue..."></textarea>
+                    <label class="ui-label">Description *</label>
+                    <textarea class="ui-input" id="ticketDescription" required placeholder="Please provide a detailed description of the issue..."></textarea>
                 </div>
                 <div class="form-group form-group-full" id="resolutionGroup" style="display: none;">
-                    <label class="form-label">Resolution</label>
-                    <textarea class="form-control" id="ticketResolution" placeholder="Describe how the issue was resolved..."></textarea>
+                    <label class="ui-label">Resolution</label>
+                    <textarea class="ui-input" id="ticketResolution" placeholder="Describe how the issue was resolved..."></textarea>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeTicketModal()">Cancel</button>
-            <button type="button" class="btn btn-primary" onclick="saveTicket()">Save Ticket</button>
+            <button type="button" class="btn-secondary" onclick="closeTicketModal()">Cancel</button>
+            <button type="button" class="btn-primary" onclick="saveTicket()">Save Ticket</button>
         </div>
     </div>
 </div>
 
-<!-- View Ticket Details Modal -->
+{{-- View Ticket Details Modal --}}
 <div id="ticketDetailsModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h3 class="modal-title" id="ticketDetailsTitle">Ticket Details</h3>
             <button class="modal-close" onclick="closeTicketDetailsModal()">&times;</button>
         </div>
-        <div class="modal-body" id="ticketDetailsBody">
-            <!-- Dynamic content will be inserted here -->
-        </div>
+        <div class="modal-body" id="ticketDetailsBody"></div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeTicketDetailsModal()">Close</button>
-            <button type="button" class="btn btn-primary" id="viewStepsBtn" onclick="viewTicketSteps()">View Steps</button>
-            <button type="button" class="btn btn-primary" id="editTicketBtn" onclick="editTicket()">Edit Ticket</button>
+            <button type="button" class="btn-secondary" onclick="closeTicketDetailsModal()">Close</button>
+            <button type="button" class="btn-secondary" id="viewStepsBtn" onclick="viewTicketSteps()">View Steps</button>
+            <button type="button" class="btn-primary" id="editTicketBtn" onclick="editTicket()">Edit Ticket</button>
         </div>
     </div>
 </div>
 
-<!-- Ticket Steps / Audit Trail Modal -->
+{{-- Ticket Steps / Audit Trail Modal --}}
 <div id="ticketStepsModal" class="modal">
     <div class="modal-content" style="max-width: 700px;">
         <div class="modal-header">
-            <h3 class="modal-title" id="ticketStepsTitle">Ticket Steps & Audit Trail</h3>
+            <h3 class="modal-title" id="ticketStepsTitle">Ticket Steps &amp; Audit Trail</h3>
             <button class="modal-close" onclick="closeTicketStepsModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <div id="ticketStepsContainer">
-                <!-- Steps will be dynamically loaded here -->
-            </div>
-
-            <!-- Add New Step Form -->
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                <h4>Add Work Step</h4>
-                <div class="form-group">
-                    <label class="form-label">Description *</label>
-                    <input type="text" class="form-control" id="stepDescription" placeholder="What work was done?">
+            <div id="ticketStepsContainer"></div>
+            <div class="mt-5 pt-5 border-t border-gray-100">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Add Work Step</h4>
+                <div class="form-group mb-3">
+                    <label class="ui-label">Description *</label>
+                    <input type="text" class="ui-input" id="stepDescription" placeholder="What work was done?">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Notes</label>
-                    <textarea class="form-control" id="stepNotes" placeholder="Additional notes..." rows="3"></textarea>
+                <div class="form-group mb-3">
+                    <label class="ui-label">Notes</label>
+                    <textarea class="ui-input" id="stepNotes" placeholder="Additional notes..." rows="3"></textarea>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button type="button" class="btn btn-success btn-sm" onclick="addTicketStep()">Add Step</button>
-                    <button type="button" class="btn btn-warning btn-sm" onclick="completeAndTransfer()">Complete & Transfer</button>
+                <div class="flex gap-2">
+                    <button type="button" class="btn-success btn-sm" onclick="addTicketStep()">Add Step</button>
+                    <button type="button" class="btn-secondary btn-sm" onclick="completeAndTransfer()">Complete &amp; Transfer</button>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeTicketStepsModal()">Close</button>
+            <button type="button" class="btn-secondary" onclick="closeTicketStepsModal()">Close</button>
         </div>
     </div>
 </div>
 
-<!-- Transfer Ticket Modal -->
+{{-- Transfer Ticket Modal --}}
 <div id="transferModal" class="modal">
     <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
@@ -739,32 +361,32 @@
             <button class="modal-close" onclick="closeTransferModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="form-group">
-                <label class="form-label">Transfer To *</label>
-                <select class="form-control" id="transferToEmployee">
+            <div class="form-group mb-3">
+                <label class="ui-label">Transfer To *</label>
+                <select class="ui-select" id="transferToEmployee">
                     <option value="">Select Employee</option>
                     @foreach($technicians as $tech)
                         <option value="{{ $tech->id }}">{{ $tech->first_name }} {{ $tech->last_name }}</option>
                     @endforeach
                 </select>
             </div>
-            <div class="form-group">
-                <label class="form-label">Reason for Transfer *</label>
-                <textarea class="form-control" id="transferReason" placeholder="Why are you transferring this ticket?" rows="3"></textarea>
+            <div class="form-group mb-3">
+                <label class="ui-label">Reason for Transfer *</label>
+                <textarea class="ui-input" id="transferReason" placeholder="Why are you transferring this ticket?" rows="3"></textarea>
             </div>
             <div class="form-group">
-                <label class="form-label">Work Completed</label>
-                <textarea class="form-control" id="transferNotes" placeholder="What have you accomplished so far?" rows="3"></textarea>
+                <label class="ui-label">Work Completed</label>
+                <textarea class="ui-input" id="transferNotes" placeholder="What have you accomplished so far?" rows="3"></textarea>
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeTransferModal()">Cancel</button>
-            <button type="button" class="btn btn-primary" onclick="submitTransfer()">Transfer</button>
+            <button type="button" class="btn-secondary" onclick="closeTransferModal()">Cancel</button>
+            <button type="button" class="btn-primary" onclick="submitTransfer()">Transfer</button>
         </div>
     </div>
 </div>
-@endsection
 
+@endsection
 @push('scripts')
 <script>
     // Pass Laravel data to JavaScript - simplified approach

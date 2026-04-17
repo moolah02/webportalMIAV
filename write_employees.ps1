@@ -1,3 +1,10 @@
+$f = 'C:\xampp4\htdocs\dashboard\Revival_Technologies\resources\views\employees\index.blade.php'
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+$t = [IO.File]::ReadAllText($f, [Text.Encoding]::UTF8)
+$scriptStart = $t.LastIndexOf('<script>')
+$scriptsSection = $t.Substring($scriptStart).Trim()
+
+$htmlPart = @'
 {{-- resources/views/employees/index.blade.php --}}
 @extends('layouts.app')
 
@@ -7,7 +14,7 @@
 {{-- Header --}}
 <div class="flex justify-between items-center mb-6">
     <div>
-        <h1 class="page-title">ðŸ‘¥ Employee Management</h1>
+        <h1 class="page-title">👥 Employee Management</h1>
         <p class="page-subtitle">Manage employee onboarding and permissions</p>
     </div>
     <a href="{{ route('employees.create') }}" class="btn-primary">+ Onboard New Employee</a>
@@ -22,28 +29,28 @@
 @endphp
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
     <div class="stat-card border-l-4 border-blue-500">
-        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">ðŸ‘¥</div>
+        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">👥</div>
         <div>
             <div class="stat-number text-blue-600">{{ $totalEmployees }}</div>
             <div class="stat-label">Total Employees</div>
         </div>
     </div>
     <div class="stat-card border-l-4 border-green-500">
-        <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">âœ…</div>
+        <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">✅</div>
         <div>
             <div class="stat-number text-green-600">{{ $activeEmployees }}</div>
             <div class="stat-label">Active Employees</div>
         </div>
     </div>
     <div class="stat-card border-l-4 border-orange-400">
-        <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">ðŸ†•</div>
+        <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">🆕</div>
         <div>
             <div class="stat-number text-orange-500">{{ $newThisMonth }}</div>
             <div class="stat-label">New This Month</div>
         </div>
     </div>
     <div class="stat-card border-l-4 border-purple-500">
-        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">â³</div>
+        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">⏳</div>
         <div>
             <div class="stat-number text-purple-600">{{ $pendingOnboarding }}</div>
             <div class="stat-label">Pending Onboarding</div>
@@ -161,9 +168,9 @@
                     </td>
                     <td>
                         <div class="flex items-center gap-1">
-                            <button onclick="location.href='{{ route('employees.show', $employee) }}'" class="btn-secondary btn-sm" title="View">ðŸ‘ï¸</button>
-                            <button onclick="location.href='{{ route('employees.edit', $employee) }}'" class="btn-secondary btn-sm" title="Edit">âœï¸</button>
-                            <button onclick="quickActions({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}', '{{ $employee->email }}')" class="btn-secondary btn-sm" title="More Actions">âš™ï¸</button>
+                            <button onclick="location.href='{{ route('employees.show', $employee) }}'" class="btn-secondary btn-sm" title="View">👁️</button>
+                            <button onclick="location.href='{{ route('employees.edit', $employee) }}'" class="btn-secondary btn-sm" title="Edit">✏️</button>
+                            <button onclick="quickActions({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}', '{{ $employee->email }}')" class="btn-secondary btn-sm" title="More Actions">⚙️</button>
                         </div>
                     </td>
                 </tr>
@@ -173,7 +180,7 @@
     </div>
     @else
     <div class="empty-state">
-        <div class="empty-state-icon">ðŸ‘¥</div>
+        <div class="empty-state-icon">👥</div>
         <p class="empty-state-msg">No employees found. <a href="{{ route('employees.create') }}" class="text-[#1a3a5c] underline">Onboard your first employee</a>.</p>
     </div>
     @endif
@@ -190,111 +197,29 @@
 <div id="quickActionsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-sm relative">
         <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 rounded-t-xl flex items-center gap-3">
-            <span>âš™ï¸</span>
+            <span>⚙️</span>
             <span id="modalEmployeeName" class="text-sm font-semibold text-gray-900">Quick Actions</span>
             <button onclick="closeQuickActions()" class="ml-auto text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         </div>
         <div class="p-5 grid gap-3">
             <button id="viewProfileBtn" class="flex items-center gap-3 p-4 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition text-left w-full">
-                <span class="text-xl">ðŸ‘¤</span>
+                <span class="text-xl">👤</span>
                 <div><div class="text-sm font-semibold">View Profile</div><div class="text-xs opacity-75">See complete employee details</div></div>
             </button>
             <button id="editEmployeeBtn" class="flex items-center gap-3 p-4 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition text-left w-full">
-                <span class="text-xl">âœï¸</span>
+                <span class="text-xl">✏️</span>
                 <div><div class="text-sm font-semibold">Edit Employee</div><div class="text-xs opacity-75">Update employee information</div></div>
             </button>
             <button onclick="sendEmail()" class="flex items-center gap-3 p-4 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 transition text-left w-full">
-                <span class="text-xl">ðŸ“§</span>
+                <span class="text-xl">📧</span>
                 <div><div class="text-sm font-semibold">Send Email</div><div class="text-xs opacity-75">Contact this employee</div></div>
             </button>
         </div>
     </div>
 </div>
-<script>
-let currentEmployeeId = null;
-let currentEmployeeEmail = null;
 
-function quickActions(employeeId, employeeName, employeeEmail) {
-    currentEmployeeId = employeeId;
-    currentEmployeeEmail = employeeEmail;
+'@
 
-    document.getElementById('modalEmployeeName').textContent = `Actions for ${employeeName}`;
-
-    // Update button actions
-    document.getElementById('viewProfileBtn').onclick = () => {
-        closeQuickActions();
-        window.location.href = `/employees/${employeeId}`;
-    };
-
-    document.getElementById('editEmployeeBtn').onclick = () => {
-        closeQuickActions();
-        window.location.href = `/employees/${employeeId}/edit`;
-    };
-
-    document.getElementById('quickActionsModal').style.display = 'flex';
-}
-
-function closeQuickActions() {
-    document.getElementById('quickActionsModal').style.display = 'none';
-}
-
-function changeRole() {
-    closeQuickActions();
-    const newRole = prompt("Enter the new role ID for employee #" + currentEmployeeId);
-    if (!newRole) return;
-
-    fetch(`/employees/${currentEmployeeId}/role`, {
-        method: 'PATCH',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ role_id: newRole })
-    })
-    .then(r => r.json())
-    .then(data => {
-        alert(data.message || 'Role updated');
-        location.reload();
-    })
-    .catch(e => alert('Error: ' + e.message));
-}
-
-function sendEmail() {
-    closeQuickActions();
-    if (currentEmployeeEmail) {
-        window.location.href = `mailto:${currentEmployeeEmail}`;
-    } else {
-        alert('Email address not available');
-    }
-}
-
-// Select All functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const selectAll = document.getElementById('selectAll');
-    if (selectAll) {
-        selectAll.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('input[name="employee_ids[]"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });
-    }
-
-    // Close modal when clicking outside
-    document.addEventListener('click', function(event) {
-        const modal = document.getElementById('quickActionsModal');
-        if (event.target === modal) {
-            closeQuickActions();
-        }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeQuickActions();
-        }
-    });
-});
-</script>
-@endsection
+$newContent = $htmlPart + $scriptsSection
+[IO.File]::WriteAllText($f, $newContent, $utf8NoBom)
+Write-Host "Written. Lines: $($newContent.Split("`n").Length)"

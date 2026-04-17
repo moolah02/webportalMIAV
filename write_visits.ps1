@@ -1,3 +1,10 @@
+$f = 'C:\xampp4\htdocs\dashboard\Revival_Technologies\resources\views\visits\index.blade.php'
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+$t = [IO.File]::ReadAllText($f, [Text.Encoding]::UTF8)
+$scriptStart = $t.LastIndexOf('@push(''scripts'')')
+$scriptsSection = $t.Substring($scriptStart).Trim()
+
+$htmlPart = @'
 @extends('layouts.app')
 
 @section('title', 'Site Visit Management')
@@ -9,7 +16,7 @@
         <h1 class="page-title">Site Visit Management</h1>
         <p class="page-subtitle">Comprehensive field visit tracking and reporting</p>
     </div>
-    <a href="{{ url()->previous() }}" class="btn-secondary">â† Back</a>
+    <a href="{{ url()->previous() }}" class="btn-secondary">← Back</a>
 </div>
 
 {{-- Filters --}}
@@ -47,7 +54,7 @@
 {{-- Results --}}
 @if($visits->isEmpty())
 <div class="empty-state">
-    <div class="empty-state-icon">ðŸ”</div>
+    <div class="empty-state-icon">🔍</div>
     <p class="empty-state-msg">No visits found. Try adjusting your filter criteria.</p>
 </div>
 @else
@@ -91,12 +98,12 @@
                             @endif
                         </td>
                         <td>
-                            <div class="text-sm font-semibold text-gray-900">{{ $v->merchant_name ?? 'â€”' }}</div>
+                            <div class="text-sm font-semibold text-gray-900">{{ $v->merchant_name ?? '—' }}</div>
                             <div class="text-xs text-gray-400">ID: {{ $v->merchant_id }}</div>
                         </td>
                         <td class="text-sm text-gray-700">{{ optional($v->employee)->full_name ?? $v->employee_id }}</td>
                         <td>
-                            <span class="text-xs font-medium text-gray-600">{{ $v->assignment_id ?? 'â€”' }}</span>
+                            <span class="text-xs font-medium text-gray-600">{{ $v->assignment_id ?? '—' }}</span>
                         </td>
                         <td>
                             @php $completeTerminal = $v->getCompleteTerminalInfo(); @endphp
@@ -105,11 +112,11 @@
                                 <details class="mt-1 text-xs">
                                     <summary class="cursor-pointer text-[#1a3a5c] hover:underline select-none">View Details</summary>
                                     <div class="mt-1 bg-gray-50 border border-gray-200 rounded p-2 space-y-1">
-                                        <div><span class="text-gray-500">Terminal ID:</span> <span class="font-medium">{{ $completeTerminal['terminal_id'] ?? 'â€”' }}</span></div>
-                                        <div><span class="text-gray-500">Status:</span> <span class="font-medium">{{ $completeTerminal['status'] ?? ($completeTerminal['current_status'] ?? 'â€”') }}</span></div>
-                                        <div><span class="text-gray-500">Condition:</span> <span class="font-medium">{{ $completeTerminal['condition_status'] ?? $completeTerminal['condition'] ?? 'â€”' }}</span></div>
-                                        <div><span class="text-gray-500">Model:</span> <span class="font-medium">{{ $completeTerminal['terminal_model'] ?? 'â€”' }}</span></div>
-                                        <div><span class="text-gray-500">Serial:</span> <span class="font-medium">{{ $completeTerminal['serial_number'] ?? 'â€”' }}</span></div>
+                                        <div><span class="text-gray-500">Terminal ID:</span> <span class="font-medium">{{ $completeTerminal['terminal_id'] ?? '—' }}</span></div>
+                                        <div><span class="text-gray-500">Status:</span> <span class="font-medium">{{ $completeTerminal['status'] ?? ($completeTerminal['current_status'] ?? '—') }}</span></div>
+                                        <div><span class="text-gray-500">Condition:</span> <span class="font-medium">{{ $completeTerminal['condition_status'] ?? $completeTerminal['condition'] ?? '—' }}</span></div>
+                                        <div><span class="text-gray-500">Model:</span> <span class="font-medium">{{ $completeTerminal['terminal_model'] ?? '—' }}</span></div>
+                                        <div><span class="text-gray-500">Serial:</span> <span class="font-medium">{{ $completeTerminal['serial_number'] ?? '—' }}</span></div>
                                         @if(!empty($completeTerminal['issues']))
                                             <div><span class="text-gray-500">Issues:</span> <span class="text-red-600 font-medium">{{ $completeTerminal['issues'] }}</span></div>
                                         @endif
@@ -131,14 +138,14 @@
                         <td>
                             @if(count($evidence))
                                 <details class="text-xs">
-                                    <summary class="cursor-pointer text-[#1a3a5c] hover:underline select-none">ðŸ“Ž {{ count($evidence) }} {{ count($evidence) === 1 ? 'File' : 'Files' }}</summary>
+                                    <summary class="cursor-pointer text-[#1a3a5c] hover:underline select-none">📎 {{ count($evidence) }} {{ count($evidence) === 1 ? 'File' : 'Files' }}</summary>
                                     <div class="mt-1 bg-gray-50 border border-gray-200 rounded p-2 space-y-1">
                                         @foreach($evidence as $idx => $item)
                                             <div>
                                                 @if(\Illuminate\Support\Str::startsWith($item, ['http://', 'https://', '/storage/']))
-                                                    <a href="{{ $item }}" target="_blank" rel="noopener" class="text-[#1a3a5c] hover:underline">ðŸ“Ž Evidence {{ $idx + 1 }}</a>
+                                                    <a href="{{ $item }}" target="_blank" rel="noopener" class="text-[#1a3a5c] hover:underline">📎 Evidence {{ $idx + 1 }}</a>
                                                 @else
-                                                    <span class="text-gray-500">ðŸ“„ {{ \Illuminate\Support\Str::limit($item, 35) }}</span>
+                                                    <span class="text-gray-500">📄 {{ \Illuminate\Support\Str::limit($item, 35) }}</span>
                                                 @endif
                                             </div>
                                         @endforeach
@@ -149,7 +156,7 @@
                             @endif
                         </td>
                         <td class="text-center">
-                            <a href="{{ route('visits.show', $v) }}" class="btn-secondary btn-sm">ðŸ‘ View</a>
+                            <a href="{{ route('visits.show', $v) }}" class="btn-secondary btn-sm">👁 View</a>
                         </td>
                     </tr>
                 @endforeach
@@ -158,52 +165,9 @@
     </div>
 </div>
 @endif
-@push('scripts')
-<script>
-(function(){
-  const form = document.getElementById('visits-filter');
-  const merchantInput = document.getElementById('merchant');
-  const employeeInput = document.getElementById('employee');
-  const merchantList = document.getElementById('merchant-list');
-  const employeeList = document.getElementById('employee-list');
 
-  let mTimer = null, eTimer = null;
+'@
 
-  function debounce(key, fn, delay){
-    if (key==='m') { clearTimeout(mTimer); mTimer=setTimeout(fn, delay); }
-    if (key==='e') { clearTimeout(eTimer); eTimer=setTimeout(fn, delay); }
-  }
-
-  function fetchJSON(url, cb){
-    fetch(url).then(r=>r.json()).then(cb).catch(()=>cb([]));
-  }
-
-  function suggestMerchants(q){
-    if(q.length<1){ merchantList.innerHTML=''; return; }
-    fetchJSON(`{{ route('visits.suggest.merchants') }}?q=${encodeURIComponent(q)}`, items=>{
-      merchantList.innerHTML = items.map(v=>`<option value="${v}"></option>`).join('');
-    });
-  }
-
-  function suggestEmployees(q){
-    if(q.length<1){ employeeList.innerHTML=''; return; }
-    fetchJSON(`{{ route('visits.suggest.employees') }}?q=${encodeURIComponent(q)}`, items=>{
-      employeeList.innerHTML = items.map(v=>`<option value="${v.name}"></option>`).join('');
-    });
-  }
-
-  merchantInput.addEventListener('input', (e)=>{
-    const q = e.target.value || '';
-    debounce('m', ()=>suggestMerchants(q), 150);
-    debounce('m', ()=>form.requestSubmit(), 400);
-  });
-
-  employeeInput.addEventListener('input', (e)=>{
-    const q = e.target.value || '';
-    debounce('e', ()=>suggestEmployees(q), 150);
-    debounce('e', ()=>form.requestSubmit(), 400);
-  });
-})();
-</script>
-@endpush
-@endsection
+$newContent = $htmlPart + $scriptsSection
+[IO.File]::WriteAllText($f, $newContent, $utf8NoBom)
+Write-Host "Visits written. Lines: $($newContent.Split("`n").Length)"
