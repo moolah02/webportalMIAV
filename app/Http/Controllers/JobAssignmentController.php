@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\ActivityLog;
+use App\Notifications\SystemNotification;
 
 class JobAssignmentController extends Controller
 {
@@ -302,6 +303,15 @@ public function store(Request $request)
         DB::commit();
 
         ActivityLog::log('created', "Job assignment '{$assignmentId}' created", $assignment);
+
+        // Notify the assigned technician
+        $technician = Employee::find($assignment->technician_id);
+        $technician?->notify(new SystemNotification(
+            "New job assignment: {$assignmentId}",
+            "You have been assigned a new job. Scheduled: " . ($assignment->scheduled_date ?? 'TBD'),
+            'job',
+            route('jobs.assignment')
+        ));
 
         \Log::info('Assignment created successfully', [
             'id' => $assignment->id,

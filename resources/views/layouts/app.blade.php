@@ -344,6 +344,41 @@
 
         {{-- User info --}}
         <div class="relative flex items-center gap-3">
+
+          {{-- ── Bell notification button ── --}}
+          <div class="relative" id="notifWrapper">
+            <button type="button" id="notifBtn"
+                    onclick="toggleNotifDropdown(event)"
+                    class="relative w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 border border-gray-200 text-lg hover:bg-gray-200 transition-colors"
+                    aria-label="Notifications">
+              🔔
+              <span id="notifBadge"
+                    class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
+                0
+              </span>
+            </button>
+
+            {{-- Notification dropdown --}}
+            <div id="notifDropdown"
+                 class="hidden absolute top-14 right-0 w-80 bg-white rounded-xl border border-gray-200 shadow-xl z-50 overflow-hidden">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                <span class="text-sm font-semibold text-gray-800">Notifications</span>
+                <button onclick="markAllRead()" class="text-xs text-blue-600 hover:underline">Mark all read</button>
+              </div>
+              <div id="notifList" class="overflow-y-auto max-h-80 divide-y divide-gray-50">
+                <div class="px-4 py-8 text-center text-gray-400 text-sm" id="notifEmpty">
+                  <div class="text-3xl mb-1">🔔</div>
+                  No new notifications
+                </div>
+              </div>
+              <div class="border-t border-gray-100 px-4 py-2.5 text-center">
+                <a href="{{ route('notifications.index') }}" class="text-xs text-blue-600 hover:underline font-medium">
+                  View all notifications →
+                </a>
+              </div>
+            </div>
+          </div>
+          {{-- ── End bell ── --}}
           <div class="text-right hidden sm:block">
             <p class="text-sm font-semibold text-gray-800 leading-tight">{{ auth()->user()->full_name }}</p>
             <span class="inline-block text-xs font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-3 py-0.5 mt-0.5">
@@ -466,6 +501,112 @@
         }
       });
     });
+
+    /* ─── Notification bell ─────────────────────────────── */
+    const NOTIF_POLL_MS = 30000; // poll every 30s
+
+    function toggleNotifDropdown(e) {
+      if (e) e.stopPropagation();
+      const dd = document.getElementById('notifDropdown');
+      const isHidden = dd.classList.contains('hidden');
+      // close user dropdown if open
+      document.getElementById('userDropdown')?.classList.add('hidden');
+      dd.classList.toggle('hidden');
+      if (isHidden) fetchRecentNotifications();
+    }
+
+    document.addEventListener('click', function (e) {
+      const dd = document.getElementById('notifDropdown');
+      if (!dd || dd.classList.contains('hidden')) return;
+      if (!e.target.closest('#notifWrapper')) {
+        dd.classList.add('hidden');
+      }
+    });
+
+    function fetchUnreadCount() {
+      fetch('{{ route("notifications.unread-count") }}')
+        .then(r => r.json())
+        .then(data => {
+          const badge = document.getElementById('notifBadge');
+          if (!badge) return;
+          if (data.count > 0) {
+            badge.textContent = data.count > 99 ? '99+' : data.count;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        })
+        .catch(() => {});
+    }
+
+    function fetchRecentNotifications() {
+      fetch('{{ route("notifications.recent") }}')
+        .then(r => r.json())
+        .then(data => {
+          const list  = document.getElementById('notifList');
+          const empty = document.getElementById('notifEmpty');
+          if (!data.notifications || data.notifications.length === 0) {
+            list.innerHTML = '<div class="px-4 py-8 text-center text-gray-400 text-sm"><div class="text-3xl mb-1">🔔</div>No new notifications</div>';
+            return;
+          }
+          const typeColors = {
+            ticket: 'bg-orange-50 text-orange-600',
+            job:    'bg-green-50 text-green-600',
+            asset:  'bg-blue-50 text-blue-600',
+            visit:  'bg-teal-50 text-teal-600',
+            system: 'bg-gray-100 text-gray-500',
+          };
+          list.innerHTML = data.notifications.map(n => {
+            const color = typeColors[n.type] || typeColors.system;
+            const href  = n.url ? `href="${n.url}"` : `href="{{ route('notifications.index') }}"`;
+            return `
+              <a ${href}
+                 onclick="markOneRead(event, '${n.id}', '${n.url || ''}')"
+                 class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition-colors no-underline cursor-pointer">
+                <span class="text-xl mt-0.5">${n.icon}</span>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium text-gray-800 truncate">${n.title}</div>
+                  <div class="text-xs text-gray-500 leading-snug mt-0.5 line-clamp-2">${n.body}</div>
+                  <div class="text-xs text-gray-400 mt-0.5">${n.created_at}</div>
+                </div>
+                <span class="shrink-0 mt-1.5 w-2 h-2 rounded-full bg-blue-500"></span>
+              </a>`;
+          }).join('');
+        })
+        .catch(() => {});
+    }
+
+    function markOneRead(e, id, url) {
+      e.preventDefault();
+      fetch(`/notifications/${id}/read`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+          'Accept': 'application/json',
+        },
+      }).then(() => {
+        fetchUnreadCount();
+        if (url) window.location.href = url;
+        else document.getElementById('notifDropdown').classList.add('hidden');
+      });
+    }
+
+    function markAllRead() {
+      fetch('/notifications/read-all', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+          'Accept': 'application/json',
+        },
+      }).then(() => {
+        fetchUnreadCount();
+        fetchRecentNotifications();
+      });
+    }
+
+    // Initial load + periodic poll
+    fetchUnreadCount();
+    setInterval(fetchUnreadCount, NOTIF_POLL_MS);
   </script>
 
 </body>

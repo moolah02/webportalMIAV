@@ -28,6 +28,7 @@ use App\Http\Controllers\PosTerminalImportController;
 use App\Http\Controllers\SystemReportsController;
 use App\Http\Controllers\DocsController;
 use App\Http\Controllers\AuditTrailController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\DocPageController;
 use Illuminate\Support\Facades\Auth;
 
@@ -506,6 +507,18 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         Route::get('/export/report', [AssetApprovalController::class, 'exportReport'])
             ->middleware('permission:export_reports,approve_requests,all')
             ->name('export');
+    });
+
+    // ==============================================
+    // NOTIFICATIONS
+    // ==============================================
+
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/',              [NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count',  [NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::get('/recent',        [NotificationController::class, 'recent'])->name('recent');
+        Route::post('/read-all',     [NotificationController::class, 'markAllRead'])->name('read-all');
+        Route::post('/{id}/read',    [NotificationController::class, 'markRead'])->name('read');
     });
 
     // ==============================================

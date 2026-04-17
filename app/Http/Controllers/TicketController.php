@@ -10,6 +10,7 @@ use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ActivityLog;
+use App\Notifications\SystemNotification;
 
 class TicketController extends Controller
 {
@@ -144,6 +145,17 @@ class TicketController extends Controller
 
         ActivityLog::log('created', "Ticket #{$ticket->ticket_id} created: {$ticket->title}", $ticket);
 
+        // Notify the directly-assigned employee (if any)
+        if (!empty($validated['assigned_to'])) {
+            $assignee = \App\Models\Employee::find($validated['assigned_to']);
+            $assignee?->notify(new SystemNotification(
+                "New ticket assigned to you",
+                "Ticket #{$ticket->ticket_id}: {$ticket->title}",
+                'ticket',
+                route('tickets.show', $ticket)
+            ));
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Ticket created successfully',
@@ -271,6 +283,17 @@ class TicketController extends Controller
         $ticket->update($validated);
 
         ActivityLog::log('status_changed', "Ticket #{$ticket->ticket_id} status: {$oldStatus} → {$validated['status']}", $ticket, ['status' => $oldStatus], ['status' => $validated['status']]);
+
+        // Notify the ticket creator about the status change (if not the one making the change)
+        $creator = $ticket->technician;
+        if ($creator && $creator->id !== auth()->id()) {
+            $creator->notify(new SystemNotification(
+                "Ticket status updated",
+                "#{$ticket->ticket_id} ({$ticket->title}) is now: " . ucfirst(str_replace('_', ' ', $validated['status'])),
+                'ticket',
+                route('tickets.show', $ticket)
+            ));
+        }
 
         if ($request->expectsJson()) {
             return response()->json([

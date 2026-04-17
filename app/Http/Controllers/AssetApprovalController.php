@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AssetRequest;
 use App\Models\AssetRequestItem;
 use App\Models\ActivityLog;
+use App\Notifications\SystemNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -186,6 +187,13 @@ class AssetApprovalController extends Controller
                 ['status' => $assetRequest->status, 'approved_by' => auth()->id()]
             );
 
+            // Notify the requester
+            $assetRequest->employee?->notify(new SystemNotification(
+                "Asset request #{$assetRequest->id} approved",
+                "Your asset request has been approved.",
+                'asset'
+            ));
+
             DB::commit();
 
             return redirect()->route('asset-approvals.index')
@@ -237,6 +245,13 @@ class AssetApprovalController extends Controller
                 ['status' => 'pending'],
                 ['status' => 'rejected', 'rejection_reason' => $request->rejection_reason]
             );
+
+            // Notify the requester
+            $assetRequest->employee?->notify(new SystemNotification(
+                "Asset request #{$assetRequest->id} rejected",
+                "Your asset request was rejected. Reason: {$request->rejection_reason}",
+                'asset'
+            ));
 
             DB::commit();
 
