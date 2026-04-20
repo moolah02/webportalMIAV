@@ -7,8 +7,8 @@
 
 <style>
 .client-info-box {
-    background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
-    border-left: 4px solid var(--info-color);
+    background: #f0f9ff;
+    border-left: 4px solid #1a3a5c;
     padding: 1.25rem;
     border-radius: 12px;
     margin-top: 1rem;
@@ -35,7 +35,7 @@
 
 .validation-warning {
     background: #fef3c7;
-    border-left: 4px solid var(--warning-color);
+    border-left: 4px solid #f59e0b;
     padding: 0.75rem 1rem;
     border-radius: 8px;
     margin-top: 0.5rem;
@@ -172,10 +172,7 @@
                                    value="{{ old('project_name') }}"
                                    placeholder="e.g., Q1 2026 Terminal Maintenance - Harare"
                                    required>
-                            <div class="field-hint">
-                                <i class="fas fa-lightbulb text-warning"></i>
-                                Include period, type, and location for clarity
-                            </div>
+                            <div class="field-hint">Include period, type, and location for clarity</div>
                         </div>
 
                         <!-- Client Selection with Live Info -->
@@ -199,22 +196,19 @@
 
                             <!-- Live Client Info Box (Alpine.js Reactive) -->
                             <div x-show="clientInfo" x-transition class="client-info-box">
-                                <h6 class="fw-bold mb-2">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    Client Information
-                                </h6>
-                                <div class="row g-3">
+                                <p class="font-semibold text-sm text-[#1a3a5c] mb-2">Client Information</p>
+                                <div class="grid grid-cols-3 gap-3">
                                     <div>
-                                        <div class="fw-bold text-primary" x-text="clientInfo?.total_terminals || 0"></div>
-                                        <small class="text-muted">Total Terminals</small>
+                                        <div class="text-lg font-bold text-[#1a3a5c]" x-text="clientInfo?.total_terminals || 0"></div>
+                                        <div class="text-xs text-gray-500">Total Terminals</div>
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-success" x-text="clientInfo?.active_terminals || 0"></div>
-                                        <small class="text-muted">Active</small>
+                                        <div class="text-lg font-bold text-green-600" x-text="clientInfo?.active_terminals || 0"></div>
+                                        <div class="text-xs text-gray-500">Active</div>
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-info" x-text="clientInfo?.primary_region || '--'"></div>
-                                        <small class="text-muted">Primary Region</small>
+                                        <div class="text-lg font-bold text-gray-700" x-text="clientInfo?.primary_region || '--'"></div>
+                                        <div class="text-xs text-gray-500">Primary Region</div>
                                     </div>
                                 </div>
                             </div>
@@ -228,36 +222,36 @@
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <div @click="selectProjectType('maintenance')">
                                     <div class="project-type-card" :class="selectedProjectType === 'maintenance' ? 'selected' : ''">
-                                        <div class="fs-2 mb-2">🔧</div>
-                                        <div class="fw-bold">Maintenance & Repairs</div>
-                                        <small class="text-muted">Regular upkeep and servicing</small>
+                                        <div class="text-3xl mb-2">🔧</div>
+                                        <div class="font-semibold text-sm text-gray-800">Maintenance & Repairs</div>
+                                        <div class="text-xs text-gray-500 mt-1">Regular upkeep and servicing</div>
                                         <input type="radio" name="_project_type_radio" value="maintenance"
                                                :checked="selectedProjectType === 'maintenance'" hidden>
                                     </div>
                                 </div>
                                 <div @click="selectProjectType('installation')">
                                     <div class="project-type-card" :class="selectedProjectType === 'installation' ? 'selected' : ''">
-                                        <div class="fs-2 mb-2">📦</div>
-                                        <div class="fw-bold">Installation & Setup</div>
-                                        <small class="text-muted">New terminal deployment</small>
+                                        <div class="text-3xl mb-2">📦</div>
+                                        <div class="font-semibold text-sm text-gray-800">Installation & Setup</div>
+                                        <div class="text-xs text-gray-500 mt-1">New terminal deployment</div>
                                         <input type="radio" name="_project_type_radio" value="installation"
                                                :checked="selectedProjectType === 'installation'" hidden>
                                     </div>
                                 </div>
                                 <div @click="selectProjectType('support')">
                                     <div class="project-type-card" :class="selectedProjectType === 'support' ? 'selected' : ''">
-                                        <div class="fs-2 mb-2">💬</div>
-                                        <div class="fw-bold">Support & Troubleshooting</div>
-                                        <small class="text-muted">Issue resolution</small>
+                                        <div class="text-3xl mb-2">💬</div>
+                                        <div class="font-semibold text-sm text-gray-800">Support & Troubleshooting</div>
+                                        <div class="text-xs text-gray-500 mt-1">Issue resolution</div>
                                         <input type="radio" name="_project_type_radio" value="support"
                                                :checked="selectedProjectType === 'support'" hidden>
                                     </div>
                                 </div>
                                 <div @click="selectProjectType('other')">
                                     <div class="project-type-card" :class="selectedProjectType === 'other' ? 'selected' : ''">
-                                        <div class="fs-2 mb-2">📝</div>
-                                        <div class="fw-bold">Other</div>
-                                        <small class="text-muted">Specify project type below</small>
+                                        <div class="text-3xl mb-2">📝</div>
+                                        <div class="font-semibold text-sm text-gray-800">Other</div>
+                                        <div class="text-xs text-gray-500 mt-1">Specify project type below</div>
                                         <input type="radio" name="_project_type_radio" value="other"
                                                :checked="selectedProjectType === 'other'" hidden>
                                     </div>
@@ -276,10 +270,10 @@
                                    :value="selectedProjectType === 'other' ? otherProjectType : selectedProjectType">
                         </div>
 
-                        <hr class="my-4">
+                        <hr class="my-5 border-gray-100">
 
                         <!-- Timeline (Smart Duration Selector) -->
-                        <h5 class="mb-3 font-semibold text-gray-800 text-base"><i class="fas fa-calendar-alt me-2"></i>Timeline & Resources</h5>
+                        <h5 class="mb-3 font-semibold text-gray-800 text-base">Timeline & Resources</h5>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                             <div>
@@ -313,12 +307,12 @@
                             </div>
                         </div>
 
-                        <hr class="my-4">
+                        <hr class="my-5 border-gray-100">
 
                         <!-- Optional Fields (Collapsible) -->
-                        <details>
-                            <summary class="font-semibold mb-3 cursor-pointer" style="color: var(--primary-color);">
-                                <i class="fas fa-chevron-down me-2"></i>
+                        <details class="group">
+                            <summary class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-[#1a3a5c] select-none list-none mb-3">
+                                <i class="fas fa-chevron-right text-xs transition-transform group-open:rotate-90"></i>
                                 Optional Fields (Budget, Manager, Notes)
                             </summary>
 
@@ -326,16 +320,16 @@
                                 <!-- Budget with Templates -->
                                 <div class="mb-4">
                                     <label class="ui-label">Budget (USD)</label>
-                                    <div class="btn-group mb-2 d-block">
-                                        <button type="button" class="btn-sm btn-outline-secondary"
+                                    <div class="flex flex-wrap gap-2 mb-2">
+                                        <button type="button" class="btn-secondary btn-sm"
                                                 @click="applyBudgetTemplate(5000)">
                                             Small (~$5K)
                                         </button>
-                                        <button type="button" class="btn-sm btn-outline-secondary"
+                                        <button type="button" class="btn-secondary btn-sm"
                                                 @click="applyBudgetTemplate(15000)">
                                             Medium (~$15K)
                                         </button>
-                                        <button type="button" class="btn-sm btn-outline-secondary"
+                                        <button type="button" class="btn-secondary btn-sm"
                                                 @click="applyBudgetTemplate(50000)">
                                             Large (~$50K)
                                         </button>
@@ -384,7 +378,7 @@
                             </div>
                         </details>
 
-                        <hr class="my-4">
+                        <hr class="my-5 border-gray-100">
 
                         {{-- Terminal Upload Section --}}
                         @include('projects.partials.terminal-upload-section')

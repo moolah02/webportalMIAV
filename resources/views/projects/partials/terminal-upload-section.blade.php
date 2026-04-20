@@ -1,80 +1,66 @@
 {{-- Terminal Upload Section for Project Create/Edit --}}
-<div class="form-section" id="terminal-upload-section">
-    <div class="form-section-title">
-        <i class="fas fa-upload"></i>
-        Terminal Assignment
-        @if(isset($project) && $project->exists)
-            <span class="badge bg-info ms-2">
-                {{ $project->projectTerminals()->where('is_active', true)->count() }} assigned
-            </span>
-        @endif
+<div id="terminal-upload-section">
+    <div class="flex items-center justify-between mb-3">
+        <h5 class="font-semibold text-gray-800 text-base m-0">Terminal Assignment
+            @if(isset($project) && $project->exists)
+                <span class="badge badge-blue ml-2">{{ $project->projectTerminals()->where('is_active', true)->count() }} assigned</span>
+            @endif
+        </h5>
     </div>
 
     @if(isset($project) && $project->exists)
-        {{-- Edit Mode: Show existing terminals summary --}}
-        <div class="alert alert-light border mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <i class="fas fa-desktop text-primary me-2"></i>
-                    <strong>{{ $project->projectTerminals()->where('is_active', true)->count() }}</strong> terminals currently assigned to this project
-                </div>
-                <button type="button" class="btn-sm btn-outline-primary" onclick="viewProjectTerminals()">
-                    <i class="fas fa-list me-1"></i> View List
-                </button>
-            </div>
+        <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-3 text-sm">
+            <span class="text-gray-700"><i class="fas fa-desktop text-[#1a3a5c] mr-2"></i><strong>{{ $project->projectTerminals()->where('is_active', true)->count() }}</strong> terminals currently assigned</span>
+            <button type="button" class="btn-secondary btn-sm" onclick="viewProjectTerminals()">
+                <i class="fas fa-list mr-1"></i> View List
+            </button>
         </div>
     @endif
 
     {{-- Upload Area --}}
-    <div class="upload-area p-3 border rounded bg-light mb-3">
-        <div class="row align-items-end">
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
             <div>
-                <label class="form-label fw-semibold">
-                    <i class="fas fa-file-csv text-success me-1"></i>
-                    Upload Terminal List (CSV/Excel)
-                </label>
-                <div class="input-group">
+                <label class="ui-label">Upload Terminal List (CSV/Excel)</label>
+                <div class="flex gap-2">
                     <input type="file"
                            id="terminal_file"
-                           class="ui-input"
+                           class="ui-input flex-1"
                            accept=".csv,.xlsx,.xls,.txt"
                            onchange="handleTerminalFileSelect(this)">
                     <button type="button"
                             id="previewTerminalsBtn"
-                            class="btn-secondary-info"
+                            class="btn-secondary"
                             onclick="previewTerminalUpload()"
                             disabled>
-                        <i class="fas fa-eye me-1"></i> Preview
+                        <i class="fas fa-eye mr-1"></i> Preview
                     </button>
                 </div>
-                <small class="text-muted d-block mt-1">
-                    Upload CSV/Excel with <code>terminal_id</code> column.
-                    <a href="{{ route('projects.terminals.download-template') }}" class="text-decoration-none">
+                <p class="text-xs text-gray-500 mt-1.5">
+                    Upload CSV/Excel with <code class="bg-gray-200 px-1 rounded text-xs">terminal_id</code> column.
+                    <a href="{{ route('projects.terminals.download-template') }}" class="text-[#1a3a5c] no-underline hover:underline ml-1">
                         <i class="fas fa-download"></i> Download Template
                     </a>
-                </small>
+                </p>
             </div>
-            <div>
-                <div class="bg-white p-2 rounded border">
-                    <label class="form-label small fw-semibold mb-2">Options:</label>
-                    <div class="form-check form-check-inline">
-                        <input type="checkbox" id="skip_duplicates" class="form-check-input" checked>
-                        <label class="form-check-label small" for="skip_duplicates">Skip already assigned</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input type="checkbox" id="create_missing" class="form-check-input">
-                        <label class="form-check-label small" for="create_missing">Create missing terminals</label>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-lg px-4 py-3">
+                <p class="text-xs font-semibold text-gray-600 mb-2">Options:</p>
+                <label class="flex items-center gap-2 text-sm text-gray-700 mb-1.5 cursor-pointer">
+                    <input type="checkbox" id="skip_duplicates" class="w-4 h-4 accent-[#1a3a5c]" checked>
+                    Skip already assigned
+                </label>
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" id="create_missing" class="w-4 h-4 accent-[#1a3a5c]">
+                    Create missing terminals
+                </label>
             </div>
         </div>
     </div>
 
     {{-- Upload Progress --}}
     <div id="uploadProgress" class="mb-3" style="display: none;">
-        <div class="progress" style="height: 25px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated"
-                 role="progressbar"
+        <div class="w-full bg-gray-100 rounded-full h-5 overflow-hidden">
+            <div class="bg-[#1a3a5c] h-5 rounded-full transition-all flex items-center justify-center text-xs text-white"
                  style="width: 0%"
                  id="uploadProgressBar">
                 <span id="uploadProgressText">Uploading...</span>
@@ -84,8 +70,8 @@
 
     {{-- Upload Results Summary (shown after preview confirmation) --}}
     <div id="terminalUploadSummary" style="display: none;">
-        <div class="alert alert-success">
-            <i class="fas fa-check-circle me-2"></i>
+        <div class="flash-success">
+            <i class="fas fa-check-circle"></i>
             <span id="terminalUploadSummaryText"></span>
         </div>
     </div>
