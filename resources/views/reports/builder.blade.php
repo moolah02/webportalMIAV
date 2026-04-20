@@ -6,8 +6,8 @@
 
 <style>
 :root {
-    --rb-accent:   #4f46e5;
-    --rb-accent-h: #4338ca;
+    --rb-accent:   #1a3a5c;
+    --rb-accent-h: #152e4a;
     --rb-dim-bg:   #eff6ff;
     --rb-dim-fg:   #1e40af;
     --rb-dim-bd:   #bfdbfe;
@@ -86,7 +86,7 @@
 .rb-strip-input:focus {
     outline: none;
     border-color: var(--rb-accent);
-    box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+    box-shadow: 0 0 0 3px rgba(26,58,92,.12);
 }
 .rb-strip-input[disabled] { opacity:.35; cursor:default; }
 .rb-strip-sep {
@@ -139,7 +139,7 @@
     box-sizing:border-box;
     transition:border-color .15s;
 }
-.rb-search:focus { outline:none; border-color:var(--rb-accent); box-shadow:0 0 0 3px rgba(79,70,229,.1); }
+.rb-search:focus { outline:none; border-color:var(--rb-accent); box-shadow:0 0 0 3px rgba(26,58,92,.1); }
 .rb-fields-body { flex:1; overflow-y:auto; padding:10px 10px 14px; }
 .rb-cat-label {
     font-size:10px; font-weight:700;
@@ -220,7 +220,7 @@
     transition:all .2s;
     display:flex; flex-wrap:wrap; gap:6px; align-items:center;
 }
-.rb-dropzone.over { border-color:var(--rb-accent); background:rgba(79,70,229,.04); }
+.rb-dropzone.over { border-color:var(--rb-accent); background:rgba(26,58,92,.04); }
 .rb-dz-hint { color:#94a3b8; font-size:12px; }
 .rb-pill {
     display:inline-flex; align-items:center;
@@ -321,7 +321,7 @@
     font-size: 14px;
     font-weight: 700;
     letter-spacing: .02em;
-    box-shadow: 0 2px 6px rgba(79,70,229,.35);
+    box-shadow: 0 2px 6px rgba(26,58,92,.35);
 }
 .rb-btn-run:disabled {
     opacity: 1;
@@ -412,7 +412,7 @@
     font-size:14px; box-sizing:border-box;
     transition:border-color .15s;
 }
-.rb-input:focus { outline:none; border-color:var(--rb-accent); box-shadow:0 0 0 3px rgba(79,70,229,.1); }
+.rb-input:focus { outline:none; border-color:var(--rb-accent); box-shadow:0 0 0 3px rgba(26,58,92,.1); }
 
 /* ─── Template card ──────────────────────────────────────────── */
 .rb-tpl {
@@ -421,7 +421,7 @@
     cursor:pointer; transition:all .15s;
     margin-bottom:8px;
 }
-.rb-tpl:hover { border-color:var(--rb-accent); background:rgba(79,70,229,.03); }
+.rb-tpl:hover { border-color:var(--rb-accent); background:rgba(26,58,92,.03); }
 .rb-tpl-name { font-size:14px; font-weight:600; color:var(--rb-text); }
 .rb-tpl-desc { font-size:12px; color:var(--rb-sub); margin-top:3px; }
 .rb-tpl-meta { font-size:11px; color:#94a3b8; margin-top:5px; }
@@ -637,7 +637,7 @@
         ════════════════════════════════════════════════ --}}
         <div class="rb-strip" x-show="hasAggregates()" x-cloak style="flex-wrap:wrap; gap:8px; align-items:flex-start;">
             <div class="rb-strip-group" style="width:100%; padding-bottom:4px;">
-                <label style="font-weight:600; color:#4f46e5;">&#931; Aggregate Filters (HAVING)</label>
+                <label style="font-weight:600; color:#1a3a5c;">&#931; Aggregate Filters (HAVING)</label>
                 <button type="button" class="rb-btn rb-btn-secondary" style="margin-left:auto;"
                     @click="having.push({ fn:'COUNT', column:'*', operator:'>', value:'' })">+ Add Filter</button>
             </div>
@@ -1109,7 +1109,7 @@ document.addEventListener('alpine:init', () => {
         const labels = slice.map(r => String(r[this.chartLabelCol] ?? '—'));
         const values = slice.map(r => Number(r[this.chartValueCol] ?? 0));
         const isPie  = (this.chartType === 'pie' || this.chartType === 'doughnut');
-        const pal    = ['#4f46e5','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1'];
+        const pal    = ['#1a3a5c','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1'];
         this.chartInstance = new Chart(canvas.getContext('2d'), {
           type: this.chartType,
           data: {
@@ -1117,8 +1117,8 @@ document.addEventListener('alpine:init', () => {
             datasets: [{
               label:           this.chartValueCol,
               data:            values,
-              backgroundColor: isPie ? labels.map((_,i) => pal[i%pal.length]+'cc') : 'rgba(79,70,229,.65)',
-              borderColor:     isPie ? labels.map((_,i) => pal[i%pal.length])      : '#4f46e5',
+              backgroundColor: isPie ? labels.map((_,i) => pal[i%pal.length]+'cc') : 'rgba(26,58,92,.65)',
+              borderColor:     isPie ? labels.map((_,i) => pal[i%pal.length])      : '#1a3a5c',
               borderWidth:     isPie ? 2 : 1.5,
               borderRadius:    isPie ? 0 : 4,
               tension:         0.35,

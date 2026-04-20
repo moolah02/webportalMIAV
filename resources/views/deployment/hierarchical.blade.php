@@ -197,7 +197,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h4 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #333;">
                         📊 Terminal List
-                        <span style="background: #667eea; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;" id="terminalCount">0</span>
+                        <span style="background: #1a3a5c; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;" id="terminalCount">0</span>
                     </h4>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn-secondary btn-sm" onclick="selectAllVisible()" disabled id="selectAllBtn" title="Select All Visible">

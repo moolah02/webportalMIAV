@@ -1,4 +1,9 @@
-{{-- resources/views/projects/show.blade.php --}}
+"""Rewrite projects/show.blade.php to use design system"""
+import os
+
+BASE = r'c:\xampp4\htdocs\dashboard\Revival_Technologies\resources\views'
+
+content = r"""{{-- resources/views/projects/show.blade.php --}}
 @extends('layouts.app')
 
 @section('title', $project->project_name)
@@ -350,3 +355,9 @@
 @endif
 
 @endsection
+"""
+
+path = os.path.join(BASE, 'projects', 'show.blade.php')
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(content)
+print('WRITTEN: projects/show.blade.php')

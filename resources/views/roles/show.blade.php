@@ -134,7 +134,7 @@ File: resources/views/roles/show.blade.php
                     @foreach($role->employees as $employee)
                     <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: #f8f9fa;">
                         <div style="display: flex; align-items: center; gap: 10px; margin-block-end: 10px;">
-                            <div style="inline-size: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
+                            <div style="inline-size: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
                                 {{ substr($employee->first_name, 0, 1) }}{{ substr($employee->last_name, 0, 1) }}
                             </div>
                             <div>

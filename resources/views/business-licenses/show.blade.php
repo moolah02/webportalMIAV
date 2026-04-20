@@ -277,7 +277,7 @@
                 <div style="margin-block-end: 15px;">
                     <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Responsible Employee</label>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="inline-size: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
+                        <div style="inline-size: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
                             {{ substr($businessLicense->responsibleEmployee->full_name, 0, 1) }}
                         </div>
                         <div>

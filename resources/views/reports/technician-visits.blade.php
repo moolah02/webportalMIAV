@@ -7,7 +7,7 @@
 <style>
 /* Compact Dashboard Styling */
 :root {
-    --primary-color: #4f46e5;
+    --primary-color: #1a3a5c;
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
@@ -192,8 +192,8 @@
 }
 
 .btn-primary:hover {
-    background: #4338ca;
-    border-color: #4338ca;
+    background: #152e4a;
+    border-color: #152e4a;
     color: white;
 }
 

@@ -289,7 +289,7 @@
 <!-- Assignment Details Modal -->
 <div id="assignmentModal" style="display: none; position: fixed; top: 0; left: 0; inline-size: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
     <div style="background: white; border-radius: 12px; padding: 0; max-inline-size: 600px; inline-size: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
+        <div style="background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
                 <span>🔧</span>
                 <span id="modalTitle">Assignment Details</span>

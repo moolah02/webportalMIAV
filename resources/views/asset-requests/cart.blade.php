@@ -26,7 +26,7 @@
                     @if($item['image_url'])
                         <img src="{{ $item['image_url'] }}" alt="{{ $item['name'] }}" style="inline-size: 100%; height: 100%; object-fit: cover;">
                     @else
-                        <div style="inline-size: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                        <div style="inline-size: 100%; height: 100%; background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
                             📦
                         </div>
                     @endif

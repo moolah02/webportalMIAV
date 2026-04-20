@@ -7,9 +7,9 @@
   <!-- Breadcrumb -->
   <div style="background: #fff; padding: 20px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
     <nav style="font-size: 14px; color: #666;">
-      <a href="{{ route('dashboard') }}" style="color: #667eea; text-decoration: none;">🏠 Dashboard</a>
+      <a href="{{ route('dashboard') }}" style="color: #1a3a5c; text-decoration: none;">🏠 Dashboard</a>
       <span style="margin: 0 8px;">›</span>
-      <a href="{{ route('settings.index') }}" style="color: #667eea; text-decoration: none;">⚙️ Settings</a>
+      <a href="{{ route('settings.index') }}" style="color: #1a3a5c; text-decoration: none;">⚙️ Settings</a>
       <span style="margin: 0 8px;">›</span>
       <span>Role Management</span>
     </nav>

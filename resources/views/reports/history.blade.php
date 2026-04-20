@@ -138,7 +138,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
 .rh-rows-wrap { display: flex; flex-direction: column; gap: 3px; }
 .rh-rows-val { font-size: 13px; font-weight: 700; color: var(--rh-text); }
 .rh-rows-bar-outer { width: 60px; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; }
-.rh-rows-bar-inner { height: 100%; background: #6366f1; border-radius: 2px; }
+.rh-rows-bar-inner { height: 100%; background: #1a3a5c; border-radius: 2px; }
 
 /* ── IP mono ─────────────────────────────────────────────── */
 .rh-ip { font-family: ui-monospace, monospace; font-size: 11px; color: #64748b; }
@@ -176,7 +176,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
 .rh-action-btn-tpl:hover  { background: #ede9fe; }
 
 /* ── Col names tooltip ───────────────────────────────────── */
-.rh-col-names { font-size:11px; color:#6366f1; cursor:help; border-bottom:1px dashed #a5b4fc; }
+.rh-col-names { font-size:11px; color:#1a3a5c; cursor:help; border-bottom:1px dashed #a5b4fc; }
 
 /* ── Modal overlay ───────────────────────────────────────── */
 .rh-modal-backdrop {
@@ -196,7 +196,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
     font-size:14px; box-sizing:border-box; transition:border-color .15s;
     font-family:inherit;
 }
-.rh-modal-input:focus { outline:none; border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,.1); }
+.rh-modal-input:focus { outline:none; border-color:#1a3a5c; box-shadow:0 0 0 3px rgba(79,70,229,.1); }
 .rh-toast {
     position:fixed; bottom:24px; right:24px; z-index:600;
     background:#0f172a; color:#fff; padding:12px 18px;
