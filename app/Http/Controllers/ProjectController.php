@@ -72,7 +72,15 @@ class ProjectController extends Controller
         // Get filter options
         $clients = Client::where('status', 'active')->orderBy('company_name')->get();
 
-        return view('projects.index', compact('projects', 'clients'));
+        // Summary stats (always total, regardless of current filters)
+        $stats = [
+            'total'     => Project::count(),
+            'active'    => Project::where('status', 'active')->count(),
+            'completed' => Project::where('status', 'completed')->count(),
+            'paused'    => Project::whereIn('status', ['paused', 'on_hold'])->count(),
+        ];
+
+        return view('projects.index', compact('projects', 'clients', 'stats'));
     }
 
     /**

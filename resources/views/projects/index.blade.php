@@ -7,6 +7,38 @@
 
 @section('content')
 
+{{-- Stat Cards --}}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+    <div class="stat-card">
+        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">📋</div>
+        <div>
+            <div class="stat-number">{{ $stats['total'] }}</div>
+            <div class="stat-label">Total Projects</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center text-xl flex-shrink-0">🟢</div>
+        <div>
+            <div class="stat-number text-green-600">{{ $stats['active'] }}</div>
+            <div class="stat-label">Active</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center text-xl flex-shrink-0">✅</div>
+        <div>
+            <div class="stat-number text-blue-600">{{ $stats['completed'] }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="w-11 h-11 rounded-xl bg-yellow-100 flex items-center justify-center text-xl flex-shrink-0">⏸️</div>
+        <div>
+            <div class="stat-number text-yellow-600">{{ $stats['paused'] }}</div>
+            <div class="stat-label">Paused / On Hold</div>
+        </div>
+    </div>
+</div>
+
 {{-- Filters --}}
 <form method="GET" class="filter-bar">
     <div class="flex flex-col gap-1">
@@ -60,6 +92,10 @@
 
 {{-- Table --}}
 <div class="ui-card overflow-hidden">
+    <div class="ui-card-header">
+        <span class="font-semibold text-gray-800">All Projects</span>
+        <span class="text-xs text-gray-400 ml-auto">{{ $projects->total() }} {{ Str::plural('project', $projects->total()) }}</span>
+    </div>
     <div class="overflow-x-auto">
         <table class="ui-table">
             <thead>
@@ -76,42 +112,63 @@
             </thead>
             <tbody>
                 @forelse($projects as $project)
+                @php
+                    $pct = $project->completion_percentage ?? 0;
+                    $barColor = $pct >= 100 ? 'bg-blue-500' : ($pct >= 60 ? 'bg-green-500' : ($pct >= 30 ? 'bg-yellow-400' : 'bg-gray-300'));
+                    $sc = match($project->status) {
+                        'active'    => 'badge-green',
+                        'completed' => 'badge-blue',
+                        'paused'    => 'badge-yellow',
+                        'cancelled' => 'badge-red',
+                        default     => 'badge-gray',
+                    };
+                    $typeIcon = match($project->project_type) {
+                        'maintenance'  => '🔧',
+                        'installation' => '📦',
+                        'support'      => '💬',
+                        'discovery'    => '🔍',
+                        'servicing'    => '⚙️',
+                        default        => '📝',
+                    };
+                @endphp
                 <tr>
-                    <td>
-                        <div class="font-semibold text-gray-900">{{ $project->project_name }}</div>
-                        <code class="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                    <td style="max-width:220px">
+                        <a href="{{ route('projects.show', $project) }}"
+                           class="font-semibold text-[#1a3a5c] hover:underline leading-snug block">
+                            {{ $project->project_name }}
+                        </a>
+                        <code class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded mt-0.5 inline-block">
                             {{ $project->project_code }}
                         </code>
                     </td>
-                    <td class="text-gray-700">{{ $project->client->company_name }}</td>
+                    <td class="text-sm text-gray-700">{{ $project->client->company_name }}</td>
                     <td>
-                        <span class="badge badge-gray capitalize">{{ $project->project_type }}</span>
+                        <span class="badge badge-gray capitalize">{{ $typeIcon }} {{ $project->project_type }}</span>
                     </td>
                     <td>
-                        @php
-                            $sc = match($project->status) {
-                                'active'    => 'badge-green',
-                                'completed' => 'badge-blue',
-                                'paused'    => 'badge-yellow',
-                                'cancelled' => 'badge-red',
-                                default     => 'badge-gray',
-                            };
-                        @endphp
                         <span class="badge {{ $sc }} capitalize">{{ $project->status }}</span>
                     </td>
-                    <td class="text-gray-500 text-xs leading-relaxed">
+                    <td style="min-width:130px">
                         @if($project->job_assignments_count > 0)
-                            <div>{{ $project->terminals_count ?? 0 }} terminals</div>
-                            <div>{{ number_format($project->completion_percentage ?? 0, 1) }}% complete</div>
+                            <div class="flex items-center gap-2">
+                                <div class="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="{{ $barColor }} h-1.5 rounded-full"
+                                         style="width:{{ min(100, $pct) }}%"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-600 w-10 text-right">{{ number_format($pct, 0) }}%</span>
+                            </div>
+                            <div class="text-xs text-gray-400 mt-0.5">{{ $project->terminals_count ?? 0 }} terminals</div>
                         @else
-                            <span class="italic text-gray-400">No assignments</span>
+                            <span class="text-xs italic text-gray-400">No assignments</span>
                         @endif
                     </td>
-                    <td class="text-xs leading-relaxed text-gray-700">
-                        <div><span class="font-medium">Start:</span> {{ $project->start_date ? $project->start_date->format('M j, Y') : 'Not set' }}</div>
-                        <div><span class="font-medium">End:</span> {{ $project->end_date ? $project->end_date->format('M j, Y') : 'Not set' }}</div>
+                    <td class="text-xs text-gray-600" style="min-width:120px">
+                        <div>{{ $project->start_date ? $project->start_date->format('M j, Y') : '—' }}</div>
+                        @if($project->end_date)
+                        <div class="text-gray-400">→ {{ $project->end_date->format('M j, Y') }}</div>
+                        @endif
                     </td>
-                    <td>
+                    <td class="text-sm">
                         @if($project->projectManager)
                             <span class="font-medium text-gray-700">{{ $project->projectManager->full_name }}</span>
                         @else
@@ -120,8 +177,8 @@
                     </td>
                     <td>
                         <div class="flex items-center gap-1.5">
-                            <a href="{{ route('projects.show', $project) }}" class="btn-secondary btn-sm">👁 View</a>
-                            <a href="{{ route('projects.edit', $project) }}" class="btn-secondary btn-sm">✏️ Edit</a>
+                            <a href="{{ route('projects.show', $project) }}" class="btn-secondary btn-sm">View</a>
+                            <a href="{{ route('projects.edit', $project) }}" class="btn-secondary btn-sm">Edit</a>
                         </div>
                     </td>
                 </tr>

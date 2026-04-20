@@ -20,9 +20,36 @@
 </div>
 @endif
 
-<div class="flash-warning" style="margin-bottom:20px">
-    <span>ℹ️</span>
-    <span>Editing <strong>{{ $project->project_name }}</strong> ({{ $project->project_code }}) — changes are saved immediately on submission.</span>
+{{-- Project Context Banner --}}
+@php
+    $editStatusColor = match($project->status) {
+        'active'    => 'border-green-400',
+        'completed' => 'border-blue-400',
+        'paused'    => 'border-yellow-400',
+        'cancelled' => 'border-red-400',
+        default     => 'border-gray-300',
+    };
+    $editStatusBadge = match($project->status) {
+        'active'    => 'badge-green',
+        'completed' => 'badge-blue',
+        'paused'    => 'badge-yellow',
+        'cancelled' => 'badge-red',
+        default     => 'badge-gray',
+    };
+@endphp
+<div class="ui-card mb-5 border-l-4 {{ $editStatusColor }}">
+    <div class="px-5 py-4 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-[#1a3a5c]/10 flex items-center justify-center text-lg flex-shrink-0">✏️</div>
+        <div class="flex-1 min-w-0">
+            <h2 class="font-bold text-gray-900 m-0 leading-tight truncate">{{ $project->project_name }}</h2>
+            <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">{{ $project->project_code }}</code>
+                <span class="badge {{ $editStatusBadge }} capitalize">{{ $project->status }}</span>
+                <span class="text-xs text-gray-400">Last updated {{ $project->updated_at->diffForHumans() }}</span>
+            </div>
+        </div>
+        <a href="{{ route('projects.show', $project) }}" class="btn-secondary flex-shrink-0">View Project →</a>
+    </div>
 </div>
 
 <form action="{{ route('projects.update', $project) }}" method="POST" enctype="multipart/form-data">
@@ -35,6 +62,7 @@
         <span class="font-semibold text-gray-800">Basic Information</span>
     </div>
     <div class="ui-card-body">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Core Details</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="ui-label">Project Name <span class="text-red-500">*</span></label>
@@ -83,9 +111,9 @@
         </div>
         <div class="mt-4">
             <label class="ui-label">Project Description</label>
-            <textarea name="description" rows="4"
+            <textarea name="description" rows="3"
                       class="ui-input @error('description') border-red-400 @enderror"
-                      style="min-height:100px;resize:vertical"
+                      style="min-height:90px;resize:vertical"
                       placeholder="Describe the project objectives, scope, and key deliverables...">{{ old('description', $project->description) }}</textarea>
             @error('description')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
         </div>
@@ -98,6 +126,7 @@
         <span class="font-semibold text-gray-800">Timeline &amp; Resources</span>
     </div>
     <div class="ui-card-body">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Schedule</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="ui-label">Project Start Date</label>
@@ -139,16 +168,18 @@
 {{-- Budget & Notes --}}
 <div class="ui-card mb-5">
     <div class="ui-card-header">
-        <span class="font-semibold text-gray-800">Budget &amp; Additional Information</span>
+        <span class="font-semibold text-gray-800">Budget &amp; Notes</span>
     </div>
     <div class="ui-card-body">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Financial & Additional Info</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="ui-label">Budget (USD)</label>
                 <input type="number" name="budget"
                        value="{{ old('budget', $project->budget) }}"
                        step="0.01" min="0"
-                       class="ui-input @error('budget') border-red-400 @enderror">
+                       class="ui-input @error('budget') border-red-400 @enderror"
+                       placeholder="0.00">
                 @error('budget')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
         </div>

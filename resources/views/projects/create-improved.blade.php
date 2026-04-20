@@ -59,13 +59,13 @@
 }
 
 .project-type-card:hover {
-    border-color: var(--primary-color);
+    border-color: #1a3a5c;
     box-shadow: 0 4px 12px rgba(26, 58, 92, 0.15);
     transform: translateY(-2px);
 }
 
 .project-type-card.selected {
-    border-color: var(--primary-color);
+    border-color: #1a3a5c;
     background: linear-gradient(135deg, rgba(26, 58, 92, 0.05) 0%, rgba(26, 58, 92, 0.1) 100%);
 }
 
