@@ -978,6 +978,12 @@
 
     }
 
+    .deployment-setup-grid,
+    .deployment-main-grid,
+    .deployment-success-grid {
+        grid-template-columns: 1fr !important;
+    }
+
 
 
     div[style*="grid-template-columns: 2fr 1fr 2fr 1fr"] {
@@ -990,6 +996,447 @@
 
 }
 
+.deployment-hero {
+    background: linear-gradient(135deg, #f8fbff 0%, #eef4f9 100%);
+    border: 1px solid #dbe5ef;
+    border-radius: 18px;
+    padding: 24px;
+    margin-block-end: 20px;
+}
+
+.deployment-hero-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-block-end: 18px;
+}
+
+.deployment-hero-copy {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.deployment-hero-icon {
+    inline-size: 52px;
+    block-size: 52px;
+    border-radius: 16px;
+    background: rgba(26, 58, 92, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.deployment-hero-title {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.deployment-hero-subtitle {
+    color: #64748b;
+    margin: 6px 0 0;
+    font-size: 0.95rem;
+}
+
+.deployment-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #dbe5ef;
+    color: #1a3a5c;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.deployment-stepper {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.deployment-step-card {
+    position: relative;
+    padding: 14px 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid #dbe5ef;
+}
+
+.deployment-step-card::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 25px;
+    inset-inline-end: -12px;
+    inline-size: 24px;
+    block-size: 1px;
+    background: #dbe5ef;
+}
+
+.deployment-step-card:last-child::after {
+    display: none;
+}
+
+.deployment-step-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-block-end: 6px;
+}
+
+.deployment-step-label {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.35;
+}
+
+.deployment-setup-card,
+.deployment-table-card,
+.deployment-side-card,
+.deployment-success-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.deployment-setup-card {
+    margin-block-end: 20px;
+    overflow: hidden;
+}
+
+.deployment-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    border-block-end: 1px solid #eef2f7;
+}
+
+.deployment-card-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.deployment-card-subtitle {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.deployment-setup-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr 1fr;
+    gap: 20px;
+    align-items: end;
+    padding: 24px;
+}
+
+.deployment-field-label {
+    display: block;
+    margin-block-end: 8px;
+    font-weight: 600;
+    color: #334155;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.deployment-field-help {
+    color: #94a3b8;
+    font-size: 12px;
+    margin-block-start: 7px;
+}
+
+.deployment-kpi {
+    background: linear-gradient(180deg, #1a3a5c 0%, #152e4a 100%);
+    color: white;
+    padding: 22px 16px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.deployment-kpi-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.deployment-kpi-label {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-block-start: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.deployment-action-stack {
+    display: grid;
+    gap: 10px;
+}
+
+.deployment-progress-stats {
+    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-block-end: 20px;
+}
+
+.deployment-progress-stat {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.deployment-progress-icon {
+    inline-size: 42px;
+    block-size: 42px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.deployment-progress-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.1;
+}
+
+.deployment-progress-label {
+    font-size: 12px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-block-start: 3px;
+}
+
+.deployment-main-grid {
+    display: none;
+    grid-template-columns: 3fr 2fr;
+    gap: 20px;
+}
+
+.deployment-table-head {
+    background: linear-gradient(180deg, #fcfdff 0%, #f8fafc 100%);
+    padding: 20px;
+    border-radius: 18px 18px 0 0;
+    border-block-end: 1px solid #e5e7eb;
+}
+
+.deployment-table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    margin-block-end: 16px;
+}
+
+.deployment-table-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #111827;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.deployment-count-pill {
+    background: #1a3a5c;
+    color: white;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.deployment-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+}
+
+.deployment-input,
+.deployment-select {
+    inline-size: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.deployment-input:focus,
+.deployment-select:focus {
+    outline: none;
+    border-color: #1a3a5c;
+    box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.12);
+}
+
+.deployment-empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+.deployment-empty-icon {
+    font-size: 48px;
+    margin-block-end: 15px;
+}
+
+.deployment-side-stack {
+    display: grid;
+    gap: 20px;
+}
+
+.deployment-side-card {
+    padding: 24px;
+}
+
+.deployment-side-title {
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #111827;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.deployment-mode-grid,
+.deployment-action-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.deployment-mode-grid label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #dbe5ef;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #f8fafc;
+}
+
+.deployment-option-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-block-end: 16px;
+}
+
+.deployment-empty-panel {
+    text-align: center;
+    color: #64748b;
+    padding: 18px;
+    background: #f8fafc;
+    border-radius: 14px;
+    border: 1px dashed #dbe5ef;
+}
+
+.deployment-summary-shell {
+    margin-block-start: 20px;
+    display: none;
+}
+
+.deployment-success-card {
+    padding: 24px;
+}
+
+.deployment-success-grid {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 20px;
+}
+
+.deployment-summary-box {
+    margin-block-start: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+}
+
+.deployment-summary-box h6 {
+    margin: 0 0 10px;
+    color: #111827;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.deployment-summary-list {
+    display: grid;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.deployment-summary-list > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.flash-info-lite {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e3a8a;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-block-end: 20px;
+}
+
+@media (max-width: 900px) {
+    .deployment-hero-head,
+    .deployment-table-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .deployment-stepper {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .deployment-step-card::after {
+        display: none;
+    }
+
+    .deployment-option-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .deployment-stepper {
+        grid-template-columns: 1fr;
+    }
+}
+
 </style>
 @endpush
 
@@ -999,60 +1446,77 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
-        <div>
-            <p style="color: #666; margin: 5px 0 0 0;">Deploy technicians to terminals across regions • Hierarchical assignment management</p>
+    <div class="deployment-hero">
+        <div class="deployment-hero-head">
+            <div class="deployment-hero-copy">
+                <div class="deployment-hero-icon">🗺️</div>
+                <div>
+                    <h1 class="deployment-hero-title">Terminal Deployment</h1>
+                    <p class="deployment-hero-subtitle">Deploy technicians to terminals across regions with a cleaner, step-based workflow.</p>
+                </div>
+            </div>
+            <div class="deployment-hero-badge">{{ $stats['active_projects'] }} active projects</div>
+        </div>
+
+        <div class="deployment-stepper" id="stepProgress">
+            <div class="deployment-step-card step-item active" id="step1">
+                <div class="deployment-step-top">
+                    <div class="step-circle">1</div>
+                    <strong>Select Scope</strong>
+                </div>
+                <div class="deployment-step-label">Choose clients and projects for this deployment batch.</div>
+            </div>
+            <div class="deployment-step-card step-item" id="step2">
+                <div class="deployment-step-top">
+                    <div class="step-circle">2</div>
+                    <strong>Load Hierarchy</strong>
+                </div>
+                <div class="deployment-step-label">Pull terminal hierarchy and filter the working set.</div>
+            </div>
+            <div class="deployment-step-card step-item" id="step3">
+                <div class="deployment-step-top">
+                    <div class="step-circle">3</div>
+                    <strong>Pick Technicians</strong>
+                </div>
+                <div class="deployment-step-label">Select technicians and define assignment mode.</div>
+            </div>
+            <div class="deployment-step-card step-item" id="step4">
+                <div class="deployment-step-top">
+                    <div class="step-circle">4</div>
+                    <strong>Assign</strong>
+                </div>
+                <div class="deployment-step-label">Create assignments and review the final summary.</div>
+            </div>
         </div>
     </div>
 
     <!-- Success/Error Messages -->
     @if(session('success'))
-        <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 6px; margin-block-end: 20px; border: 1px solid #c3e6cb;">
+        <div class="flash-success" style="margin-block-end: 20px;">
             {{ session('success') }}
         </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 6px; margin-block-end: 20px; border: 1px solid #f5c6cb;">
+        <div class="flash-error" style="margin-block-end: 20px;">
             {{ session('error') }}
         </div>
     @endif
 
     <!-- Page Setup - Filters Section -->
-    <div class="ui-card p-6" style="margin-block-end: 20px;">
-        <!-- Step Indicators -->
-        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
-            <h6 style="margin: 0 0 10px 0; color: #333; display: flex; align-items: center; gap: 8px;">
-                📋 Deployment Progress
-            </h6>
-            <div id="stepProgress" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 12px;">
-                <div class="step-item active" id="step1">
-                    <div class="step-circle">1</div>
-                    <div>Select Clients & Projects</div>
-                </div>
-                <div class="step-item" id="step2">
-                    <div class="step-circle">2</div>
-                    <div>Load Hierarchy</div>
-                </div>
-                <div class="step-item" id="step3">
-                    <div class="step-circle">3</div>
-                    <div>Choose Technicians</div>
-                </div>
-                <div class="step-item" id="step4">
-                    <div class="step-circle">4</div>
-                    <div>Assign Terminals</div>
-                </div>
+    <div class="deployment-setup-card">
+        <div class="deployment-card-header">
+            <div>
+                <h4 class="deployment-card-title">Deployment Setup</h4>
+                <p class="deployment-card-subtitle">Define the client scope, target projects, and deployment date before loading terminals.</p>
             </div>
+            <div class="deployment-hero-badge">Step 1 of 4</div>
         </div>
 
-        <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
-            🔧 Deployment Setup
-        </h4>
-
-        <div style="display: grid; grid-template-columns: 2fr 1fr 2fr 1fr; gap: 20px; align-items: end;">
+        <div class="deployment-setup-grid">
             <!-- Client Selection -->
             <div>
-                <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
+                <label class="deployment-field-label">
                     Select Clients <span style="color: #f44336;">*</span>
                 </label>
                 <div style="position: relative;">
@@ -1073,22 +1537,22 @@
                             @endforeach
                         </div>
                     </div>
-                    <small style="color: #666;">Select multiple clients</small>
+                    <div class="deployment-field-help">Select one or more clients to build the deployment scope.</div>
                 </div>
             </div>
 
             <!-- Total Terminals Display -->
             <div>
-                <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Total Terminals</label>
-                <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 32px; font-weight: bold;" id="totalTerminalCount">0</div>
-                    <div style="font-size: 12px; opacity: 0.9;">Selected</div>
+                <label class="deployment-field-label">Total Terminals</label>
+                <div class="deployment-kpi">
+                    <div class="deployment-kpi-number" id="totalTerminalCount">0</div>
+                    <div class="deployment-kpi-label">Selected</div>
                 </div>
             </div>
 
             <!-- Project Selection -->
             <div>
-                <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
+                <label class="deployment-field-label">
                     Projects <span style="color: #f44336;">*</span>
                 </label>
                 <div style="position: relative;">
@@ -1106,17 +1570,20 @@
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="btn-primary" onclick="createNewProject()" style="margin-top: 8px; width: 100%; padding: 8px;">
-                        ➕ Create New Project
-                    </button>
+                    <div class="deployment-action-stack">
+                        <button type="button" class="btn-primary" onclick="createNewProject()" style="margin-top: 8px; width: 100%; padding: 10px 12px;">
+                            ➕ Create New Project
+                        </button>
+                        <div class="deployment-field-help">Need a fresh deployment project? Create it here and continue.</div>
+                    </div>
                 </div>
             </div>
 
             <!-- Start Date -->
             <div>
-                <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Deployment Date</label>
+                <label class="deployment-field-label">Deployment Date</label>
                 <input type="date" id="deploymentDate" value="{{ date('Y-m-d', strtotime('+1 day')) }}"
-                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px;">
+                       class="deployment-input">
                 <!-- Load Button -->
                 <button type="button" class="btn-success" onclick="loadHierarchy()" id="loadHierarchyBtn" disabled
                         style="margin-top: 12px; width: 100%; padding: 12px; font-size: 16px;">
@@ -1127,69 +1594,59 @@
     </div>
 
     <!-- Progress Stats - Hidden Initially -->
-    <div style="display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-block-end: 20px;" id="progressStats" class="progress-section">
-        <div class="stat-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 24px;">🎯</div>
-                <div>
-                    <div style="font-size: 20px; font-weight: bold;" id="totalTerminals">0</div>
-                    <div style="font-size: 12px; opacity: 0.9;">Total Terminals</div>
-                </div>
+    <div id="progressStats" class="progress-section deployment-progress-stats">
+        <div class="deployment-progress-stat">
+            <div class="deployment-progress-icon" style="background:#dbeafe;">🎯</div>
+            <div>
+                <div class="deployment-progress-value" id="totalTerminals">0</div>
+                <div class="deployment-progress-label">Total Terminals</div>
             </div>
         </div>
 
-        <div class="stat-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 24px;">✅</div>
-                <div>
-                    <div style="font-size: 20px; font-weight: bold;" id="assignedTerminals">0</div>
-                    <div style="font-size: 12px; opacity: 0.9;">Assigned</div>
-                </div>
+        <div class="deployment-progress-stat">
+            <div class="deployment-progress-icon" style="background:#dcfce7;">✅</div>
+            <div>
+                <div class="deployment-progress-value" id="assignedTerminals">0</div>
+                <div class="deployment-progress-label">Assigned</div>
             </div>
         </div>
 
-        <div class="stat-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 24px;">⏳</div>
-                <div>
-                    <div style="font-size: 20px; font-weight: bold;" id="unassignedTerminals">0</div>
-                    <div style="font-size: 12px; opacity: 0.9;">Unassigned</div>
-                </div>
+        <div class="deployment-progress-stat">
+            <div class="deployment-progress-icon" style="background:#fef3c7;">⏳</div>
+            <div>
+                <div class="deployment-progress-value" id="unassignedTerminals">0</div>
+                <div class="deployment-progress-label">Unassigned</div>
             </div>
         </div>
 
-        <div class="stat-card" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 24px;">👥</div>
-                <div>
-                    <div style="font-size: 20px; font-weight: bold;" id="selectedTerminals">0</div>
-                    <div style="font-size: 12px; opacity: 0.9;">Selected</div>
-                </div>
+        <div class="deployment-progress-stat">
+            <div class="deployment-progress-icon" style="background:#ede9fe;">👥</div>
+            <div>
+                <div class="deployment-progress-value" id="selectedTerminals">0</div>
+                <div class="deployment-progress-label">Selected</div>
             </div>
         </div>
 
-        <div class="stat-card" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 24px;">🔧</div>
-                <div>
-                    <div style="font-size: 20px; font-weight: bold;" id="technicianCount">0</div>
-                    <div style="font-size: 12px; opacity: 0.9;">Technicians</div>
-                </div>
+        <div class="deployment-progress-stat">
+            <div class="deployment-progress-icon" style="background:#fee2e2;">🔧</div>
+            <div>
+                <div class="deployment-progress-value" id="technicianCount">0</div>
+                <div class="deployment-progress-label">Technicians</div>
             </div>
         </div>
     </div>
 
     <!-- Main Content Area - Hidden Initially -->
-    <div style="display: none; grid-template-columns: 3fr 2fr; gap: 20px;" id="mainContentArea" class="main-content-section">
+    <div id="mainContentArea" class="main-content-section deployment-main-grid">
 
         <!-- Left Side - Terminal Table -->
-        <div class="ui-card p-6" style="padding: 0;">
+        <div class="deployment-table-card">
             <!-- Table Header -->
-            <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; border-radius: 8px 8px 0 0; border-bottom: 2px solid #dee2e6;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h4 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #333;">
+            <div class="deployment-table-head">
+                <div class="deployment-table-toolbar">
+                    <h4 class="deployment-table-title">
                         📊 Terminal List
-                        <span style="background: #1a3a5c; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;" id="terminalCount">0</span>
+                        <span class="deployment-count-pill" id="terminalCount">0</span>
                     </h4>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn-secondary btn-sm" onclick="selectAllVisible()" disabled id="selectAllBtn" title="Select All Visible">
@@ -1205,36 +1662,36 @@
                 </div>
 
                 <!-- Filters -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                <div class="deployment-filter-grid">
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 12px;">Province</label>
-                        <select id="provinceFilter" onchange="applyFilters()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <label class="deployment-field-label">Province</label>
+                        <select id="provinceFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Provinces</option>
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 12px;">City</label>
-                        <select id="cityFilter" onchange="applyFilters()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <label class="deployment-field-label">City</label>
+                        <select id="cityFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Cities</option>
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 12px;">Region</label>
-                        <select id="regionFilter" onchange="applyFilters()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <label class="deployment-field-label">Region</label>
+                        <select id="regionFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Regions</option>
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 12px;">Assignment Status</label>
-                        <select id="assignmentFilter" onchange="applyFilters()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <label class="deployment-field-label">Assignment Status</label>
+                        <select id="assignmentFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Terminals</option>
                             <option value="assigned">✅ Assigned</option>
                             <option value="unassigned">⏳ Unassigned</option>
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 12px;">Status</label>
-                        <select id="statusFilter" onchange="applyFilters()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <label class="deployment-field-label">Status</label>
+                        <select id="statusFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Status</option>
                             <option value="active">Active</option>
                             <option value="offline">Offline</option>
@@ -1243,8 +1700,8 @@
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 12px;">Search</label>
-                        <input type="text" id="searchFilter" placeholder="Search terminals..." onkeyup="applyFilters()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <label class="deployment-field-label">Search</label>
+                        <input type="text" id="searchFilter" placeholder="Search terminals..." onkeyup="applyFilters()" class="deployment-input">
                     </div>
                 </div>
             </div>
@@ -1270,12 +1727,14 @@
                     <tbody id="terminalTableBody">
                         <tr>
                             <td colspan="9" style="padding: 60px 20px; text-align: center; color: #666;">
-                                <div style="font-size: 48px; margin-bottom: 15px;">👈</div>
-                                <h5>Step 1: Configure Deployment Setup</h5>
-                                <p>Select clients and projects to load terminals</p>
-                                <div style="margin-top: 20px; font-size: 14px; color: #999;">
+                                <div class="deployment-empty-state">
+                                    <div class="deployment-empty-icon">👈</div>
+                                    <h5>Step 1: Configure Deployment Setup</h5>
+                                    <p>Select clients and projects to load terminals.</p>
+                                    <div style="margin-top: 20px; font-size: 14px; color: #94a3b8;">
                                     • Choose one or more clients<br>
                                     • Select associated projects
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -1295,17 +1754,17 @@
         </div>
 
         <!-- Right Side - Assignment & Tracking -->
-        <div style="display: grid; gap: 20px;">
+        <div class="deployment-side-stack">
 
             <!-- Assignment Section -->
-            <div class="ui-card p-6" id="assignmentSection">
-                <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
+            <div class="deployment-side-card" id="assignmentSection">
+                <h4 class="deployment-side-title">
                     👥 Technician Assignment
                 </h4>
 
                 <!-- Technician Selection -->
                 <div style="margin-block-end: 15px;">
-                    <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
+                    <label class="deployment-field-label">
                         Select Technicians <span style="color: #f44336;">*</span>
                     </label>
                     <div class="custom-dropdown" id="technicianDropdown">
@@ -1336,13 +1795,13 @@
                             @endforeach
                         </div>
                     </div>
-                    <small style="color: #666;">Select multiple technicians</small>
+                    <div class="deployment-field-help">Select multiple technicians to distribute or share assignments.</div>
                 </div>
 
                 <!-- Assignment Mode -->
                 <div style="margin-block-end: 15px;">
-                    <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Assignment Mode</label>
-                    <div style="display: grid; gap: 8px;">
+                    <label class="deployment-field-label">Assignment Mode</label>
+                    <div class="deployment-mode-grid">
                         <label style="display: flex; align-items: center; gap: 8px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;" onclick="selectAssignmentMode('individual')">
                             <input type="radio" name="assignmentMode" value="individual" checked>
                             <div>
@@ -1361,18 +1820,18 @@
                 </div>
 
                 <!-- Assignment Options -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-block-end: 15px;">
+                <div class="deployment-option-grid">
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">Priority</label>
-                        <select id="assignmentPriority" style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
+                        <label class="deployment-field-label">Priority</label>
+                        <select id="assignmentPriority" class="deployment-select">
                             <option value="normal" selected>Normal</option>
                             <option value="high">High</option>
                             <option value="emergency">Emergency</option>
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">Service Type</label>
-                        <select id="serviceType" style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
+                        <label class="deployment-field-label">Service Type</label>
+                        <select id="serviceType" class="deployment-select">
                             <option value="routine_maintenance">Routine Maintenance</option>
                             <option value="emergency_repair">Emergency Repair</option>
                         </select>
@@ -1380,7 +1839,7 @@
                 </div>
 
                 <!-- Assignment Actions -->
-                <div style="display: grid; gap: 8px;">
+                <div class="deployment-action-grid">
                     <button type="button" class="btn-success" onclick="assignSelected()" id="assignSelectedBtn" disabled style="width: 100%;">
                         ➕ Assign Selected Terminals
                     </button>
@@ -1396,13 +1855,13 @@
             </div>
 
             <!-- Technician Workload Display -->
-            <div class="ui-card p-6">
-                <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
+            <div class="deployment-side-card">
+                <h4 class="deployment-side-title">
                     📊 Technician Workload
                 </h4>
 
                 <div id="technicianWorkload">
-                    <div style="text-align: center; color: #666; padding: 20px;">
+                    <div class="deployment-empty-panel">
                         <div style="font-size: 32px; margin-block-end: 10px;">👥</div>
                         <h6>Step 3: Select Technicians</h6>
                         <p>Choose technicians to see workload distribution</p>
@@ -1411,14 +1870,14 @@
             </div>
 
             <!-- Unassigned Terminals -->
-            <div class="ui-card p-6">
-                <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
+            <div class="deployment-side-card">
+                <h4 class="deployment-side-title">
                     ⏳ Unassigned Terminals
                     <span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;" id="unassignedCount">0</span>
                 </h4>
 
                 <div id="unassignedList" style="max-height: 200px; overflow-y: auto;">
-                    <div style="text-align: center; color: #666; padding: 20px;">
+                    <div class="deployment-empty-panel">
                         <div style="font-size: 32px; margin-block-end: 10px;">⏳</div>
                         <p>Load hierarchy to see unassigned terminals</p>
                     </div>
@@ -1428,15 +1887,16 @@
     </div>
 
     <!-- Assignment Success Section - Hidden Initially -->
-    <div class="content-card assignment-success-section" style="margin-top: 20px; display: none;" id="assignmentSuccessSection">
-        <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
+    <div class="assignment-success-section deployment-summary-shell" id="assignmentSuccessSection">
+        <div class="deployment-success-card">
+        <h4 class="deployment-side-title">
             🎉 Assignment Complete!
         </h4>
 
-        <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 20px;">
+        <div class="deployment-success-grid">
             <!-- Assignment Summary Table -->
             <div>
-                <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div class="deployment-table-card" style="overflow: hidden;">
                     <table class="assignment-table" style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="background: #f8f9fa;">
@@ -1473,24 +1933,25 @@
                 </div>
 
                 <!-- Assignment Stats -->
-                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <h6 style="margin: 0 0 10px 0; color: #333;">Assignment Summary</h6>
-                    <div style="display: grid; gap: 5px; font-size: 14px;">
-                        <div style="display: flex; justify-content: space-between;">
+                <div class="deployment-summary-box">
+                    <h6>Assignment Summary</h6>
+                    <div class="deployment-summary-list">
+                        <div>
                             <span>Total Technicians:</span>
                             <strong id="summaryTechnicians">0</strong>
                         </div>
-                        <div style="display: flex; justify-content: space-between;">
+                        <div>
                             <span>Total Terminals:</span>
                             <strong id="summaryTerminals">0</strong>
                         </div>
-                        <div style="display: flex; justify-content: space-between;">
+                        <div>
                             <span>Estimated Time:</span>
                             <strong id="summaryTime">0 hours</strong>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     </div>
 </div>
@@ -1689,12 +2150,12 @@ function loadProjectsAndSelect(projectId) {
 
 function showProjectSelectionMessage() {
     const messageHtml = `
-        <div class="alert alert-info" style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-info-circle" style="color: #2196f3; font-size: 18px;"></i>
+        <div class="flash-info-lite">
+            <div style="font-size: 18px; line-height: 1;">ℹ️</div>
+            <div>
                 <div>
                     <strong>Project Ready for Terminal Assignment</strong>
-                    <p style="margin: 5px 0 0 0; color: #666;">
+                    <p style="margin: 5px 0 0 0; color: #475569;">
                         Your project has been created successfully. Follow the steps below to assign terminals and technicians to this project.
                     </p>
                 </div>
