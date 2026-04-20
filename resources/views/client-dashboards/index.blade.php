@@ -15,73 +15,64 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-block-end:32px;">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div class="stat-card">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                    <svg style="width:20px;height:20px;color:#6b7280;" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                    </svg>
-                </div>
-                <div>
-                    <div style="font-size:24px;font-weight:700;color:#111827;line-height:1;">{{ $stats['total_clients'] }}</div>
-                    <div style="font-size:13px;color:#6b7280;font-weight:500;">Total Clients</div>
-                </div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
+                <svg style="width:20px;height:20px;color:#6b7280;" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $stats['total_clients'] }}</div>
+                <div class="stat-label">Total Clients</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                    <svg style="width:20px;height:20px;color:#059669;" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <div>
-                    <div style="font-size:24px;font-weight:700;color:#111827;line-height:1;">{{ $stats['active_clients'] }}</div>
-                    <div style="font-size:13px;color:#6b7280;font-weight:500;">Active Clients</div>
-                </div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
+                <svg style="width:20px;height:20px;color:#059669;" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $stats['active_clients'] }}</div>
+                <div class="stat-label">Active Clients</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                    <svg style="width:20px;height:20px;color:#d97706;" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9.5 9.293 8.207a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586z" clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <div>
-                    <div style="font-size:24px;font-weight:700;color:#111827;line-height:1;">{{ $stats['prospects'] }}</div>
-                    <div style="font-size:13px;color:#6b7280;font-weight:500;">Prospects</div>
-                </div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
+                <svg style="width:20px;height:20px;color:#d97706;" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9.5 9.293 8.207a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $stats['prospects'] }}</div>
+                <div class="stat-label">Prospects</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                    <svg style="width:20px;height:20px;color:#7c3aed;" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h3v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <div>
-                    <div style="font-size:24px;font-weight:700;color:#111827;line-height:1;">{{ $stats['under_contract'] }}</div>
-                    <div style="font-size:13px;color:#6b7280;font-weight:500;">Under Contract</div>
-                </div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
+                <svg style="width:20px;height:20px;color:#7c3aed;" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h3v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $stats['under_contract'] }}</div>
+                <div class="stat-label">Under Contract</div>
             </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="ui-card p-6" style="margin-block-end:24px;">
-        <form method="GET" style="display:grid;grid-template-columns:1fr auto auto auto auto;gap:12px;align-items:center;">
+    <div class="filter-bar" style="margin-block-end:24px;">
+        <form method="GET" class="flex flex-wrap gap-3 items-center w-full">
             <input type="text" name="search" value="{{ request('search') }}"
-                   placeholder="Search clients..."
-                   style="padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;">
+                   placeholder="Search clients..." class="ui-input flex-1 min-w-48">
 
-            <select name="status" style="padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;min-width:120px;">
+            <select name="status" class="ui-select w-auto">
                 <option value="">All Status</option>
                 <option value="active"   {{ request('status') === 'active'   ? 'selected' : '' }}>Active</option>
                 <option value="prospect" {{ request('status') === 'prospect' ? 'selected' : '' }}>Prospect</option>
@@ -89,7 +80,7 @@
                 <option value="lost"     {{ request('status') === 'lost'     ? 'selected' : '' }}>Lost</option>
             </select>
 
-            <select name="region" style="padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;min-width:120px;">
+            <select name="region" class="ui-select w-auto">
                 <option value="">All Regions</option>
                 @foreach($regions as $region)
                     <option value="{{ $region }}" {{ request('region') == $region ? 'selected' : '' }}>

@@ -19,28 +19,35 @@
     <div id="overview-tab" class="tab-content active">
         <div class="main-card" style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
 
-            <!-- Quick Stats Summary Row (Condensed) -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-                <div style="text-align: center;">
-                    <div style="font-size: 24px; font-weight: 700; color: #333; margin-bottom: 4px;">{{ $stats['total_terminals'] ?? 0 }}</div>
-                    <div style="font-size: 12px; color: #666; text-transform: uppercase;">Total</div>
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card">
+                    <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📋</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="stat-number">{{ $stats['total_terminals'] ?? 0 }}</div>
+                        <div class="stat-label">Total</div>
+                    </div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 24px; font-weight: 700; color: #28a745; margin-bottom: 4px;">{{ $stats['active_terminals'] ?? 0 }}</div>
-                    <div style="font-size: 12px; color: #28a745; text-transform: uppercase;">Active</div>
+                <div class="stat-card">
+                    <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="stat-number">{{ $stats['active_terminals'] ?? 0 }}</div>
+                        <div class="stat-label">Active</div>
+                    </div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 24px; font-weight: 700; color: #dc3545; margin-bottom: 4px;">{{ $stats['faulty_terminals'] ?? 0 }}</div>
-                    <div style="font-size: 12px; color: #dc3545; text-transform: uppercase;">Need Attention</div>
+                <div class="stat-card">
+                    <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⚠️</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="stat-number">{{ $stats['faulty_terminals'] ?? 0 }}</div>
+                        <div class="stat-label">Need Attention</div>
+                    </div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 24px; font-weight: 700; color: #ffc107; margin-bottom: 4px;">{{ $stats['offline_terminals'] ?? 0 }}</div>
-                    <div style="font-size: 12px; color: #ffc107; text-transform: uppercase;">Offline</div>
-                </div>
-                <div style="text-align: center;">
-                    <a href="javascript:void(0)" onclick="switchTab('analytics')" style="display: inline-block; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">
-                        📊 View Analytics
-                    </a>
+                <div class="stat-card">
+                    <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🔴</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="stat-number">{{ $stats['offline_terminals'] ?? 0 }}</div>
+                        <div class="stat-label">Offline</div>
+                    </div>
                 </div>
             </div>
 

@@ -6,44 +6,33 @@
 <meta name="app-base-url" content="{{ url('/') }}">
 
 <!-- Assignment Statistics Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-block-end: 30px;">
-    <div class="metric-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="font-size: 32px;">👥</div>
-            <div>
-                <div style="font-size: 28px; font-weight: bold;">{{ $assignmentStats['active_assignments'] ?? 0 }}</div>
-                <div style="font-size: 14px; opacity: 0.9;">Active Assignments</div>
-            </div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    <div class="stat-card">
+        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">👥</div>
+        <div class="flex-1 min-w-0">
+            <div class="stat-number">{{ $assignmentStats['active_assignments'] ?? 0 }}</div>
+            <div class="stat-label">Active Assignments</div>
         </div>
     </div>
-
-    <div class="metric-card" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="font-size: 32px;">⏰</div>
-            <div>
-                <div style="font-size: 28px; font-weight: bold;">{{ $assignmentStats['overdue_assignments'] ?? 0 }}</div>
-                <div style="font-size: 14px; opacity: 0.9;">Overdue Returns</div>
-            </div>
+    <div class="stat-card">
+        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⏰</div>
+        <div class="flex-1 min-w-0">
+            <div class="stat-number">{{ $assignmentStats['overdue_assignments'] ?? 0 }}</div>
+            <div class="stat-label">Overdue Returns</div>
         </div>
     </div>
-
-    <div class="metric-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="font-size: 32px;">📈</div>
-            <div>
-                <div style="font-size: 28px; font-weight: bold;">{{ $assignmentStats['returned_this_month'] ?? 0 }}</div>
-                <div style="font-size: 14px; opacity: 0.9;">Returned This Month</div>
-            </div>
+    <div class="stat-card">
+        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📈</div>
+        <div class="flex-1 min-w-0">
+            <div class="stat-number">{{ $assignmentStats['returned_this_month'] ?? 0 }}</div>
+            <div class="stat-label">Returned This Month</div>
         </div>
     </div>
-
-    <div class="metric-card" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="font-size: 32px;">📊</div>
-            <div>
-                <div style="font-size: 28px; font-weight: bold;">{{ $assignmentStats['total_assignments'] ?? 0 }}</div>
-                <div style="font-size: 14px; opacity: 0.9;">Total Assignments</div>
-            </div>
+    <div class="stat-card">
+        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📊</div>
+        <div class="flex-1 min-w-0">
+            <div class="stat-number">{{ $assignmentStats['total_assignments'] ?? 0 }}</div>
+            <div class="stat-label">Total Assignments</div>
         </div>
     </div>
 </div>

@@ -28,7 +28,7 @@ TARGET_FILES = [
 def fix_rows(txt):
     # 1. Convert <div class="row"> to grid
     #    Check if it wraps children with class="" → those are former col-md-X
-    
+
     # Replace <div class="row"> with grid
     txt = re.sub(
         r'<div class="row">',
@@ -45,15 +45,15 @@ def fix_rows(txt):
         r'<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-\1">',
         txt
     )
-    
+
     # 2. container-fluid → empty
     txt = re.sub(r'<div class="container-fluid[^"]*">', '<div>', txt)
     txt = re.sub(r'<div class="container[^"]*">', '<div>', txt)
-    
+
     # 3. Remove empty class attributes
     txt = re.sub(r' class=""', '', txt)
     txt = re.sub(r" class=''", '', txt)
-    
+
     return txt
 
 changed = 0
