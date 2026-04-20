@@ -6,7 +6,6 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333;">Request {{ $assetRequest->request_number }}</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Submitted by {{ $assetRequest->employee->full_name }}</p>
         </div>
         <div style="display: flex; gap: 10px;">

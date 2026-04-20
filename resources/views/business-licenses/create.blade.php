@@ -7,7 +7,6 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333;">➕ Add New {{ $direction === 'company_held' ? 'Business License' : 'Customer License' }}</h2>
             <p style="color: #666; margin: 5px 0 0 0;">
                 {{ $direction === 'company_held' ? 'Register a company-held business license for compliance tracking' : 'Register a license issued to a customer' }}
             </p>

@@ -7,7 +7,6 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333;">🔄 Renew Business License</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Process renewal for {{ $businessLicense->license_name }}</p>
         </div>
         <div style="display: flex; gap: 10px;">

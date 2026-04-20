@@ -12,7 +12,6 @@ File: resources/views/roles/index.blade.php
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333; font-size: 24px; font-weight: 600;">🔑 Role Management</h2>
             <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Manage user roles and permissions</p>
         </div>
         <a href="{{ route('roles.create') }}" class="btn btn-primary">+ Create New Role</a>

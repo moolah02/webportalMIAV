@@ -9,7 +9,6 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333;">🚀 POS Terminal Deployment</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Deploy technicians to terminals across regions • Hierarchical assignment management</p>
         </div>
     </div>

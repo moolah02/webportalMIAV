@@ -21,7 +21,6 @@
   <!-- Header -->
   <div class="header">
     <div>
-      <h2 class="title">Review Request {{ $assetRequest->request_number }}</h2>
       <p class="subtitle">Submitted by {{ $assetRequest->employee->full_name }}</p>
     </div>
     <a href="{{ route('asset-approvals.index') }}" class="btn">← Back to Approvals</a>

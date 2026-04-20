@@ -6,7 +6,6 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
         <div>
-            <h2 style="margin: 0; color: #333; font-size: 24px;">Terminal {{ $posTerminal->terminal_id }}</h2>
             <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">{{ $posTerminal->merchant_name }} • {{ $posTerminal->client->company_name }}</p>
         </div>
         <div style="display: flex; gap: 10px;">

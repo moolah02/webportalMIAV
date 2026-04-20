@@ -7,7 +7,6 @@
     <!-- Header -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-block-end:32px;padding-block-end:16px;border-bottom:1px solid #e5e7eb;">
         <div>
-            <h1 style="margin:0;color:#111827;font-size:28px;font-weight:600;letter-spacing:-0.025em;">Client Management</h1>
             <p style="color:#6b7280;margin:4px 0 0 0;font-size:15px;">Manage your clients and business relationships</p>
         </div>
         <div>

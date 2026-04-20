@@ -12,7 +12,6 @@ File: resources/views/roles/edit.blade.php
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333; font-size: 24px; font-weight: 600;">✏️ Edit Role</h2>
             <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">
                 Modify permissions for: <strong>{{ ucwords(str_replace('_', ' ', $role->name)) }}</strong>
             </p>

@@ -10,7 +10,6 @@
     <!-- Header -->
     <div class="header">
         <div>
-            <h2 class="title">⚖️ Asset Request Approvals</h2>
             <p class="subtitle">Review and approve employee asset requests</p>
         </div>
         <div class="actions">

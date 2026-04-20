@@ -6,7 +6,6 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <div>
-            <h1 style="margin: 0; color: #333; font-size: 32px; font-weight: 700;">System Analytics Dashboard</h1>
             <p style="margin: 8px 0 0 0; color: #666; font-size: 16px;">Comprehensive system performance and analytics</p>
         </div>
         <div style="display: flex; gap: 12px;">

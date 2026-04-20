@@ -6,7 +6,6 @@
     <!-- Header -->
     <div class="header">
         <div>
-            <h2 class="title">📋 My Asset Requests</h2>
             <p class="subtitle">Track and manage your asset requests</p>
         </div>
         <div class="actions">

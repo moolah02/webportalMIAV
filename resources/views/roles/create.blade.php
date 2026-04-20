@@ -12,7 +12,6 @@ File: resources/views/roles/create.blade.php
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333; font-size: 24px; font-weight: 600;">🔑 Create New Role</h2>
             <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Define a new role with specific permissions for your team</p>
         </div>
         <a href="{{ route('roles.index') }}" class="btn">← Back to Roles</a>

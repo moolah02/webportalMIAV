@@ -13,7 +13,6 @@
                 ←
             </a>
             <div>
-                <h2 style="margin: 0; color: #333; font-size: 24px; font-weight: 600;">{{ $client->company_name }}</h2>
                 <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
                     <span style="color: #666; font-size: 14px; font-family: monospace;">{{ $client->client_code }}</span>
                     <span class="status-badge status-{{ $client->status }}">

@@ -6,7 +6,6 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333;">🛒 Submit Asset Request</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Provide details for your asset request</p>
         </div>
         <a href="{{ route('asset-requests.cart') }}" class="btn">← Back to Cart</a>
