@@ -117,23 +117,26 @@
 
             <!-- Main Form Card with step indicator header -->
             <div class="ui-card mb-6">
-                <!-- Step indicator (tab-nav style) -->
-                <div class="tab-nav">
-                    <div class="tab-btn active">
-                        <span class="w-5 h-5 rounded-full bg-[#1a3a5c] text-white text-xs flex items-center justify-center flex-shrink-0">1</span>
-                        Basic Setup
+                <!-- Progress stepper (not tabs — linear workflow) -->
+                <div class="flex items-center px-6 py-4 border-b border-gray-100">
+                    <div class="flex items-center flex-shrink-0">
+                        <div class="w-7 h-7 rounded-full bg-[#1a3a5c] text-white text-xs font-bold flex items-center justify-center">1</div>
+                        <span class="ml-2 text-sm font-semibold text-[#1a3a5c]">Basic Setup</span>
                     </div>
-                    <div class="tab-btn">
-                        <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center flex-shrink-0">2</span>
-                        Assign Technicians
+                    <div class="flex-1 h-px bg-gray-200 mx-4"></div>
+                    <div class="flex items-center flex-shrink-0">
+                        <div class="w-7 h-7 rounded-full bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center">2</div>
+                        <span class="ml-2 text-sm text-gray-400">Assign Technicians</span>
                     </div>
-                    <div class="tab-btn">
-                        <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center flex-shrink-0">3</span>
-                        Track Progress
+                    <div class="flex-1 h-px bg-gray-200 mx-4"></div>
+                    <div class="flex items-center flex-shrink-0">
+                        <div class="w-7 h-7 rounded-full bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center">3</div>
+                        <span class="ml-2 text-sm text-gray-400">Track Progress</span>
                     </div>
-                    <div class="tab-btn">
-                        <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center flex-shrink-0">4</span>
-                        Close Project
+                    <div class="flex-1 h-px bg-gray-200 mx-4"></div>
+                    <div class="flex items-center flex-shrink-0">
+                        <div class="w-7 h-7 rounded-full bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center">4</div>
+                        <span class="ml-2 text-sm text-gray-400">Close Project</span>
                     </div>
                 </div>
                 <!-- Form header -->
