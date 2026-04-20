@@ -1,27 +1,45 @@
 {{-- Terminal Upload Section for Project Create/Edit --}}
 <div id="terminal-upload-section">
+
+    {{-- Header row --}}
     <div class="flex items-center justify-between mb-3">
-        <h5 class="font-semibold text-gray-800 text-base m-0">Terminal Assignment
-            @if(isset($project) && $project->exists)
-                <span class="badge badge-blue ml-2">{{ $project->projectTerminals()->where('is_active', true)->count() }} assigned</span>
-            @endif
-        </h5>
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-[#1a3a5c]/10 flex items-center justify-center text-base">🖥️</div>
+            <div>
+                <h5 class="font-semibold text-gray-800 text-sm m-0 leading-tight">Terminal Assignment
+                    @if(isset($project) && $project->exists)
+                        <span class="badge badge-blue ml-1">{{ $project->projectTerminals()->where('is_active', true)->count() }} assigned</span>
+                    @else
+                        <span class="text-xs font-normal text-gray-400 ml-1">optional</span>
+                    @endif
+                </h5>
+                <p class="text-xs text-gray-400 m-0">Upload a CSV/Excel list to bulk-assign terminals</p>
+            </div>
+        </div>
+        @if(isset($project) && $project->exists)
+        <button type="button" class="btn-secondary btn-sm" onclick="viewProjectTerminals()">
+            View List
+        </button>
+        @endif
     </div>
 
     @if(isset($project) && $project->exists)
-        <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-3 text-sm">
-            <span class="text-gray-700"><i class="fas fa-desktop text-[#1a3a5c] mr-2"></i><strong>{{ $project->projectTerminals()->where('is_active', true)->count() }}</strong> terminals currently assigned</span>
-            <button type="button" class="btn-secondary btn-sm" onclick="viewProjectTerminals()">
-                <i class="fas fa-list mr-1"></i> View List
-            </button>
-        </div>
+    <div class="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 mb-4 text-sm">
+        <span class="text-2xl">🖥️</span>
+        <span class="text-gray-700">
+            <strong class="text-[#1a3a5c]">{{ $project->projectTerminals()->where('is_active', true)->count() }}</strong>
+            terminals currently assigned to this project.
+        </span>
+    </div>
     @endif
 
-    {{-- Upload Area --}}
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-3">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+    {{-- Upload zone --}}
+    <div class="border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:border-[#1a3a5c]/30 hover:bg-[#1a3a5c]/[0.02] transition-colors p-5">
+        <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5 items-center">
+
+            {{-- File input side --}}
             <div>
-                <label class="ui-label">Upload Terminal List (CSV/Excel)</label>
+                <label class="ui-label">File <span class="text-gray-400 font-normal">(CSV, Excel, TXT)</span></label>
                 <div class="flex gap-2">
                     <input type="file"
                            id="terminal_file"
@@ -30,53 +48,52 @@
                            onchange="handleTerminalFileSelect(this)">
                     <button type="button"
                             id="previewTerminalsBtn"
-                            class="btn-secondary"
+                            class="btn-primary"
                             onclick="previewTerminalUpload()"
                             disabled>
-                        <i class="fas fa-eye mr-1"></i> Preview
+                        Preview
                     </button>
                 </div>
-                <p class="text-xs text-gray-500 mt-1.5">
-                    Upload CSV/Excel with <code class="bg-gray-200 px-1 rounded text-xs">terminal_id</code> column.
-                    <a href="{{ route('projects.terminals.download-template') }}" class="text-[#1a3a5c] no-underline hover:underline ml-1">
-                        <i class="fas fa-download"></i> Download Template
+                <p class="text-xs text-gray-400 mt-2">
+                    File must contain a <code class="bg-gray-200 px-1 rounded text-[11px]">terminal_id</code> column.
+                    <a href="{{ route('projects.terminals.download-template') }}" class="text-[#1a3a5c] hover:underline ml-1 no-underline">
+                        ↓ Download Template
                     </a>
                 </p>
             </div>
-            <div class="bg-white border border-gray-200 rounded-lg px-4 py-3">
-                <p class="text-xs font-semibold text-gray-600 mb-2">Options:</p>
-                <label class="flex items-center gap-2 text-sm text-gray-700 mb-1.5 cursor-pointer">
-                    <input type="checkbox" id="skip_duplicates" class="w-4 h-4 accent-[#1a3a5c]" checked>
-                    Skip already assigned
+
+            {{-- Options side --}}
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 min-w-[190px]">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Options</p>
+                <label class="flex items-center gap-2.5 text-sm text-gray-700 mb-3 cursor-pointer select-none">
+                    <input type="checkbox" id="skip_duplicates" class="w-4 h-4 rounded accent-[#1a3a5c]" checked>
+                    <span>Skip already assigned</span>
                 </label>
-                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" id="create_missing" class="w-4 h-4 accent-[#1a3a5c]">
-                    Create missing terminals
+                <label class="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer select-none">
+                    <input type="checkbox" id="create_missing" class="w-4 h-4 rounded accent-[#1a3a5c]">
+                    <span>Create missing terminals</span>
                 </label>
             </div>
         </div>
     </div>
 
     {{-- Upload Progress --}}
-    <div id="uploadProgress" class="mb-3" style="display: none;">
-        <div class="w-full bg-gray-100 rounded-full h-5 overflow-hidden">
-            <div class="bg-[#1a3a5c] h-5 rounded-full transition-all flex items-center justify-center text-xs text-white"
-                 style="width: 0%"
-                 id="uploadProgressBar">
-                <span id="uploadProgressText">Uploading...</span>
-            </div>
+    <div id="uploadProgress" class="mt-3" style="display: none;">
+        <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+            <div class="bg-[#1a3a5c] h-2 rounded-full transition-all" style="width: 0%" id="uploadProgressBar"></div>
         </div>
+        <p class="text-xs text-gray-500 mt-1" id="uploadProgressText">Uploading...</p>
     </div>
 
-    {{-- Upload Results Summary (shown after preview confirmation) --}}
-    <div id="terminalUploadSummary" style="display: none;">
+    {{-- Upload Results Summary --}}
+    <div id="terminalUploadSummary" class="mt-3" style="display: none;">
         <div class="flash-success">
-            <i class="fas fa-check-circle"></i>
+            <span>✅</span>
             <span id="terminalUploadSummaryText"></span>
         </div>
     </div>
 
-    {{-- Hidden fields to store terminal data for form submission --}}
+    {{-- Hidden fields --}}
     <input type="hidden" name="uploaded_terminal_ids" id="uploaded_terminal_ids" value="">
     <input type="hidden" name="missing_terminals_data" id="missing_terminals_data" value="">
     <input type="hidden" name="terminal_inclusion_reason" id="terminal_inclusion_reason" value="Bulk Upload">
