@@ -816,6 +816,8 @@
 
     display: none;
 
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+
 }
 
 
@@ -1110,7 +1112,9 @@
 
 .deployment-setup-card {
     margin-block-end: 20px;
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
+    z-index: 20;
 }
 
 .deployment-card-header {
@@ -1141,6 +1145,7 @@
     gap: 20px;
     align-items: end;
     padding: 24px;
+    overflow: visible;
 }
 
 .deployment-field-label {

@@ -1,14 +1,430 @@
 @extends('layouts.app')
 @section('title', 'System Dashboard')
 
+@push('styles')
+<style>
+    .reports-dashboard {
+        display: grid;
+        gap: 24px;
+    }
+
+    .reports-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .reports-kicker {
+        margin: 0 0 6px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #1a3a5c;
+    }
+
+    .reports-title {
+        margin: 0;
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #111827;
+        line-height: 1.1;
+    }
+
+    .reports-subtitle {
+        margin: 8px 0 0;
+        color: #6b7280;
+        font-size: 15px;
+        max-width: 720px;
+    }
+
+    .reports-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .reports-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .reports-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .reports-meta-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .reports-health-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+        gap: 30px;
+        align-items: center;
+    }
+
+    .health-ring {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+    }
+
+    .health-ring canvas {
+        width: 150px !important;
+        height: 150px !important;
+    }
+
+    .health-score-copy {
+        position: absolute;
+        inset: 50% auto auto 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .health-metrics,
+    .project-metrics,
+    .coverage-grid,
+    .stat-grid,
+    .utilization-stats,
+    .kpi-grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .kpi-grid,
+    .coverage-grid,
+    .utilization-stats,
+    .stat-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .health-item,
+    .workload-item,
+    .productivity-item,
+    .region-item {
+        display: grid;
+        grid-template-columns: minmax(110px, 160px) minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .health-label,
+    .tech-name,
+    .region-name,
+    .asset-name,
+    .client-name {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .health-bar,
+    .workload-bar,
+    .productivity-bar,
+    .health-score-bar {
+        height: 10px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        overflow: hidden;
+    }
+
+    .health-progress,
+    .workload-fill,
+    .progress-fill,
+    .score-fill {
+        height: 100%;
+        border-radius: inherit;
+    }
+
+    .health-value,
+    .assignment-count,
+    .score-value,
+    .request-count,
+    .terminal-count,
+    .active-count,
+    .kpi-change,
+    .coverage-label,
+    .stat-title,
+    .stat-label {
+        color: #6b7280;
+    }
+
+    .tab-navigation {
+        display: flex;
+        gap: 8px;
+        padding-bottom: 12px;
+        overflow-x: auto;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .tab-button {
+        border: 0;
+        background: transparent;
+        color: #6b7280;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .tab-button:hover {
+        background: #f3f4f6;
+        color: #1f2937;
+    }
+
+    .tab-button.active {
+        background: rgba(26, 58, 92, 0.08);
+        color: #1a3a5c;
+    }
+
+    .tab-content {
+        display: none;
+        padding-top: 24px;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .section-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .section-toolbar h3,
+    .tab-content h3 {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .section-intro {
+        margin: -8px 0 20px;
+        color: #64748b;
+        font-size: 14px;
+        max-width: 760px;
+    }
+
+    .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+    }
+
+    .chart-container,
+    .service-alerts,
+    .productivity-metrics,
+    .employee-stats,
+    .project-alerts,
+    .regional-health,
+    .coverage-stats,
+    .alert-box,
+    .recommendation-box {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    }
+
+    .chart-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 360px;
+    }
+
+    .chart-container h4,
+    .service-alerts h4,
+    .productivity-metrics h4,
+    .employee-stats h4,
+    .project-alerts h4,
+    .regional-health h4,
+    .coverage-stats h4,
+    .alert-box h4,
+    .recommendation-box h4 {
+        margin: 0 0 16px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .chart-container canvas {
+        width: 100% !important;
+        height: 280px !important;
+        max-height: 280px;
+        margin-top: auto;
+    }
+
+    .client-list,
+    .requested-assets,
+    .workload-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .client-item,
+    .asset-request-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .client-item:last-child,
+    .asset-request-item:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+    }
+
+    .client-info,
+    .client-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .client-status {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-prospect { background: #fef3c7; color: #92400e; }
+    .status-inactive { background: #e5e7eb; color: #4b5563; }
+    .status-lost { background: #fee2e2; color: #991b1b; }
+
+    .alert-item,
+    .metric-box,
+    .coverage-item,
+    .kpi-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 16px;
+        background: #f8fafc;
+    }
+
+    .alert-item {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+    }
+
+    .alert-icon {
+        font-size: 22px;
+        line-height: 1;
+    }
+
+    .alert-title,
+    .metric-value,
+    .coverage-number,
+    .kpi-value,
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        line-height: 1.1;
+    }
+
+    .alert-desc,
+    .metric-info,
+    .coverage-label,
+    .kpi-label,
+    .stat-title {
+        font-size: 13px;
+    }
+
+    .metric-box.success { background: #ecfdf5; border-color: #bbf7d0; }
+    .metric-box.warning { background: #fff7ed; border-color: #fed7aa; }
+    .metric-box.danger { background: #fef2f2; border-color: #fecaca; }
+    .alert-item.urgent { background: #fef2f2; border-color: #fecaca; }
+    .alert-item.warning { background: #fff7ed; border-color: #fed7aa; }
+
+    .recommendation-box ul {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 10px;
+        color: #475569;
+    }
+
+    .positive { color: #15803d; }
+    .negative { color: #b91c1c; }
+
+    @media (max-width: 900px) {
+        .reports-header,
+        .section-toolbar,
+        .health-item,
+        .workload-item,
+        .productivity-item,
+        .region-item,
+        .client-item,
+        .asset-request-item {
+            grid-template-columns: 1fr;
+            display: grid;
+        }
+
+        .reports-actions {
+            justify-content: flex-start;
+        }
+
+        .reports-health-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-container {
+            min-height: 320px;
+        }
+
+        .chart-container canvas {
+            height: 240px !important;
+            max-height: 240px;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
-<div>
+<div class="reports-dashboard">
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div class="reports-header">
         <div>
-            <p style="margin: 8px 0 0 0; color: #666; font-size: 16px;">Comprehensive system performance and analytics</p>
+            <p class="reports-kicker">System Analytics</p>
+            <h1 class="reports-title">System Dashboard</h1>
+            <p class="reports-subtitle">Comprehensive system performance, operational health, and cross-team analytics in one place.</p>
         </div>
-        <div style="display: flex; gap: 12px;">
+        <div class="reports-actions">
             <button onclick="exportFullReport()" class="btn-primary">
                 📊 Export Full Report
             </button>
@@ -18,8 +434,15 @@
         </div>
     </div>
 
+    <div class="reports-meta">
+        <div class="reports-meta-chip">Generated {{ $generatedAt->format('M d, Y \a\t h:i A') }}</div>
+        <div class="reports-meta-chip">Health score {{ $systemOverview['system_health_score'] }}%</div>
+        <div class="reports-meta-chip">{{ $systemOverview['open_tickets'] }} open support tickets</div>
+        <div class="reports-meta-chip">{{ $assetData['low_stock_alerts'] }} low stock alerts</div>
+    </div>
+
     <!-- Key Metrics Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div class="reports-metrics-grid">
         <div class="stat-card">
             <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #1976D2; font-size: 24px;">🏢</span>
@@ -90,11 +513,11 @@
     <!-- System Health Score -->
     <div class="ui-card p-6">
         <h3 style="margin: 0 0 20px 0; color: #333; font-size: 20px; font-weight: 600;">System Health Overview</h3>
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+        <div class="reports-health-grid">
             <div style="text-align: center;">
-                <div style="position: relative; width: 150px; height: 150px; margin: 0 auto;">
+                <div class="health-ring">
                     <canvas id="healthScoreChart" width="150" height="150"></canvas>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                    <div class="health-score-copy">
                         <div style="font-size: 32px; font-weight: bold; color: #1976D2;">{{ $systemOverview['system_health_score'] }}%</div>
                         <div style="font-size: 12px; color: #666;">HEALTH SCORE</div>
                     </div>
@@ -145,8 +568,9 @@
         <!-- Tab Content -->
         <div id="overview" class="tab-content active">
             <h3>System Overview & Key Metrics</h3>
+            <p class="section-intro">Start here for the fastest read on platform health, field activity, and the most important operational signals driving the rest of the dashboard.</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin: 24px 0;">
+            <div class="chart-grid" style="margin: 24px 0;">
                 <div class="chart-container">
                     <h4>Monthly Visit Trends</h4>
                     <canvas id="visitTrendsChart"></canvas>
@@ -197,12 +621,13 @@
         </div>
 
         <div id="clients" class="tab-content">
-            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px;">
+            <div class="section-toolbar">
                 <h3>Client Analytics & Performance</h3>
-                <button onclick="exportSection('clients')" class="btn-sm">Export Client Data</button>
+                <button onclick="exportSection('clients')" class="btn-secondary btn-sm">Export Client Data</button>
             </div>
+            <p class="section-intro">Review client mix, concentration, and account activity to spot where terminal footprint and service demand are growing fastest.</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+            <div class="chart-grid">
                 <div class="chart-container">
                     <h4>Client Distribution by Status</h4>
                     <canvas id="clientStatusChart"></canvas>
@@ -236,12 +661,13 @@
         </div>
 
         <div id="terminals" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="section-toolbar">
                 <h3>Terminal Management & Health</h3>
-                <button onclick="exportSection('terminals')" class="btn-sm">Export Terminal Data</button>
+                <button onclick="exportSection('terminals')" class="btn-secondary btn-sm">Export Terminal Data</button>
             </div>
+            <p class="section-intro">Use this section to track fleet health, deployment spread, and the terminals most likely to need service before they affect uptime.</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+            <div class="chart-grid">
                 <div class="chart-container">
                     <h4>Terminal Status Distribution</h4>
                     <canvas id="terminalStatusChart"></canvas>
@@ -281,12 +707,13 @@
         </div>
 
         <div id="service" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="section-toolbar">
                 <h3>Service Activity & Performance</h3>
-                <button onclick="exportSection('service')" class="btn-sm">Export Service Data</button>
+                <button onclick="exportSection('service')" class="btn-secondary btn-sm">Export Service Data</button>
             </div>
+            <p class="section-intro">This view ties technician output, ticket load, and job status together so support pressure is easier to assess at a glance.</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+            <div class="chart-grid">
                 <div class="chart-container">
                     <h4>Visits by Technician (Last 30 Days)</h4>
                     <canvas id="technicianVisitsChart"></canvas>
@@ -318,12 +745,13 @@
         </div>
 
         <div id="assets" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="section-toolbar">
                 <h3>Asset Management & Utilization</h3>
-                <button onclick="exportSection('assets')" class="btn-sm">Export Asset Data</button>
+                <button onclick="exportSection('assets')" class="btn-secondary btn-sm">Export Asset Data</button>
             </div>
+            <p class="section-intro">Check stock pressure, assignment utilization, and the items driving the most operational demand across the business.</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+            <div class="chart-grid">
                 <div class="chart-container">
                     <h4>Assets by Category</h4>
                     <canvas id="assetCategoryChart"></canvas>
@@ -374,12 +802,13 @@
         </div>
 
         <div id="employees" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="section-toolbar">
                 <h3>Employee Performance & Analytics</h3>
-                <button onclick="exportSection('employees')" class="btn-sm">Export Employee Data</button>
+                <button onclick="exportSection('employees')" class="btn-secondary btn-sm">Export Employee Data</button>
             </div>
+            <p class="section-intro">Review team composition, technician workload, and resource distribution to see where capacity is tight or underused.</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+            <div class="chart-grid">
                 <div class="chart-container">
                     <h4>Employees by Department</h4>
                     <canvas id="employeeDeptChart"></canvas>
@@ -426,12 +855,13 @@
         </div>
 
         <div id="projects" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="section-toolbar">
                 <h3>Project Management & Progress</h3>
-                <button onclick="exportSection('projects')" class="btn-sm">Export Project Data</button>
+                <button onclick="exportSection('projects')" class="btn-secondary btn-sm">Export Project Data</button>
             </div>
+            <p class="section-intro">This section focuses on delivery health, active project mix, and deadline risk so execution issues stand out earlier.</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+            <div class="chart-grid">
                 <div class="chart-container">
                     <h4>Projects by Status</h4>
                     <canvas id="projectStatusChart"></canvas>
@@ -478,12 +908,13 @@
         </div>
 
         <div id="regional" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="section-toolbar">
                 <h3>Regional Analysis & Coverage</h3>
-                <button onclick="exportSection('regional')" class="btn-sm">Export Regional Data</button>
+                <button onclick="exportSection('regional')" class="btn-secondary btn-sm">Export Regional Data</button>
             </div>
+            <p class="section-intro">Compare geographic load, service intensity, and coverage depth to understand where regional support balance is strongest or weakest.</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+            <div class="chart-grid">
                 <div class="chart-container">
                     <h4>Terminal Distribution by Region</h4>
                     <canvas id="regionalTerminalsChart"></canvas>
