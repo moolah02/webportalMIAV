@@ -23,7 +23,7 @@ File: resources/views/roles/show.blade.php
             <p style="color: #666; margin: 5px 0 0 0;">Role details and assigned employees</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="{{ route('roles.edit', $role) }}" class="btn btn-primary">✏️ Edit Role</a>
+            <a href="{{ route('roles.edit', $role) }}" class="btn-primary">✏️ Edit Role</a>
             <a href="{{ route('roles.index') }}" class="btn">← Back to Roles</a>
         </div>
     </div>
@@ -171,7 +171,7 @@ File: resources/views/roles/show.blade.php
                 <h4 style="margin-block-end: 15px; color: #333;">⚡ Quick Actions</h4>
                 
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="{{ route('roles.edit', $role) }}" class="btn btn-primary" style="inline-size: 100%; text-align: center;">
+                    <a href="{{ route('roles.edit', $role) }}" class="btn-primary" style="inline-size: 100%; text-align: center;">
                         ✏️ Edit Role
                     </a>
                     

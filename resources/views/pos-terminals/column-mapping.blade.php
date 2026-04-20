@@ -9,7 +9,7 @@
             <p class="page-description">Create and manage CSV column mappings for different bank formats</p>
         </div>
         <div class="header-actions">
-            <a href="{{ route('pos-terminals.index') }}" class="btn btn-outline">
+            <a href="{{ route('pos-terminals.index') }}" class="btn-secondary">
                 ← Back to Terminals
             </a>
         </div>
@@ -38,7 +38,7 @@
 
             <!-- Basic Information -->
             <div class="form-row">
-                <div class="form-group">
+                <div class="mb-4">
                     <label for="mapping_name" class="form-label">Mapping Name *</label>
                     <input type="text"
                            name="mapping_name"
@@ -51,9 +51,9 @@
                     @enderror
                 </div>
 
-                <div class="form-group">
+                <div class="mb-4">
                     <label for="client_id" class="form-label">Associated Client (Optional)</label>
-                    <select name="client_id" id="client_id" class="form-select">
+                    <select name="client_id" id="client_id" class="ui-select">
                         <option value="">General Mapping (All Clients)</option>
                         @foreach($clients as $client)
                             <option value="{{ $client->id }}">{{ $client->company_name }}</option>
@@ -62,7 +62,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="mb-4">
                 <label for="description" class="form-label">Description</label>
                 <textarea name="description"
                           id="description"
@@ -298,7 +298,7 @@
                         <div class="field-mappings" id="customFieldsContainer">
                             <!-- Dynamic custom field inputs will be added here -->
                         </div>
-                        <button type="button" class="btn btn-outline btn-small" onclick="addCustomField()">
+                        <button type="button" class="btn-secondary btn-small" onclick="addCustomField()">
                             + Add Custom Field
                         </button>
                     </div>
@@ -307,9 +307,9 @@
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <button type="button" class="btn btn-outline" onclick="resetMappingForm()">Reset Form</button>
-                <button type="button" class="btn btn-outline" onclick="loadDefaultMapping()">Load Default Values</button>
-                <button type="submit" class="btn btn-primary">
+                <button type="button" class="btn-secondary" onclick="resetMappingForm()">Reset Form</button>
+                <button type="button" class="btn-secondary" onclick="loadDefaultMapping()">Load Default Values</button>
+                <button type="submit" class="btn-primary">
                     <span class="btn-icon">💾</span>
                     Save Column Mapping
                 </button>

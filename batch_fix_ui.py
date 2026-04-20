@@ -1,4 +1,17 @@
-@extends('layouts.app')
+"""
+Batch fix for Bootstrap → design-system class replacements.
+Handles:
+  - profile/profile.blade.php (full rewrite)
+  - Targeted replacements across all Bootstrap pages
+"""
+import os, re, glob
+
+BASE = r'c:\xampp4\htdocs\dashboard\Revival_Technologies\resources\views'
+
+# ============================================================
+# FULL REWRITE: profile/profile.blade.php
+# ============================================================
+PROFILE_PROFILE = r"""@extends('layouts.app')
 @section('title', 'My Profile')
 
 @section('header-actions')
@@ -207,3 +220,139 @@
 </div>
 
 @endsection
+"""
+
+def write_file(rel, content):
+    path = os.path.join(BASE, rel)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(content.lstrip('\n'))
+    print(f'Written: {rel}')
+
+write_file(r'profile\profile.blade.php', PROFILE_PROFILE)
+
+# ============================================================
+# TARGETED REPLACEMENTS: Bootstrap → Design System
+# ============================================================
+
+# Patterns applied inside class="" attributes only
+class_patterns = [
+    # Cards — order matters (specific first)
+    (r'\bcard-header\b', 'ui-card-header'),
+    (r'\bcard-body\b',   'ui-card-body'),
+    (r'(?<!["\'\w-])card\b', 'ui-card'),   # standalone 'card' not preceded by word chars
+    # Buttons — most specific first
+    (r'btn btn-outline-primary\b',    'btn-secondary'),
+    (r'btn btn-outline-secondary\b',  'btn-secondary'),
+    (r'btn btn-outline-danger\b',     'btn-danger'),
+    (r'btn btn-outline-success\b',    'btn-success'),
+    (r'btn btn-outline\b',            'btn-secondary'),
+    (r'btn btn-primary\b',            'btn-primary'),
+    (r'btn btn-secondary\b',          'btn-secondary'),
+    (r'btn btn-danger\b',             'btn-danger'),
+    (r'btn btn-success\b',            'btn-success'),
+    (r'btn btn-warning\b',            'btn-secondary'),
+    (r'btn btn-info\b',               'btn-secondary'),
+    (r'btn btn-dark\b',               'btn-primary'),
+    (r'btn btn-light\b',              'btn-secondary'),
+    (r'btn btn-back\b',               'btn-secondary'),
+    # Form fields
+    (r'\bform-control\b',   'ui-input'),
+    (r'\bform-select\b',    'ui-select'),
+    (r'\bform-group\b',     'mb-4'),
+    # Layout (safe to simplify)
+    (r'\bcontainer-fluid\b', ''),
+]
+
+# Remove body{} style override (inside style blocks only)
+BODY_OVERRIDE_RE = re.compile(
+    r'(body\s*\{[^}]*\})',
+    re.DOTALL
+)
+
+TARGET_FILES = [
+    r'deployment\site-visit.blade.php',
+    r'projects\closure-wizard.blade.php',
+    r'projects\completion-wizard.blade.php',
+    r'projects\closure-reports.blade.php',
+    r'projects\completion-reports.blade.php',
+    r'projects\completion-success.blade.php',
+    r'projects\create-improved.blade.php',
+    r'pos-terminals\import.blade.php',
+    r'pos-terminals\column-mapping.blade.php',
+    r'pos-terminals\show.blade.php',
+    r'roles\show.blade.php',
+    r'settings\asset-category-fields\index.blade.php',
+    r'settings\manage-category.blade.php',
+    r'settings\manage-role.blade.php',
+    r'settings\index.blade.php',
+    r'reports\history.blade.php',
+    r'reports\system-dashboard.blade.php',
+    r'reports\index.blade.php',
+    r'asset-requests\catalog.blade.php',
+    r'asset-requests\index.blade.php',
+    r'visits\index.blade.php',
+    r'reports\technician-visits.blade.php',
+    r'client-dashboards\index.blade.php',
+    r'assets\partials\assets-tab.blade.php',
+    r'assets\partials\assets-table.blade.php',
+    r'assets\partials\assign-tab.blade.php',
+    r'assets\partials\assignments-tab.blade.php',
+    r'assets\partials\existing-modals.blade.php',
+    r'assets\partials\history-tab.blade.php',
+    r'assets\modals\assign-asset.blade.php',
+    r'assets\modals\return-asset.blade.php',
+    r'assets\modals\transfer-asset.blade.php',
+    r'projects\partials\active-projects-tab.blade.php',
+    r'projects\partials\completed-projects-tab.blade.php',
+    r'projects\partials\terminal-list-modal.blade.php',
+    r'projects\partials\terminal-preview-modal.blade.php',
+    r'projects\partials\terminal-upload-section.blade.php',
+    r'projects\partials\manual-report-generator.blade.php',
+    r'projects\partials\report-generation-tab.blade.php',
+]
+
+def apply_class_patches(txt):
+    # Apply inside class attribute values only (between quotes after class=)
+    def patch_class_value(m):
+        val = m.group(1)
+        for pat, repl in class_patterns:
+            val = re.sub(pat, repl, val)
+        # Clean up multiple spaces
+        val = re.sub(r'  +', ' ', val).strip()
+        return f'class="{val}"'
+
+    txt = re.sub(r'class="([^"]*)"', patch_class_value, txt)
+    # Same for class='...'
+    def patch_class_value_sq(m):
+        val = m.group(1)
+        for pat, repl in class_patterns:
+            val = re.sub(pat, repl, val)
+        val = re.sub(r'  +', ' ', val).strip()
+        return f"class='{val}'"
+    txt = re.sub(r"class='([^']*)'", patch_class_value_sq, txt)
+    return txt
+
+changed = 0
+for rel in TARGET_FILES:
+    path = os.path.join(BASE, rel)
+    if not os.path.exists(path):
+        print(f'SKIP (not found): {rel}')
+        continue
+    try:
+        original = open(path, encoding='utf-8').read()
+    except Exception as e:
+        print(f'ERROR reading {rel}: {e}')
+        continue
+
+    patched = apply_class_patches(original)
+
+    if patched != original:
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(patched)
+        changed += 1
+        print(f'Patched: {rel}')
+    else:
+        print(f'No changes: {rel}')
+
+print(f'\nDone. {changed} file(s) updated.')

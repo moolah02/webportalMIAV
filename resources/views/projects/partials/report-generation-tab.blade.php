@@ -9,12 +9,12 @@
 <div class="row g-4">
     @if($completedProjects->count() > 0)
         @foreach($completedProjects as $project)
-        <div class="col-lg-6 col-xl-4">
-            <div class="card h-100 report-card border-0 shadow-sm">
-                <div class="card-header bg-gradient-primary text-white">
+        <div>
+            <div class="ui-card h-100 report-card border-0 shadow-sm">
+                <div class="ui-card-header bg-gradient-primary text-white">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6 class="card-title mb-1 text-white">{{ $project->project_name }}</h6>
+                            <h6 class="ui-card-title mb-1 text-white">{{ $project->project_name }}</h6>
                             <small class="text-white-50">{{ $project->project_code }}</small>
                         </div>
                         <span class="badge bg-white text-primary">
@@ -23,7 +23,7 @@
                     </div>
                 </div>
 
-                <div class="card-body p-4">
+                <div class="ui-card-body p-4">
                     <div class="project-info mb-4">
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-building text-primary me-2"></i>
@@ -66,7 +66,7 @@
 
                     <!-- Action Buttons -->
                     <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-primary generate-report-btn"
+                        <button type="button" class="btn-primary generate-report-btn"
                                 data-project-id="{{ $project->id }}"
                                 data-project-name="{{ $project->project_name }}"
                                 data-client-name="{{ $project->client->company_name }}">
@@ -77,15 +77,15 @@
                         @if($project->report_path)
                             <div class="btn-group">
                                 <a href="{{ route('projects.download-report', $project) }}"
-                                   class="btn btn-outline-success btn-sm">
+                                   class="btn-success btn-sm">
                                     <i class="fas fa-download me-1"></i>Download
                                 </a>
-                                <button type="button" class="btn btn-outline-info btn-sm email-report-btn"
+                                <button type="button" class="btn-secondary-info btn-sm email-report-btn"
                                         data-project-id="{{ $project->id }}"
                                         data-client-email="{{ $project->client->email ?? '' }}">
                                     <i class="fas fa-envelope me-1"></i>Email
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm preview-report-btn"
+                                <button type="button" class="btn-secondary btn-sm preview-report-btn"
                                         data-project-id="{{ $project->id }}"
                                         data-project="{{ json_encode($project) }}"
                                         data-completion="{{ isset($project->completion) ? json_encode($project->completion) : '{}' }}">
@@ -99,7 +99,7 @@
         </div>
         @endforeach
     @else
-        <div class="col-12">
+        <div>
             <div class="text-center py-5">
                 <div class="empty-state">
                     <i class="fas fa-file-pdf text-muted mb-3" style="font-size: 4rem; opacity: 0.3;"></i>
@@ -136,7 +136,7 @@
                     </div>
 
                     <div class="row g-4">
-                        <div class="col-md-8">
+                        <div>
                             <h6 class="fw-semibold mb-3">Report Types</h6>
                             <div class="report-types">
                                 <div class="form-check mb-3 p-3 border rounded">
@@ -164,17 +164,17 @@
 
                             <div class="mt-4">
                                 <label for="report_notes" class="form-label fw-semibold">Additional Report Notes</label>
-                                <textarea class="form-control" id="report_notes" name="report_notes" rows="3"
+                                <textarea class="ui-input" id="report_notes" name="report_notes" rows="3"
                                           placeholder="Add any specific instructions or additional information for the reports..."></textarea>
                             </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <div class="card bg-light border-0">
-                                <div class="card-header bg-transparent">
+                        <div>
+                            <div class="ui-card bg-light border-0">
+                                <div class="ui-card-header bg-transparent">
                                     <h6 class="mb-0 fw-semibold">Report Options</h6>
                                 </div>
-                                <div class="card-body">
+                                <div class="ui-card-body">
                                     <div class="form-check mb-2">
                                         <input class="form-check-input" type="checkbox" id="include_charts" name="include_charts" checked>
                                         <label class="form-check-label" for="include_charts">
@@ -214,8 +214,8 @@
                 </div>
 
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-primary">
                         <i class="fas fa-cog me-2"></i>Generate Reports
                     </button>
                 </div>
@@ -240,18 +240,18 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="recipient_email" class="form-label">Recipient Email</label>
-                        <input type="email" class="form-control" id="recipient_email" name="recipient_email" required>
+                        <input type="email" class="ui-input" id="recipient_email" name="recipient_email" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="email_subject" class="form-label">Subject</label>
-                        <input type="text" class="form-control" id="email_subject" name="email_subject"
+                        <input type="text" class="ui-input" id="email_subject" name="email_subject"
                                value="Project Completion Report - [PROJECT_NAME]" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="email_message" class="form-label">Message</label>
-                        <textarea class="form-control" id="email_message" name="email_message" rows="4" required>Dear Client,
+                        <textarea class="ui-input" id="email_message" name="email_message" rows="4" required>Dear Client,
 
 Please find attached the completion report for your recent project. The report contains a comprehensive overview of all work completed, findings, and recommendations.
 
@@ -263,8 +263,8 @@ Best regards,
                 </div>
 
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">
+                    <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-success">
                         <i class="fas fa-paper-plane me-2"></i>Send Email
                     </button>
                 </div>

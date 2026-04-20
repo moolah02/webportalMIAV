@@ -4,18 +4,18 @@
 @section('title', 'Complete Project - ' . $project->project_name)
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="py-4">
     {{-- Page Header --}}
         <i class="fas fa-flag-checkered"></i>
         Project Completion Wizard - {{ $project->project_name }}
     </h2>
 
     {{-- Progress Steps --}}
-    <div class="card mb-4">
-        <div class="card-header">
-            <h6 class="card-title">Completion Progress</h6>
+    <div class="ui-card mb-4">
+        <div class="ui-card-header">
+            <h6 class="ui-card-title">Completion Progress</h6>
         </div>
-        <div class="card-body">
+        <div class="ui-card-body">
             <div class="progress-steps">
                 <div class="step-item active" data-step="1">
                     <div class="step-circle">1</div>
@@ -93,14 +93,14 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {{-- Regional Breakdown --}}
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title">Geographic Distribution</h6>
+                <div>
+                    <div class="ui-card">
+                        <div class="ui-card-header">
+                            <h6 class="ui-card-title">Geographic Distribution</h6>
                         </div>
-                        <div class="card-body">
+                        <div class="ui-card-body">
                             @if(isset($progressData['regional_performance']) && $progressData['regional_performance']->count() > 0)
                                 @php $totalTerminals = $progressData['regional_performance']->sum('total_terminals'); @endphp
                                 @foreach($progressData['regional_performance']->take(3) as $region)
@@ -120,12 +120,12 @@
                 </div>
 
                 {{-- Completion Requirements --}}
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title">Completion Requirements</h6>
+                <div>
+                    <div class="ui-card">
+                        <div class="ui-card-header">
+                            <h6 class="ui-card-title">Completion Requirements</h6>
                         </div>
-                        <div class="card-body">
+                        <div class="ui-card-body">
                             <div class="requirement-item">
                                 <input class="form-check-input" type="checkbox" id="check1"
                                        {{ ($progressData['total_terminals'] ?? 0) > 0 ? 'checked' : '' }}>
@@ -173,44 +173,44 @@
 
         {{-- Step 2: Project Summary --}}
         <div class="wizard-step" id="step2">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title">Project Summary & Analysis</h6>
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h6 class="ui-card-title">Project Summary & Analysis</h6>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-group">
+                <div class="ui-card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <div class="mb-4">
                                 <label for="executive_summary" class="form-label">Executive Summary</label>
-                                <textarea class="form-control" id="executive_summary" name="executive_summary" rows="4"
+                                <textarea class="ui-input" id="executive_summary" name="executive_summary" rows="4"
                                           placeholder="Provide a high-level summary of project objectives, outcomes, and key achievements..."></textarea>
                             </div>
 
-                            <div class="form-group">
+                            <div class="mb-4">
                                 <label for="key_achievements" class="form-label">Key Achievements</label>
-                                <textarea class="form-control" id="key_achievements" name="key_achievements" rows="3"
+                                <textarea class="ui-input" id="key_achievements" name="key_achievements" rows="3"
                                           placeholder="List the major accomplishments and milestones reached during this project..."></textarea>
                             </div>
 
-                            <div class="form-group">
+                            <div class="mb-4">
                                 <label for="challenges_overcome" class="form-label">Challenges & Solutions</label>
-                                <textarea class="form-control" id="challenges_overcome" name="challenges_overcome" rows="3"
+                                <textarea class="ui-input" id="challenges_overcome" name="challenges_overcome" rows="3"
                                           placeholder="Describe any significant challenges encountered and how they were resolved..."></textarea>
                             </div>
 
-                            <div class="form-group">
+                            <div class="mb-4">
                                 <label for="lessons_learned" class="form-label">Lessons Learned</label>
-                                <textarea class="form-control" id="lessons_learned" name="lessons_learned" rows="3"
+                                <textarea class="ui-input" id="lessons_learned" name="lessons_learned" rows="3"
                                           placeholder="What insights or lessons can be applied to future projects?"></textarea>
                             </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="card-title">Performance Metrics</h6>
+                        <div>
+                            <div class="ui-card">
+                                <div class="ui-card-header">
+                                    <h6 class="ui-card-title">Performance Metrics</h6>
                                 </div>
-                                <div class="card-body">
+                                <div class="ui-card-body">
                                     <div class="metric-item">
                                         <span class="metric-label">Schedule Performance</span>
                                         <span class="badge badge-status-completed">{{ $project->end_date && $project->end_date->isFuture() ? '100%' : '95%' }}</span>
@@ -221,9 +221,9 @@
                                         <span class="badge badge-priority-normal">{{ $project->budget ? '87%' : 'N/A' }}</span>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="mb-4">
                                         <label class="form-label">Quality Score</label>
-                                        <select class="form-control" name="quality_score">
+                                        <select class="ui-input" name="quality_score">
                                             <option value="5">Excellent (5/5)</option>
                                             <option value="4" selected>Good (4/5)</option>
                                             <option value="3">Average (3/5)</option>
@@ -232,9 +232,9 @@
                                         </select>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="mb-4">
                                         <label class="form-label">Client Satisfaction</label>
-                                        <select class="form-control" name="client_satisfaction">
+                                        <select class="ui-input" name="client_satisfaction">
                                             <option value="5">Very Satisfied</option>
                                             <option value="4" selected>Satisfied</option>
                                             <option value="3">Neutral</option>
@@ -252,14 +252,14 @@
 
         {{-- Step 3: Detailed Analytics --}}
         <div class="wizard-step" id="step3">
-            <div class="row">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {{-- Regional Performance Analysis --}}
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title">Regional Performance Analysis</h6>
+                <div>
+                    <div class="ui-card">
+                        <div class="ui-card-header">
+                            <h6 class="ui-card-title">Regional Performance Analysis</h6>
                         </div>
-                        <div class="card-body">
+                        <div class="ui-card-body">
                             <div class="table-responsive">
                                 <table class="data-table">
                                     <thead>
@@ -299,12 +299,12 @@
                 </div>
 
                 {{-- Team Performance --}}
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title">Team Performance Metrics</h6>
+                <div>
+                    <div class="ui-card">
+                        <div class="ui-card-header">
+                            <h6 class="ui-card-title">Team Performance Metrics</h6>
                         </div>
-                        <div class="card-body">
+                        <div class="ui-card-body">
                             @if(isset($progressData['team_metrics']))
                             <div class="metric-item">
                                 <span class="metric-label">Total Assignments</span>
@@ -340,19 +340,19 @@
             </div>
 
             {{-- Issues & Resolutions --}}
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h6 class="card-title">Issues Identified & Resolution Status</h6>
+            <div class="ui-card mt-4">
+                <div class="ui-card-header">
+                    <h6 class="ui-card-title">Issues Identified & Resolution Status</h6>
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
+                <div class="ui-card-body">
+                    <div class="mb-4">
                         <label for="issues_found" class="form-label">Technical Issues Discovered</label>
-                        <textarea class="form-control" id="issues_found" name="issues_found" rows="2"
+                        <textarea class="ui-input" id="issues_found" name="issues_found" rows="2"
                                   placeholder="Summarize any technical issues found during terminal visits..."></textarea>
                     </div>
-                    <div class="form-group">
+                    <div class="mb-4">
                         <label for="recommendations" class="form-label">Recommendations for Client</label>
-                        <textarea class="form-control" id="recommendations" name="recommendations" rows="2"
+                        <textarea class="ui-input" id="recommendations" name="recommendations" rows="2"
                                   placeholder="Provide recommendations for terminal maintenance, upgrades, or operational improvements..."></textarea>
                     </div>
                 </div>
@@ -361,14 +361,14 @@
 
         {{-- Step 4: Report Generation --}}
         <div class="wizard-step" id="step4">
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title">Report Configuration</h6>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <div class="ui-card">
+                        <div class="ui-card-header">
+                            <h6 class="ui-card-title">Report Configuration</h6>
                         </div>
-                        <div class="card-body">
-                            <div class="form-group">
+                        <div class="ui-card-body">
+                            <div class="mb-4">
                                 <label class="form-label">Report Types to Generate</label>
                                 <div class="report-options">
                                     <div class="form-check">
@@ -392,21 +392,21 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <div class="mb-4">
                                 <label for="additional_notes" class="form-label">Additional Notes for Report</label>
-                                <textarea class="form-control" id="additional_notes" name="additional_notes" rows="3"
+                                <textarea class="ui-input" id="additional_notes" name="additional_notes" rows="3"
                                           placeholder="Any additional information to include in the final reports..."></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title">Project Completion Summary</h6>
+                <div>
+                    <div class="ui-card">
+                        <div class="ui-card-header">
+                            <h6 class="ui-card-title">Project Completion Summary</h6>
                         </div>
-                        <div class="card-body">
+                        <div class="ui-card-body">
                             <div class="metric-item">
                                 <span class="metric-label">Project Duration</span>
                                 <span class="metric-value">{{ $project->start_date ? $project->start_date->diffInDays(now()) : 'N/A' }} days</span>
@@ -432,14 +432,14 @@
 
         {{-- Navigation Buttons --}}
         <div class="navigation">
-            <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" style="display: none;">
+            <button type="button" class="btn-secondary" id="prevBtn" onclick="changeStep(-1)" style="display: none;">
                 <i class="fas fa-arrow-left"></i> Previous
             </button>
             <div></div>
-            <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">
+            <button type="button" class="btn-primary" id="nextBtn" onclick="changeStep(1)">
                 Next <i class="fas fa-arrow-right"></i>
             </button>
-            <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">
+            <button type="submit" class="btn-primary" id="submitBtn" style="display: none;">
                 <i class="fas fa-flag-checkered"></i> Complete Project
             </button>
         </div>

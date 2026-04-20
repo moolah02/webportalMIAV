@@ -8,7 +8,7 @@
 
     <div class="page-header">
         <div style="display: flex; gap: 12px; align-items: center;">
-            <a href="{{ route('asset-requests.cart') }}" class="btn btn-secondary">
+            <a href="{{ route('asset-requests.cart') }}" class="btn-secondary">
                 🛒 Cart 
                 @if($cartItemCount > 0)
                 <span class="cart-badge">{{ $cartItemCount }}</span>
@@ -21,10 +21,10 @@
         <form method="GET" class="filters-form">
             <input type="text" name="search" value="{{ request('search') }}" 
                    placeholder="Search assets..." 
-                   class="form-control search-input">
+                   class="ui-input search-input">
             <button type="submit" class="btn-primary">🔍 Search</button>
             @if(request()->hasAny(['search']))
-            <a href="{{ route('asset-requests.catalog') }}" class="btn btn-secondary">Clear Filters</a>
+            <a href="{{ route('asset-requests.catalog') }}" class="btn-secondary">Clear Filters</a>
             @endif
         </form>
     </div>

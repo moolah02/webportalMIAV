@@ -2,9 +2,9 @@
 @section('title', 'Project Complete')
 
 @section('content')
-<div class="container-fluid">
+<div>
     <div class="row justify-content-center">
-        <div class="col-lg-10">
+        <div>
             <!-- Success Header -->
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <h4 class="alert-heading">
@@ -17,43 +17,43 @@
             </div>
 
             <!-- Project Summary Card -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
+            <div class="ui-card mb-4">
+                <div class="ui-card-header bg-primary text-white">
                     <h3 class="mb-0">
                         <i class="fas fa-flag-checkered"></i>
                         Project Completion Summary
                     </h3>
                     <p class="mb-0">{{ $project->project_code }} • {{ $project->client->company_name }}</p>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-8">
+                <div class="ui-card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
                             <h5>Executive Summary</h5>
                             <p>{{ $completionData['completion_summary']['executive_summary'] }}</p>
 
                             <h6>Key Achievements</h6>
                             <p>{{ $completionData['completion_summary']['key_achievements'] }}</p>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body">
+                        <div>
+                            <div class="ui-card bg-light">
+                                <div class="ui-card-body">
                                     <h6>Final Statistics</h6>
                                     <div class="row text-center">
-                                        <div class="col-6">
+                                        <div>
                                             <h4 class="text-primary">{{ $completionData['performance_metrics']['total_terminals'] }}</h4>
                                             <small>Terminals</small>
                                         </div>
-                                        <div class="col-6">
+                                        <div>
                                             <h4 class="text-success">{{ number_format($completionData['performance_metrics']['completion_percentage'], 1) }}%</h4>
                                             <small>Complete</small>
                                         </div>
                                     </div>
                                     <div class="row text-center mt-2">
-                                        <div class="col-6">
+                                        <div>
                                             <h4 class="text-info">{{ $completionData['performance_metrics']['project_duration_days'] ?? 'N/A' }}</h4>
                                             <small>Days</small>
                                         </div>
-                                        <div class="col-6">
+                                        <div>
                                             <h4 class="text-warning">{{ $completionData['performance_metrics']['quality_score'] }}/5</h4>
                                             <small>Quality</small>
                                         </div>
@@ -66,22 +66,22 @@
             </div>
 
             <!-- Report Preview and Actions -->
-            <div class="card">
-                <div class="card-header">
+            <div class="ui-card">
+                <div class="ui-card-header">
                     <h4 class="mb-0">
                         <i class="fas fa-file-alt"></i>
                         Generated Reports
                     </h4>
                 </div>
-                <div class="card-body">
-                    <div class="row">
+                <div class="ui-card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <!-- Report Preview -->
-                        <div class="col-md-8">
-                            <div class="card bg-light">
-                                <div class="card-header">
+                        <div>
+                            <div class="ui-card bg-light">
+                                <div class="ui-card-header">
                                     <h6 class="mb-0">Report Preview</h6>
                                 </div>
-                                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                <div class="ui-card-body" style="max-height: 400px; overflow-y: auto;">
                                     <!-- Executive Summary Preview -->
                                     <div class="mb-4">
                                         <h5 class="text-primary">PROJECT COMPLETION REPORT</h5>
@@ -146,12 +146,12 @@
                         </div>
 
                         <!-- Action Panel -->
-                        <div class="col-md-4">
-                            <div class="card border-primary">
-                                <div class="card-header bg-primary text-white">
+                        <div>
+                            <div class="ui-card border-primary">
+                                <div class="ui-card-header bg-primary text-white">
                                     <h6 class="mb-0">Report Actions</h6>
                                 </div>
-                                <div class="card-body">
+                                <div class="ui-card-body">
                                     <h6>Available Reports:</h6>
                                     <div class="list-group mb-3">
                                         @foreach($completionData['generated_reports'] as $reportType)
@@ -167,19 +167,19 @@
 
                                     <!-- Download Options -->
                                     <div class="d-grid gap-2">
-                                        <a href="{{ route('projects.download-report', $project) }}" class="btn btn-success">
+                                        <a href="{{ route('projects.download-report', $project) }}" class="btn-success">
                                             <i class="fas fa-download"></i> Download All Reports
                                         </a>
 
-                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#previewModal">
+                                        <button type="button" class="btn-primary" data-bs-toggle="modal" data-bs-target="#previewModal">
                                             <i class="fas fa-eye"></i> Full Preview
                                         </button>
 
-                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal">
+                                        <button type="button" class="btn-secondary" data-bs-toggle="modal" data-bs-target="#editModal">
                                             <i class="fas fa-edit"></i> Edit & Regenerate
                                         </button>
 
-                                        <a href="{{ route('projects.show', $project) }}" class="btn btn-outline-primary">
+                                        <a href="{{ route('projects.show', $project) }}" class="btn-secondary">
                                             <i class="fas fa-arrow-left"></i> Back to Project
                                         </a>
                                     </div>
@@ -187,7 +187,7 @@
                                     <!-- Email Options -->
                                     <div class="mt-3">
                                         <h6>Share Reports:</h6>
-                                        <button type="button" class="btn btn-outline-info btn-sm w-100" data-bs-toggle="modal" data-bs-target="#emailModal">
+                                        <button type="button" class="btn-secondary-info btn-sm w-100" data-bs-toggle="modal" data-bs-target="#emailModal">
                                             <i class="fas fa-envelope"></i> Email to Client
                                         </button>
                                     </div>
@@ -195,11 +195,11 @@
                             </div>
 
                             <!-- Client Feedback -->
-                            <div class="card mt-3">
-                                <div class="card-header">
+                            <div class="ui-card mt-3">
+                                <div class="ui-card-header">
                                     <h6 class="mb-0">Project Rating</h6>
                                 </div>
-                                <div class="card-body text-center">
+                                <div class="ui-card-body text-center">
                                     <div class="mb-2">
                                         <span class="text-muted">Quality Score:</span><br>
                                         @for($i = 1; $i <= 5; $i++)
@@ -250,20 +250,20 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Executive Summary</label>
-                        <textarea class="form-control" name="executive_summary" rows="3">{{ $completionData['completion_summary']['executive_summary'] }}</textarea>
+                        <textarea class="ui-input" name="executive_summary" rows="3">{{ $completionData['completion_summary']['executive_summary'] }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Key Achievements</label>
-                        <textarea class="form-control" name="key_achievements" rows="3">{{ $completionData['completion_summary']['key_achievements'] }}</textarea>
+                        <textarea class="ui-input" name="key_achievements" rows="3">{{ $completionData['completion_summary']['key_achievements'] }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Recommendations</label>
-                        <textarea class="form-control" name="recommendations" rows="3">{{ $completionData['technical_analysis']['recommendations'] }}</textarea>
+                        <textarea class="ui-input" name="recommendations" rows="3">{{ $completionData['technical_analysis']['recommendations'] }}</textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Regenerate Reports</button>
+                    <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-primary">Regenerate Reports</button>
                 </div>
             </form>
         </div>
@@ -283,17 +283,17 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Recipient Email</label>
-                        <input type="email" class="form-control" name="recipient_email"
+                        <input type="email" class="ui-input" name="recipient_email"
                                value="{{ $project->client->email ?? '' }}" required>
                     </div>
                      <div class="mb-3">
                         <label class="form-label">Subject</label>
-                        <input type="text" class="form-control" name="subject"
+                        <input type="text" class="ui-input" name="subject"
                                value="Project Completion Report - {{ $project->project_name }}">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Message</label>
-                        <textarea class="form-control" name="message" rows="4">Dear {{ $project->client->company_name }},
+                        <textarea class="ui-input" name="message" rows="4">Dear {{ $project->client->company_name }},
 
 We are pleased to inform you that {{ $project->project_name }} has been successfully completed. Please find the attached completion report with detailed analysis and recommendations.
 
@@ -304,8 +304,8 @@ Best regards,
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Send Email</button>
+                    <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-primary">Send Email</button>
                 </div>
             </form>
         </div>

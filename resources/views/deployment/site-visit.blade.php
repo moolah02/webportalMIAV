@@ -12,19 +12,19 @@
 $a = $prefillAssignment; // alias for cleaner checks
 @endphp
 
-<div class="container-fluid py-4">
+<div class="py-4">
 
   {{-- Back --}}
   <div class="mb-3">
-    <a href="{{ url()->previous() }}" class="btn btn-back">← Back</a>
+    <a href="{{ url()->previous() }}" class="btn-secondary">← Back</a>
   </div>
 
   {{-- ====== JOB DETAILS ====== --}}
-  <div class="card mb-4">
-    <div class="card-header">
-      <h6 class="card-title">Job Details</h6>
+  <div class="ui-card mb-4">
+    <div class="ui-card-header">
+      <h6 class="ui-card-title">Job Details</h6>
     </div>
-    <div class="card-body">
+    <div class="ui-card-body">
       <div class="details-grid">
 
         {{-- Technician Section --}}
@@ -85,9 +85,9 @@ $a = $prefillAssignment; // alias for cleaner checks
   </div>
 
   {{-- ====== TERMINALS LIST ====== --}}
-  <div class="card">
-    <div class="card-header">
-      <h6 class="card-title">Terminals</h6>
+  <div class="ui-card">
+    <div class="ui-card-header">
+      <h6 class="ui-card-title">Terminals</h6>
 
       <div class="header-actions">
         {{-- Search --}}
@@ -95,7 +95,7 @@ $a = $prefillAssignment; // alias for cleaner checks
           <input type="text"
                  id="terminalSearch"
                  placeholder="Search terminals..."
-                 class="form-control">
+                 class="ui-input">
           <i class="fas fa-search search-icon"></i>
         </div>
 
@@ -103,14 +103,14 @@ $a = $prefillAssignment; // alias for cleaner checks
         <div class="input-group add-terminal-group">
           <input type="text"
                  id="addTerminalInput"
-                 class="form-control"
+                 class="ui-input"
                  placeholder="Add terminal found onsite (by ID)">
-          <button id="btnAddTerminal" class="btn btn-secondary">Add</button>
+          <button id="btnAddTerminal" class="btn-secondary">Add</button>
         </div>
       </div>
     </div>
 
-    <div class="card-body">
+    <div class="ui-card-body">
       <div class="table-responsive">
         <table class="terminals-table">
           <thead>
@@ -198,7 +198,7 @@ $a = $prefillAssignment; // alias for cleaner checks
                 <td class="text-end">
                   {{-- Edit - goes to detailed form page --}}
                   @if($a)
-                    <a class="btn btn-primary btn-sm"
+                    <a class="btn-primary btn-sm"
                        href="{{ route('site_visits.edit_terminal', [
                          'assignment_id' => $a->id,
                          'terminal_id' => $t->id
@@ -208,7 +208,7 @@ $a = $prefillAssignment; // alias for cleaner checks
                   @endif
 
                   {{-- View More - shows reports/history --}}
-                  <a class="btn btn-outline btn-sm"
+                  <a class="btn-secondary btn-sm"
                      href="{{ route('reports.technician-visits') }}?terminal_id={{ $t->id }}">
                     View More
                   </a>
@@ -669,8 +669,8 @@ document.addEventListener('DOMContentLoaded', () => {
         </td>
         <td><span class="text-muted">Not visited</span></td>
         <td class="text-end">
-          <a class="btn btn-primary btn-sm" href="${editUrl}">Edit</a>
-          <a class="btn btn-outline btn-sm" href="${viewUrl}">View More</a>
+          <a class="btn-primary btn-sm" href="${editUrl}">Edit</a>
+          <a class="btn-secondary btn-sm" href="${viewUrl}">View More</a>
         </td>
       `;
 

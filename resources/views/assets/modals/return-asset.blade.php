@@ -110,7 +110,7 @@
 
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
+                    <button type="submit" class="btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
                         <span style="font-size: 16px; margin-right: 8px;">↩️</span>
                         Process Return
                     </button>
@@ -309,7 +309,7 @@ document.addEventListener('keydown', function(event) {
 
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn btn-success" style="flex: 1; background: #2196f3; border-color: #2196f3;">
+                    <button type="submit" class="btn-success" style="flex: 1; background: #2196f3; border-color: #2196f3;">
                         <span style="font-size: 16px; margin-right: 8px;">↩️</span>
                         Process Return
                     </button>

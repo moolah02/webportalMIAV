@@ -3,7 +3,7 @@
 
 @section('content')
 
-<div class="container-fluid">
+<div class="">
   <!-- Page Header -->
   <div style="background: #fff; padding: 25px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
     <h1 style="margin: 0; color: #2c3e50; font-weight: 700;">⚙️ Settings & Configuration</h1>

@@ -2,24 +2,24 @@
 @section('title', 'Import Terminals')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
+<div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h3 class="ui-card-title">
                         <i class="fas fa-upload mr-2"></i>
                         Smart POS Terminal Import
                     </h3>
-                    <div class="card-tools">
-                        <a href="{{ route('pos-terminals.download-template') }}" class="btn btn-outline-primary btn-sm">
+                    <div class="ui-card-tools">
+                        <a href="{{ route('pos-terminals.download-template') }}" class="btn-secondary btn-sm">
                             <i class="fas fa-download mr-1"></i>
                             Download Template
                         </a>
                     </div>
                 </div>
 
-                <div class="card-body">
+                <div class="ui-card-body">
 
                     {{-- FLASH & VALIDATION MESSAGES --}}
                     @if (session('success'))
@@ -39,18 +39,18 @@
                     @endif
 
                     <!-- System Template Information -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="card bg-light">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+                        <div>
+                            <div class="ui-card bg-light">
+                                <div class="ui-card-header">
+                                    <h5 class="ui-card-title mb-0">
                                         <i class="fas fa-table mr-2"></i>
                                         Expected Template Columns
                                     </h5>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
+                                <div class="ui-card-body">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
                                             <h6 class="text-primary">Required Fields:</h6>
                                             <ul class="list-unstyled mb-2">
                                                 <li><span class="badge badge-danger mr-1">*</span>Terminal ID</li>
@@ -68,7 +68,7 @@
                                                 <li>• City, Province, Region</li>
                                             </ul>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div>
                                             <h6 class="text-info">Technical Fields:</h6>
                                             <ul class="list-unstyled small">
                                                 <li>• Business Type</li>
@@ -92,17 +92,17 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <div class="card bg-light">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">
+                        <div>
+                            <div class="ui-card bg-light">
+                                <div class="ui-card-header">
+                                    <h5 class="ui-card-title mb-0">
                                         <i class="fas fa-info-circle mr-2"></i>
                                         Import Specifications
                                     </h5>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-12">
+                                <div class="ui-card-body">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
                                             <h6 class="text-primary">Supported Formats:</h6>
                                             <div class="mb-2">
                                                 <span class="badge badge-primary mr-1">CSV</span>
@@ -137,11 +137,11 @@
                     <form id="importForm" action="{{ route('pos-terminals.import') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <div class="mb-4">
                                     <label for="client_id" class="required">Client</label>
-                                    <select name="client_id" id="client_id" class="form-control @error('client_id') is-invalid @enderror" required>
+                                    <select name="client_id" id="client_id" class="ui-input @error('client_id') is-invalid @enderror" required>
                                         <option value="">Select Client</option>
                                         @foreach($clients as $client)
                                             <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
@@ -155,10 +155,10 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
+                            <div>
+                                <div class="mb-4">
                                     <label for="mapping_id">Column Mapping (Optional)</label>
-                                    <select name="mapping_id" id="mapping_id" class="form-control">
+                                    <select name="mapping_id" id="mapping_id" class="ui-input">
                                         <option value="">Use Smart Auto-Detection</option>
                                         @foreach($mappings as $mapping)
                                             <option value="{{ $mapping->id }}" {{ old('mapping_id') == $mapping->id ? 'selected' : '' }}>
@@ -173,7 +173,7 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="mb-4">
                             <label for="file" class="required">Import File</label>
                             <div class="input-group">
                                 <div class="custom-file">
@@ -186,7 +186,7 @@
                                     <label class="custom-file-label" for="file">Choose Excel, CSV, or TXT file...</label>
                                 </div>
                                 <div class="input-group-append">
-                                    <button type="button" id="previewBtn" class="btn btn-outline-info" disabled>
+                                    <button type="button" id="previewBtn" class="btn-secondary-info" disabled>
                                         <i class="fas fa-eye mr-1"></i>
                                         Preview
                                     </button>
@@ -200,7 +200,7 @@
                             </small>
                         </div>
 
-                        <div class="form-group">
+                        <div class="mb-4">
                             <label>Import Options</label>
                             <div class="form-check">
                                 <input type="checkbox" name="options[]" value="skip_duplicates" id="skip_duplicates" class="form-check-input" {{ in_array('skip_duplicates', old('options', [])) ? 'checked' : '' }}>
@@ -219,12 +219,12 @@
                             </small>
                         </div>
 
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary" id="importBtn" disabled>
+                        <div class="mb-4">
+                            <button type="submit" class="btn-primary" id="importBtn" disabled>
                                 <i class="fas fa-upload mr-1"></i>
                                 Start Smart Import
                             </button>
-                            <a href="{{ route('pos-terminals.index') }}" class="btn btn-secondary ml-2">
+                            <a href="{{ route('pos-terminals.index') }}" class="btn-secondary ml-2">
                                 <i class="fas fa-arrow-left mr-1"></i>
                                 Cancel
                             </a>
@@ -255,8 +255,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close Preview</button>
-                <button type="button" class="btn btn-success" id="proceedImport">
+                <button type="button" class="btn-secondary" data-dismiss="modal">Close Preview</button>
+                <button type="button" class="btn-success" id="proceedImport">
                     <i class="fas fa-check mr-1"></i>
                     Looks Good - Proceed with Import
                 </button>
@@ -387,7 +387,7 @@ $(document).ready(function() {
                     </div>
                 </div>
                 <p id="uploadSpeedText" class="text-muted small"></p>
-                <button type="button" id="cancelUploadBtn" class="btn btn-sm btn-danger mt-2">
+                <button type="button" id="cancelUploadBtn" class="btn-sm btn-danger mt-2">
                     <i class="fas fa-times mr-1"></i> Cancel Upload
                 </button>
             </div>
@@ -627,8 +627,8 @@ $(document).ready(function() {
 
     function displayPreview(response) {
         let html = `
-            <div class="row mb-3">
-                <div class="col-md-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-3">
+                <div>
                     <div class="alert alert-info">
                         <h6><i class="fas fa-info-circle mr-1"></i> File Analysis</h6>
                         <ul class="mb-0">
@@ -638,7 +638,7 @@ $(document).ready(function() {
                         </ul>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div>
                     <div class="alert alert-success">
                         <h6><i class="fas fa-check-circle mr-1"></i> Column Mapping</h6>
                         <ul class="mb-0">
@@ -654,8 +654,8 @@ $(document).ready(function() {
                 </div>
             </div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-3">
+                <div>
                     <h6>Detected Columns in Your File:</h6>
                     <div class="table-responsive" style="max-height: 200px;">
                         <table class="table table-sm table-bordered">
@@ -682,7 +682,7 @@ $(document).ready(function() {
                         </table>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div>
                     <h6>Preview Data (First ${response.preview_data.length} rows):</h6>
                     <div class="table-responsive" style="max-height: 200px;">
                         <table class="table table-sm table-striped">

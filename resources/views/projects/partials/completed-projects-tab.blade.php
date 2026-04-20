@@ -62,20 +62,20 @@
                     <td class="text-center pe-4">
                         <div class="btn-group btn-group-sm">
                             <a href="{{ route('projects.show', $project) }}"
-                               class="btn btn-outline-primary rounded-pill me-1"
+                               class="btn-secondary rounded-pill me-1"
                                title="View Project">
                                 <i class="fas fa-eye"></i>
                             </a>
                             @if($project->report_path ?? false)
                                 <a href="{{ route('projects.download-report', $project) }}"
-                                   class="btn btn-outline-success rounded-pill me-1"
+                                   class="btn-success rounded-pill me-1"
                                    title="Download Report">
                                     <i class="fas fa-download"></i>
                                 </a>
                             @endif
                             @if(isset($project->completion))
                                 <button type="button"
-                                        class="btn btn-outline-info rounded-pill details-btn"
+                                        class="btn-secondary-info rounded-pill details-btn"
                                         title="View Details"
                                         data-project-id="{{ $project->id }}"
                                         data-project-name="{{ $project->project_name }}"

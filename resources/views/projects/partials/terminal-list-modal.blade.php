@@ -31,7 +31,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn-secondary" data-dismiss="modal">
                     <i class="fas fa-times me-1"></i> Close
                 </button>
             </div>

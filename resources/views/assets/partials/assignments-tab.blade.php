@@ -85,7 +85,7 @@
             <label for="overdue_filter" style="font-weight: 500; color: #f44336;">Overdue Only</label>
         </div>
 
-        <button type="submit" class="btn btn-primary">Filter</button>
+        <button type="submit" class="btn-primary">Filter</button>
 
         @if(request()->hasAny(['employee_search', 'asset_search', 'department', 'overdue_only']))
         <a href="{{ route('assets.index', ['tab' => 'assignments']) }}" class="btn">Clear</a>
@@ -202,7 +202,7 @@
         <div style="font-size: 64px; margin-block-end: 20px;">👥</div>
         <h3>No Active Assignments</h3>
         <p>No assets are currently assigned to employees.</p>
-        <a href="{{ route('assets.index', ['tab' => 'assign']) }}" class="btn btn-primary" style="margin-block-start: 15px;">
+        <a href="{{ route('assets.index', ['tab' => 'assign']) }}" class="btn-primary" style="margin-block-start: 15px;">
             Assign First Asset
         </a>
     </div>
@@ -329,7 +329,7 @@
 
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
+                    <button type="submit" class="btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
                         <span style="font-size: 16px; margin-right: 8px;">↩️</span>
                         Process Return
                     </button>
@@ -445,7 +445,7 @@
 
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn btn-warning" style="flex: 1; background: #ff9800; border-color: #ff9800; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
+                    <button type="submit" class="btn-secondary" style="flex: 1; background: #ff9800; border-color: #ff9800; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
                         <span style="font-size: 16px; margin-right: 8px;">🔄</span>
                         Process Transfer
                     </button>

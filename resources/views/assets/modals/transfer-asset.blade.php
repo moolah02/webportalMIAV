@@ -188,7 +188,7 @@
 
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn btn-warning" style="flex: 1; background: #ff9800; border-color: #ff9800; color: white;">
+                    <button type="submit" class="btn-secondary" style="flex: 1; background: #ff9800; border-color: #ff9800; color: white;">
                         <span style="font-size: 16px; margin-right: 8px;">🔄</span>
                         Process Transfer
                     </button>

@@ -18,7 +18,7 @@
                     <i class="fas fa-desktop text-primary me-2"></i>
                     <strong>{{ $project->projectTerminals()->where('is_active', true)->count() }}</strong> terminals currently assigned to this project
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="viewProjectTerminals()">
+                <button type="button" class="btn-sm btn-outline-primary" onclick="viewProjectTerminals()">
                     <i class="fas fa-list me-1"></i> View List
                 </button>
             </div>
@@ -28,7 +28,7 @@
     {{-- Upload Area --}}
     <div class="upload-area p-3 border rounded bg-light mb-3">
         <div class="row align-items-end">
-            <div class="col-md-7">
+            <div>
                 <label class="form-label fw-semibold">
                     <i class="fas fa-file-csv text-success me-1"></i>
                     Upload Terminal List (CSV/Excel)
@@ -36,12 +36,12 @@
                 <div class="input-group">
                     <input type="file"
                            id="terminal_file"
-                           class="form-control"
+                           class="ui-input"
                            accept=".csv,.xlsx,.xls,.txt"
                            onchange="handleTerminalFileSelect(this)">
                     <button type="button"
                             id="previewTerminalsBtn"
-                            class="btn btn-outline-info"
+                            class="btn-secondary-info"
                             onclick="previewTerminalUpload()"
                             disabled>
                         <i class="fas fa-eye me-1"></i> Preview
@@ -54,7 +54,7 @@
                     </a>
                 </small>
             </div>
-            <div class="col-md-5">
+            <div>
                 <div class="bg-white p-2 rounded border">
                     <label class="form-label small fw-semibold mb-2">Options:</label>
                     <div class="form-check form-check-inline">
@@ -386,7 +386,7 @@ function viewProjectTerminals() {
                             <td><span class="badge bg-${terminal.status === 'active' ? 'success' : 'secondary'}">${terminal.status}</span></td>
                             <td>${terminal.included_at || '-'}</td>
                             <td>
-                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeTerminalFromProject(${terminal.id})">
+                                <button type="button" class="btn-sm btn-outline-danger" onclick="removeTerminalFromProject(${terminal.id})">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </td>

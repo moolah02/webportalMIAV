@@ -49,7 +49,7 @@
                     </select>
                 </td>
                 <td>
-                    <button type="button" onclick="openDetailedAssignModal()" class="btn btn-primary" style="padding: 12px 20px; font-size: 16px;">
+                    <button type="button" onclick="openDetailedAssignModal()" class="btn-primary" style="padding: 12px 20px; font-size: 16px;">
                         🎯 Assign Asset
                     </button>
                     <input type="hidden" name="assignment_date" value="{{ now()->format('Y-m-d') }}">
@@ -129,7 +129,7 @@
             <div style="font-size: 64px; margin-block-end: 20px;">📦</div>
             <h3>No Assets Available for Assignment</h3>
             <p>All requestable assets are either out of stock or fully assigned.</p>
-            <a href="{{ route('assets.index', ['tab' => 'assets']) }}" class="btn btn-primary" style="margin-block-start: 15px;">
+            <a href="{{ route('assets.index', ['tab' => 'assets']) }}" class="btn-primary" style="margin-block-start: 15px;">
                 View All Assets
             </a>
         </div>
@@ -215,7 +215,7 @@
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">
                         🎯 Assign Asset
                     </button>
                     <button type="button" onclick="closeDetailedAssignModal()" class="btn">

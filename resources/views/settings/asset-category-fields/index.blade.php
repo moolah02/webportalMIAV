@@ -352,7 +352,7 @@
   }
 </style>
 
-<div class="container-fluid">
+<div class="">
   <!-- Breadcrumb -->
   <div style="background: #fff; padding: 20px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
     <nav style="font-size: 14px; color: #666;">
@@ -506,19 +506,19 @@
     <h3 style="margin-top: 0;">Add Custom Field</h3>
     <form id="addForm" method="POST" action="{{ route('settings.asset-category-fields.store', $category) }}">
       @csrf
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Field Name (snake_case) *</label>
-        <input type="text" name="field_name" class="form-control" required
+        <input type="text" name="field_name" class="ui-input" required
                pattern="[a-z][a-z0-9_]*" placeholder="e.g., license_plate">
         <small style="color: #666;">Use lowercase letters, numbers, and underscores only</small>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Display Label *</label>
-        <input type="text" name="field_label" class="form-control" required placeholder="e.g., License Plate Number">
+        <input type="text" name="field_label" class="ui-input" required placeholder="e.g., License Plate Number">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Field Type *</label>
-        <select name="field_type" id="add_field_type" class="form-control" required onchange="toggleOptions('add')">
+        <select name="field_type" id="add_field_type" class="ui-input" required onchange="toggleOptions('add')">
           <option value="text">Text</option>
           <option value="number">Number</option>
           <option value="date">Date</option>
@@ -534,15 +534,15 @@
         <div id="add_options_list"></div>
         <button type="button" class="btn-add-option" onclick="addOption('add')">+ Add Option</button>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Placeholder Text</label>
-        <input type="text" name="placeholder_text" class="form-control" placeholder="e.g., Enter license plate...">
+        <input type="text" name="placeholder_text" class="ui-input" placeholder="e.g., Enter license plate...">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Help Text</label>
-        <input type="text" name="help_text" class="form-control" placeholder="e.g., Vehicle license plate number">
+        <input type="text" name="help_text" class="ui-input" placeholder="e.g., Vehicle license plate number">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">
           <input type="checkbox" name="is_required" value="1" style="margin-right: 8px;">
           Required Field
@@ -563,18 +563,18 @@
     <form id="editForm" method="POST">
       @csrf
       @method('PUT')
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Field Name</label>
-        <input type="text" id="edit_field_name" class="form-control" readonly style="background: #f5f5f5;">
+        <input type="text" id="edit_field_name" class="ui-input" readonly style="background: #f5f5f5;">
         <small style="color: #666;">Field name cannot be changed</small>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Display Label *</label>
-        <input type="text" name="field_label" id="edit_field_label" class="form-control" required>
+        <input type="text" name="field_label" id="edit_field_label" class="ui-input" required>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Field Type *</label>
-        <select name="field_type" id="edit_field_type" class="form-control" required onchange="toggleOptions('edit')">
+        <select name="field_type" id="edit_field_type" class="ui-input" required onchange="toggleOptions('edit')">
           <option value="text">Text</option>
           <option value="number">Number</option>
           <option value="date">Date</option>
@@ -590,21 +590,21 @@
         <div id="edit_options_list"></div>
         <button type="button" class="btn-add-option" onclick="addOption('edit')">+ Add Option</button>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Placeholder Text</label>
-        <input type="text" name="placeholder_text" id="edit_placeholder_text" class="form-control">
+        <input type="text" name="placeholder_text" id="edit_placeholder_text" class="ui-input">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Help Text</label>
-        <input type="text" name="help_text" id="edit_help_text" class="form-control">
+        <input type="text" name="help_text" id="edit_help_text" class="ui-input">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">
           <input type="checkbox" name="is_required" id="edit_is_required" value="1" style="margin-right: 8px;">
           Required Field
         </label>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">
           <input type="checkbox" name="is_active" id="edit_is_active" value="1" style="margin-right: 8px;">
           Active
@@ -673,7 +673,7 @@ function addOption(prefix, value = '') {
   const div = document.createElement('div');
   div.className = 'option-item';
   div.innerHTML = `
-    <input type="text" name="options[]" class="form-control" value="${value}" placeholder="Option ${index + 1}" required>
+    <input type="text" name="options[]" class="ui-input" value="${value}" placeholder="Option ${index + 1}" required>
     <button type="button" class="btn-remove-option" onclick="this.parentElement.remove()">X</button>
   `;
   list.appendChild(div);

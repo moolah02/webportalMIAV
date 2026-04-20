@@ -912,7 +912,7 @@
 
         <!-- Card View (Initially Hidden) -->
         <div id="cardView" style="display: none;">
-            <div class="card-grid" id="cardContainer">
+            <div class="ui-card-grid" id="cardContainer">
                 <!-- Cards populated via JavaScript -->
             </div>
         </div>
@@ -1160,7 +1160,7 @@ function viewPhotos(visitId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                let photosHtml = '<div class="row">';
+                let photosHtml = '<div class="grid grid-cols-1 md:grid-cols-2 gap-5">';
                 data.photos.forEach(photo => {
                     photosHtml += `
                         <div class="col-md-6 mb-3">
@@ -1210,11 +1210,11 @@ function updateCardView(visits) {
 
         const card = `
             <div class="visit-card">
-                <div class="card-header-compact">
+                <div class="ui-card-header-compact">
                     <small class="text-muted">${visit.visit_id}</small>
                     <span class="status-badge ${statusConfig.class}">${statusConfig.text}</span>
                 </div>
-                <div class="card-body-compact">
+                <div class="ui-card-body-compact">
                     <h6 style="margin-bottom: 0.5rem; font-weight: 600;">${visit.pos_terminal.terminal_id}</h6>
                     <p style="margin-bottom: 0.5rem; font-size: 0.875rem;">
                         <strong>Merchant:</strong> ${visit.pos_terminal.merchant_name}<br>
@@ -1224,7 +1224,7 @@ function updateCardView(visits) {
                     ${visit.technician_feedback ?
                         `<p style="margin: 0; font-size: 0.75rem; color: var(--gray-600);">${visit.technician_feedback.substring(0, 100)}...</p>` : ''}
                 </div>
-                <div class="card-footer-compact">
+                <div class="ui-card-footer-compact">
                     <div class="action-group" style="justify-content: center;">
                         <button class="action-btn" onclick="viewVisitDetails(${visit.id})" title="View Details">
                             <i class="fas fa-eye"></i>

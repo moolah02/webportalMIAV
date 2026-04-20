@@ -1,9 +1,9 @@
 {{-- resources/views/projects/partials/manual-report-generator.blade.php --}}
-<div class="card">
-    <div class="card-header">
-        <h6 class="card-title">Generate Project Reports</h6>
+<div class="ui-card">
+    <div class="ui-card-header">
+        <h6 class="ui-card-title">Generate Project Reports</h6>
     </div>
-    <div class="card-body">
+    <div class="ui-card-body">
         @if($project->status !== 'completed')
             <div class="alert alert-warning">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -13,9 +13,9 @@
             <form action="{{ route('projects.generate-reports', $project) }}" method="POST" id="reportGenerationForm">
                 @csrf
 
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="form-group">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <div class="mb-4">
                             <label class="form-label">Select Report Types</label>
                             <div class="report-types">
                                 <div class="form-check">
@@ -52,13 +52,13 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="mb-4">
                             <label for="custom_notes" class="form-label">Additional Notes for Reports</label>
-                            <textarea class="form-control" id="custom_notes" name="custom_notes" rows="3"
+                            <textarea class="ui-input" id="custom_notes" name="custom_notes" rows="3"
                                       placeholder="Any specific information to include in the reports..."></textarea>
                         </div>
 
-                        <div class="form-group">
+                        <div class="mb-4">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="include_raw_data" id="include_data">
                                 <label class="form-check-label" for="include_data">
@@ -68,12 +68,12 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
-                        <div class="card bg-light">
-                            <div class="card-header">
-                                <h6 class="card-title mb-0">Project Summary</h6>
+                    <div>
+                        <div class="ui-card bg-light">
+                            <div class="ui-card-header">
+                                <h6 class="ui-card-title mb-0">Project Summary</h6>
                             </div>
-                            <div class="card-body">
+                            <div class="ui-card-body">
                                 <div class="summary-item">
                                     <span class="summary-label">Project:</span>
                                     <span class="summary-value">{{ $project->project_name }}</span>
@@ -107,12 +107,12 @@
                         </div>
 
                         <div class="mt-3">
-                            <button type="submit" class="btn btn-primary w-100" id="generateBtn">
+                            <button type="submit" class="btn-primary w-100" id="generateBtn">
                                 <i class="fas fa-file-pdf"></i> Generate Reports
                             </button>
 
                             @if($project->report_path)
-                                <a href="{{ route('projects.download-report', $project) }}" class="btn btn-outline-secondary w-100 mt-2">
+                                <a href="{{ route('projects.download-report', $project) }}" class="btn-secondary w-100 mt-2">
                                     <i class="fas fa-download"></i> Download Existing Report
                                 </a>
                             @endif

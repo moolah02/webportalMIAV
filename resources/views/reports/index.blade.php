@@ -172,7 +172,7 @@
         <div id="clients" class="tab-content">
             <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px;">
                 <h3>Client Analytics & Performance</h3>
-                <button onclick="exportSection('clients')" class="btn btn-sm">Export Client Data</button>
+                <button onclick="exportSection('clients')" class="btn-sm">Export Client Data</button>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
@@ -211,7 +211,7 @@
         <div id="terminals" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>Terminal Management & Health</h3>
-                <button onclick="exportSection('terminals')" class="btn btn-sm">Export Terminal Data</button>
+                <button onclick="exportSection('terminals')" class="btn-sm">Export Terminal Data</button>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
@@ -256,7 +256,7 @@
         <div id="service" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>Service Activity & Performance</h3>
-                <button onclick="exportSection('service')" class="btn btn-sm">Export Service Data</button>
+                <button onclick="exportSection('service')" class="btn-sm">Export Service Data</button>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
@@ -293,7 +293,7 @@
         <div id="assets" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>Asset Management & Utilization</h3>
-                <button onclick="exportSection('assets')" class="btn btn-sm">Export Asset Data</button>
+                <button onclick="exportSection('assets')" class="btn-sm">Export Asset Data</button>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
@@ -340,7 +340,7 @@
                 <div class="alert-box">
                     <h4>⚠️ Stock Alerts</h4>
                     <p>{{ $assetData['low_stock_alerts'] }} assets are below minimum stock levels and require immediate attention.</p>
-                    <a href="{{ route('assets.low-stock-alerts') }}" class="btn btn-warning">View Low Stock Items</a>
+                    <a href="{{ route('assets.low-stock-alerts') }}" class="btn-secondary">View Low Stock Items</a>
                 </div>
                 @endif
             </div>
@@ -349,7 +349,7 @@
         <div id="employees" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>Employee Performance & Analytics</h3>
-                <button onclick="exportSection('employees')" class="btn btn-sm">Export Employee Data</button>
+                <button onclick="exportSection('employees')" class="btn-sm">Export Employee Data</button>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
@@ -401,7 +401,7 @@
         <div id="projects" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>Project Management & Progress</h3>
-                <button onclick="exportSection('projects')" class="btn btn-sm">Export Project Data</button>
+                <button onclick="exportSection('projects')" class="btn-sm">Export Project Data</button>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
@@ -453,7 +453,7 @@
         <div id="regional" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>Regional Analysis & Coverage</h3>
-                <button onclick="exportSection('regional')" class="btn btn-sm">Export Regional Data</button>
+                <button onclick="exportSection('regional')" class="btn-sm">Export Regional Data</button>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">

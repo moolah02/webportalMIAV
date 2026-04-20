@@ -14,8 +14,8 @@
                 <td>{{ $asset->category }}</td>
                 <td>{{ $asset->status }}</td>
                 <td>
-                    <a href="{{ route('assets.edit', $asset->id) }}" class="btn btn-warning">Edit</a>
-                    <button onclick="deleteAsset({{ $asset->id }})" class="btn btn-danger">Delete</button>
+                    <a href="{{ route('assets.edit', $asset->id) }}" class="btn-secondary">Edit</a>
+                    <button onclick="deleteAsset({{ $asset->id }})" class="btn-danger">Delete</button>
                 </td>
             </tr>
         @endforeach

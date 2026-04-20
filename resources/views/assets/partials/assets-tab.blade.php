@@ -87,7 +87,7 @@
             </select>
         </div>
         
-        <button type="submit" class="btn btn-primary">Filter</button>
+        <button type="submit" class="btn-primary">Filter</button>
         
         @if(request()->hasAny(['search', 'category', 'status', 'stock_status']))
         <a href="{{ route('assets.index', ['tab' => 'assets']) }}" class="btn">Clear</a>
@@ -209,7 +209,7 @@
         <div style="font-size: 64px; margin-block-end: 20px;">📦</div>
         <h3>No assets found</h3>
         <p>Start by adding your first asset to the inventory.</p>
-        <a href="{{ route('assets.create') }}" class="btn btn-primary" style="margin-block-start: 15px;">Add First Asset</a>
+        <a href="{{ route('assets.create') }}" class="btn-primary" style="margin-block-start: 15px;">Add First Asset</a>
     </div>
     @endforelse
 </div>

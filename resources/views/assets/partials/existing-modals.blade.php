@@ -69,7 +69,7 @@
                     <input type="number" id="newStockQuantity" min="0" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Update Stock</button>
+                    <button type="submit" class="btn-primary" style="flex: 1;">Update Stock</button>
                     <button type="button" onclick="closeStockModal()" class="btn">Cancel</button>
                 </div>
             </form>

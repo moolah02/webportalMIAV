@@ -1,0 +1,228 @@
+﻿assets\modals\return-asset.blade.php
+   - 65 inline styles
+   - Bootstrap: btn btn-
+   - 1 style block(s)
+deployment\hierarchical.blade.php
+   - 229 inline styles
+   - Bootstrap: btn btn-,container-fluid,alert alert-
+   - 1 style block(s)
+jobs\show.blade.php
+   - Bootstrap: card-body,card-header
+   - raw Tailwind btn colors
+   - 1 style block(s)
+pos-terminals\import.blade.php
+   - 17 inline styles
+   - Bootstrap: btn btn-,card-body,card-header,form-control
+   - 1 style block(s)
+projects\create-improved.blade.php
+   - 6 inline styles
+   - Bootstrap: btn btn-,card-body,card-header,form-control
+   - 1 style block(s)
+reports\history.blade.php
+   - 19 inline styles
+   - Bootstrap: card-header
+   - 1 style block(s)
+reports\index.blade.php
+   - 22 inline styles
+   - Bootstrap: btn btn-,card-body,card-header
+   - 1 style block(s)
+reports\technician-visits.blade.php
+   - 85 inline styles
+   - Bootstrap: card-body,card-header,col-md-,alert alert-
+   - 1 style block(s)
+roles\show.blade.php
+   - 71 inline styles
+   - Bootstrap: btn btn-
+   - 1 style block(s)
+settings\manage-category.blade.php
+   - 19 inline styles
+   - Bootstrap: form-control,form-group,container-fluid,alert alert-
+   - 1 style block(s)
+settings\asset-category-fields\index.blade.php
+   - 28 inline styles
+   - Bootstrap: form-control,form-group,container-fluid,alert alert-
+   - 1 style block(s)
+tickets\index.blade.php
+   - 14 inline styles
+   - Bootstrap: card-header,form-group
+   - 1 style block(s)
+dashboard.blade.php
+   - Bootstrap: card-body,card-header
+   - raw Tailwind btn colors
+welcome.blade.php
+   - 7 inline styles
+   - 1 style block(s)
+asset-requests\checkout.blade.php
+   - 53 inline styles
+   - Bootstrap: alert alert-
+assets\index.blade.php
+   - 19 inline styles
+   - Bootstrap: card-header
+assets\modals\assign-asset.blade.php
+   - 39 inline styles
+   - Bootstrap: btn btn-
+assets\modals\transfer-asset.blade.php
+   - 59 inline styles
+   - Bootstrap: btn btn-
+client-dashboards\index.blade.php
+   - 38 inline styles
+   - Bootstrap: btn btn-
+deployment\site-visit.blade.php
+   - Bootstrap: btn btn-,card-body,card-header,form-control
+   - 1 style block(s)
+employee\dashboard.blade.php
+   - Bootstrap: card-body,card-header
+   - raw Tailwind btn colors
+employee\edit-profile.blade.php
+   - Bootstrap: btn btn-,card-body,card-header,form-group
+   - 1 style block(s)
+employee\profile.blade.php
+   - Bootstrap: btn btn-,card-body,card-header,form-group
+   - 1 style block(s)
+pos-terminals\column-mapping.blade.php
+   - Bootstrap: btn btn-,form-group,alert alert-
+   - 1 style block(s)
+pos-terminals\index.blade.php
+   - 231 inline styles
+   - 1 style block(s)
+pos-terminals\show.blade.php
+   - 25 inline styles
+   - Bootstrap: form-control,form-group
+profile\profile.blade.php
+   - Bootstrap: btn btn-,card-body,card-header,form-control
+   - 1 style block(s)
+projects\closure-reports.blade.php
+   - Bootstrap: btn btn-,card-body,card-header,form-control
+   - 1 style block(s)
+projects\closure-wizard.blade.php
+   - Bootstrap: btn btn-,card-body,card-header,form-control
+   - 1 style block(s)
+projects\completion-reports.blade.php
+   - Bootstrap: btn btn-,card-body,card-header,form-control
+   - 1 style block(s)
+projects\completion-success.blade.php
+   - 6 inline styles
+   - Bootstrap: btn btn-,card-body,card-header,form-control
+projects\completion-wizard.blade.php
+   - Bootstrap: btn btn-,card-body,card-header,form-control
+   - 1 style block(s)
+projects\show.blade.php
+   - Bootstrap: card-body,card-header
+   - raw Tailwind btn colors
+reports\builder.blade.php
+   - 41 inline styles
+   - 1 style block(s)
+reports\export.blade.php
+   - 66 inline styles
+   - 1 style block(s)
+reports\system-dashboard.blade.php
+   - 51 inline styles
+   - Bootstrap: btn btn-
+settings\index.blade.php
+   - 9 inline styles
+   - Bootstrap: container-fluid
+settings\manage-role.blade.php
+   - 13 inline styles
+   - Bootstrap: form-control,form-group,container-fluid,alert alert-
+admin\docs\edit.blade.php
+   - 1 style block(s)
+asset-approvals\show.blade.php
+   - 8 inline styles
+asset-requests\cart.blade.php
+   - 35 inline styles
+asset-requests\catalog.blade.php
+   - Bootstrap: btn btn-,form-control
+asset-requests\index.blade.php
+   - Bootstrap: btn btn-
+asset-requests\show.blade.php
+   - 74 inline styles
+assets\create.blade.php
+   - Bootstrap: card-body,card-header
+assets\edit.blade.php
+   - Bootstrap: card-body,card-header
+assets\show.blade.php
+   - Bootstrap: card-body,card-header
+audit\index.blade.php
+   - raw Tailwind btn colors
+business-licenses\create.blade.php
+   - 49 inline styles
+business-licenses\edit.blade.php
+   - 166 inline styles
+business-licenses\index.blade.php
+   - 20 inline styles
+business-licenses\renew.blade.php
+   - 79 inline styles
+business-licenses\show.blade.php
+   - 140 inline styles
+client-dashboards\show.blade.php
+   - 152 inline styles
+clients\create.blade.php
+   - Bootstrap: card-body,card-header
+clients\edit.blade.php
+   - Bootstrap: card-body
+clients\index.blade.php
+   - Bootstrap: card-header
+clients\show.blade.php
+   - Bootstrap: card-body,card-header
+docs\api.blade.php
+   - 8 inline styles
+docs\index.blade.php
+   - 55 inline styles
+docs\overview.blade.php
+   - 6 inline styles
+docs\projects.blade.php
+   - 24 inline styles
+docs\reports.blade.php
+   - 14 inline styles
+docs\srs.blade.php
+   - 13 inline styles
+docs\staged-resolution.blade.php
+   - 12 inline styles
+docs\system.blade.php
+   - 18 inline styles
+docs\tickets.blade.php
+   - 11 inline styles
+employees\create.blade.php
+   - Bootstrap: card-body,card-header
+employees\edit.blade.php
+   - Bootstrap: card-body,card-header
+employees\index.blade.php
+   - Bootstrap: card-header
+employees\show.blade.php
+   - Bootstrap: card-body,card-header
+jobs\assignment.blade.php
+   - 126 inline styles
+jobs\index.blade.php
+   - Bootstrap: card-body,card-header
+manager\team.blade.php
+   - Bootstrap: card-body,card-header
+pos-terminals\create.blade.php
+   - Bootstrap: card-body
+pos-terminals\edit.blade.php
+   - Bootstrap: card-body
+projects\create.blade.php
+   - Bootstrap: card-body,card-header
+projects\edit.blade.php
+   - Bootstrap: card-body,card-header
+reports\client-export.blade.php
+   - 1 style block(s)
+reports\client-presentation.blade.php
+   - 1 style block(s)
+reports\client-summary.blade.php
+   - 1 style block(s)
+reports\detailed-summary.blade.php
+   - 1 style block(s)
+reports\executive-summary.blade.php
+   - 1 style block(s)
+reports\system-export.blade.php
+   - Bootstrap: card-body,card-header
+roles\create.blade.php
+   - 46 inline styles
+roles\edit.blade.php
+   - 56 inline styles
+roles\index.blade.php
+   - 50 inline styles
+settings\manage-department.blade.php
+   - 1 style block(s)
+visits\index.blade.php
+   - Bootstrap: card-header

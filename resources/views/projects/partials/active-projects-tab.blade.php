@@ -8,11 +8,11 @@
 
     <div class="row g-4">
         @foreach($projects as $project)
-        <div class="col-lg-4 col-md-6">
-            <div class="card h-100 project-card border-0 shadow-sm">
-                <div class="card-body p-4">
+        <div>
+            <div class="ui-card h-100 project-card border-0 shadow-sm">
+                <div class="ui-card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h6 class="card-title mb-0 fw-semibold">{{ $project->project_name }}</h6>
+                        <h6 class="ui-card-title mb-0 fw-semibold">{{ $project->project_name }}</h6>
                         <span class="badge bg-{{ $project->priority === 'high' ? 'danger' : ($project->priority === 'normal' ? 'primary' : 'secondary') }} rounded-pill">
                             {{ ucfirst($project->priority) }}
                         </span>
@@ -38,7 +38,7 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-success complete-btn rounded-pill"
+                        <button type="button" class="btn-success complete-btn rounded-pill"
                                 data-project-id="{{ $project->id }}"
                                 data-project-name="{{ $project->project_name }}"
                                 data-client-name="{{ $project->client->company_name }}">
@@ -46,10 +46,10 @@
                         </button>
 
                         <div class="d-flex gap-2">
-                            <a href="{{ route('projects.show', $project) }}" class="btn btn-outline-primary btn-sm rounded-pill flex-fill">
+                            <a href="{{ route('projects.show', $project) }}" class="btn-secondary btn-sm rounded-pill flex-fill">
                                 <i class="fas fa-eye me-1"></i>View Details
                             </a>
-                            <a href="{{ route('completion-wizard', $project) }}" class="btn btn-outline-primary btn-sm rounded-pill flex-fill">
+                            <a href="{{ route('completion-wizard', $project) }}" class="btn-secondary btn-sm rounded-pill flex-fill">
                                 <i class="fas fa-times-circle me-1"></i>Close Project
                             </a>
                         </div>

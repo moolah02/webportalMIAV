@@ -50,7 +50,7 @@
              style="width:100%;padding:10px;border:2px solid #ddd;border-radius:6px;">
     </div>
 
-    <button type="submit" class="btn btn-primary">Filter</button>
+    <button type="submit" class="btn-primary">Filter</button>
 
     @if(request()->hasAny(['employee_search','status_filter','date_from','date_to']))
       <a href="{{ route('assets.index', ['tab' => 'history']) }}" class="btn">Clear</a>

@@ -3,7 +3,7 @@
 
 @section('content')
 
-<div class="container-fluid">
+<div class="">
   <!-- Breadcrumb -->
   <div style="background: #fff; padding: 20px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
     <nav style="font-size: 14px; color: #666;">
@@ -117,19 +117,19 @@
     <h3 style="margin-top: 0;">Add New Role</h3>
     <form id="addForm" method="POST" action="{{ route('settings.roles.store') }}">
       @csrf
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Role Name *</label>
-        <input type="text" name="name" class="form-control" required placeholder="e.g., field_technician">
+        <input type="text" name="name" class="ui-input" required placeholder="e.g., field_technician">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Display Name</label>
-        <input type="text" name="display_name" class="form-control" placeholder="e.g., Field Technician">
+        <input type="text" name="display_name" class="ui-input" placeholder="e.g., Field Technician">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Description</label>
-        <textarea name="description" class="form-control" rows="3" placeholder="Brief description of this role..."></textarea>
+        <textarea name="description" class="ui-input" rows="3" placeholder="Brief description of this role..."></textarea>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Permissions</label>
         <div class="permissions-grid">
           @foreach($availablePermissions as $group => $permissions)
@@ -160,25 +160,25 @@
     <form id="editForm" method="POST">
       @csrf
       @method('PUT')
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Role Name *</label>
-        <input type="text" name="name" id="edit_name" class="form-control" required>
+        <input type="text" name="name" id="edit_name" class="ui-input" required>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Display Name</label>
-        <input type="text" name="display_name" id="edit_display_name" class="form-control">
+        <input type="text" name="display_name" id="edit_display_name" class="ui-input">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Description</label>
-        <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+        <textarea name="description" id="edit_description" class="ui-input" rows="3"></textarea>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">
           <input type="checkbox" name="is_active" id="edit_is_active" value="1" style="margin-right: 8px;">
           Active
         </label>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Permissions</label>
         <div class="permissions-grid">
           @foreach($availablePermissions as $group => $permissions)

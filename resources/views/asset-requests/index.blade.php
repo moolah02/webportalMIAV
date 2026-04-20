@@ -34,9 +34,9 @@
                 </select>
             </div>
             <div class="filter-actions">
-                <button type="submit" class="btn btn-filter">Apply Filters</button>
+                <button type="submit" class="btn-filter">Apply Filters</button>
                 @if(request('status'))
-                <a href="{{ route('asset-requests.index') }}" class="btn btn-clear">Clear</a>
+                <a href="{{ route('asset-requests.index') }}" class="btn-clear">Clear</a>
                 @endif
             </div>
         </form>

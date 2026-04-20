@@ -12,33 +12,33 @@
             <div class="modal-body">
                 {{-- Summary Cards --}}
                 <div class="row g-3 mb-4">
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-light h-100">
-                            <div class="card-body text-center">
+                    <div>
+                        <div class="ui-card border-0 bg-light h-100">
+                            <div class="ui-card-body text-center">
                                 <div class="fs-2 fw-bold text-primary" id="previewTotalCount">0</div>
                                 <div class="text-muted small">Total in File</div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-success bg-opacity-10 h-100">
-                            <div class="card-body text-center">
+                    <div>
+                        <div class="ui-card border-0 bg-success bg-opacity-10 h-100">
+                            <div class="ui-card-body text-center">
                                 <div class="fs-2 fw-bold text-success" id="previewFoundCount">0</div>
                                 <div class="text-muted small">Ready to Assign</div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-info bg-opacity-10 h-100">
-                            <div class="card-body text-center">
+                    <div>
+                        <div class="ui-card border-0 bg-info bg-opacity-10 h-100">
+                            <div class="ui-card-body text-center">
                                 <div class="fs-2 fw-bold text-info" id="previewAlreadyCount">0</div>
                                 <div class="text-muted small">Already Assigned</div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card border-0 bg-warning bg-opacity-10 h-100">
-                            <div class="card-body text-center">
+                    <div>
+                        <div class="ui-card border-0 bg-warning bg-opacity-10 h-100">
+                            <div class="ui-card-body text-center">
                                 <div class="fs-2 fw-bold text-warning" id="previewNotFoundCount">0</div>
                                 <div class="text-muted small">Not Found</div>
                             </div>
@@ -137,7 +137,7 @@
                 <div class="border-top pt-3">
                     <label class="form-label fw-semibold">Inclusion Reason (optional)</label>
                     <input type="text"
-                           class="form-control"
+                           class="ui-input"
                            id="modalInclusionReason"
                            placeholder="e.g., Initial project scope, Client request, etc."
                            value="Bulk Upload">
@@ -145,10 +145,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn-secondary" data-dismiss="modal">
                     <i class="fas fa-times me-1"></i> Cancel
                 </button>
-                <button type="button" class="btn btn-success" onclick="confirmTerminalUpload()">
+                <button type="button" class="btn-success" onclick="confirmTerminalUpload()">
                     <i class="fas fa-check me-1"></i> Confirm & Assign Terminals
                 </button>
             </div>

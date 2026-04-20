@@ -98,7 +98,7 @@
 
 </style>
 
-<div class="container-fluid"
+<div
      x-data="{
          step: 1,
          selectedClient: null,
@@ -141,35 +141,35 @@
      }">
 
     <div class="row justify-content-center">
-        <div class="col-xl-10 col-lg-12">
+        <div>
 
             <!-- Workflow Progress -->
-            <div class="card mb-4" style="border-radius: 16px; border: 1px solid #e2e8f0;">
-                <div class="card-body p-4">
+            <div class="ui-card mb-4" style="border-radius: 16px; border: 1px solid #e2e8f0;">
+                <div class="ui-card-body p-4">
                     <h6 class="text-muted mb-3">PROJECT CREATION WORKFLOW</h6>
                     <div class="row g-3">
-                        <div class="col-md-3">
+                        <div>
                             <div class="workflow-step" :class="step === 1 ? 'active' : 'inactive'">
                                 <div class="fw-bold mb-1">STEP 1</div>
                                 <div class="small">Basic Setup</div>
                                 <div class="tiny text-muted" x-show="step === 1">You are here</div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div>
                             <div class="workflow-step inactive">
                                 <div class="fw-bold mb-1">STEP 2</div>
                                 <div class="small">Assign Technicians</div>
                                 <div class="tiny text-muted">Deploy to field</div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div>
                             <div class="workflow-step inactive">
                                 <div class="fw-bold mb-1">STEP 3</div>
                                 <div class="small">Track Progress</div>
                                 <div class="tiny text-muted">Monitor visits</div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div>
                             <div class="workflow-step inactive">
                                 <div class="fw-bold mb-1">STEP 4</div>
                                 <div class="small">Close Project</div>
@@ -181,8 +181,8 @@
             </div>
 
             <!-- Main Form Card -->
-            <div class="card" style="border-radius: 16px; border: 1px solid #e2e8f0;">
-                <div class="card-header" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); padding: 2rem; border-radius: 16px 16px 0 0;">
+            <div class="ui-card" style="border-radius: 16px; border: 1px solid #e2e8f0;">
+                <div class="ui-card-header" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); padding: 2rem; border-radius: 16px 16px 0 0;">
                     <h3 class="text-white mb-0">
                         <i class="fas fa-plus-circle me-3"></i>
                         Create New Project
@@ -193,7 +193,7 @@
                 <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
-                    <div class="card-body p-4">
+                    <div class="ui-card-body p-4">
                         @if ($errors->any())
                         <div class="alert alert-danger">
                             <strong>Please correct the following errors:</strong>
@@ -210,7 +210,7 @@
                             <label class="form-label fw-bold">
                                 Project Name <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control form-control-lg"
+                            <input type="text" class="ui-input ui-input-lg"
                                    name="project_name"
                                    value="{{ old('project_name') }}"
                                    placeholder="e.g., Q1 2026 Terminal Maintenance - Harare"
@@ -226,7 +226,7 @@
                             <label class="form-label fw-bold">
                                 Client <span class="text-danger">*</span>
                             </label>
-                            <select class="form-select form-select-lg"
+                            <select class="ui-select ui-select-lg"
                                     id="client_id"
                                     name="client_id"
                                     x-model="selectedClient"
@@ -247,15 +247,15 @@
                                     Client Information
                                 </h6>
                                 <div class="row g-3">
-                                    <div class="col-md-4">
+                                    <div>
                                         <div class="fw-bold text-primary" x-text="clientInfo?.total_terminals || 0"></div>
                                         <small class="text-muted">Total Terminals</small>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div>
                                         <div class="fw-bold text-success" x-text="clientInfo?.active_terminals || 0"></div>
                                         <small class="text-muted">Active</small>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div>
                                         <div class="fw-bold text-info" x-text="clientInfo?.primary_region || '--'"></div>
                                         <small class="text-muted">Primary Region</small>
                                     </div>
@@ -269,7 +269,7 @@
                                 Project Type <span class="text-danger">*</span>
                             </label>
                             <div class="row g-3">
-                                <div class="col-md-4" @click="selectProjectType('maintenance')">
+                                <div @click="selectProjectType('maintenance')">
                                     <div class="project-type-card" :class="selectedProjectType === 'maintenance' ? 'selected' : ''">
                                         <div class="fs-2 mb-2">🔧</div>
                                         <div class="fw-bold">Maintenance & Repairs</div>
@@ -278,7 +278,7 @@
                                                :checked="selectedProjectType === 'maintenance'" hidden>
                                     </div>
                                 </div>
-                                <div class="col-md-4" @click="selectProjectType('installation')">
+                                <div @click="selectProjectType('installation')">
                                     <div class="project-type-card" :class="selectedProjectType === 'installation' ? 'selected' : ''">
                                         <div class="fs-2 mb-2">📦</div>
                                         <div class="fw-bold">Installation & Setup</div>
@@ -287,7 +287,7 @@
                                                :checked="selectedProjectType === 'installation'" hidden>
                                     </div>
                                 </div>
-                                <div class="col-md-4" @click="selectProjectType('support')">
+                                <div @click="selectProjectType('support')">
                                     <div class="project-type-card" :class="selectedProjectType === 'support' ? 'selected' : ''">
                                         <div class="fs-2 mb-2">💬</div>
                                         <div class="fw-bold">Support & Troubleshooting</div>
@@ -296,7 +296,7 @@
                                                :checked="selectedProjectType === 'support'" hidden>
                                     </div>
                                 </div>
-                                <div class="col-md-4" @click="selectProjectType('other')">
+                                <div @click="selectProjectType('other')">
                                     <div class="project-type-card" :class="selectedProjectType === 'other' ? 'selected' : ''">
                                         <div class="fs-2 mb-2">📝</div>
                                         <div class="fw-bold">Other</div>
@@ -309,7 +309,7 @@
                             <!-- Other type text input -->
                             <div class="mt-3" x-show="selectedProjectType === 'other'" x-cloak>
                                 <input type="text"
-                                       class="form-control"
+                                       class="ui-input"
                                        placeholder="Describe the project type (e.g. Audit, Training, Migration…)"
                                        x-model="otherProjectType"
                                        maxlength="100">
@@ -325,9 +325,9 @@
                         <h5 class="mb-3"><i class="fas fa-calendar-alt me-2"></i>Timeline & Resources</h5>
 
                         <div class="row g-3 mb-4">
-                            <div class="col-md-6">
+                            <div>
                                 <label class="form-label fw-bold">Start Date</label>
-                                <input type="date" class="form-control"
+                                <input type="date" class="ui-input"
                                        name="start_date"
                                        x-model="startDate"
                                        :min="new Date().toISOString().split('T')[0]"
@@ -338,18 +338,18 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-3">
+                            <div>
                                 <label class="form-label fw-bold">Duration (Days)</label>
-                                <input type="number" class="form-control"
+                                <input type="number" class="ui-input"
                                        name="duration_days"
                                        x-model="durationDays"
                                        min="1"
                                        placeholder="e.g. 30">
                                 <input type="hidden" name="end_date" :value="calculateEndDate()">
                             </div>
-                            <div class="col-md-3">
+                            <div>
                                 <label class="form-label fw-bold">End Date</label>
-                                <input type="text" class="form-control" readonly
+                                <input type="text" class="ui-input" readonly
                                        :value="calculateEndDate()"
                                        style="background: #f8fafc;">
                                 <div class="field-hint">Auto-calculated</div>
@@ -370,20 +370,20 @@
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">Budget (USD)</label>
                                     <div class="btn-group mb-2 d-block">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        <button type="button" class="btn-sm btn-outline-secondary"
                                                 @click="applyBudgetTemplate(5000)">
                                             Small (~$5K)
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        <button type="button" class="btn-sm btn-outline-secondary"
                                                 @click="applyBudgetTemplate(15000)">
                                             Medium (~$15K)
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        <button type="button" class="btn-sm btn-outline-secondary"
                                                 @click="applyBudgetTemplate(50000)">
                                             Large (~$50K)
                                         </button>
                                     </div>
-                                    <input type="number" class="form-control"
+                                    <input type="number" class="ui-input"
                                            name="budget"
                                            x-model="budget"
                                            step="0.01" min="0" placeholder="0.00">
@@ -392,7 +392,7 @@
                                 <!-- Project Manager -->
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">Project Manager</label>
-                                    <select class="form-select" name="project_manager_id">
+                                    <select class="ui-select" name="project_manager_id">
                                         <option value="">Assign Later (Optional)</option>
                                         @foreach($projectManagers as $manager)
                                         <option value="{{ $manager->id }}">{{ $manager->full_name }}</option>
@@ -403,7 +403,7 @@
                                 <!-- Priority -->
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">Priority Level</label>
-                                    <select class="form-select" name="priority">
+                                    <select class="ui-select" name="priority">
                                         <option value="normal" selected>🟢 Normal Priority</option>
                                         <option value="high">🔴 High Priority</option>
                                         <option value="low">⚪ Low Priority</option>
@@ -414,14 +414,14 @@
                                 <!-- Description -->
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">Project Description</label>
-                                    <textarea class="form-control" name="description" rows="3"
+                                    <textarea class="ui-input" name="description" rows="3"
                                               placeholder="Optional: Describe objectives, scope, and deliverables...">{{ old('description') }}</textarea>
                                 </div>
 
                                 <!-- Notes -->
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">Additional Notes</label>
-                                    <textarea class="form-control" name="notes" rows="2"
+                                    <textarea class="ui-input" name="notes" rows="2"
                                               placeholder="Optional: Special requirements or constraints...">{{ old('notes') }}</textarea>
                                 </div>
                             </div>
@@ -435,12 +435,12 @@
                     </div>
 
                     <!-- Footer -->
-                    <div class="card-footer d-flex justify-content-between align-items-center p-4"
+                    <div class="ui-card-footer d-flex justify-content-between align-items-center p-4"
                          style="background: #f8fafc; border-radius: 0 0 16px 16px;">
-                        <a href="{{ route('projects.index') }}" class="btn btn-lg btn-secondary">
+                        <a href="{{ route('projects.index') }}" class="btn-lg btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i> Cancel
                         </a>
-                        <button type="submit" class="btn btn-lg btn-primary">
+                        <button type="submit" class="btn-lg btn-primary">
                             <i class="fas fa-rocket me-2"></i> Create Project & Continue
                         </button>
                     </div>

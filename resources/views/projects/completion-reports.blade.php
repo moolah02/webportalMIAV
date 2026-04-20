@@ -4,7 +4,7 @@
 
 @section('content')
 
-<div class="container-fluid py-4">
+<div class="py-4">
     {{-- Page Header --}}
 
     {{-- Statistics Cards --}}
@@ -59,25 +59,25 @@
     </div>
 
     {{-- Navigation --}}
-    <div class="card mb-4">
-        <div class="card-header">
-            <h6 class="card-title">Project Management</h6>
+    <div class="ui-card mb-4">
+        <div class="ui-card-header">
+            <h6 class="ui-card-title">Project Management</h6>
         </div>
-        <div class="card-body">
+        <div class="ui-card-body">
             <div class="nav-buttons">
-                <button class="btn btn-primary active" onclick="showTab('active-projects')">
+                <button class="btn-primary active" onclick="showTab('active-projects')">
                     <i class="fas fa-play-circle"></i> Active Projects
                 </button>
-                <button class="btn btn-secondary" onclick="showTab('completed-projects')">
+                <button class="btn-secondary" onclick="showTab('completed-projects')">
                     <i class="fas fa-check-circle"></i> Completed Projects
                 </button>
-                <button class="btn btn-secondary" onclick="showTab('analytics')">
+                <button class="btn-secondary" onclick="showTab('analytics')">
                     <i class="fas fa-chart-bar"></i> Analytics
                 </button>
-                <button class="btn btn-secondary" onclick="showTab('reports')">
+                <button class="btn-secondary" onclick="showTab('reports')">
                     <i class="fas fa-file-pdf"></i> Reports
                 </button>
-                <button class="btn btn-secondary" onclick="showTab('manual-reports')">
+                <button class="btn-secondary" onclick="showTab('manual-reports')">
                     <i class="fas fa-cogs"></i> Generate Reports
                 </button>
             </div>
@@ -86,9 +86,9 @@
 
     {{-- Active Projects Tab --}}
     <div id="active-projects" class="tab-content active">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title">Active Projects</h6>
+        <div class="ui-card">
+            <div class="ui-card-header">
+                <h6 class="ui-card-title">Active Projects</h6>
                 <span class="badge">{{ $activeProjects->count() }}</span>
             </div>
 
@@ -144,10 +144,10 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="action-buttons">
-                                        <a href="{{ route('projects.show', $project) }}" class="btn btn-outline">
+                                        <a href="{{ route('projects.show', $project) }}" class="btn-secondary">
                                             <i class="fas fa-eye"></i> View
                                         </a>
-                                        <a href="{{ route('projects.closure-wizard', $project) }}" class="btn btn-primary">
+                                        <a href="{{ route('projects.closure-wizard', $project) }}" class="btn-primary">
                                             <i class="fas fa-flag-checkered"></i> Complete
                                         </a>
                                     </div>
@@ -168,9 +168,9 @@
 
     {{-- Completed Projects Tab --}}
     <div id="completed-projects" class="tab-content">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title">Completed Projects</h6>
+        <div class="ui-card">
+            <div class="ui-card-header">
+                <h6 class="ui-card-title">Completed Projects</h6>
                 <span class="badge">{{ $completedProjects->count() }}</span>
             </div>
 
@@ -232,11 +232,11 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="action-buttons">
-                                        <a href="{{ route('projects.show', $project) }}" class="btn btn-outline">
+                                        <a href="{{ route('projects.show', $project) }}" class="btn-secondary">
                                             <i class="fas fa-eye"></i> View
                                         </a>
                                         @if($project->completion)
-                                        <button class="btn btn-secondary" onclick="showCompletionDetails('{{ $project->id }}')">
+                                        <button class="btn-secondary" onclick="showCompletionDetails('{{ $project->id }}')">
                                             <i class="fas fa-info-circle"></i> Details
                                         </button>
                                         @endif
@@ -320,9 +320,9 @@
 
     {{-- Reports Tab --}}
     <div id="reports" class="tab-content">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title">Generated Reports</h6>
+        <div class="ui-card">
+            <div class="ui-card-header">
+                <h6 class="ui-card-title">Generated Reports</h6>
                 <span class="badge">{{ $completedProjects->where('report_path')->count() }}</span>
             </div>
 
@@ -356,7 +356,7 @@
                                 </td>
                                 <td class="text-end">
                                     @if($project->report_path)
-                                    <a href="{{ route('projects.download-report', $project) }}" class="btn btn-primary">
+                                    <a href="{{ route('projects.download-report', $project) }}" class="btn-primary">
                                         <i class="fas fa-download"></i> Download
                                     </a>
                                     @endif
@@ -378,13 +378,13 @@
     {{-- Manual Reports Tab --}}
     <div id="manual-reports" class="tab-content">
         @if($completedProjects->count() > 0)
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="card-title">Select Project for Report Generation</h6>
+            <div class="ui-card mb-4">
+                <div class="ui-card-header">
+                    <h6 class="ui-card-title">Select Project for Report Generation</h6>
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <select id="projectSelector" class="form-control">
+                <div class="ui-card-body">
+                    <div class="mb-4">
+                        <select id="projectSelector" class="ui-input">
                             <option value="">Choose a completed project...</option>
                             @foreach($completedProjects as $project)
                                 <option value="{{ $project->id }}">{{ $project->project_name }} - {{ $project->client->company_name }}</option>
@@ -398,8 +398,8 @@
                 {{-- This will be populated via AJAX when project is selected --}}
             </div>
         @else
-            <div class="card">
-                <div class="card-body">
+            <div class="ui-card">
+                <div class="ui-card-body">
                     <div class="empty-state">
                         <h5>No completed projects</h5>
                         <p>Complete some projects first to generate reports.</p>

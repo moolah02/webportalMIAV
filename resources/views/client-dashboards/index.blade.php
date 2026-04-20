@@ -98,7 +98,7 @@
                 @endforeach
             </select>
 
-            <button type="submit" class="btn btn-secondary">Filter</button>
+            <button type="submit" class="btn-secondary">Filter</button>
 
             @if(request()->hasAny(['search','status','region']))
             <a href="{{ route('clients.index') }}" class="btn-secondary">Clear</a>

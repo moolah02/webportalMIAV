@@ -270,9 +270,9 @@
         <form id="ticketForm" onsubmit="submitTicket(event)">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Priority</label>
-                    <select name="priority" required class="form-control">
+                    <select name="priority" required class="ui-input">
                         <option value="low">Low</option>
                         <option value="medium" selected>Medium</option>
                         <option value="high">High</option>
@@ -280,9 +280,9 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Issue Type</label>
-                    <select name="issue_type" required class="form-control">
+                    <select name="issue_type" required class="ui-input">
                         <option value="">Select Issue Type</option>
                         <option value="hardware">Hardware Issue</option>
                         <option value="software">Software Issue</option>
@@ -294,19 +294,19 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Issue Description</label>
-                    <textarea name="description" rows="4" required class="form-control" placeholder="Describe the issue in detail..."></textarea>
+                    <textarea name="description" rows="4" required class="ui-input" placeholder="Describe the issue in detail..."></textarea>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Reported By</label>
-                    <input type="text" name="reported_by" class="form-control" placeholder="Name of person reporting" value="{{ $posTerminal->merchant_contact_person }}">
+                    <input type="text" name="reported_by" class="ui-input" placeholder="Name of person reporting" value="{{ $posTerminal->merchant_contact_person }}">
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Contact Number</label>
-                    <input type="tel" name="contact_number" class="form-control" placeholder="Contact number" value="{{ $posTerminal->merchant_phone }}">
+                    <input type="tel" name="contact_number" class="ui-input" placeholder="Contact number" value="{{ $posTerminal->merchant_phone }}">
                 </div>
             </div>
             <div class="modal-footer">
@@ -327,9 +327,9 @@
         <form id="serviceForm" onsubmit="submitService(event)">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Service Type</label>
-                    <select name="service_type" required class="form-control">
+                    <select name="service_type" required class="ui-input">
                         <option value="">Select Service Type</option>
                         <option value="preventive">Preventive Maintenance</option>
                         <option value="corrective">Corrective Maintenance</option>
@@ -340,19 +340,19 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Scheduled Date</label>
-                    <input type="date" name="scheduled_date" required class="form-control" min="{{ date('Y-m-d') }}">
+                    <input type="date" name="scheduled_date" required class="ui-input" min="{{ date('Y-m-d') }}">
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Scheduled Time</label>
-                    <input type="time" name="scheduled_time" required class="form-control">
+                    <input type="time" name="scheduled_time" required class="ui-input">
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Assigned Technician</label>
-                    <select name="technician_id" class="form-control">
+                    <select name="technician_id" class="ui-input">
                         <option value="">Select Technician</option>
                         <option value="1">John Doe</option>
                         <option value="2">Jane Smith</option>
@@ -360,12 +360,12 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Service Notes</label>
-                    <textarea name="notes" rows="3" class="form-control" placeholder="Any special instructions or notes..."></textarea>
+                    <textarea name="notes" rows="3" class="ui-input" placeholder="Any special instructions or notes..."></textarea>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>
                         <input type="checkbox" name="update_next_service" checked>
                         Update next service due date
@@ -390,9 +390,9 @@
         <form id="notesForm" onsubmit="submitNotes(event)">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Note Type</label>
-                    <select name="note_type" required class="form-control">
+                    <select name="note_type" required class="ui-input">
                         <option value="general">General Note</option>
                         <option value="technical">Technical Note</option>
                         <option value="customer">Customer Feedback</option>
@@ -401,12 +401,12 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Notes</label>
-                    <textarea name="notes" rows="5" required class="form-control" placeholder="Enter your notes here..."></textarea>
+                    <textarea name="notes" rows="5" required class="ui-input" placeholder="Enter your notes here..."></textarea>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>
                         <input type="checkbox" name="is_important">
                         Mark as Important
@@ -431,9 +431,9 @@
         <form id="reportForm" onsubmit="submitReport(event)">
             @csrf
             <div class="modal-body">
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Report Type</label>
-                    <select name="report_type" required class="form-control" onchange="updateReportOptions(this.value)">
+                    <select name="report_type" required class="ui-input" onchange="updateReportOptions(this.value)">
                         <option value="">Select Report Type</option>
                         <option value="service_history">Service History Report</option>
                         <option value="status_log">Status Change Log</option>
@@ -443,24 +443,24 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Date Range</label>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input type="date" name="start_date" class="form-control" placeholder="Start Date">
-                        <input type="date" name="end_date" class="form-control" placeholder="End Date">
+                        <input type="date" name="start_date" class="ui-input" placeholder="Start Date">
+                        <input type="date" name="end_date" class="ui-input" placeholder="End Date">
                     </div>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Format</label>
-                    <select name="format" required class="form-control">
+                    <select name="format" required class="ui-input">
                         <option value="pdf">PDF Document</option>
                         <option value="excel">Excel Spreadsheet</option>
                         <option value="csv">CSV File</option>
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="mb-4">
                     <label>Include Options</label>
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <label><input type="checkbox" name="include[]" value="charts" checked> Include Charts</label>

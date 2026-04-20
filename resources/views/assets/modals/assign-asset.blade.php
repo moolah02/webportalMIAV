@@ -111,7 +111,7 @@
                 
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn btn-success" style="flex: 1; background: #4caf50; border-color: #4caf50;">
+                    <button type="submit" class="btn-success" style="flex: 1; background: #4caf50; border-color: #4caf50;">
                         <span style="font-size: 16px; margin-right: 8px;">🎯</span>
                         Assign Asset
                     </button>

@@ -224,7 +224,7 @@
   }
 </style>
 
-<div class="container-fluid">
+<div class="">
   <!-- Breadcrumb -->
   <div style="background: #fff; padding: 20px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
     <nav style="font-size: 14px; color: #666;">
@@ -325,21 +325,21 @@
     <h3 style="margin-top: 0;">Add {{ str_replace(['Categories', 'Status', 'Types'], ['Category', 'Status', 'Type'], $typeLabel) }}</h3>
     <form id="addForm" method="POST" action="{{ route('settings.category.store', $type) }}">
       @csrf
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Name *</label>
-        <input type="text" name="name" class="form-control" required>
+        <input type="text" name="name" class="ui-input" required>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Description</label>
-        <textarea name="description" class="form-control" rows="3"></textarea>
+        <textarea name="description" class="ui-input" rows="3"></textarea>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Color</label>
-        <input type="color" name="color" class="form-control" style="height: 50px;">
+        <input type="color" name="color" class="ui-input" style="height: 50px;">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Icon (Emoji)</label>
-        <input type="text" name="icon" class="form-control" placeholder="📄">
+        <input type="text" name="icon" class="ui-input" placeholder="📄">
       </div>
       <div class="modal-buttons">
         <button type="button" class="btn-secondary" onclick="closeAddModal()">Cancel</button>
@@ -356,23 +356,23 @@
     <form id="editForm" method="POST">
       @csrf
       @method('PUT')
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Name *</label>
-        <input type="text" name="name" id="edit_name" class="form-control" required>
+        <input type="text" name="name" id="edit_name" class="ui-input" required>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Description</label>
-        <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+        <textarea name="description" id="edit_description" class="ui-input" rows="3"></textarea>
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Color</label>
-        <input type="color" name="color" id="edit_color" class="form-control" style="height: 50px;">
+        <input type="color" name="color" id="edit_color" class="ui-input" style="height: 50px;">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">Icon (Emoji)</label>
-        <input type="text" name="icon" id="edit_icon" class="form-control" placeholder="📄">
+        <input type="text" name="icon" id="edit_icon" class="ui-input" placeholder="📄">
       </div>
-      <div class="form-group">
+      <div class="mb-4">
         <label class="form-label">
           <input type="checkbox" name="is_active" id="edit_is_active" value="1" style="margin-right: 8px;">
           Active

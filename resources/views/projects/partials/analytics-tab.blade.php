@@ -20,7 +20,7 @@
 
 <!-- Summary Cards -->
 <div class="row g-4 mb-5">
-    <div class="col-md-3">
+    <div>
         <div class="stats-card bg-primary text-white">
             <div class="stats-icon">
                 <i class="fas fa-play-circle"></i>
@@ -31,7 +31,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div>
         <div class="stats-card bg-success text-white">
             <div class="stats-icon">
                 <i class="fas fa-check-circle"></i>
@@ -42,7 +42,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div>
         <div class="stats-card bg-info text-white">
             <div class="stats-icon">
                 <i class="fas fa-star"></i>
@@ -72,7 +72,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div>
         <div class="stats-card bg-warning text-white">
             <div class="stats-icon">
                 <i class="fas fa-heart"></i>
@@ -102,7 +102,7 @@
 
 <!-- Recent Completions Section -->
 <div class="row g-4">
-    <div class="col-12">
+    <div>
         <div class="analytics-card">
             <div class="analytics-header">
                 <h6 class="mb-0 text-dark">
