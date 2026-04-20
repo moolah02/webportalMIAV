@@ -58,6 +58,14 @@
 
   /* ── Page-level filter bar ───────────────────────────────── */
   .filter-bar   { @apply ui-card p-4 mb-5 flex flex-wrap items-end gap-3; }
+  /* Keep filter inputs auto-width so they flow inline instead of full-row */
+  .filter-bar .ui-select,
+  .filter-bar .ui-input { @apply w-auto min-w-[9rem]; }
+
+  /* ── Tab navigation ──────────────────────────────────────── */
+  .tab-nav      { @apply flex border-b border-gray-200 overflow-x-auto; }
+  .tab-btn      { @apply flex shrink-0 items-center gap-2 px-5 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 transition-colors cursor-pointer bg-transparent no-underline; }
+  .tab-btn.active { @apply text-[#1a3a5c] border-[#1a3a5c]; }
 
   /* ── Empty state ─────────────────────────────────────────── */
   .empty-state     { @apply text-center py-16 text-gray-400; }

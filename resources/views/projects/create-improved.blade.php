@@ -6,33 +6,6 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 <style>
-:root {
-    --primary-color: #1a3a5c;
-    --primary-hover: #152e4a;
-    --success-color: #48bb78;
-    --warning-color: #ed8936;
-    --danger-color: #fc5c65;
-    --info-color: #1a3a5c;
-}
-
-.workflow-step {
-    position: relative;
-    padding: 1rem;
-    text-align: center;
-}
-
-.workflow-step.active {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-    color: white;
-    border-radius: 12px;
-}
-
-.workflow-step.inactive {
-    background: #f1f5f9;
-    color: #64748b;
-    border-radius: 12px;
-}
-
 .client-info-box {
     background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
     border-left: 4px solid var(--info-color);
@@ -140,40 +113,30 @@
          dummy: null
      }">
 
-    <div class="row justify-content-center">
-        <div>
+    <div>
 
-            <!-- Workflow Progress -->
-            <div class="ui-card mb-4" style="border-radius: 16px; border: 1px solid #e2e8f0;">
-                <div class="ui-card-body p-4">
-                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Project Creation Workflow</p>
-                    <div class="grid grid-cols-4 gap-3">
-                        <div class="workflow-step" :class="step === 1 ? 'active' : 'inactive'">
-                            <div class="font-bold text-sm mb-1">STEP 1</div>
-                            <div class="text-sm">Basic Setup</div>
-                            <div class="text-xs text-gray-400" x-show="step === 1">You are here</div>
-                        </div>
-                        <div class="workflow-step inactive">
-                            <div class="font-bold text-sm mb-1">STEP 2</div>
-                            <div class="text-sm">Assign Technicians</div>
-                            <div class="text-xs text-gray-400">Deploy to field</div>
-                        </div>
-                        <div class="workflow-step inactive">
-                            <div class="font-bold text-sm mb-1">STEP 3</div>
-                            <div class="text-sm">Track Progress</div>
-                            <div class="text-xs text-gray-400">Monitor visits</div>
-                        </div>
-                        <div class="workflow-step inactive">
-                            <div class="font-bold text-sm mb-1">STEP 4</div>
-                            <div class="text-sm">Close Project</div>
-                            <div class="text-xs text-gray-400">Generate reports</div>
-                        </div>
+            <!-- Main Form Card with step indicator header -->
+            <div class="ui-card mb-6">
+                <!-- Step indicator (tab-nav style) -->
+                <div class="tab-nav">
+                    <div class="tab-btn active">
+                        <span class="w-5 h-5 rounded-full bg-[#1a3a5c] text-white text-xs flex items-center justify-center flex-shrink-0">1</span>
+                        Basic Setup
+                    </div>
+                    <div class="tab-btn">
+                        <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center flex-shrink-0">2</span>
+                        Assign Technicians
+                    </div>
+                    <div class="tab-btn">
+                        <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center flex-shrink-0">3</span>
+                        Track Progress
+                    </div>
+                    <div class="tab-btn">
+                        <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center flex-shrink-0">4</span>
+                        Close Project
                     </div>
                 </div>
-            </div>
-
-            <!-- Main Form Card -->
-            <div class="ui-card" style="border-radius: 16px; border: 1px solid #e2e8f0;">
+                <!-- Form header -->
                 <div class="ui-card-header">
                     <div>
                         <h5 class="m-0 font-semibold text-gray-900">Create New Project</h5>
@@ -317,7 +280,7 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label class="form-label fw-bold">Start Date</label>
+                                <label class="ui-label">Start Date</label>
                                 <input type="date" class="ui-input"
                                        name="start_date"
                                        x-model="startDate"
@@ -330,7 +293,7 @@
                             </div>
 
                             <div>
-                                <label class="form-label fw-bold">Duration (Days)</label>
+                                <label class="ui-label">Duration (Days)</label>
                                 <input type="number" class="ui-input"
                                        name="duration_days"
                                        x-model="durationDays"
@@ -339,7 +302,7 @@
                                 <input type="hidden" name="end_date" :value="calculateEndDate()">
                             </div>
                             <div>
-                                <label class="form-label fw-bold">End Date</label>
+                                <label class="ui-label">End Date</label>
                                 <input type="text" class="ui-input" readonly
                                        :value="calculateEndDate()"
                                        style="background: #f8fafc;">
@@ -359,7 +322,7 @@
                             <div class="mt-3">
                                 <!-- Budget with Templates -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-bold">Budget (USD)</label>
+                                    <label class="ui-label">Budget (USD)</label>
                                     <div class="btn-group mb-2 d-block">
                                         <button type="button" class="btn-sm btn-outline-secondary"
                                                 @click="applyBudgetTemplate(5000)">
@@ -382,7 +345,7 @@
 
                                 <!-- Project Manager -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-bold">Project Manager</label>
+                                    <label class="ui-label">Project Manager</label>
                                     <select class="ui-select" name="project_manager_id">
                                         <option value="">Assign Later (Optional)</option>
                                         @foreach($projectManagers as $manager)
@@ -393,7 +356,7 @@
 
                                 <!-- Priority -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-bold">Priority Level</label>
+                                    <label class="ui-label">Priority Level</label>
                                     <select class="ui-select" name="priority">
                                         <option value="normal" selected>🟢 Normal Priority</option>
                                         <option value="high">🔴 High Priority</option>
@@ -404,14 +367,14 @@
 
                                 <!-- Description -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-bold">Project Description</label>
+                                    <label class="ui-label">Project Description</label>
                                     <textarea class="ui-input" name="description" rows="3"
                                               placeholder="Optional: Describe objectives, scope, and deliverables...">{{ old('description') }}</textarea>
                                 </div>
 
                                 <!-- Notes -->
                                 <div class="mb-4">
-                                    <label class="form-label fw-bold">Additional Notes</label>
+                                    <label class="ui-label">Additional Notes</label>
                                     <textarea class="ui-input" name="notes" rows="2"
                                               placeholder="Optional: Special requirements or constraints...">{{ old('notes') }}</textarea>
                                 </div>
@@ -436,7 +399,6 @@
                     </div>
                 </form>
             </div>
-        </div>
     </div>
 </div>
 
