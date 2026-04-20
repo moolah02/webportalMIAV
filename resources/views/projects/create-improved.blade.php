@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', 'New Project')
 
 @section('content')
@@ -7,12 +7,12 @@
 
 <style>
 :root {
-    --primary-color: #4299e1;
-    --primary-hover: #3182ce;
+    --primary-color: #1a3a5c;
+    --primary-hover: #152e4a;
     --success-color: #48bb78;
     --warning-color: #ed8936;
     --danger-color: #fc5c65;
-    --info-color: #4299e1;
+    --info-color: #1a3a5c;
 }
 
 .workflow-step {
@@ -87,13 +87,13 @@
 
 .project-type-card:hover {
     border-color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    box-shadow: 0 4px 12px rgba(26, 58, 92, 0.15);
     transform: translateY(-2px);
 }
 
 .project-type-card.selected {
     border-color: var(--primary-color);
-    background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(79, 70, 229, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(26, 58, 92, 0.05) 0%, rgba(26, 58, 92, 0.1) 100%);
 }
 
 </style>
@@ -146,35 +146,27 @@
             <!-- Workflow Progress -->
             <div class="ui-card mb-4" style="border-radius: 16px; border: 1px solid #e2e8f0;">
                 <div class="ui-card-body p-4">
-                    <h6 class="text-muted mb-3">PROJECT CREATION WORKFLOW</h6>
-                    <div class="row g-3">
-                        <div>
-                            <div class="workflow-step" :class="step === 1 ? 'active' : 'inactive'">
-                                <div class="fw-bold mb-1">STEP 1</div>
-                                <div class="small">Basic Setup</div>
-                                <div class="tiny text-muted" x-show="step === 1">You are here</div>
-                            </div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Project Creation Workflow</p>
+                    <div class="grid grid-cols-4 gap-3">
+                        <div class="workflow-step" :class="step === 1 ? 'active' : 'inactive'">
+                            <div class="font-bold text-sm mb-1">STEP 1</div>
+                            <div class="text-sm">Basic Setup</div>
+                            <div class="text-xs text-gray-400" x-show="step === 1">You are here</div>
                         </div>
-                        <div>
-                            <div class="workflow-step inactive">
-                                <div class="fw-bold mb-1">STEP 2</div>
-                                <div class="small">Assign Technicians</div>
-                                <div class="tiny text-muted">Deploy to field</div>
-                            </div>
+                        <div class="workflow-step inactive">
+                            <div class="font-bold text-sm mb-1">STEP 2</div>
+                            <div class="text-sm">Assign Technicians</div>
+                            <div class="text-xs text-gray-400">Deploy to field</div>
                         </div>
-                        <div>
-                            <div class="workflow-step inactive">
-                                <div class="fw-bold mb-1">STEP 3</div>
-                                <div class="small">Track Progress</div>
-                                <div class="tiny text-muted">Monitor visits</div>
-                            </div>
+                        <div class="workflow-step inactive">
+                            <div class="font-bold text-sm mb-1">STEP 3</div>
+                            <div class="text-sm">Track Progress</div>
+                            <div class="text-xs text-gray-400">Monitor visits</div>
                         </div>
-                        <div>
-                            <div class="workflow-step inactive">
-                                <div class="fw-bold mb-1">STEP 4</div>
-                                <div class="small">Close Project</div>
-                                <div class="tiny text-muted">Generate reports</div>
-                            </div>
+                        <div class="workflow-step inactive">
+                            <div class="font-bold text-sm mb-1">STEP 4</div>
+                            <div class="text-sm">Close Project</div>
+                            <div class="text-xs text-gray-400">Generate reports</div>
                         </div>
                     </div>
                 </div>
@@ -182,12 +174,11 @@
 
             <!-- Main Form Card -->
             <div class="ui-card" style="border-radius: 16px; border: 1px solid #e2e8f0;">
-                <div class="ui-card-header" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); padding: 2rem; border-radius: 16px 16px 0 0;">
-                    <h3 class="text-white mb-0">
-                        <i class="fas fa-plus-circle me-3"></i>
-                        Create New Project
-                    </h3>
-                    <p class="text-white-50 mb-0 mt-2">Quick setup - Only 3 required fields!</p>
+                <div class="ui-card-header">
+                    <div>
+                        <h5 class="m-0 font-semibold text-gray-900">Create New Project</h5>
+                        <p class="m-0 mt-1 text-sm text-gray-500">Quick setup — only 3 required fields</p>
+                    </div>
                 </div>
 
                 <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data">
@@ -195,9 +186,9 @@
 
                     <div class="ui-card-body p-4">
                         @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <strong>Please correct the following errors:</strong>
-                            <ul class="mb-0 mt-2">
+                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+                            <strong class="font-semibold">Please correct the following errors:</strong>
+                            <ul class="mt-2 ml-4 list-disc">
                                 @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                                 @endforeach
@@ -207,8 +198,8 @@
 
                         <!-- Project Name -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Project Name <span class="text-danger">*</span>
+                            <label class="ui-label">
+                                Project Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" class="ui-input ui-input-lg"
                                    name="project_name"
@@ -223,8 +214,8 @@
 
                         <!-- Client Selection with Live Info -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Client <span class="text-danger">*</span>
+                            <label class="ui-label">
+                                Client <span class="text-red-500">*</span>
                             </label>
                             <select class="ui-select ui-select-lg"
                                     id="client_id"
@@ -265,10 +256,10 @@
 
                         <!-- Project Type (Visual Cards) -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Project Type <span class="text-danger">*</span>
+                            <label class="ui-label">
+                                Project Type <span class="text-red-500">*</span>
                             </label>
-                            <div class="row g-3">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <div @click="selectProjectType('maintenance')">
                                     <div class="project-type-card" :class="selectedProjectType === 'maintenance' ? 'selected' : ''">
                                         <div class="fs-2 mb-2">🔧</div>
@@ -322,9 +313,9 @@
                         <hr class="my-4">
 
                         <!-- Timeline (Smart Duration Selector) -->
-                        <h5 class="mb-3"><i class="fas fa-calendar-alt me-2"></i>Timeline & Resources</h5>
+                        <h5 class="mb-3 font-semibold text-gray-800 text-base"><i class="fas fa-calendar-alt me-2"></i>Timeline & Resources</h5>
 
-                        <div class="row g-3 mb-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                             <div>
                                 <label class="form-label fw-bold">Start Date</label>
                                 <input type="date" class="ui-input"
@@ -360,7 +351,7 @@
 
                         <!-- Optional Fields (Collapsible) -->
                         <details>
-                            <summary class="fw-bold mb-3" style="cursor: pointer; color: var(--primary-color);">
+                            <summary class="font-semibold mb-3 cursor-pointer" style="color: var(--primary-color);">
                                 <i class="fas fa-chevron-down me-2"></i>
                                 Optional Fields (Budget, Manager, Notes)
                             </summary>
@@ -435,12 +426,11 @@
                     </div>
 
                     <!-- Footer -->
-                    <div class="ui-card-footer d-flex justify-content-between align-items-center p-4"
-                         style="background: #f8fafc; border-radius: 0 0 16px 16px;">
-                        <a href="{{ route('projects.index') }}" class="btn-lg btn-secondary">
+                    <div class="px-5 py-4 border-t border-gray-100 flex justify-between items-center bg-gray-50">
+                        <a href="{{ route('projects.index') }}" class="btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i> Cancel
                         </a>
-                        <button type="submit" class="btn-lg btn-primary">
+                        <button type="submit" class="btn-primary">
                             <i class="fas fa-rocket me-2"></i> Create Project & Continue
                         </button>
                     </div>

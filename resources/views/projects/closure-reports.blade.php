@@ -1,4 +1,4 @@
-{{-- resources/views/projects/closure-reports.blade.php --}}
+﻿{{-- resources/views/projects/closure-reports.blade.php --}}
 @extends('layouts.app')
 @section('title', 'Closure Reports')
 
@@ -8,52 +8,33 @@
     {{-- Page Header --}}
 
     {{-- Statistics Cards --}}
-    <div class="stats-grid mb-4">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div class="stat-card">
-            <div class="stat-card-body">
-                <div class="stat-icon">
-                    <i class="fas fa-play-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-number">{{ $activeProjects->count() }}</div>
-                    <div class="stat-label">Active Projects</div>
-                </div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">▶️</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $activeProjects->count() }}</div>
+                <div class="stat-label">Active Projects</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="stat-card-body">
-                <div class="stat-icon stat-icon-success">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-number">{{ $closedProjects->count() }}</div>
-                    <div class="stat-label">Closed Projects</div>
-                </div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $closedProjects->count() }}</div>
+                <div class="stat-label">Closed Projects</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="stat-card-body">
-                <div class="stat-icon stat-icon-pending">
-                    <i class="fas fa-file-pdf"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-number">{{ $closedProjects->where('report_path')->count() }}</div>
-                    <div class="stat-label">Reports Generated</div>
-                </div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📄</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $closedProjects->where('report_path')->count() }}</div>
+                <div class="stat-label">Reports Generated</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="stat-card-body">
-                <div class="stat-icon stat-icon-progress">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-number">{{ number_format($activeProjects->avg('completion_percentage') ?? 0, 1) }}%</div>
-                    <div class="stat-label">Avg. Progress</div>
-                </div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📈</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ number_format($activeProjects->avg('completion_percentage') ?? 0, 1) }}%</div>
+                <div class="stat-label">Avg. Progress</div>
             </div>
         </div>
     </div>
@@ -245,53 +226,42 @@
 
     {{-- Analytics Tab --}}
     <div id="analytics" class="tab-content">
-        <div class="stats-grid mb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
             <div class="stat-card">
-                <div class="stat-card-body">
-                    <div class="stat-icon stat-icon-progress">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number">{{ number_format($activeProjects->avg('completion_percentage') ?? 0, 1) }}%</div>
-                        <div class="stat-label">Avg. Progress</div>
-                    </div>
+                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📊</div>
+                <div class="flex-1 min-w-0">
+                    <div class="stat-number">{{ number_format($activeProjects->avg('completion_percentage') ?? 0, 1) }}%</div>
+                    <div class="stat-label">Avg. Progress</div>
                 </div>
             </div>
-
             <div class="stat-card">
-
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-card-body">
-                    <div class="stat-icon stat-icon-pending">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number">{{ $closedProjects->where('closure')->avg('closure.client_satisfaction') ? number_format($closedProjects->where('closure')->avg('closure.client_satisfaction'), 1) : '0' }}</div>
-                        <div class="stat-label">Avg. Client Satisfaction</div>
-                    </div>
+                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">❤️</div>
+                <div class="flex-1 min-w-0">
+                    <div class="stat-number">{{ $closedProjects->where('closure')->avg('closure.client_satisfaction') ? number_format($closedProjects->where('closure')->avg('closure.client_satisfaction'), 1) : '0' }}</div>
+                    <div class="stat-label">Avg. Client Satisfaction</div>
                 </div>
             </div>
-
             <div class="stat-card">
-                <div class="stat-card-body">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar"></i>
+                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📅</div>
+                <div class="flex-1 min-w-0">
+                    <div class="stat-number">
+                        @php
+                        $avgDuration = $closedProjects->filter(function($project) {
+                            return $project->start_date && $project->closed_at;
+                        })->map(function($project) {
+                            return $project->start_date->diffInDays($project->closed_at);
+                        })->avg();
+                        @endphp
+                        {{ $avgDuration ? number_format($avgDuration, 0) : '0' }}
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-number">
-                            @php
-                            $avgDuration = $closedProjects->filter(function($project) {
-                                return $project->start_date && $project->closed_at;
-                            })->map(function($project) {
-                                return $project->start_date->diffInDays($project->closed_at);
-                            })->avg();
-                            @endphp
-                            {{ $avgDuration ? number_format($avgDuration, 0) : '0' }}
-                        </div>
-                        <div class="stat-label">Avg. Duration (days)</div>
-                    </div>
+                    <div class="stat-label">Avg. Duration (days)</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🗂️</div>
+                <div class="flex-1 min-w-0">
+                    <div class="stat-number">{{ $closedProjects->count() }}</div>
+                    <div class="stat-label">Total Closed</div>
                 </div>
             </div>
         </div>
@@ -412,12 +382,7 @@
     gap: 1rem;
 }
 
-.stat-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
+
 
 .stat-card-body {
     padding: 1.5rem;
@@ -521,48 +486,9 @@
     gap: 0.5rem;
 }
 
-.btn-primary {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: #ffffff;
-}
-
-.btn-primary:hover {
-    background: #2563eb;
-    border-color: #2563eb;
-    color: #ffffff;
-    text-decoration: none;
-}
-
 .btn-primary.active {
-    background: #2563eb;
-    border-color: #2563eb;
-}
-
-.btn-secondary {
-    background: #f9fafb;
-    border-color: #d1d5db;
-    color: #374151;
-}
-
-.btn-secondary:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
-    color: #374151;
-    text-decoration: none;
-}
-
-.btn-outline {
-    background: transparent;
-    border-color: #d1d5db;
-    color: #374151;
-}
-
-.btn-outline:hover {
-    background: #f9fafb;
-    border-color: #9ca3af;
-    color: #374151;
-    text-decoration: none;
+    background: #152e4a;
+    border-color: #152e4a;
 }
 
 /* Table Styling */
@@ -686,7 +612,7 @@
 
 .form-control:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: #1a3a5c;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
