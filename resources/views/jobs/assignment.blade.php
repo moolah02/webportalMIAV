@@ -10,16 +10,16 @@
             <p style="color: #666; margin: 5px 0 0 0;">Assign technicians to regions and POS terminals for service visits</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <button onclick="exportAssignments()" class="btn" style="background: #4caf50; color: white; border-color: #4caf50;">
+            <button onclick="exportAssignments()" class="btn-secondary" style="background: #4caf50; color: white; border-color: #4caf50;">
                 📊 Export CSV
             </button>
-            <button onclick="refreshData()" class="btn btn-primary">🔄 Refresh</button>
+            <button onclick="refreshData()" class="btn-primary">🔄 Refresh</button>
         </div>
     </div>
 
     <!-- Statistics Cards -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-block-end: 30px;">
-        <div class="metric-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="font-size: 32px;">📅</div>
                 <div>
@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <div class="metric-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="font-size: 32px;">⏳</div>
                 <div>
@@ -39,7 +39,7 @@
             </div>
         </div>
 
-        <div class="metric-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="font-size: 32px;">🔄</div>
                 <div>
@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <div class="metric-card" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="font-size: 32px;">✅</div>
                 <div>
@@ -62,7 +62,7 @@
 
     <div style="display: grid; grid-template-columns: 2fr 3fr; gap: 20px;">
         <!-- Assignment Form -->
-        <div class="content-card">
+        <div class="ui-card p-6">
             <h4 style="margin-block-end: 20px; color: #333;">📝 Create New Assignment</h4>
             
             <form action="{{ route('jobs.assignment.store') }}" method="POST" id="jobAssignmentForm">
@@ -202,10 +202,10 @@
                 </div>
 
                 <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">
                         ➕ Create Assignment
                     </button>
-                    <button type="button" onclick="resetForm()" class="btn">
+                    <button type="button" onclick="resetForm()" class="btn-secondary">
                         🔄 Reset Form
                     </button>
                 </div>
@@ -213,7 +213,7 @@
         </div>
 
         <!-- Current Assignments -->
-        <div class="content-card">
+        <div class="ui-card p-6">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px;">
                 <h4 style="margin: 0; color: #333;">📋 Current Assignments</h4>
                 <div style="display: flex; gap: 10px; align-items: center;">
@@ -237,7 +237,7 @@
                                 <div style="font-weight: 600; color: #333; margin-block-end: 5px;">#{{ $assignment->assignment_number ?? $assignment->assignment_id }}</div>
                                 <div style="font-size: 14px; color: #666;">{{ $assignment->technician->name ?? 'N/A' }} • {{ $assignment->region->name ?? 'N/A' }}</div>
                             </div>
-                            <span class="status-badge status-{{ $assignment->status }}">{{ ucfirst(str_replace('_', ' ', $assignment->status)) }}</span>
+                            <span class="badge badge-gray">{{ ucfirst(str_replace('_', ' ', $assignment->status)) }}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -246,7 +246,7 @@
                                 </span>
                                 <span style="font-size: 14px; color: #666;">{{ $assignment->scheduled_date->format('M d, Y') }}</span>
                             </div>
-                            <span class="priority-badge priority-{{ $assignment->priority }}">{{ ucfirst($assignment->priority) }}</span>
+                            <span class="badge badge-gray">{{ ucfirst($assignment->priority) }}</span>
                         </div>
                         
                         {{-- UPDATED: Show service type with icon from categories --}}
@@ -302,122 +302,6 @@
     </div>
 </div>
 
-<style>
-.metric-card {
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-}
-
-.metric-card:hover {
-    transform: translateY(-2px);
-}
-
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.assignment-card {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-block-end: 15px;
-    transition: all 0.3s ease;
-}
-
-.assignment-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-color: #2196f3;
-}
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.status-assigned { background: #e3f2fd; color: #1976d2; }
-.status-in_progress { background: #fff3e0; color: #f57c00; }
-.status-completed { background: #e8f5e8; color: #2e7d32; }
-.status-cancelled { background: #ffebee; color: #d32f2f; }
-.status-in.progress { background: #fff3e0; color: #f57c00; }
-
-.priority-badge {
-    padding: 2px 6px;
-    border-radius: 8px;
-    font-size: 10px;
-    font-weight: 500;
-}
-
-.priority-emergency { background: #ffebee; color: #d32f2f; }
-.priority-high { background: #fff3e0; color: #f57c00; }
-.priority-normal { background: #e3f2fd; color: #1976d2; }
-.priority-low { background: #f5f5f5; color: #666; }
-
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-
-.btn-small {
-    padding: 4px 8px;
-    font-size: 12px;
-    border: 1px solid #ddd;
-}
-
-.terminal-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    margin-block-end: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.terminal-checkbox:hover {
-    background: #f0f7ff;
-    border-color: #2196f3;
-}
-
-.terminal-checkbox input[type="checkbox"] {
-    cursor: pointer;
-}
-</style>
 
 // FIXED JavaScript - Replace the JavaScript section in your Blade template
 
@@ -781,8 +665,8 @@ function viewAssignment(id) {
                 </div>
                 
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button onclick="closeModal()" class="btn">Close</button>
-                    ${assignment.status === 'assigned' ? `<button onclick="editAssignment(${id})" class="btn btn-primary">Edit Assignment</button>` : ''}
+                    <button onclick="closeModal()" class="btn-secondary">Close</button>
+                    ${assignment.status === 'assigned' ? `<button onclick="editAssignment(${id})" class="btn-primary">Edit Assignment</button>` : ''}
                 </div>
             </div>
         `;

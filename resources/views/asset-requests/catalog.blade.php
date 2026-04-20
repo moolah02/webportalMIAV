@@ -2,133 +2,10 @@
 @section('title', 'Asset Catalog')
 
 @push('styles')
-<style>
-    .container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 24px;
-    }
-
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 32px;
-        background: white;
-        padding: 24px 32px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #2c3e50;
-        margin: 0;
-    }
-
-    .filters-section {
-        margin-bottom: 32px;
-    }
-
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .table th, .table td {
-        padding: 12px;
-        border: 1px solid #dee2e6;
-        text-align: left;
-    }
-
-    .table th {
-        background-color: #f8f9fa;
-    }
-
-    .stock-status {
-        padding: 2px 6px;
-        border-radius: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .stock-available {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .stock-unavailable {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-    .add-to-cart-btn {
-        padding: 8px 16px;
-        background: #2c3e50;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .add-to-cart-btn:hover {
-        background: #34495e;
-    }
-
-    .pagination-wrapper {
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-    }
-
-    .pagination {
-        display: flex;
-        gap: 10px;
-    }
-
-    .pagination a, .pagination span {
-        padding: 10px 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        text-decoration: none;
-        color: #2c3e50;
-        transition: background 0.2s, color 0.2s;
-    }
-
-    .pagination a:hover {
-        background: #2c3e50;
-        color: white;
-    }
-
-    .pagination .active {
-        background: #2196f3;
-        color: white;
-        border: 1px solid #2196f3;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 16px;
-        }
-
-        .table {
-            font-size: 14px;
-        }
-    }
-</style>
 @endpush
 
 @section('content')
-<div class="container">
+
     <div class="page-header">
         <div style="display: flex; gap: 12px; align-items: center;">
             <a href="{{ route('asset-requests.cart') }}" class="btn btn-secondary">
@@ -145,14 +22,14 @@
             <input type="text" name="search" value="{{ request('search') }}" 
                    placeholder="Search assets..." 
                    class="form-control search-input">
-            <button type="submit" class="btn btn-primary">🔍 Search</button>
+            <button type="submit" class="btn-primary">🔍 Search</button>
             @if(request()->hasAny(['search']))
             <a href="{{ route('asset-requests.catalog') }}" class="btn btn-secondary">Clear Filters</a>
             @endif
         </form>
     </div>
 
-    <table class="table">
+    <table class="ui-table">
         <thead>
             <tr>
                 <th>Asset</th>

@@ -15,90 +15,90 @@
             <div>
                 <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
                     <span style="color: #666; font-size: 14px; font-family: monospace;">{{ $client->client_code }}</span>
-                    <span class="status-badge status-{{ $client->status }}">
+                    <span class="badge badge-gray">
                         {{ ucfirst($client->status) }}
                     </span>
                 </div>
             </div>
         </div>
-        <button onclick="exportData()" class="btn btn-primary">Export Data</button>
+        <button onclick="exportData()" class="btn-primary">Export Data</button>
     </div>
 
     <!-- Statistics Cards -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-block-end: 30px;">
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #F5F5F5;">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #333; font-size: 24px;">💻</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number">{{ $terminalStats['total'] }}</div>
-                <div class="metric-label">TOTAL TERMINALS</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $terminalStats['total'] }}</div>
+                <div class="stat-label uppercase tracking-wide">TOTAL TERMINALS</div>
                 <div style="font-size: 11px; color: #999; margin-top: 2px;">Active network size</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #E8F5E8;">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #388E3C; font-size: 24px;">✅</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number" style="color: #388E3C;">{{ $terminalStats['by_status']['active'] ?? 0 }}</div>
-                <div class="metric-label">ACTIVE</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number" style="color: #388E3C;">{{ $terminalStats['by_status']['active'] ?? 0 }}</div>
+                <div class="stat-label uppercase tracking-wide">ACTIVE</div>
                 <div style="font-size: 11px; color: #666; margin-top: 2px;">
                     {{ $terminalStats['total'] > 0 ? round((($terminalStats['by_status']['active'] ?? 0) / $terminalStats['total']) * 100, 1) : 0 }}% uptime
                 </div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #FFEBEE;">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #D32F2F; font-size: 24px;">⚠️</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number" style="color: #D32F2F;">
+            <div class="flex-1 min-w-0">
+                <div class="stat-number" style="color: #D32F2F;">
                     {{ ($terminalStats['by_status']['maintenance'] ?? 0) + ($terminalStats['by_status']['faulty'] ?? 0) }}
                 </div>
-                <div class="metric-label">NEED ATTENTION</div>
+                <div class="stat-label uppercase tracking-wide">NEED ATTENTION</div>
                 <div style="font-size: 11px; color: #666; margin-top: 2px;">Require service</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #FFF3E0;">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #F57C00; font-size: 24px;">📴</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number" style="color: #F57C00;">{{ $terminalStats['by_status']['offline'] ?? 0 }}</div>
-                <div class="metric-label">OFFLINE</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number" style="color: #F57C00;">{{ $terminalStats['by_status']['offline'] ?? 0 }}</div>
+                <div class="stat-label uppercase tracking-wide">OFFLINE</div>
                 <div style="font-size: 11px; color: #666; margin-top: 2px;">Not responding</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #E3F2FD;">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #1976D2; font-size: 24px;">🔧</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number" style="color: #1976D2;">0</div>
-                <div class="metric-label">RECENTLY SERVICED</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number" style="color: #1976D2;">0</div>
+                <div class="stat-label uppercase tracking-wide">RECENTLY SERVICED</div>
                 <div style="font-size: 11px; color: #666; margin-top: 2px;">Last 30 days</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #FFF0E6;">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #CC6600; font-size: 24px;">📅</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number" style="color: #CC6600;">{{ $terminalStats['total'] }}</div>
-                <div class="metric-label">SERVICE DUE</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number" style="color: #CC6600;">{{ $terminalStats['total'] }}</div>
+                <div class="stat-label uppercase tracking-wide">SERVICE DUE</div>
                 <div style="font-size: 11px; color: #666; margin-top: 2px;">Maintenance needed</div>
             </div>
         </div>
     </div>
 
     <!-- Charts Section -->
-    <div class="content-card" style="margin-block-end: 30px;">
+    <div class="ui-card p-6" style="margin-block-end: 30px;">
         <h3 style="margin: 0 0 24px 0; color: #333; font-size: 18px; font-weight: 600;">Terminal Analytics</h3>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-block-end: 24px;">
@@ -163,14 +163,14 @@
     <!-- Main Content Grid -->
     <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 30px;">
         <!-- POS Terminals Table -->
-        <div class="content-card">
+        <div class="ui-card p-6">
             <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px; padding-bottom: 16px; border-bottom: 1px solid #F0F0F0;">
                 <div>
                     <h3 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">POS Terminals</h3>
                     <p style="margin: 4px 0 0 0; color: #666; font-size: 14px;">{{ $terminalStats['total'] }} total terminals</p>
                 </div>
-                <button onclick="exportTable()" class="btn">Export</button>
+                <button onclick="exportTable()" class="btn-secondary">Export</button>
             </div>
 
             <!-- Filters -->
@@ -185,10 +185,10 @@
                     <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 12px; margin-block-end: 12px;">
                         <input type="text" name="search" value="{{ request('search') }}" placeholder="Search terminals..."
                                style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
-                        <button type="submit" class="btn btn-primary">Search</button>
-                        <button type="button" onclick="clearFilters()" class="btn">Clear</button>
-                        <button type="button" onclick="addTerminal()" class="btn btn-primary">+ Add Terminal</button>
-                        <button type="button" onclick="exportTable()" class="btn">Export</button>
+                        <button type="submit" class="btn-primary">Search</button>
+                        <button type="button" onclick="clearFilters()" class="btn-secondary">Clear</button>
+                        <button type="button" onclick="addTerminal()" class="btn-primary">+ Add Terminal</button>
+                        <button type="button" onclick="exportTable()" class="btn-secondary">Export</button>
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
@@ -231,7 +231,7 @@
             </div>
 
             <!-- Table -->
-            <div class="table-container">
+            <div class="overflow-x-auto">
                 <table class="terminals-table">
                     <thead>
                         <tr>
@@ -340,7 +340,7 @@
                         <h4 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Active Projects</h4>
                         <p style="margin: 4px 0 0 0; color: #666; font-size: 14px;">{{ $projects->count() ?? 3 }} ongoing projects</p>
                     </div>
-                    <button onclick="createProject()" class="btn">+ Create Project</button>
+                    <button onclick="createProject()" class="btn-secondary">+ Create Project</button>
                 </div>
 
                 @if(isset($projects) && $projects->count() > 0)
@@ -353,7 +353,7 @@
                                 <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">{{ $project->description }}</p>
                             </div>
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="status-badge status-{{ $project->status }}">{{ ucfirst($project->status) }}</span>
+                                <span class="badge badge-gray">{{ ucfirst($project->status) }}</span>
                                 <span style="font-size: 12px; color: #666;">{{ ucfirst($project->priority ?? 'normal') }}</span>
                             </div>
                         </div>
@@ -368,7 +368,7 @@
                             <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">Initial discovery and assessment of all POS terminals...</p>
                         </div>
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <span class="status-badge status-active">Active</span>
+                            <span class="badge badge-green">Active</span>
                             <span style="font-size: 12px; color: #666;">Discovery</span>
                         </div>
                     </div>
@@ -380,7 +380,7 @@
         <!-- Sidebar -->
         <div style="display: flex; flex-direction: column; gap: 24px;">
             <!-- Recent Visits -->
-    <div class="content-card">
+    <div class="ui-card p-6">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 16px; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0;">
             <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Recent Visits</h4>
             <a href="{{ route('visits.index') }}?client_id={{ $client->id }}"
@@ -402,7 +402,7 @@
                         <div style="color: #666; font-size: 12px;">{{ $visit->technician->full_name ?? 'Technician' }}</div>
                     </div>
                     <div style="text-align: right;">
-                        <span class="status-badge status-{{ $visit->status ?? 'active' }}" style="font-size: 10px; padding: 2px 6px;">
+                        <span class="badge badge-gray" style="font-size: 10px; padding: 2px 6px;">
                             {{ ucfirst($visit->status ?? 'Open') }}
                         </span>
                         <div style="font-size: 11px; color: #999; margin-top: 2px;">
@@ -420,7 +420,7 @@
                         <div style="color: #666; font-size: 12px;">Monah Chimwa</div>
                     </div>
                     <div style="text-align: right;">
-                        <span class="status-badge status-active" style="font-size: 10px; padding: 2px 6px;">Open</span>
+                        <span class="badge badge-green" style="font-size: 10px; padding: 2px 6px;">Open</span>
                         <div style="font-size: 11px; color: #999; margin-top: 2px;">Aug 26, 2025</div>
                     </div>
                 </div>
@@ -430,7 +430,7 @@
     </div>
 
     <!-- Open Tickets -->
-    <div class="content-card">
+    <div class="ui-card p-6">
         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0; margin-block-end: 16px;">
             <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Open Tickets</h4>
             <a href="{{ route('tickets.index') }}?client_id={{ $client->id }}"
@@ -452,7 +452,7 @@
                         <div style="color: #666; font-size: 12px;">{{ $ticket->posTerminal->terminal_id ?? 'Terminal' }}</div>
                     </div>
                     <div style="text-align: right;">
-                        <span class="status-badge status-{{ $ticket->status }}" style="font-size: 10px; padding: 2px 6px;">
+                        <span class="badge badge-gray" style="font-size: 10px; padding: 2px 6px;">
                             {{ ucfirst($ticket->status) }}
                         </span>
                         <div style="font-size: 11px; color: #999; margin-top: 2px;">{{ $ticket->created_at->format('M d, Y') }}</div>
@@ -469,7 +469,7 @@
     </div>
 
     <!-- Active Projects -->
-    <div class="content-card">
+    <div class="ui-card p-6">
         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0; margin-block-end: 16px;">
             <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Active Projects</h4>
             <a href="{{ route('client-dashboards.projects.create', $client) }}"
@@ -483,7 +483,7 @@
                 <div style="background: #FAFAFA; border: 1px solid #F0F0F0; border-radius: 8px; padding: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                         <div style="font-weight: 500; color: #333; font-size: 13px;">{{ $project->project_name }}</div>
-                        <span class="status-badge status-{{ $project->status }}" style="font-size: 10px; padding: 2px 6px;">
+                        <span class="badge badge-gray" style="font-size: 10px; padding: 2px 6px;">
                             {{ ucfirst($project->status) }}
                         </span>
                     </div>

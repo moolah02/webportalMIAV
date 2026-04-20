@@ -10,8 +10,8 @@
             <p style="color: #666; margin: 5px 0 0 0;">Process renewal for {{ $businessLicense->license_name }}</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn">👁️ View License</a>
-            <a href="{{ route('business-licenses.index') }}" class="btn">← Back to Licenses</a>
+            <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn-secondary">👁️ View License</a>
+            <a href="{{ route('business-licenses.index') }}" class="btn-secondary">← Back to Licenses</a>
         </div>
     </div>
 
@@ -44,7 +44,7 @@
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
         <!-- Renewal Form -->
         <div>
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 20px; color: #333;">🔄 Renewal Information</h4>
                 
                 <form action="{{ route('business-licenses.process-renewal', $businessLicense) }}" method="POST" enctype="multipart/form-data">
@@ -132,8 +132,8 @@
 
                     <!-- Action Buttons -->
                     <div style="display: flex; gap: 15px; justify-content: flex-end;">
-                        <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn">Cancel</a>
-                        <button type="submit" class="btn btn-primary" style="background: #4caf50; border-color: #4caf50;">
+                        <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn-secondary">Cancel</a>
+                        <button type="submit" class="btn-primary" style="background: #4caf50; border-color: #4caf50;">
                             🔄 Process Renewal
                         </button>
                     </div>
@@ -144,7 +144,7 @@
         <!-- Sidebar Information -->
         <div>
             <!-- Current License Info -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">📋 Current License Details</h4>
                 
                 <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
@@ -188,7 +188,7 @@
 
             <!-- Renewal History -->
             @if($businessLicense->renewal_date)
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">🔄 Last Renewal</h4>
                 <div style="font-size: 14px; color: #666;">
                     <div style="margin-block-end: 8px;">
@@ -204,7 +204,7 @@
             @endif
 
             <!-- Renewal Tips -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">💡 Renewal Tips</h4>
                 <ul style="margin: 0; padding-inline-start: 20px; color: #666; line-height: 1.6; font-size: 14px;">
                     <li>Set new expiry date based on renewal period</li>
@@ -217,7 +217,7 @@
 
             <!-- Important Notes -->
             @if($businessLicense->license_conditions || $businessLicense->business_impact)
-            <div class="content-card">
+            <div class="ui-card p-6">
                 <h4 style="margin-block-end: 15px; color: #333;">⚠️ Important Notes</h4>
                 
                 @if($businessLicense->business_impact)
@@ -239,64 +239,6 @@
     </div>
 </div>
 
-<style>
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn {
-    padding: 10px 20px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-
-/* Form styling */
-input[type="date"], input[type="number"], textarea {
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-input[type="date"]:focus, input[type="number"]:focus, textarea:focus {
-    outline: none;
-    border-color: #2196f3;
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-}
-
-/* File upload styling */
-input[type="file"] {
-    transition: border-color 0.2s ease;
-}
-
-input[type="file"]:hover {
-    border-color: #2196f3;
-}
-</style>
 
 <script>
 // Auto-calculate common renewal periods

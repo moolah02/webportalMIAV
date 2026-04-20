@@ -11,7 +11,7 @@
                 {{ $direction === 'company_held' ? 'Register a company-held business license for compliance tracking' : 'Register a license issued to a customer' }}
             </p>
         </div>
-        <a href="{{ route('business-licenses.index', ['direction' => $direction]) }}" class="btn">← Back to Licenses</a>
+        <a href="{{ route('business-licenses.index', ['direction' => $direction]) }}" class="btn-secondary">← Back to Licenses</a>
     </div>
 
     {{-- Validation errors --}}
@@ -34,7 +34,7 @@
                 <input type="hidden" name="license_direction" value="{{ $direction }}">
 
                 <!-- Basic Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📋 Basic Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
@@ -86,7 +86,7 @@
                 </div>
 
                 <!-- Dates -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📅 Dates</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
@@ -105,7 +105,7 @@
 
                 @if($direction === 'company_held')
                     <!-- Company-Held Specific Fields -->
-                    <div class="content-card" style="margin-block-end: 20px;">
+                    <div class="ui-card p-6" style="margin-block-end: 20px;">
                         <h4 style="margin-block-end: 20px; color: #333;">🏢 Company Details</h4>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
@@ -185,7 +185,7 @@
                     </div>
                 @else
                     <!-- Customer-Issued Specific Fields -->
-                    <div class="content-card" style="margin-block-end: 20px;">
+                    <div class="ui-card p-6" style="margin-block-end: 20px;">
                         <h4 style="margin-block-end: 20px; color: #333;">👤 Customer Information</h4>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
@@ -221,7 +221,7 @@
                         </div>
                     </div>
 
-                    <div class="content-card" style="margin-block-end: 20px;">
+                    <div class="ui-card p-6" style="margin-block-end: 20px;">
                         <h4 style="margin-block-end: 20px; color: #333;">💰 License & Billing</h4>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
@@ -288,7 +288,7 @@
                 @endif
 
                 <!-- Attachments & Reminders -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📂 Attachments & Reminders</h4>
 
                     <div style="margin-block-end: 20px;">
@@ -325,15 +325,15 @@
 
                 <!-- Submit Buttons -->
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <a href="{{ route('business-licenses.index', ['direction' => $direction]) }}" class="btn">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Create License</button>
+                    <a href="{{ route('business-licenses.index', ['direction' => $direction]) }}" class="btn-secondary">Cancel</a>
+                    <button type="submit" class="btn-primary">Create License</button>
                 </div>
             </form>
         </div>
 
         <!-- Sidebar -->
         <div>
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">💡 Tips</h4>
                 <ul style="margin: 0; padding-inline-start: 20px; color: #666; line-height: 1.6;">
                     @if($direction === 'company_held')
@@ -352,7 +352,7 @@
                 </ul>
             </div>
 
-            <div class="content-card">
+            <div class="ui-card p-6">
                 <h4 style="margin-block-end: 10px; color: #333;">📌 License Type</h4>
                 <p style="color:#666; font-size:14px; margin:0;">
                     @if($direction === 'company_held')
@@ -370,29 +370,4 @@
     </div>
 </div>
 
-<style>
-.form-label { display:block; margin-bottom:5px; font-weight:500; color:#333; }
-.form-input { width:100%; padding:8px; border:2px solid #ddd; border-radius:4px; box-sizing:border-box; }
-.form-input:focus { border-color:#2196f3; outline:none; }
-.form-error { color:#f44336; font-size:12px; margin-top:5px; }
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    display: inline-block;
-}
-.btn-primary { background:#2196f3; color:white; border-color:#2196f3; }
-.btn-primary:hover { background:#1976d2; border-color:#1976d2; }
-</style>
 @endsection

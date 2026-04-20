@@ -23,9 +23,9 @@
         </div>
         <div style="display:flex;gap:8px;">
             @if($direction !== 'all')
-                <a href="{{ route('business-licenses.compliance', ['direction' => $direction]) }}" class="btn btn-ghost">Compliance</a>
-                <a href="{{ route('business-licenses.expiring', ['direction' => $direction]) }}" class="btn btn-ghost">Expiring</a>
-                <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn btn-primary">Add {{ $direction === 'company_held' ? 'License' : 'Customer License' }}</a>
+                <a href="{{ route('business-licenses.compliance', ['direction' => $direction]) }}" class="btn-secondary">Compliance</a>
+                <a href="{{ route('business-licenses.expiring', ['direction' => $direction]) }}" class="btn-secondary">Expiring</a>
+                <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn-primary">Add {{ $direction === 'company_held' ? 'License' : 'Customer License' }}</a>
             @endif
         </div>
     </div>
@@ -43,22 +43,22 @@
     </div>
 
     {{-- Filters --}}
-    <div class="card" style="margin-bottom:16px;padding:16px;">
+    <div class="ui-card" style="margin-bottom:16px;padding:16px;">
         <form id="filter-form" method="GET" style="display:grid;grid-template-columns:2fr repeat(4,1fr) auto auto;gap:12px;align-items:center;">
             <input type="hidden" name="direction" value="{{ $direction }}" id="current-direction">
 
             <input type="text" name="search" value="{{ request('search') }}"
                    placeholder="{{ $direction === 'company_held' ? 'Search licenses…' : 'Search licenses or customers…' }}"
-                   class="input" id="search-input">
+                   class="ui-input" id="search-input">
 
-            <select name="status" class="input" id="status-filter">
+            <select name="status" class="ui-input" id="status-filter">
                 <option value="">All Status</option>
                 @foreach(\App\Models\BusinessLicense::STATUSES as $key => $label)
                     <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
             </select>
 
-            <select name="license_type" class="input" id="type-filter">
+            <select name="license_type" class="ui-input" id="type-filter">
                 <option value="">All Types</option>
                 @foreach(\App\Models\BusinessLicense::LICENSE_TYPES as $key => $label)
                     <option value="{{ $key }}" {{ request('license_type') == $key ? 'selected' : '' }}>{{ $label }}</option>
@@ -66,14 +66,14 @@
             </select>
 
             <div id="company-filters" style="display: {{ $direction === 'company_held' ? 'contents' : 'none' }};">
-                <select name="priority" class="input" id="priority-filter">
+                <select name="priority" class="ui-input" id="priority-filter">
                     <option value="">All Priority</option>
                     @foreach(\App\Models\BusinessLicense::PRIORITY_LEVELS as $key => $label)
                         <option value="{{ $key }}" {{ request('priority') == $key ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
 
-                <select name="department" class="input" id="department-filter">
+                <select name="department" class="ui-input" id="department-filter">
                     <option value="">All Departments</option>
                     @foreach($departments as $department)
                         <option value="{{ $department->id }}" {{ request('department') == $department->id ? 'selected' : '' }}>
@@ -84,14 +84,14 @@
             </div>
 
             <div id="customer-filters" style="display: {{ $direction === 'customer_issued' ? 'contents' : 'none' }};">
-                <select name="billing_cycle" class="input" id="billing-filter">
+                <select name="billing_cycle" class="ui-input" id="billing-filter">
                     <option value="">All Billing</option>
                     @foreach(\App\Models\BusinessLicense::BILLING_CYCLES as $key => $label)
                         <option value="{{ $key }}" {{ request('billing_cycle') == $key ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
 
-                <select name="support_level" class="input" id="support-filter">
+                <select name="support_level" class="ui-input" id="support-filter">
                     <option value="">All Support</option>
                     @foreach(\App\Models\BusinessLicense::SUPPORT_LEVELS as $key => $label)
                         <option value="{{ $key }}" {{ request('support_level') == $key ? 'selected' : '' }}>{{ $label }}</option>
@@ -99,91 +99,91 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-ghost">Filter</button>
+            <button type="submit" class="btn-secondary">Filter</button>
 
             @if(request()->hasAny(['search', 'status', 'license_type', 'priority', 'department', 'billing_cycle', 'support_level']))
-                <a href="{{ route('business-licenses.index', ['direction' => $direction]) }}" class="btn btn-ghost" id="clear-filters">Clear</a>
+                <a href="{{ route('business-licenses.index', ['direction' => $direction]) }}" class="btn-secondary" id="clear-filters">Clear</a>
             @endif
         </form>
     </div>
 
     {{-- Stats --}}
-    <div id="stats-cards" class="stats-grid" style="margin-bottom:20px;">
+    <div id="stats-cards" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" style="margin-bottom:20px;">
         @if($direction === 'company_held')
-            <div class="stat">
-                <div class="stat__value" id="active-count">{{ $stats['active_licenses'] }}</div>
-                <div class="stat__label">Active Licenses</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="active-count">{{ $stats['active_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Active Licenses</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="expiring-count">{{ $stats['expiring_soon'] }}</div>
-                <div class="stat__label">Expiring Soon</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="expiring-count">{{ $stats['expiring_soon'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Expiring Soon</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="expired-count">{{ $stats['expired_licenses'] }}</div>
-                <div class="stat__label">Expired</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="expired-count">{{ $stats['expired_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Expired</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="annual-cost">${{ number_format($stats['total_annual_cost'], 0) }}</div>
-                <div class="stat__label">Annual Cost</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="annual-cost">${{ number_format($stats['total_annual_cost'], 0) }}</div>
+                <div class="text-xs text-gray-500 mt-1">Annual Cost</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="critical-count">{{ $stats['critical_licenses'] }}</div>
-                <div class="stat__label">Critical Priority</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="critical-count">{{ $stats['critical_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Critical Priority</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="total-count">{{ $stats['total_licenses'] }}</div>
-                <div class="stat__label">Total Licenses</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="total-count">{{ $stats['total_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Total Licenses</div>
             </div>
         @elseif($direction === 'customer_issued')
-            <div class="stat">
-                <div class="stat__value" id="active-count">{{ $stats['active_licenses'] }}</div>
-                <div class="stat__label">Active Licenses</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="active-count">{{ $stats['active_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Active Licenses</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="revenue-amount">${{ number_format($stats['total_revenue'], 0) }}</div>
-                <div class="stat__label">Annual Revenue</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="revenue-amount">${{ number_format($stats['total_revenue'], 0) }}</div>
+                <div class="text-xs text-gray-500 mt-1">Annual Revenue</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="customers-count">{{ $stats['unique_customers'] }}</div>
-                <div class="stat__label">Unique Customers</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="customers-count">{{ $stats['unique_customers'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Unique Customers</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="expiring-count">{{ $stats['expiring_soon'] }}</div>
-                <div class="stat__label">Expiring Soon</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="expiring-count">{{ $stats['expiring_soon'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Expiring Soon</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="expired-count">{{ $stats['expired_licenses'] }}</div>
-                <div class="stat__label">Expired</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="expired-count">{{ $stats['expired_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Expired</div>
             </div>
-            <div class="stat">
-                <div class="stat__value" id="total-count">{{ $stats['total_licenses'] }}</div>
-                <div class="stat__label">Total Licenses</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900" id="total-count">{{ $stats['total_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Total Licenses</div>
             </div>
         @else
             {{-- All / History --}}
-            <div class="stat">
-                <div class="stat__value">{{ $stats['total_licenses'] }}</div>
-                <div class="stat__label">Total Records</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900">{{ $stats['total_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Total Records</div>
             </div>
-            <div class="stat">
-                <div class="stat__value">{{ $stats['active_licenses'] }}</div>
-                <div class="stat__label">Active</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900">{{ $stats['active_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Active</div>
             </div>
-            <div class="stat">
-                <div class="stat__value">{{ $stats['expired_licenses'] }}</div>
-                <div class="stat__label">Expired</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900">{{ $stats['expired_licenses'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Expired</div>
             </div>
-            <div class="stat">
-                <div class="stat__value">{{ $stats['expiring_soon'] }}</div>
-                <div class="stat__label">Expiring Soon</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900">{{ $stats['expiring_soon'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Expiring Soon</div>
             </div>
-            <div class="stat">
-                <div class="stat__value">{{ $stats['company_held'] }}</div>
-                <div class="stat__label">Company-Held</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900">{{ $stats['company_held'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Company-Held</div>
             </div>
-            <div class="stat">
-                <div class="stat__value">{{ $stats['customer_issued'] }}</div>
-                <div class="stat__label">Customer-Issued</div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+                <div class="text-2xl font-bold text-gray-900">{{ $stats['customer_issued'] }}</div>
+                <div class="text-xs text-gray-500 mt-1">Customer-Issued</div>
             </div>
         @endif
     </div>
@@ -194,10 +194,10 @@
     </div>
 
     {{-- Table --}}
-    <div class="card" style="padding:0;overflow:hidden;">
+    <div class="ui-card" style="padding:0;overflow:hidden;">
         @if($licenses->count() > 0)
             <div style="overflow-x:auto;">
-                <table class="table">
+                <table class="ui-table">
                     <thead>
                         <tr>
                             <th>License Details</th>
@@ -234,7 +234,7 @@
 
                                 @if($direction === 'all')
                                     <td>
-                                        <span class="badge">{{ $license->isCompanyHeld() ? 'Company' : 'Customer' }}</span>
+                                        <span class="badge badge-gray">{{ $license->isCompanyHeld() ? 'Company' : 'Customer' }}</span>
                                     </td>
                                     <td>
                                         @if($license->isCompanyHeld())
@@ -262,7 +262,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge">{{ $license->priority_level_name }}</span>
+                                        <span class="badge badge-gray">{{ $license->priority_level_name }}</span>
                                         @if($license->renewal_cost)
                                             <div class="t-hint">${{ number_format($license->renewal_cost, 0) }}/yr</div>
                                         @endif
@@ -283,7 +283,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge">{{ $license->support_level_name }}</span>
+                                        <span class="badge badge-gray">{{ $license->support_level_name }}</span>
                                         @if($license->usage_limit)
                                             <div class="t-hint">{{ Str::limit($license->usage_limit, 30) }}</div>
                                         @endif
@@ -292,7 +292,7 @@
 
                                 {{-- Status --}}
                                 <td>
-                                    <span class="badge">{{ $license->status_name }}</span>
+                                    <span class="badge badge-gray">{{ $license->status_name }}</span>
                                     @if($license->is_expired)
                                         <div class="t-danger">{{ abs((int)$license->days_until_expiry) }} days overdue</div>
                                     @elseif($license->is_expiring_soon)
@@ -312,16 +312,16 @@
                                 {{-- Actions --}}
                                 <td style="text-align:center;">
                                     <div style="display:flex;flex-direction:column;gap:6px;min-width:100px;">
-                                        <a href="{{ route('business-licenses.show', $license) }}" class="btn btn-ghost">View</a>
+                                        <a href="{{ route('business-licenses.show', $license) }}" class="btn-secondary">View</a>
 
                                         @if($license->canRenew() && ($license->is_expired || $license->is_expiring_soon))
-                                            <a href="{{ route('business-licenses.renew', $license) }}" class="btn btn-outline">Renew</a>
+                                            <a href="{{ route('business-licenses.renew', $license) }}" class="btn-secondary">Renew</a>
                                         @endif
 
-                                        <a href="{{ route('business-licenses.edit', $license) }}" class="btn btn-primary">Edit</a>
+                                        <a href="{{ route('business-licenses.edit', $license) }}" class="btn-primary">Edit</a>
 
                                         @if($license->document_path)
-                                            <a href="{{ route('business-licenses.download', $license) }}" class="btn btn-outline">Document</a>
+                                            <a href="{{ route('business-licenses.download', $license) }}" class="btn-secondary">Document</a>
                                         @endif
                                     </div>
                                 </td>
@@ -334,7 +334,7 @@
             <div style="text-align:center;padding:48px;">
                 <h3 style="color:#374151;margin-bottom:8px;font-weight:600;">No records found</h3>
                 <p style="color:#6b7280;margin-bottom:16px;">Start by adding a {{ $direction === 'company_held' ? 'business license' : 'customer license' }}.</p>
-                <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn btn-primary">
+                <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn-primary">
                     Add {{ $direction === 'company_held' ? 'License' : 'Customer License' }}
                 </a>
             </div>
@@ -349,57 +349,6 @@
     @endif
 </div>
 
-<style>
-/* Base */
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:none}
-.input{padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;background:#fff;color:#111827;font-size:14px}
-.input:focus{outline:none;border-color:#9ca3af}
-
-/* Buttons */
-.btn{padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;background:#fff;color:#111827;text-decoration:none;display:inline-block;font-size:14px}
-.btn-ghost{background:#fff}
-.btn-outline{background:#fff}
-.btn-primary{background:#111827;color:#fff;border-color:#111827}
-.btn:hover{filter:none} /* kill hover animations */
-
-/* Segmented control */
-.seg{padding:8px 12px;border:1px solid #d1d5db;border-right:none;background:#f9fafb;color:#111827;text-decoration:none}
-.seg:last-child{border-right:1px solid #d1d5db;border-top-right-radius:6px;border-bottom-right-radius:6px}
-.seg:first-child{border-top-left-radius:6px;border-bottom-left-radius:6px}
-.seg--active{background:#fff}
-
-/* Stats */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.stat{border:1px solid #e5e7eb;border-radius:6px;padding:12px;background:#fff}
-.stat__value{font-size:22px;font-weight:600;color:#111827}
-.stat__label{font-size:12px;color:#6b7280;margin-top:4px}
-
-/* Table */
-.table{width:100%;border-collapse:collapse;font-size:14px}
-.table th{background:#f9fafb;text-align:left;padding:12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:600}
-.table td{padding:12px;vertical-align:top;border-bottom:1px solid #f3f4f6}
-.table tbody tr:nth-child(even){background:#fcfcfc} /* subtle zebra */
-.table tbody tr:hover{background:transparent}       /* remove hover color */
-
-/* Text helpers */
-.t-title{font-weight:600;color:#111827}
-.t-sub{font-size:12px;color:#6b7280;margin-top:2px}
-.t-hint{font-size:12px;color:#6b7280;margin-top:2px}
-.t-note{font-size:12px;color:#4b5563;margin-top:6px;max-width:360px}
-.t-danger{font-size:12px;color:#7f1d1d;margin-top:4px}
-.t-warn{font-size:12px;color:#92400e;margin-top:4px}
-
-/* Badges (neutral) */
-.badge{display:inline-block;padding:2px 8px;border:1px solid #d1d5db;border-radius:999px;font-size:12px;color:#374151;background:#fff}
-
-/* Responsive */
-@media (max-width: 1200px){
-    #filter-form{grid-template-columns:1fr;gap:10px}
-    #company-filters,#customer-filters{display:grid !important;grid-template-columns:1fr 1fr;gap:10px}
-    .table{font-size:13px}
-    .table th,.table td{padding:10px 8px}
-}
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

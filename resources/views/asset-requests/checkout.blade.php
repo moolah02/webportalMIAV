@@ -8,7 +8,7 @@
         <div>
             <p style="color: #666; margin: 5px 0 0 0;">Provide details for your asset request</p>
         </div>
-        <a href="{{ route('asset-requests.cart') }}" class="btn">← Back to Cart</a>
+        <a href="{{ route('asset-requests.cart') }}" class="btn-secondary">← Back to Cart</a>
     </div>
 
     <!-- Success/Error Messages -->
@@ -31,7 +31,7 @@
             <!-- Main Form -->
             <div>
                 <!-- Request Details -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📋 Request Information</h4>
 
                     <div style="margin-block-end: 20px;">
@@ -83,7 +83,7 @@
                 </div>
 
                 <!-- Request Items Review -->
-                <div class="content-card">
+                <div class="ui-card p-6">
                     <h4 style="margin-block-end: 20px; color: #333;">📦 Items in Your Request</h4>
 
                     @foreach($cartItems as $item)
@@ -128,7 +128,7 @@
             <!-- Sidebar -->
             <div>
                 <!-- Requester Info -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 15px; color: #333;">👤 Requester Information</h4>
 
                     <div style="margin-block-end: 10px;">
@@ -145,7 +145,7 @@
                 </div>
 
                 <!-- Request Summary -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 15px; color: #333;">📊 Request Summary</h4>
 
                     <div style="display: flex; justify-content: space-between; margin-block-end: 10px;">
@@ -167,13 +167,13 @@
                 </div>
 
                 <!-- Submit Actions -->
-                <div class="content-card">
+                <div class="ui-card p-6">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button type="submit" class="btn btn-primary" style="inline-size: 100%; padding: 15px; font-size: 16px;">
+                        <button type="submit" class="btn-primary" style="inline-size: 100%; padding: 15px; font-size: 16px;">
                             📤 Submit Request
                         </button>
 
-                        <a href="{{ route('asset-requests.cart') }}" class="btn" style="inline-size: 100%; text-align: center;">
+                        <a href="{{ route('asset-requests.cart') }}" class="btn-secondary" style="inline-size: 100%; text-align: center;">
                             ← Back to Cart
                         </a>
                     </div>
@@ -183,61 +183,4 @@
     </form>
 </div>
 
-<style>
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-    text-decoration: none;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-
-.alert {
-    border-radius: 6px;
-    padding: 15px;
-    margin-block-end: 20px;
-}
-
-.alert-success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.alert-danger {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-</style>
 @endsection

@@ -10,13 +10,13 @@
             <h2 style="margin: 0; color: #333;">🛒 Request Cart</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Review your selected assets before requesting</p>
         </div>
-        <a href="{{ route('asset-requests.catalog') }}" class="btn">← Continue Request</a>
+        <a href="{{ route('asset-requests.catalog') }}" class="btn-secondary">← Continue Request</a>
     </div>
 
     @if(count($cartItems) > 0)
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
         <!-- Cart Items -->
-        <div class="content-card">
+        <div class="ui-card p-6">
             <h4 style="margin-block-end: 20px; color: #333;">Cart Items</h4>
             
             @foreach($cartItems as $item)
@@ -81,7 +81,7 @@
         </div>
 
         <!-- Cart Summary -->
-        <div class="content-card" style="height: fit-content;">
+        <div class="ui-card p-6" style="height: fit-content;">
             <h4 style="margin-block-end: 20px; color: #333;">Order Summary</h4>
             
             <div style="margin-block-end: 20px;">
@@ -100,12 +100,12 @@
                 </div>
             </div>
 
-            <a href="{{ route('asset-requests.checkout') }}" class="btn btn-primary" 
+            <a href="{{ route('asset-requests.checkout') }}" class="btn-primary" 
                style="inline-size: 100%; text-align: center; padding: 15px; font-size: 16px; margin-block-end: 10px;">
                 Proceed to Checkout
             </a>
             
-            <a href="{{ route('asset-requests.catalog') }}" class="btn" 
+            <a href="{{ route('asset-requests.catalog') }}" class="btn-secondary" 
                style="inline-size: 100%; text-align: center;">
                 Continue Reqest
             </a>
@@ -113,53 +113,15 @@
     </div>
     @else
     <!-- Empty Cart -->
-    <div class="content-card" style="text-align: center; padding: 60px;">
+    <div class="ui-card p-6" style="text-align: center; padding: 60px;">
         <div style="font-size: 64px; margin-block-end: 20px;">🛒</div>
         <h3>Your cart is empty</h3>
         <p style="color: #666; margin-block-end: 30px;">Browse our asset catalog and add items to your cart.</p>
-        <a href="{{ route('asset-requests.catalog') }}" class="btn btn-primary">
+        <a href="{{ route('asset-requests.catalog') }}" class="btn-primary">
             Start Request
         </a>
     </div>
     @endif
 </div>
 
-<style>
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-</style>
 @endsection

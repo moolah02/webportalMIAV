@@ -2,107 +2,6 @@
 @section('title', 'System Settings')
 
 @section('content')
-<style>
-  .settings-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    height: 100%;
-  }
-
-  .settings-card:hover {
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-    transform: translateY(-3px);
-  }
-
-  .settings-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 8px 8px 0 0;
-    margin: -25px -25px 20px -25px;
-    font-weight: 600;
-    font-size: 16px;
-  }
-
-  .settings-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .settings-list li {
-    margin-block-end: 12px;
-  }
-
-  .settings-list a {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #333;
-    transition: all 0.3s ease;
-    font-weight: 500;
-  }
-
-  .settings-list a:hover {
-    background: #e9ecef;
-    color: #000;
-    transform: translateX(5px);
-  }
-
-  .badge {
-    background: #6c757d;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-block-end: 30px;
-  }
-
-  .stat-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px;
-    text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.05);
-  }
-
-  .stat-number {
-    font-size: 36px;
-    font-weight: 800;
-    color: #2196f3;
-    margin-block-end: 10px;
-  }
-
-  .stat-label {
-    color: #666;
-    font-size: 14px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .settings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
-  }
-</style>
 
 <div class="container-fluid">
   <!-- Page Header -->
@@ -142,7 +41,7 @@
           <li>
             <a href="{{ route('settings.category.manage', $type) }}">
               <span>{{ $label }}</span>
-              <span class="badge">{{ $categories->get($type, collect())->count() }}</span>
+              <span class="badge badge-gray">{{ $categories->get($type, collect())->count() }}</span>
             </a>
           </li>
         @endforeach
@@ -157,19 +56,19 @@
         <li>
           <a href="{{ route('settings.category.manage', 'asset_category') }}">
             <span>🏷️ Asset Categories</span>
-            <span class="badge">{{ $categories->get('asset_category', collect())->count() }}</span>
+            <span class="badge badge-gray">{{ $categories->get('asset_category', collect())->count() }}</span>
           </a>
         </li>
         <li>
           <a href="{{ route('settings.category.manage', 'asset_status') }}">
             <span>📊 Asset Status</span>
-            <span class="badge">{{ $categories->get('asset_status', collect())->count() }}</span>
+            <span class="badge badge-gray">{{ $categories->get('asset_status', collect())->count() }}</span>
           </a>
         </li>
         <li>
           <a href="{{ route('settings.asset-category-fields.index', $categories->get('asset_category', collect())->first()?->id ?? 1) }}">
             <span>⚙️ Category Custom Fields</span>
-            <span class="badge">Manage</span>
+            <span class="badge badge-gray">Manage</span>
           </a>
         </li>
       </ul>
@@ -183,7 +82,7 @@
         <li>
           <a href="{{ route('settings.category.manage', 'terminal_status') }}">
             <span>📶 Terminal Status</span>
-            <span class="badge">{{ $categories->get('terminal_status', collect())->count() }}</span>
+            <span class="badge badge-gray">{{ $categories->get('terminal_status', collect())->count() }}</span>
           </a>
         </li>
       </ul>
@@ -197,7 +96,7 @@
         <li>
           <a href="{{ route('settings.category.manage', 'service_type') }}">
             <span>⚙️ Service Types</span>
-            <span class="badge">{{ $categories->get('service_type', collect())->count() }}</span>
+            <span class="badge badge-gray">{{ $categories->get('service_type', collect())->count() }}</span>
           </a>
         </li>
       </ul>
@@ -211,7 +110,7 @@
         <li>
           <a href="{{ route('settings.departments.manage') }}">
             <span>📂 All Departments</span>
-            <span class="badge">{{ $stats['total_departments'] }}</span>
+            <span class="badge badge-gray">{{ $stats['total_departments'] }}</span>
           </a>
         </li>
       </ul>
@@ -225,19 +124,19 @@
         <li>
           <a href="#" onclick="alert('Coming Soon!')">
             <span>📧 Email Settings</span>
-            <span class="badge">Soon</span>
+            <span class="badge badge-gray">Soon</span>
           </a>
         </li>
         <li>
           <a href="#" onclick="alert('Coming Soon!')">
             <span>🔔 Notifications</span>
-            <span class="badge">Soon</span>
+            <span class="badge badge-gray">Soon</span>
           </a>
         </li>
         <li>
           <a href="#" onclick="alert('Coming Soon!')">
             <span>💾 Backup Settings</span>
-            <span class="badge">Soon</span>
+            <span class="badge badge-gray">Soon</span>
           </a>
         </li>
       </ul>

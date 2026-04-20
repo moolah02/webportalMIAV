@@ -17,13 +17,13 @@ File: resources/views/roles/edit.blade.php
             </p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="{{ route('roles.show', $role) }}" class="btn">👁️ View Details</a>
-            <a href="{{ route('roles.index') }}" class="btn">← Back to Roles</a>
+            <a href="{{ route('roles.show', $role) }}" class="btn-secondary">👁️ View Details</a>
+            <a href="{{ route('roles.index') }}" class="btn-secondary">← Back to Roles</a>
         </div>
     </div>
 
     <!-- Current Role Info -->
-    <div class="content-card" style="margin-bottom: 20px; background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+    <div class="ui-card p-6" style="margin-bottom: 20px; background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <h4 style="margin: 0 0 8px 0; color: #333;">Current Role Information</h4>
@@ -50,12 +50,12 @@ File: resources/views/roles/edit.blade.php
             <!-- Main Form -->
             <div>
                 <!-- Basic Information -->
-                <div class="content-card" style="margin-bottom: 20px;">
+                <div class="ui-card p-6">
                     <h4 style="margin-bottom: 20px; color: #333; display: flex; align-items: center; gap: 8px;">
                         📋 Role Information
                     </h4>
 
-                    <div style="margin-bottom: 20px;">
+                    <div>
                         <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Role Name *</label>
                         <input type="text" name="name" value="{{ old('name', $role->name) }}" required
                                placeholder="e.g., field_technician, office_manager, sales_coordinator"
@@ -70,14 +70,14 @@ File: resources/views/roles/edit.blade.php
                 </div>
 
                 <!-- Permissions Section -->
-                <div class="content-card">
+                <div class="ui-card p-6">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h4 style="margin: 0; color: #333; display: flex; align-items: center; gap: 8px;">
                             🔐 Permissions & Access Control
                         </h4>
                         <div style="display: flex; gap: 10px;">
-                            <button type="button" onclick="expandAllCategories()" class="btn btn-small">Expand All</button>
-                            <button type="button" onclick="collapseAllCategories()" class="btn btn-small">Collapse All</button>
+                            <button type="button" onclick="expandAllCategories()" class="btn-secondary btn-sm">Expand All</button>
+                            <button type="button" onclick="collapseAllCategories()" class="btn-secondary btn-sm">Collapse All</button>
                         </div>
                     </div>
 
@@ -151,9 +151,9 @@ File: resources/views/roles/edit.blade.php
                                 <!-- Category Actions -->
                                 <div style="display: flex; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0;">
                                     <button type="button" onclick="selectAllInCategory('{{ $category }}')"
-                                            class="btn btn-small btn-outline">Select All</button>
+                                            class="btn-secondary btn-sm">Select All</button>
                                     <button type="button" onclick="clearAllInCategory('{{ $category }}')"
-                                            class="btn btn-small btn-outline">Clear All</button>
+                                            class="btn-secondary btn-sm">Clear All</button>
                                 </div>
 
                                 <!-- Permissions Grid -->
@@ -214,7 +214,7 @@ File: resources/views/roles/edit.blade.php
             <!-- Sidebar -->
             <div>
                 <!-- Selected Permissions Preview -->
-                <div class="content-card" style="margin-bottom: 20px;">
+                <div class="ui-card p-6">
                     <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 8px;">
                         📋 Selected Permissions
                     </h4>
@@ -225,7 +225,7 @@ File: resources/views/roles/edit.blade.php
                 </div>
 
                 <!-- Role Templates -->
-                <div class="content-card" style="margin-bottom: 20px;">
+                <div class="ui-card p-6">
                     <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 8px;">
                         🎨 Quick Templates
                     </h4>
@@ -257,7 +257,7 @@ File: resources/views/roles/edit.blade.php
                 </div>
 
                 <!-- Permission Summary -->
-                <div class="content-card" style="margin-bottom: 20px;">
+                <div class="ui-card p-6">
                     <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 8px;">
                         📊 Role Summary
                     </h4>
@@ -284,12 +284,12 @@ File: resources/views/roles/edit.blade.php
                 </div>
 
                 <!-- Submit Buttons -->
-                <div class="content-card">
+                <div class="ui-card p-6">
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 16px;">
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 16px; font-size: 16px;">
                             💾 Update Role
                         </button>
-                        <a href="{{ route('roles.show', $role) }}" class="btn" style="width: 100%; text-align: center; padding: 12px;">
+                        <a href="{{ route('roles.show', $role) }}" class="btn-secondary" style="width: 100%; text-align: center; padding: 12px;">
                             Cancel
                         </a>
 
@@ -307,162 +307,6 @@ File: resources/views/roles/edit.blade.php
     </form>
 </div>
 
-<style>
-/* Base Styles */
-.content-card {
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 1px solid #f0f0f0;
-}
-
-/* Button Styles */
-.btn {
-    padding: 10px 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-    transform: translateY(-1px);
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-
-.btn-small {
-    padding: 6px 12px;
-    font-size: 12px;
-}
-
-.btn-outline {
-    background: transparent;
-    border: 1px solid #e0e0e0;
-}
-
-/* Template Button Styles */
-.template-btn {
-    padding: 12px 16px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    background: #f8f9fa;
-    color: #333;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    text-align: left;
-}
-
-.template-btn:hover {
-    background: #e9ecef;
-    border-color: #2196f3;
-    transform: translateY(-1px);
-}
-
-.template-btn.danger {
-    background: #fff5f5;
-    border-color: #fed7d7;
-    color: #d32f2f;
-}
-
-.template-btn.danger:hover {
-    background: #fed7d7;
-    border-color: #f44336;
-}
-
-.template-btn.clear {
-    background: #ffebee;
-    border-color: #ffcdd2;
-    color: #d32f2f;
-}
-
-.template-btn.clear:hover {
-    background: #ffcdd2;
-    border-color: #f44336;
-}
-
-/* Permission Card Styles */
-.permission-item {
-    transition: all 0.2s ease;
-}
-
-.permission-item:hover {
-    border-color: #2196f3 !important;
-    background: #f8f9ff !important;
-    transform: translateY(-1px);
-}
-
-.permission-item.selected {
-    border-color: #2196f3 !important;
-    background: #e3f2fd !important;
-}
-
-.permission-item.danger {
-    border-color: #f44336 !important;
-    background: #ffebee !important;
-}
-
-/* Category Styles */
-.category-header:hover {
-    background: linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(33, 150, 243, 0.05)) !important;
-}
-
-.category-content.expanded {
-    max-height: 1000px !important;
-}
-
-/* Summary Styles */
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.summary-item:last-child {
-    border-bottom: none;
-}
-
-/* Form Styles */
-input[type="text"]:focus {
-    border-color: #2196f3 !important;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .content-card {
-        padding: 16px;
-    }
-
-    div[style*="grid-template-columns: 1fr 350px"] {
-        grid-template-columns: 1fr !important;
-    }
-}
-</style>
 
 <script>
 // Permission templates with comprehensive coverage

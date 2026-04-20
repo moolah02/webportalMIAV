@@ -465,6 +465,42 @@ class SiteVisitController extends Controller
             'count'   => $visits->count(),
         ]);
     }
+    /**
+     * List visits for a job assignment as JSON.
+     * GET /api/jobs/assignments/{assignment}/visits
+     */
+    public function listJson($assignment)
+    {
+        $visits = TechnicianVisit::with([
+                'technician:id,first_name,last_name',
+                'posTerminal:id,terminal_id,merchant_name',
+            ])
+            ->where('job_assignment_id', $assignment)
+            ->latest('started_at')
+            ->get()
+            ->map(function ($v) {
+                return [
+                    'id'              => $v->id,
+                    'visit_id'        => $v->visit_id,
+                    'status'          => $v->status,
+                    'outcome'         => $v->outcome,
+                    'started_at'      => optional($v->started_at)->toDateTimeString(),
+                    'ended_at'        => optional($v->ended_at)->toDateTimeString(),
+                    'technician'      => $v->technician ? ($v->technician->first_name.' '.$v->technician->last_name) : null,
+                    'terminal_id'     => $v->posTerminal?->terminal_id,
+                    'merchant_name'   => $v->posTerminal?->merchant_name,
+                    'terminal_status' => $v->terminal_status_during_visit,
+                    'comments'        => $v->comments,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'visits'  => $visits,
+            'count'   => $visits->count(),
+        ]);
+    }
+
     public function editTerminal(Request $request)
 {
     $assignmentId = $request->assignment_id;

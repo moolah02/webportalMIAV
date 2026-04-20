@@ -27,7 +27,7 @@
     @endif
 
     <!-- Page Setup - Filters Section -->
-    <div class="content-card" style="margin-block-end: 20px;">
+    <div class="ui-card p-6" style="margin-block-end: 20px;">
         <!-- Step Indicators -->
         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
             <h6 style="margin: 0 0 10px 0; color: #333; display: flex; align-items: center; gap: 8px;">
@@ -114,7 +114,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-primary" onclick="createNewProject()" style="margin-top: 8px; width: 100%; padding: 8px;">
+                    <button type="button" class="btn-primary" onclick="createNewProject()" style="margin-top: 8px; width: 100%; padding: 8px;">
                         ➕ Create New Project
                     </button>
                 </div>
@@ -126,7 +126,7 @@
                 <input type="date" id="deploymentDate" value="{{ date('Y-m-d', strtotime('+1 day')) }}"
                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px;">
                 <!-- Load Button -->
-                <button type="button" class="btn btn-success" onclick="loadHierarchy()" id="loadHierarchyBtn" disabled
+                <button type="button" class="btn-success" onclick="loadHierarchy()" id="loadHierarchyBtn" disabled
                         style="margin-top: 12px; width: 100%; padding: 12px; font-size: 16px;">
                     🗺️ Load Client Terminals
                 </button>
@@ -136,7 +136,7 @@
 
     <!-- Progress Stats - Hidden Initially -->
     <div style="display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-block-end: 20px;" id="progressStats" class="progress-section">
-        <div class="metric-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="font-size: 24px;">🎯</div>
                 <div>
@@ -146,7 +146,7 @@
             </div>
         </div>
 
-        <div class="metric-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="font-size: 24px;">✅</div>
                 <div>
@@ -156,7 +156,7 @@
             </div>
         </div>
 
-        <div class="metric-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="font-size: 24px;">⏳</div>
                 <div>
@@ -166,7 +166,7 @@
             </div>
         </div>
 
-        <div class="metric-card" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="font-size: 24px;">👥</div>
                 <div>
@@ -176,7 +176,7 @@
             </div>
         </div>
 
-        <div class="metric-card" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="font-size: 24px;">🔧</div>
                 <div>
@@ -191,7 +191,7 @@
     <div style="display: none; grid-template-columns: 3fr 2fr; gap: 20px;" id="mainContentArea" class="main-content-section">
 
         <!-- Left Side - Terminal Table -->
-        <div class="content-card" style="padding: 0;">
+        <div class="ui-card p-6" style="padding: 0;">
             <!-- Table Header -->
             <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; border-radius: 8px 8px 0 0; border-bottom: 2px solid #dee2e6;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -200,13 +200,13 @@
                         <span style="background: #667eea; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;" id="terminalCount">0</span>
                     </h4>
                     <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-small" onclick="selectAllVisible()" disabled id="selectAllBtn" title="Select All Visible">
+                        <button class="btn-secondary btn-sm" onclick="selectAllVisible()" disabled id="selectAllBtn" title="Select All Visible">
                             ☑️ Select All
                         </button>
-                        <button class="btn btn-small" onclick="clearSelections()" disabled id="clearAllBtn" title="Clear Selections">
+                        <button class="btn-secondary btn-sm" onclick="clearSelections()" disabled id="clearAllBtn" title="Clear Selections">
                             ❌ Clear
                         </button>
-                        <button class="btn btn-small" onclick="exportTableData()" disabled id="exportBtn" title="Export Data">
+                        <button class="btn-secondary btn-sm" onclick="exportTableData()" disabled id="exportBtn" title="Export Data">
                             📊 Export
                         </button>
                     </div>
@@ -306,7 +306,7 @@
         <div style="display: grid; gap: 20px;">
 
             <!-- Assignment Section -->
-            <div class="content-card" id="assignmentSection">
+            <div class="ui-card p-6" id="assignmentSection">
                 <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
                     👥 Technician Assignment
                 </h4>
@@ -389,14 +389,14 @@
 
                 <!-- Assignment Actions -->
                 <div style="display: grid; gap: 8px;">
-                    <button type="button" class="btn btn-success" onclick="assignSelected()" id="assignSelectedBtn" disabled style="width: 100%;">
+                    <button type="button" class="btn-success" onclick="assignSelected()" id="assignSelectedBtn" disabled style="width: 100%;">
                         ➕ Assign Selected Terminals
                     </button>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <button type="button" class="btn" onclick="assignAll()" id="assignAllBtn" disabled>
+                        <button type="button" class="btn-secondary" onclick="assignAll()" id="assignAllBtn" disabled>
                             📋 Assign All
                         </button>
-                        <button type="button" class="btn" onclick="clearAssignments()" id="clearAssignmentsBtn" disabled>
+                        <button type="button" class="btn-secondary" onclick="clearAssignments()" id="clearAssignmentsBtn" disabled>
                             🗑️ Clear Assignments
                         </button>
                     </div>
@@ -404,7 +404,7 @@
             </div>
 
             <!-- Technician Workload Display -->
-            <div class="content-card">
+            <div class="ui-card p-6">
                 <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
                     📊 Technician Workload
                 </h4>
@@ -419,7 +419,7 @@
             </div>
 
             <!-- Unassigned Terminals -->
-            <div class="content-card">
+            <div class="ui-card p-6">
                 <h4 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; color: #333;">
                     ⏳ Unassigned Terminals
                     <span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;" id="unassignedCount">0</span>
@@ -469,13 +469,13 @@
             <!-- Export Actions -->
             <div>
                 <div style="display: grid; gap: 12px;">
-                    <button type="button" class="btn btn-success" onclick="exportDeployment()" id="exportDeploymentBtn" disabled style="width: 100%;">
+                    <button type="button" class="btn-success" onclick="exportDeployment()" id="exportDeploymentBtn" disabled style="width: 100%;">
                         📊 Export Assignment Data
                     </button>
-                    <button type="button" class="btn" onclick="saveAsDraft()" id="saveDraftBtn" disabled style="width: 100%;">
+                    <button type="button" class="btn-secondary" onclick="saveAsDraft()" id="saveDraftBtn" disabled style="width: 100%;">
                         💾 Save as Draft
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="viewAllAssignments()" style="width: 100%;">
+                    <button type="button" class="btn-primary" onclick="viewAllAssignments()" style="width: 100%;">
                         👁️ View All Assignments
                     </button>
                 </div>
@@ -567,10 +567,10 @@
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">
                         ➕ Create Project
                     </button>
-                    <button type="button" onclick="closeProjectModal()" class="btn">
+                    <button type="button" onclick="closeProjectModal()" class="btn-secondary">
                         Cancel
                     </button>
                 </div>
@@ -579,501 +579,6 @@
     </div>
 </div>
 
-<style>
-.metric-card {
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-    border: none;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-
-.btn-success {
-    background: #4caf50;
-    color: white;
-    border-color: #4caf50;
-}
-
-.btn-success:hover {
-    background: #388e3c;
-    border-color: #388e3c;
-    color: white;
-}
-
-.btn-small {
-    padding: 6px 12px;
-    font-size: 12px;
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Progressive Disclosure */
-.progress-section, .main-content-section, .assignment-section, .assignment-success-section {
-    transition: all 0.3s ease;
-}
-
-.step-item {
-    text-align: center;
-    opacity: 0.5;
-    transition: all 0.3s ease;
-}
-
-.step-item.active {
-    opacity: 1;
-    color: #2196f3;
-}
-
-.step-item.completed {
-    opacity: 1;
-    color: #4caf50;
-}
-
-.step-circle {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #ddd;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 5px;
-    font-weight: bold;
-    font-size: 12px;
-}
-
-.step-item.active .step-circle {
-    background: #2196f3;
-}
-
-.step-item.completed .step-circle {
-    background: #4caf50;
-}
-
-/* Terminal Table Styles */
-#terminalTable {
-    font-size: 14px;
-    border-collapse: collapse;
-}
-
-#terminalTable th {
-    background: #f8f9fa;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    font-weight: 600;
-    color: #333;
-    border-bottom: 2px solid #dee2e6;
-    padding: 12px 8px;
-}
-
-#terminalTable td {
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-    vertical-align: middle;
-}
-
-.terminal-row {
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-}
-
-.terminal-row:hover {
-    background-color: #f8f9fa;
-}
-
-.terminal-row.selected {
-    background-color: #e3f2fd;
-}
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.status-active {
-    background: #e8f5e8;
-    color: #2e7d32;
-}
-
-.status-offline {
-    background: #ffebee;
-    color: #c62828;
-}
-
-.status-maintenance {
-    background: #fff3e0;
-    color: #f57c00;
-}
-
-.status-faulty {
-    background: #fce4ec;
-    color: #ad1457;
-}
-
-.status-unknown {
-    background: #f5f5f5;
-    color: #666;
-}
-
-.assignment-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.assignment-assigned {
-    background: #e8f5e8;
-    color: #2e7d32;
-}
-
-.assignment-unassigned {
-    background: #fff3e0;
-    color: #f57c00;
-}
-
-/* Filter Styles */
-.filters-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-/* Pagination Styles */
-#tablePagination {
-    background: #f8f9fa;
-    border-top: 1px solid #dee2e6;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-}
-
-#paginationButtons {
-    display: flex;
-    gap: 5px;
-}
-
-#paginationButtons .btn {
-    padding: 6px 12px;
-    font-size: 12px;
-    min-width: auto;
-}
-
-/* Table Container */
-.table-container {
-    max-height: 600px;
-    overflow: auto;
-    background: white;
-    border-radius: 0 0 8px 8px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .filters-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
-    #terminalTable th,
-    #terminalTable td {
-        padding: 6px 4px;
-        font-size: 12px;
-    }
-
-    .status-badge {
-        padding: 2px 6px;
-        font-size: 10px;
-    }
-}
-
-.workload-item {
-    background: white;
-    border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 8px;
-    border-left: 4px solid #007bff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.technician-name {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 4px;
-}
-
-.workload-count {
-    color: #666;
-    font-size: 14px;
-}
-
-.unassigned-item {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
-    border-radius: 4px;
-    padding: 8px;
-    margin-bottom: 4px;
-    font-size: 13px;
-}
-
-.assignment-table th {
-    background: #f8f9fa;
-    padding: 12px;
-    text-align: left;
-    font-weight: 600;
-    color: #333;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.assignment-table td {
-    padding: 12px;
-    border-bottom: 1px solid #dee2e6;
-    vertical-align: middle;
-}
-
-.assignment-table tbody tr:hover {
-    background: #f8f9fa;
-}
-
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
-    position: relative;
-}
-
-.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    margin: -10px 0 0 -10px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-}
-
-.alert {
-    border-radius: 6px;
-    padding: 15px;
-    margin-block-end: 20px;
-}
-
-.alert-success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.alert-danger {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-/* Custom Dropdown Styles */
-.custom-dropdown {
-    position: relative;
-    width: 100%;
-}
-
-.dropdown-selected {
-    background: white;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    padding: 10px 12px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: border-color 0.2s;
-}
-
-.dropdown-selected:hover {
-    border-color: #2196f3;
-}
-
-.dropdown-selected.active {
-    border-color: #2196f3;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
-.dropdown-arrow {
-    transition: transform 0.2s;
-    color: #666;
-    font-size: 12px;
-}
-
-.dropdown-selected.active .dropdown-arrow {
-    transform: rotate(180deg);
-}
-
-.dropdown-options {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 2px solid #2196f3;
-    border-top: none;
-    border-radius: 0 0 6px 6px;
-    max-height: 250px;
-    overflow-y: auto;
-    z-index: 1000;
-    display: none;
-}
-
-.dropdown-options.show {
-    display: block;
-    animation: dropdownFadeIn 0.2s ease-out;
-}
-
-@keyframes dropdownFadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.dropdown-search {
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-    background: #f9f9f9;
-}
-
-.dropdown-search input {
-    width: 100%;
-    padding: 6px 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.dropdown-search input:focus {
-    outline: none;
-    border-color: #2196f3;
-}
-
-.dropdown-option {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border-bottom: 1px solid #f5f5f5;
-}
-
-.dropdown-option:hover {
-    background-color: #f8f9fa;
-}
-
-.dropdown-option.disabled {
-    color: #999;
-    cursor: not-allowed;
-}
-
-.dropdown-option input[type="checkbox"] {
-    margin-right: 8px;
-    cursor: pointer;
-}
-
-.dropdown-option span {
-    flex: 1;
-    font-size: 14px;
-}
-
-.dropdown-options::-webkit-scrollbar {
-    width: 6px;
-}
-
-.dropdown-options::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.dropdown-options::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-}
-
-.dropdown-options::-webkit-scrollbar-thumb:hover {
-    background: #a1a1a1;
-}
-
-@media (max-width: 1200px) {
-    div[style*="grid-template-columns: 3fr 2fr"] {
-        grid-template-columns: 1fr !important;
-        gap: 20px;
-    }
-
-    div[style*="grid-template-columns: 2fr 1fr 2fr 1fr"] {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 15px;
-    }
-}
-</style>
 
 <script>
 // CSRF token setup for AJAX requests
@@ -2014,7 +1519,7 @@ function renderTerminalTable() {
                     <span class="status-badge ${statusClass}">${terminal.status || 'unknown'}</span>
                 </td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
-                    <button class="btn btn-small" onclick="assignSingleTerminal('${terminalId}')"
+                    <button class="btn-secondary btn-sm" onclick="assignSingleTerminal('${terminalId}')"
                             style="background: #2196f3; color: white; padding: 4px 8px; font-size: 11px;"
                             ${isAssigned ? 'disabled title="Already assigned"' : ''}>
                         ${isAssigned ? 'Assigned' : 'Assign'}
@@ -2358,7 +1863,7 @@ function updateAssignmentSummary() {
                     </span>
                 </td>
                 <td style="text-align: center;">
-                    <button class="btn btn-small" onclick="removeAssignment('${assignment.technician.id}')" style="background: #f44336; color: white;">
+                    <button class="btn-secondary btn-sm" onclick="removeAssignment('${assignment.technician.id}')" style="background: #f44336; color: white;">
                         Remove
                     </button>
                 </td>
@@ -2570,7 +2075,7 @@ function updatePagination() {
 
     // Previous button
     if (deploymentState.pagination.currentPage > 1) {
-        buttonsHtml += `<button class="btn btn-small" onclick="changePage(${deploymentState.pagination.currentPage - 1})">← Previous</button>`;
+        buttonsHtml += `<button class="btn-secondary btn-sm" onclick="changePage(${deploymentState.pagination.currentPage - 1})">← Previous</button>`;
     }
 
     // Page numbers
@@ -2595,7 +2100,7 @@ function updatePagination() {
 
     // Next button
     if (deploymentState.pagination.currentPage < deploymentState.pagination.totalPages) {
-        buttonsHtml += `<button class="btn btn-small" onclick="changePage(${deploymentState.pagination.currentPage + 1})">Next →</button>`;
+        buttonsHtml += `<button class="btn-secondary btn-sm" onclick="changePage(${deploymentState.pagination.currentPage + 1})">Next →</button>`;
     }
 
     buttonsContainer.innerHTML = buttonsHtml;
@@ -2751,7 +2256,7 @@ function showErrorModal(title, message, details = null) {
                     <pre style="margin: 10px 0 0 0; font-size: 12px; color: #666; white-space: pre-wrap;">${details}</pre>
                 </details>` : ''}
                 <div style="text-align: right; margin-top: 20px;">
-                    <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" class="btn btn-primary">Close</button>
+                    <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" class="btn-primary">Close</button>
                 </div>
             </div>
         </div>
@@ -2843,25 +2348,25 @@ function showExportModal() {
             <div style="padding: 20px;">
                 <p style="margin: 0 0 20px 0; color: #666;">Choose export format for your assignment data:</p>
                 <div style="display: grid; gap: 10px;">
-                    <button onclick="exportAssignments('csv')" class="btn btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
+                    <button onclick="exportAssignments('csv')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
                         <span>📊</span>
                         <span>CSV Spreadsheet</span>
                     </button>
-                    <button onclick="exportAssignments('excel')" class="btn btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
+                    <button onclick="exportAssignments('excel')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
                         <span>📈</span>
                         <span>Excel Workbook</span>
                     </button>
-                    <button onclick="exportAssignments('pdf')" class="btn btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
+                    <button onclick="exportAssignments('pdf')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
                         <span>📄</span>
                         <span>PDF Report</span>
                     </button>
-                    <button onclick="exportAssignments('mobile')" class="btn btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
+                    <button onclick="exportAssignments('mobile')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
                         <span>📱</span>
                         <span>Mobile Sync JSON</span>
                     </button>
                 </div>
                 <div style="margin-top: 15px; text-align: center;">
-                    <button onclick="closeModal(this)" class="btn">Cancel</button>
+                    <button onclick="closeModal(this)" class="btn-secondary">Cancel</button>
                 </div>
             </div>
         </div>

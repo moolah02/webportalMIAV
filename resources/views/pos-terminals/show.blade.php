@@ -9,9 +9,9 @@
             <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">{{ $posTerminal->merchant_name }} • {{ $posTerminal->client->company_name }}</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="{{ route('pos-terminals.edit', $posTerminal) }}" class="btn btn-primary">Edit Terminal</a>
-            <button onclick="confirmDelete()" class="btn btn-danger">Delete Terminal</button>
-            <a href="{{ route('pos-terminals.index') }}" class="btn">← Back to List</a>
+            <a href="{{ route('pos-terminals.edit', $posTerminal) }}" class="btn-primary">Edit Terminal</a>
+            <button onclick="confirmDelete()" class="btn-danger">Delete Terminal</button>
+            <a href="{{ route('pos-terminals.index') }}" class="btn-secondary">← Back to List</a>
         </div>
     </div>
 
@@ -31,7 +31,7 @@
                     <div>
                         <label>Status</label>
                         <div>
-                            <span class="status-badge status-{{ $posTerminal->status }}">
+                            <span class="badge badge-gray">
                                 {{ ucfirst($posTerminal->status) }}
                             </span>
                         </div>
@@ -134,7 +134,7 @@
                     <div>
                         <label>Client Status</label>
                         <div>
-                            <span class="status-badge status-{{ $posTerminal->client->status ?? 'active' }}">
+                            <span class="badge badge-gray">
                                 {{ ucfirst($posTerminal->client->status ?? 'active') }}
                             </span>
                         </div>
@@ -158,7 +158,7 @@
                 <div id="service-history-list">
                     <div style="padding: 20px; text-align: center; color: #666;">
                         <p>No service records found</p>
-                        <button onclick="openServiceModal()" class="btn btn-primary" style="margin-top: 10px;">Record First Service</button>
+                        <button onclick="openServiceModal()" class="btn-primary" style="margin-top: 10px;">Record First Service</button>
                     </div>
                 </div>
             </div>
@@ -225,7 +225,7 @@
                     </div>
                 </div>
                 
-                <button onclick="openServiceModal()" class="btn btn-primary" style="width: 100%;">
+                <button onclick="openServiceModal()" class="btn-primary" style="width: 100%;">
                     Schedule Service
                 </button>
             </div>
@@ -310,8 +310,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="closeModal('ticketModal')" class="btn">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Ticket</button>
+                <button type="button" onclick="closeModal('ticketModal')" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Create Ticket</button>
             </div>
         </form>
     </div>
@@ -373,8 +373,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="closeModal('serviceModal')" class="btn">Cancel</button>
-                <button type="submit" class="btn btn-primary">Schedule Service</button>
+                <button type="button" onclick="closeModal('serviceModal')" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Schedule Service</button>
             </div>
         </form>
     </div>
@@ -414,8 +414,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="closeModal('notesModal')" class="btn">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save Notes</button>
+                <button type="button" onclick="closeModal('notesModal')" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Save Notes</button>
             </div>
         </form>
     </div>
@@ -471,8 +471,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="closeModal('reportModal')" class="btn">Cancel</button>
-                <button type="submit" class="btn btn-primary">Generate Report</button>
+                <button type="button" onclick="closeModal('reportModal')" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Generate Report</button>
             </div>
         </form>
     </div>
@@ -490,337 +490,6 @@
     @method('DELETE')
 </form>
 
-<style>
-/* Professional, clean styling */
-.info-card {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    padding: 20px;
-    margin-block-end: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.info-card h3 {
-    margin: 0 0 15px 0;
-    color: #333;
-    font-size: 16px;
-    font-weight: 600;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.info-grid label {
-    font-size: 12px;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 500;
-    margin-block-end: 3px;
-    display: block;
-}
-
-.info-value {
-    font-size: 14px;
-    color: #333;
-    font-weight: 500;
-}
-
-.btn {
-    display: inline-block;
-    padding: 8px 16px;
-    background: #f8f9fa;
-    color: #333;
-    text-decoration: none;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn:hover {
-    background: #e9ecef;
-    border-color: #007bff;
-    text-decoration: none;
-}
-
-.btn-primary {
-    background: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-.btn-primary:hover {
-    background: #0056b3;
-    border-color: #0056b3;
-}
-
-.btn-danger {
-    background: #dc3545;
-    color: white;
-    border-color: #dc3545;
-}
-
-.btn-danger:hover {
-    background: #c82333;
-    border-color: #bd2130;
-}
-
-.action-btn {
-    display: block;
-    padding: 10px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.action-btn:hover {
-    background: #f8f9fa;
-    border-color: #007bff;
-    text-decoration: none;
-}
-
-.active-btn {
-    background: #d4edda !important;
-    color: #155724 !important;
-    border-color: #c3e6cb !important;
-}
-
-.maintenance-btn {
-    background: #d1ecf1 !important;
-    color: #0c5460 !important;
-    border-color: #bee5eb !important;
-}
-
-.offline-btn {
-    background: #fff3cd !important;
-    color: #856404 !important;
-    border-color: #ffeaa7 !important;
-}
-
-.faulty-btn {
-    background: #f8d7da !important;
-    color: #721c24 !important;
-    border-color: #f5c6cb !important;
-}
-
-.status-badge {
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.status-active {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-offline {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.status-maintenance {
-    background: #d1ecf1;
-    color: #0c5460;
-}
-
-.status-faulty {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.stats-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    font-size: 13px;
-}
-
-.stat-item span:last-child {
-    font-weight: 600;
-    color: #007bff;
-}
-
-/* Modal Styles */
-.modal {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-
-.modal-header {
-    padding: 20px;
-    border-bottom: 1px solid #dee2e6;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h3 {
-    margin: 0;
-    color: #333;
-    font-size: 18px;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: #999;
-    cursor: pointer;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-}
-
-.close-btn:hover {
-    color: #333;
-}
-
-.modal-body {
-    padding: 20px;
-}
-
-.modal-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #333;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.form-control {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: border-color 0.2s;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
-}
-
-/* Toast Notification */
-.toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: white;
-    border-radius: 6px;
-    padding: 15px 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 300px;
-    z-index: 2000;
-    animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-.toast.success {
-    border-left: 4px solid #28a745;
-}
-
-.toast.error {
-    border-left: 4px solid #dc3545;
-}
-
-.toast.info {
-    border-left: 4px solid #17a2b8;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    div[style*="grid-template-columns: 2fr 1fr"] {
-        grid-template-columns: 1fr !important;
-    }
-    
-    .info-grid {
-        grid-template-columns: 1fr !important;
-    }
-    
-    div[style*="display: flex; justify-content: space-between"] {
-        flex-direction: column !important;
-        gap: 10px !important;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 10px;
-    }
-}
-</style>
 
 <script>
 // Status Update

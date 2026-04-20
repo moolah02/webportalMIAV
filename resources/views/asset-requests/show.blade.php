@@ -14,12 +14,12 @@
                 <form action="{{ route('asset-requests.cancel', $assetRequest) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to cancel this request?')">
                     @csrf
                     @method('PATCH')
-                    <button type="submit" class="btn" style="background: #f44336; color: white;">Cancel Request</button>
+                    <button type="submit" class="btn-secondary" style="background: #f44336; color: white;">Cancel Request</button>
                 </form>
                 @endif
-                <a href="{{ route('asset-requests.index') }}" class="btn">← My Requests</a>
+                <a href="{{ route('asset-requests.index') }}" class="btn-secondary">← My Requests</a>
             @else
-                <a href="{{ route('asset-approvals.index') }}" class="btn">← Back to Approvals</a>
+                <a href="{{ route('asset-approvals.index') }}" class="btn-secondary">← Back to Approvals</a>
             @endif
         </div>
     </div>
@@ -28,7 +28,7 @@
         <!-- Main Content -->
         <div>
             <!-- Request Status -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 15px;">
                     <h4 style="margin: 0; color: #333;">📊 Request Status</h4>
                     <div style="display: flex; gap: 10px;">
@@ -81,7 +81,7 @@
             </div>
 
             <!-- Business Justification -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">📝 Business Justification</h4>
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
                     {{ $assetRequest->business_justification }}
@@ -95,7 +95,7 @@
             </div>
 
             <!-- Requested Items -->
-            <div class="content-card">
+            <div class="ui-card p-6">
                 <h4 style="margin-block-end: 20px; color: #333;">📦 Requested Items</h4>
                 <div style="overflow-x: auto;">
                     <table style="inline-size: 100%; border-collapse: collapse;">
@@ -148,7 +148,7 @@
         <!-- Sidebar -->
         <div>
             <!-- Requester Info -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">👤 Requester</h4>
                 <div style="margin-block-end: 10px;">
                     <div style="font-weight: 500;">{{ $assetRequest->employee->full_name }}</div>
@@ -164,7 +164,7 @@
 
             <!-- Approval Info -->
             @if($assetRequest->status === 'approved' || $assetRequest->status === 'fulfilled')
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">✅ Approval Details</h4>
                 <div style="margin-block-end: 10px;">
                     <div style="font-weight: 500;">{{ $assetRequest->approver->full_name }}</div>
@@ -177,7 +177,7 @@
                 @endif
             </div>
             @elseif($assetRequest->status === 'rejected')
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">❌ Rejection Details</h4>
                 <div style="margin-block-end: 10px;">
                     <div style="font-weight: 500;">{{ $assetRequest->approver->full_name ?? 'System' }}</div>
@@ -193,7 +193,7 @@
 
             <!-- Fulfillment Info -->
             @if($assetRequest->status === 'fulfilled' && $assetRequest->fulfiller)
-            <div class="content-card">
+            <div class="ui-card p-6">
                 <h4 style="margin-block-end: 15px; color: #333;">📦 Fulfillment Details</h4>
                 <div style="margin-block-end: 10px;">
                     <div style="font-weight: 500;">{{ $assetRequest->fulfiller->full_name }}</div>
@@ -210,60 +210,4 @@
     </div>
 </div>
 
-<style>
-.timeline-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.timeline-circle {
-    inline-size: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #e0e0e0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    transition: all 0.3s ease;
-}
-
-.timeline-step.completed .timeline-circle {
-    background: #4caf50;
-    color: white;
-}
-
-.timeline-step.rejected .timeline-circle {
-    background: #f44336;
-    color: white;
-}
-
-.timeline-label {
-    font-size: 12px;
-    color: #666;
-    font-weight: 500;
-    text-align: center;
-}
-
-.timeline-step.completed .timeline-label {
-    color: #4caf50;
-}
-
-.timeline-step.rejected .timeline-label {
-    color: #f44336;
-}
-
-.timeline-line {
-    flex: 1;
-    height: 2px;
-    background: #e0e0e0;
-    margin: 0 10px;
-}
-
-.timeline-line.completed {
-    background: #4caf50;
-}
-</style>
 @endsection

@@ -7,86 +7,82 @@ File: resources/views/roles/index.blade.php
 @extends('layouts.app')
 @section('title', 'Role Management')
 
+@section('header-actions')
+<a href="{{ route('roles.create') }}" class="btn-primary">+ Create Role</a>
+@endsection
+
 @section('content')
 <div>
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <div>
-            <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Manage user roles and permissions</p>
-        </div>
-        <a href="{{ route('roles.create') }}" class="btn btn-primary">+ Create New Role</a>
-    </div>
-
     <!-- Statistics Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #E3F2FD;">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #1976D2; font-size: 24px;">🔑</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number">{{ $stats['total_roles'] ?? 0 }}</div>
-                <div class="metric-label">TOTAL ROLES</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $stats['total_roles'] ?? 0 }}</div>
+                <div class="stat-label uppercase tracking-wide">TOTAL ROLES</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #FFEBEE;">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #D32F2F; font-size: 24px;">⚡</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number">{{ $stats['roles_with_admin'] ?? 0 }}</div>
-                <div class="metric-label">ADMIN ROLES</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $stats['roles_with_admin'] ?? 0 }}</div>
+                <div class="stat-label uppercase tracking-wide">ADMIN ROLES</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #F3E5F5;">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #7B1FA2; font-size: 24px;">🎨</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number">{{ $stats['custom_roles'] ?? 0 }}</div>
-                <div class="metric-label">CUSTOM ROLES</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $stats['custom_roles'] ?? 0 }}</div>
+                <div class="stat-label uppercase tracking-wide">CUSTOM ROLES</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon" style="background: #FFF3E0;">
+        <div class="stat-card">
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
                 <span style="color: #F57C00; font-size: 24px;">👥</span>
             </div>
-            <div class="metric-content">
-                <div class="metric-number">{{ $stats['employees_assigned'] ?? 0 }}</div>
-                <div class="metric-label">EMPLOYEES WITH ROLES</div>
+            <div class="flex-1 min-w-0">
+                <div class="stat-number">{{ $stats['employees_assigned'] ?? 0 }}</div>
+                <div class="stat-label uppercase tracking-wide">EMPLOYEES WITH ROLES</div>
             </div>
         </div>
     </div>
 
     <!-- Search -->
-    <div class="content-card" style="margin-bottom: 20px;">
-        <form method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+    <div class="ui-card p-4 mb-5">
+        <form method="GET" class="flex gap-3 items-center flex-wrap">
             <input type="text" name="search" value="{{ request('search') }}"
                    placeholder="Search roles..."
-                   style="flex: 1; min-width: 250px; padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
+                   class="ui-input flex-1 min-w-52">
 
-            <select name="permission_level" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
+            <select name="permission_level" class="ui-select w-auto">
                 <option value="">All Permission Levels</option>
                 <option value="super_admin" {{ request('permission_level') == 'super_admin' ? 'selected' : '' }}>Super Admin</option>
                 <option value="manager" {{ request('permission_level') == 'manager' ? 'selected' : '' }}>Manager</option>
                 <option value="user" {{ request('permission_level') == 'user' ? 'selected' : '' }}>User / Limited</option>
             </select>
 
-            <button type="submit" class="btn">Filter</button>
+            <button type="submit" class="btn-secondary">Filter</button>
 
             @if(request()->hasAny(['search', 'permission_level']))
-            <a href="{{ route('roles.index') }}" class="btn">Clear</a>
+            <a href="{{ route('roles.index') }}" class="btn-secondary">Clear</a>
             @endif
         </form>
     </div>
 
     <!-- Roles Table -->
-    <div class="content-card">
+    <div class="ui-card p-6">
         @if($roles->count() > 0)
-        <div class="table-container">
-            <table class="roles-table">
+        <div class="overflow-x-auto">
+            <table class="ui-table">
                 <thead>
                     <tr>
                         <th style="width: 40px;">
@@ -130,15 +126,15 @@ File: resources/views/roles/index.blade.php
                         </td>
                         <td>
                             @if($rolePerms->contains('name', 'all'))
-                                <span class="permission-badge super-admin">Super Admin</span>
+                                <span class="badge badge-red">Super Admin</span>
                             @elseif($rolePerms->contains('name', 'manage_team'))
-                                <span class="permission-badge manager">Manager</span>
+                                <span class="badge badge-purple">Manager</span>
                             @elseif($rolePerms->whereIn('name', ['view_dashboard', 'view_jobs'])->isNotEmpty())
-                                <span class="permission-badge user">User</span>
+                                <span class="badge badge-blue">User</span>
                             @elseif($rolePerms->isNotEmpty())
-                                <span class="permission-badge user">Limited Admin</span>
+                                <span class="badge badge-blue">Limited Admin</span>
                             @else
-                                <span class="permission-badge limited">Limited</span>
+                                <span class="badge badge-gray">Limited</span>
                             @endif
                         </td>
                         <td>
@@ -162,12 +158,12 @@ File: resources/views/roles/index.blade.php
                                         @php
                                             $color = $colors[$perm->name] ?? ['bg' => '#F5F5F5', 'text' => '#666'];
                                         @endphp
-                                        <span class="permission-tag" style="background: {{ $color['bg'] }}; color: {{ $color['text'] }};">
+                                        <span class="badge badge-gray" style="background: {{ $color['bg'] }}; color: {{ $color['text'] }};">
                                             {{ ucwords(str_replace('_', ' ', $perm->name)) }}
                                         </span>
                                     @endforeach
                                     @if($remainingCount > 0)
-                                        <span class="permission-tag" style="background: #F5F5F5; color: #666;">
+                                        <span class="badge badge-gray" style="background: #F5F5F5; color: #666;">
                                             +{{ $remainingCount }} more
                                         </span>
                                     @endif
@@ -215,14 +211,14 @@ File: resources/views/roles/index.blade.php
             <div style="font-size: 64px; margin-bottom: 20px;">🔑</div>
             <h3 style="margin: 0 0 10px 0; color: #333;">No roles found</h3>
             <p style="margin: 0 0 20px 0;">Create your first role to get started.</p>
-            <a href="{{ route('roles.create') }}" class="btn btn-primary">Create First Role</a>
+            <a href="{{ route('roles.create') }}" class="btn-primary">Create First Role</a>
         </div>
         @endif
     </div>
 
     <!-- Pagination -->
     @if(method_exists($roles, 'links'))
-    <div style="margin-top: 30px; display: flex; justify-content: center;">
+    <div class="mt-6 flex justify-center">
         {{ $roles->appends(request()->query())->links() }}
     </div>
     @endif
@@ -283,196 +279,6 @@ File: resources/views/roles/index.blade.php
     </div>
 </div>
 
-<style>
-/* Metric Cards */
-.metric-card {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #F0F0F0;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.metric-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.metric-content {
-    flex: 1;
-}
-
-.metric-number {
-    font-size: 32px;
-    font-weight: bold;
-    color: #333;
-    line-height: 1;
-    margin-bottom: 4px;
-}
-
-.metric-label {
-    font-size: 12px;
-    color: #666;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-}
-
-/* Content Card */
-.content-card {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #F0F0F0;
-}
-
-/* Table Styles */
-.table-container {
-    overflow-x: auto;
-}
-
-.roles-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-
-.roles-table th {
-    background: #F8F9FA;
-    padding: 16px 12px;
-    text-align: left;
-    font-weight: 600;
-    color: #333;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid #E0E0E0;
-}
-
-.roles-table td {
-    padding: 16px 12px;
-    border-bottom: 1px solid #F0F0F0;
-    vertical-align: middle;
-}
-
-.roles-table tr:hover {
-    background: #FAFAFA;
-}
-
-.role-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #F8F9FA;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-/* Permission Badges */
-.permission-badge {
-    padding: 6px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.permission-badge.super-admin { background: #FFEBEE; color: #D32F2F; }
-.permission-badge.manager { background: #F3E5F5; color: #7B1FA2; }
-.permission-badge.user { background: #E3F2FD; color: #1976D2; }
-.permission-badge.limited { background: #F5F5F5; color: #666; }
-
-.permission-tag {
-    padding: 2px 6px;
-    border-radius: 8px;
-    font-size: 11px;
-    white-space: nowrap;
-}
-
-/* Action Buttons */
-.action-btn {
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    background: #F8F9FA;
-    color: #666;
-}
-
-.action-btn:hover {
-    background: #E0E0E0;
-    transform: translateY(-1px);
-}
-
-/* Buttons */
-.btn {
-    padding: 10px 16px;
-    border: 1px solid #E0E0E0;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #1976D2;
-    color: #1976D2;
-}
-
-.btn-primary {
-    background: #1976D2;
-    color: white;
-    border-color: #1976D2;
-}
-
-.btn-primary:hover {
-    background: #1565C0;
-    border-color: #1565C0;
-    color: white;
-}
-
-/* Modal */
-.modal-action-btn {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-    width: 100%;
-}
-
-.modal-action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-</style>
 
 <script>
 let currentRoleId = null;

@@ -16,13 +16,13 @@
         </div>
         <div style="display: flex; gap: 10px;">
             @if($businessLicense->document_path)
-            <a href="{{ route('business-licenses.download', $businessLicense) }}" class="btn">📄 Download</a>
+            <a href="{{ route('business-licenses.download', $businessLicense) }}" class="btn-secondary">📄 Download</a>
             @endif
             @if($businessLicense->canRenew())
-            <a href="{{ route('business-licenses.renew', $businessLicense) }}" class="btn" style="background: #ff9800; color: white; border-color: #ff9800;">🔄 Renew</a>
+            <a href="{{ route('business-licenses.renew', $businessLicense) }}" class="btn-secondary" style="background: #ff9800; color: white; border-color: #ff9800;">🔄 Renew</a>
             @endif
-            <a href="{{ route('business-licenses.edit', $businessLicense) }}" class="btn">✏️ Edit</a>
-            <a href="{{ route('business-licenses.index', ['direction' => $businessLicense->license_direction]) }}" class="btn">← Back</a>
+            <a href="{{ route('business-licenses.edit', $businessLicense) }}" class="btn-secondary">✏️ Edit</a>
+            <a href="{{ route('business-licenses.index', ['direction' => $businessLicense->license_direction]) }}" class="btn-secondary">← Back</a>
         </div>
     </div>
 
@@ -30,7 +30,7 @@
         <!-- Main Content -->
         <div>
             <!-- License Status & Overview -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px;">
                     <h4 style="margin: 0; color: #333;">📊 License Overview</h4>
                     <div style="display: flex; gap: 10px;">
@@ -96,7 +96,7 @@
 
             @if($businessLicense->isCustomerIssued())
             <!-- Customer Information -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">👤 Customer Information</h4>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-block-end: 15px;">
@@ -148,7 +148,7 @@
 
             <!-- Description & Details -->
             @if($businessLicense->description)
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">📝 Description</h4>
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
                     {{ $businessLicense->description }}
@@ -158,7 +158,7 @@
 
             <!-- Financial Information -->
             @if($businessLicense->isCompanyHeld() && ($businessLicense->cost || $businessLicense->renewal_cost))
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">💰 Financial Information</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                     @if($businessLicense->cost)
@@ -177,7 +177,7 @@
             </div>
             @elseif($businessLicense->isCustomerIssued())
             <!-- Revenue Information -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">💰 Revenue Information</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                     <div>
@@ -204,7 +204,7 @@
 
             @if($businessLicense->isCustomerIssued() && ($businessLicense->usage_limit || $businessLicense->service_start_date))
             <!-- License Details -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">📋 License Details</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                     @if($businessLicense->usage_limit)
@@ -225,7 +225,7 @@
 
             @if($businessLicense->isCompanyHeld() && $businessLicense->business_impact)
             <!-- Business Impact -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">🏢 Business Impact</h4>
                 <div style="background: #fff3e0; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #ff9800;">
                     {{ $businessLicense->business_impact }}
@@ -235,7 +235,7 @@
 
             <!-- License Conditions / Terms -->
             @if($businessLicense->license_conditions || $businessLicense->license_terms)
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">
                     📋 {{ $businessLicense->isCompanyHeld() ? 'License Conditions' : 'License Terms' }}
                 </h4>
@@ -247,7 +247,7 @@
 
             @if($businessLicense->isCompanyHeld() && $businessLicense->compliance_notes)
             <!-- Compliance Notes -->
-            <div class="content-card">
+            <div class="ui-card p-6">
                 <h4 style="margin-block-end: 15px; color: #333;">✅ Compliance Notes</h4>
                 <div style="background: #e8f5e8; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #4caf50;">
                     {{ $businessLicense->compliance_notes }}
@@ -260,7 +260,7 @@
         <div>
             @if($businessLicense->isCompanyHeld())
             <!-- Assignment Information -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">👥 Assignment</h4>
                 
                 <div style="margin-block-end: 15px;">
@@ -299,7 +299,7 @@
             </div>
 
             <!-- Renewal Settings -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">🔄 Renewal Settings</h4>
                 
                 <div style="margin-block-end: 15px;">
@@ -324,7 +324,7 @@
             </div>
             @else
             <!-- Customer License Settings -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">⚙️ License Settings</h4>
                 
                 <div style="margin-block-end: 15px;">
@@ -350,7 +350,7 @@
             @endif
 
             <!-- Additional Information -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">ℹ️ Additional Info</h4>
                 
                 @if($businessLicense->isCompanyHeld() && $businessLicense->regulatory_body)
@@ -380,33 +380,33 @@
             </div>
 
             <!-- Quick Actions -->
-            <div class="content-card">
+            <div class="ui-card p-6">
                 <h4 style="margin-block-end: 15px; color: #333;">⚡ Quick Actions</h4>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     @if($businessLicense->canRenew() && ($businessLicense->is_expired || $businessLicense->is_expiring_soon))
-                    <a href="{{ route('business-licenses.renew', $businessLicense) }}" class="btn" style="background: #ff9800; color: white; border-color: #ff9800; text-align: center;">
+                    <a href="{{ route('business-licenses.renew', $businessLicense) }}" class="btn-secondary" style="background: #ff9800; color: white; border-color: #ff9800; text-align: center;">
                         🔄 Renew License
                     </a>
                     @endif
                     
-                    <a href="{{ route('business-licenses.edit', $businessLicense) }}" class="btn" style="text-align: center;">
+                    <a href="{{ route('business-licenses.edit', $businessLicense) }}" class="btn-secondary" style="text-align: center;">
                         ✏️ Edit License
                     </a>
                     
                     @if($businessLicense->document_path)
-                    <a href="{{ route('business-licenses.download', $businessLicense) }}" class="btn" style="background: #2196f3; color: white; border-color: #2196f3; text-align: center;">
+                    <a href="{{ route('business-licenses.download', $businessLicense) }}" class="btn-secondary" style="background: #2196f3; color: white; border-color: #2196f3; text-align: center;">
                         📄 Download Document
                     </a>
                     @endif
                     
                     @if($businessLicense->isCustomerIssued() && $businessLicense->customer_email)
-                    <a href="mailto:{{ $businessLicense->customer_email }}?subject=Regarding License {{ $businessLicense->license_number }}" class="btn" style="background: #4caf50; color: white; border-color: #4caf50; text-align: center;">
+                    <a href="mailto:{{ $businessLicense->customer_email }}?subject=Regarding License {{ $businessLicense->license_number }}" class="btn-secondary" style="background: #4caf50; color: white; border-color: #4caf50; text-align: center;">
                         ✉️ Email Customer
                     </a>
                     @endif
                     
                     <button onclick="if(confirm('Are you sure you want to delete this license?')) { document.getElementById('delete-form').submit(); }" 
-                            class="btn" style="background: #f44336; color: white; border-color: #f44336;">
+                            class="btn-secondary" style="background: #f44336; color: white; border-color: #f44336;">
                         🗑️ Delete License
                     </button>
                 </div>
@@ -421,41 +421,4 @@
     @method('DELETE')
 </form>
 
-<style>
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-}
-</style>
 @endsection

@@ -10,8 +10,8 @@
             <p style="color: #666; margin: 5px 0 0 0;">Update license information for {{ $businessLicense->license_name }}</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn">👁️ View</a>
-            <a href="{{ route('business-licenses.index', ['direction' => $businessLicense->license_direction]) }}" class="btn">← Back to Licenses</a>
+            <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn-secondary">👁️ View</a>
+            <a href="{{ route('business-licenses.index', ['direction' => $businessLicense->license_direction]) }}" class="btn-secondary">← Back to Licenses</a>
         </div>
     </div>
 
@@ -23,7 +23,7 @@
                 @method('PUT')
 
                 <!-- License Type Display (Read-only) -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">🔄 License Type</h4>
 
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
@@ -40,7 +40,7 @@
                 </div>
 
                 <!-- Basic Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📋 Basic Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
@@ -109,7 +109,7 @@
                 </div>
 
                 <!-- Dates Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📅 Dates Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
@@ -146,7 +146,7 @@
 
                 @if($businessLicense->isCompanyHeld())
                 <!-- Company-Held License Fields -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">💰 Financial Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -171,7 +171,7 @@
                 </div>
 
                 <!-- Company Additional Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📝 Additional Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
@@ -232,7 +232,7 @@
                 @else
                 <!-- Customer-Issued License Fields -->
                 <!-- Customer Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">👤 Customer Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
@@ -294,7 +294,7 @@
                 </div>
 
                 <!-- License & Billing Information -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">💰 License & Billing Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
@@ -356,7 +356,7 @@
                 </div>
 
                 <!-- Customer License Terms -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📋 License Terms & Conditions</h4>
 
                     <div style="margin-block-end: 20px;">
@@ -380,7 +380,7 @@
                 @endif
 
                 <!-- Document Upload -->
-                <div class="content-card" style="margin-block-end: 20px;">
+                <div class="ui-card p-6" style="margin-block-end: 20px;">
                     <h4 style="margin-block-end: 20px; color: #333;">📄 Document</h4>
 
                     @if($businessLicense->document_path)
@@ -405,8 +405,8 @@
 
                 <!-- Submit Buttons -->
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Update License</button>
+                    <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn-secondary">Cancel</a>
+                    <button type="submit" class="btn-primary">Update License</button>
                 </div>
             </form>
         </div>
@@ -414,7 +414,7 @@
         <!-- Sidebar Info -->
         <div>
             <!-- Current Status -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">📊 Current Status</h4>
                 <div style="display: flex; flex-direction: column; gap: 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -456,7 +456,7 @@
             </div>
 
             <!-- Edit Tips -->
-            <div class="content-card" style="margin-block-end: 20px;">
+            <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <h4 style="margin-block-end: 15px; color: #333;">💡 Edit Tips</h4>
                 <ul style="margin: 0; padding-inline-start: 20px; color: #666; line-height: 1.6;">
                     @if($businessLicense->isCompanyHeld())
@@ -476,7 +476,7 @@
             </div>
 
             <!-- Change History -->
-            <div class="content-card">
+            <div class="ui-card p-6">
                 <h4 style="margin-block-end: 15px; color: #333;">📝 License History</h4>
                 <div style="font-size: 14px; color: #666; line-height: 1.6;">
                     <div style="margin-block-end: 10px;">
@@ -504,41 +504,4 @@
     </div>
 </div>
 
-<style>
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-}
-</style>
 @endsection

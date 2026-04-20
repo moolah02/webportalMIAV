@@ -23,19 +23,19 @@
     <div>
       <p class="subtitle">Submitted by {{ $assetRequest->employee->full_name }}</p>
     </div>
-    <a href="{{ route('asset-approvals.index') }}" class="btn">← Back to Approvals</a>
+    <a href="{{ route('asset-approvals.index') }}" class="btn-secondary">← Back to Approvals</a>
   </div>
 
   <div class="grid">
     <!-- Main -->
     <div class="main">
       <!-- Overview -->
-      <div class="card">
+      <div class="ui-card">
         <div class="row between center mb-16">
           <h4 class="h4">📊 Request Overview</h4>
           <div class="row gap-8">
-            <span class="status-badge status-{{ $assetRequest->status }}">{{ ucfirst($assetRequest->status) }}</span>
-            <span class="priority-badge priority-{{ $assetRequest->priority }}">{{ ucfirst($assetRequest->priority) }} Priority</span>
+            <span class="badge badge-gray">{{ ucfirst($assetRequest->status) }}</span>
+            <span class="badge badge-gray">{{ ucfirst($assetRequest->priority) }} Priority</span>
           </div>
         </div>
 
@@ -77,20 +77,20 @@
       </div>
 
       <!-- Items -->
-      <div class="card">
+      <div class="ui-card">
         <div class="row between center mb-12">
           <h4 class="h4">📦 Request Items</h4>
 
           @if($assetRequest->status === 'pending')
           <div class="row gap-8">
-            <button class="btn btn-primary" onclick="openApprove()">✅ Approve</button>
-            <button class="btn btn-danger" onclick="openReject()">❌ Reject</button>
+            <button class="btn-primary" onclick="openApprove()">✅ Approve</button>
+            <button class="btn-danger" onclick="openReject()">❌ Reject</button>
           </div>
           @endif
         </div>
 
         <div class="table-wrap">
-          <table class="table">
+          <table class="ui-table">
             <thead>
               <tr>
                 <th>Asset</th>
@@ -121,7 +121,7 @@
                 <td class="t-right">${{ number_format($item->unit_price_at_request, 2) }}</td>
                 <td class="t-right">${{ number_format($item->total_price, 2) }}</td>
                 <td class="t-center">
-                  <span class="status-badge status-{{ $item->item_status }}">{{ ucfirst(str_replace('_',' ',$item->item_status)) }}</span>
+                  <span class="badge badge-gray">{{ ucfirst(str_replace('_',' ',$item->item_status)) }}</span>
                 </td>
               </tr>
               @endforeach
@@ -137,7 +137,7 @@
 
       @if($assetRequest->status !== 'pending')
       <!-- Decision summary -->
-      <div class="card">
+      <div class="ui-card">
         <h4 class="h4 mb-12">{{ in_array($assetRequest->status,['approved','fulfilled']) ? '✅ Approval Details' : '❌ Rejection Details' }}</h4>
         <div class="mb-8 strong">{{ $assetRequest->approver->full_name ?? 'System' }}</div>
         <div class="small muted">{{ $assetRequest->approved_at ? $assetRequest->approved_at->format('M d, Y \a\t g:i A') : 'Unknown' }}</div>
@@ -151,7 +151,7 @@
           <div style="margin-top:16px; padding-top:16px; border-top:1px solid #e5e7eb;">
             <p style="font-size:13px; color:#6b7280; margin-bottom:8px;">Ready to assign the approved assets to the requester?</p>
             <a href="{{ route('assets.index', ['tab' => 'assign', 'employee_id' => $assetRequest->employee_id, 'from_request' => $assetRequest->id]) }}"
-               class="btn btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+               class="btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
               📦 Assign Assets Now
             </a>
           </div>
@@ -162,7 +162,7 @@
 
     <!-- Sidebar -->
     <aside class="side">
-      <div class="card">
+      <div class="ui-card">
         <h4 class="h4 mb-12">👤 Requester</h4>
         <div class="avatar">{{ substr($assetRequest->employee->full_name, 0, 1) }}</div>
         <div class="t-center strong">{{ $assetRequest->employee->full_name }}</div>
@@ -188,8 +188,8 @@
       <label class="muted">Approval Notes (optional)</label>
       <textarea name="approval_notes" rows="3" class="textarea" placeholder="Any notes for the requester..."></textarea>
       <div class="modal-actions">
-        <button type="button" class="btn" onclick="closeModals()">Cancel</button>
-        <button type="submit" class="btn btn-primary">Approve</button>
+        <button type="button" class="btn-secondary" onclick="closeModals()">Cancel</button>
+        <button type="submit" class="btn-primary">Approve</button>
       </div>
     </form>
   </div>
@@ -204,72 +204,13 @@
       <label class="muted">Rejection Reason *</label>
       <textarea name="rejection_reason" rows="4" class="textarea" required placeholder="Explain why this request is being rejected..."></textarea>
       <div class="modal-actions">
-        <button type="button" class="btn" onclick="closeModals()">Cancel</button>
-        <button type="submit" class="btn btn-danger">Reject</button>
+        <button type="button" class="btn-secondary" onclick="closeModals()">Cancel</button>
+        <button type="submit" class="btn-danger">Reject</button>
       </div>
     </form>
   </div>
 </div>
 
-<style>
-/* (unchanged styles trimmed to save space) */
-/* layout */
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.title{margin:0;color:#333;font-size:28px;font-weight:700}
-.subtitle{color:#666;margin-top:6px}
-.grid{display:grid;grid-template-columns:2fr 1fr;gap:24px}
-.main,.side{min-width:0}
-.card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:20px}
-.row{display:flex;align-items:center}
-.between{justify-content:space-between}.center{align-items:center}.end{justify-content:flex-end}
-.gap-8{gap:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-6{margin-top:6px}.ml-8{margin-left:8px}
-.h4{margin:0;color:#333}
-.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
-.muted{font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.02em}
-.small{font-size:13px;color:#666}
-.strong{font-weight:600}.primary{color:#2196f3}.danger{color:#d3aaa7}
-.note{background:#f8f9fa;padding:12px;border-radius:6px;border-left:4px solid #a3c5e1}
-.pill{padding:10px;border-radius:8px}.pill-success{background:#e8f5e8;color:#a3d9a6}.pill-danger{background:#ffebee;color:#d32f2f}
-
-/* table */
-.table-wrap{overflow-x:auto}
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{padding:12px;border:1px solid #e6e6e6;text-align:left}
-.table th{background:#f8f9fa}
-.t-center{text-align:center}.t-right{text-align:right}
-.tfoot td{background:#f8f9fa}
-
-/* badges & buttons */
-.status-badge{padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600}
-.status-pending{background:#fff3e0;color:#f57c00}
-.status-approved{background:#e8f5e8;color:#2e7d32}
-.status-rejected{background:#ffebee;color:#d32f2f}
-.status-fulfilled{background:#e3f2fd;color:#1976d2}
-.priority-badge{padding:4px 8px;border-radius:8px;font-size:11px;font-weight:600}
-.priority-low{background:#e8f5e8;color:#2e7d32}
-.priority-normal{background:#e3f2fd;color:#1976d2}
-.priority-high{background:#fff3e0;color:#f57c00}
-.priority-urgent{background:#ffebee;color:#d32f2f}
-
-.btn{padding:8px 14px;border:2px solid #ddd;border-radius:6px;background:#fff;color:#333;cursor:pointer;font-weight:600;transition:.2s}
-.btn:hover{border-color:#2196f3;color:#2196f3}
-.btn-primary{background:#2196f3;border-color:#2196f3;color:#fff}
-.btn-primary:hover{background:#1976d2;border-color:#1976d2;color:#fff}
-.btn-danger{background:#f44336;border-color:#f44336;color:#fff}
-
-/* avatar */
-.avatar{width:64px;height:64px;margin:0 auto 8px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:26px}
-
-/* modals */
-.modal{display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.5)}
-.modal-content{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:20px;width:90%;max-width:520px}
-.textarea{width:100%;padding:10px;border:2px solid #ddd;border-radius:6px}
-.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
-
-@media (max-width: 860px){
-  .grid{grid-template-columns:1fr}
-}
-</style>
 
 <script>
 function openApprove(){ document.getElementById('approveModal').style.display='block'; }
