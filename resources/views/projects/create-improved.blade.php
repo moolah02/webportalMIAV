@@ -150,42 +150,28 @@
                 <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
-                    <div class="ui-card-body p-4">
-                        @if ($errors->any())
-                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
-                            <strong class="font-semibold">Please correct the following errors:</strong>
-                            <ul class="mt-2 ml-4 list-disc">
-                                @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
+                    @if ($errors->any())
+                    <div class="mx-5 mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        <strong class="font-semibold">Please fix these errors:</strong>
+                        <ul class="mt-2 ml-4 list-disc">
+                            @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                        </ul>
+                    </div>
+                    @endif
 
-                        <!-- Project Name -->
+                    {{-- Section 1: Project Basics --}}
+                    <div class="px-5 py-5 border-b border-gray-100">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Project Basics</p>
                         <div class="mb-4">
-                            <label class="ui-label">
-                                Project Name <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" class="ui-input ui-input-lg"
-                                   name="project_name"
-                                   value="{{ old('project_name') }}"
-                                   placeholder="e.g., Q1 2026 Terminal Maintenance - Harare"
-                                   required>
-                            <div class="field-hint">Include period, type, and location for clarity</div>
+                            <label class="ui-label">Project Name <span class="text-red-500">*</span></label>
+                            <input type="text" class="ui-input" name="project_name" value="{{ old('project_name') }}"
+                                   placeholder="e.g., Q1 2026 Terminal Maintenance - Harare" required>
+                            <p class="text-xs text-gray-400 mt-1">Include period, type, and location for clarity</p>
                         </div>
-
-                        <!-- Client Selection with Live Info -->
-                        <div class="mb-4">
-                            <label class="ui-label">
-                                Client <span class="text-red-500">*</span>
-                            </label>
-                            <select class="ui-select ui-select-lg"
-                                    id="client_id"
-                                    name="client_id"
-                                    x-model="selectedClient"
-                                    @change="loadClientInfo($event.target.value)"
-                                    required>
+                        <div class="mb-5">
+                            <label class="ui-label">Client <span class="text-red-500">*</span></label>
+                            <select class="ui-select" id="client_id" name="client_id"
+                                    x-model="selectedClient" @change="loadClientInfo($event.target.value)" required>
                                 <option value="">Select Client</option>
                                 @foreach($clients as $client)
                                 <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
@@ -193,206 +179,146 @@
                                 </option>
                                 @endforeach
                             </select>
-
-                            <!-- Live Client Info Box (Alpine.js Reactive) -->
-                            <div x-show="clientInfo" x-transition class="client-info-box">
-                                <p class="font-semibold text-sm text-[#1a3a5c] mb-2">Client Information</p>
-                                <div class="grid grid-cols-3 gap-3">
-                                    <div>
-                                        <div class="text-lg font-bold text-[#1a3a5c]" x-text="clientInfo?.total_terminals || 0"></div>
-                                        <div class="text-xs text-gray-500">Total Terminals</div>
-                                    </div>
-                                    <div>
-                                        <div class="text-lg font-bold text-green-600" x-text="clientInfo?.active_terminals || 0"></div>
-                                        <div class="text-xs text-gray-500">Active</div>
-                                    </div>
-                                    <div>
-                                        <div class="text-lg font-bold text-gray-700" x-text="clientInfo?.primary_region || '--'"></div>
-                                        <div class="text-xs text-gray-500">Primary Region</div>
-                                    </div>
+                            <div x-show="clientInfo" x-transition
+                                 class="mt-3 bg-blue-50 border border-blue-100 rounded-lg p-3 grid grid-cols-3 gap-3">
+                                <div>
+                                    <div class="text-base font-bold text-[#1a3a5c]" x-text="clientInfo?.total_terminals || 0"></div>
+                                    <div class="text-xs text-gray-500">Total Terminals</div>
+                                </div>
+                                <div>
+                                    <div class="text-base font-bold text-green-600" x-text="clientInfo?.active_terminals || 0"></div>
+                                    <div class="text-xs text-gray-500">Active</div>
+                                </div>
+                                <div>
+                                    <div class="text-base font-bold text-gray-700" x-text="clientInfo?.primary_region || '--'"></div>
+                                    <div class="text-xs text-gray-500">Primary Region</div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Project Type (Visual Cards) -->
-                        <div class="mb-4">
-                            <label class="ui-label">
-                                Project Type <span class="text-red-500">*</span>
-                            </label>
+                        <div>
+                            <label class="ui-label">Project Type <span class="text-red-500">*</span></label>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                <div @click="selectProjectType('maintenance')">
-                                    <div class="project-type-card" :class="selectedProjectType === 'maintenance' ? 'selected' : ''">
-                                        <div class="text-3xl mb-2">🔧</div>
-                                        <div class="font-semibold text-sm text-gray-800">Maintenance & Repairs</div>
-                                        <div class="text-xs text-gray-500 mt-1">Regular upkeep and servicing</div>
-                                        <input type="radio" name="_project_type_radio" value="maintenance"
-                                               :checked="selectedProjectType === 'maintenance'" hidden>
-                                    </div>
+                                <div @click="selectProjectType('maintenance')" class="project-type-card"
+                                     :class="selectedProjectType === 'maintenance' ? 'selected' : ''">
+                                    <div class="text-2xl mb-2">&#x1F527;</div>
+                                    <div class="text-sm font-semibold text-gray-800">Maintenance & Repairs</div>
+                                    <div class="text-xs text-gray-400 mt-0.5">Regular upkeep and servicing</div>
+                                    <input type="radio" name="_project_type_radio" value="maintenance" :checked="selectedProjectType === 'maintenance'" hidden>
                                 </div>
-                                <div @click="selectProjectType('installation')">
-                                    <div class="project-type-card" :class="selectedProjectType === 'installation' ? 'selected' : ''">
-                                        <div class="text-3xl mb-2">📦</div>
-                                        <div class="font-semibold text-sm text-gray-800">Installation & Setup</div>
-                                        <div class="text-xs text-gray-500 mt-1">New terminal deployment</div>
-                                        <input type="radio" name="_project_type_radio" value="installation"
-                                               :checked="selectedProjectType === 'installation'" hidden>
-                                    </div>
+                                <div @click="selectProjectType('installation')" class="project-type-card"
+                                     :class="selectedProjectType === 'installation' ? 'selected' : ''">
+                                    <div class="text-2xl mb-2">&#x1F4E6;</div>
+                                    <div class="text-sm font-semibold text-gray-800">Installation & Setup</div>
+                                    <div class="text-xs text-gray-400 mt-0.5">New terminal deployment</div>
+                                    <input type="radio" name="_project_type_radio" value="installation" :checked="selectedProjectType === 'installation'" hidden>
                                 </div>
-                                <div @click="selectProjectType('support')">
-                                    <div class="project-type-card" :class="selectedProjectType === 'support' ? 'selected' : ''">
-                                        <div class="text-3xl mb-2">💬</div>
-                                        <div class="font-semibold text-sm text-gray-800">Support & Troubleshooting</div>
-                                        <div class="text-xs text-gray-500 mt-1">Issue resolution</div>
-                                        <input type="radio" name="_project_type_radio" value="support"
-                                               :checked="selectedProjectType === 'support'" hidden>
-                                    </div>
+                                <div @click="selectProjectType('support')" class="project-type-card"
+                                     :class="selectedProjectType === 'support' ? 'selected' : ''">
+                                    <div class="text-2xl mb-2">&#x1F4AC;</div>
+                                    <div class="text-sm font-semibold text-gray-800">Support & Troubleshooting</div>
+                                    <div class="text-xs text-gray-400 mt-0.5">Issue resolution</div>
+                                    <input type="radio" name="_project_type_radio" value="support" :checked="selectedProjectType === 'support'" hidden>
                                 </div>
-                                <div @click="selectProjectType('other')">
-                                    <div class="project-type-card" :class="selectedProjectType === 'other' ? 'selected' : ''">
-                                        <div class="text-3xl mb-2">📝</div>
-                                        <div class="font-semibold text-sm text-gray-800">Other</div>
-                                        <div class="text-xs text-gray-500 mt-1">Specify project type below</div>
-                                        <input type="radio" name="_project_type_radio" value="other"
-                                               :checked="selectedProjectType === 'other'" hidden>
-                                    </div>
+                                <div @click="selectProjectType('other')" class="project-type-card"
+                                     :class="selectedProjectType === 'other' ? 'selected' : ''">
+                                    <div class="text-2xl mb-2">&#x1F4DD;</div>
+                                    <div class="text-sm font-semibold text-gray-800">Other</div>
+                                    <div class="text-xs text-gray-400 mt-0.5">Specify below</div>
+                                    <input type="radio" name="_project_type_radio" value="other" :checked="selectedProjectType === 'other'" hidden>
                                 </div>
                             </div>
-                            <!-- Other type text input -->
                             <div class="mt-3" x-show="selectedProjectType === 'other'" x-cloak>
-                                <input type="text"
-                                       class="ui-input"
-                                       placeholder="Describe the project type (e.g. Audit, Training, Migration…)"
-                                       x-model="otherProjectType"
-                                       maxlength="100">
+                                <input type="text" class="ui-input" placeholder="Describe the project type…"
+                                       x-model="otherProjectType" maxlength="100">
                             </div>
-                            <!-- Hidden input that carries the final value -->
                             <input type="hidden" name="project_type"
                                    :value="selectedProjectType === 'other' ? otherProjectType : selectedProjectType">
                         </div>
+                    </div>
 
-                        <hr class="my-5 border-gray-100">
-
-                        <!-- Timeline (Smart Duration Selector) -->
-                        <h5 class="mb-3 font-semibold text-gray-800 text-base">Timeline & Resources</h5>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    {{-- Section 2: Timeline --}}
+                    <div class="px-5 py-5 border-b border-gray-100">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Timeline</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
                                 <label class="ui-label">Start Date</label>
-                                <input type="date" class="ui-input"
-                                       name="start_date"
-                                       x-model="startDate"
-                                       :min="new Date().toISOString().split('T')[0]"
-                                       value="{{ date('Y-m-d') }}">
-                                <div class="field-hint">
-                                    <i class="fas fa-check text-success"></i>
-                                    Pre-filled with today's date
-                                </div>
+                                <input type="date" class="ui-input" name="start_date" x-model="startDate"
+                                       :min="new Date().toISOString().split('T')[0]" value="{{ date('Y-m-d') }}">
+                                <p class="text-xs text-gray-400 mt-1">Pre-filled with today's date</p>
                             </div>
-
                             <div>
                                 <label class="ui-label">Duration (Days)</label>
-                                <input type="number" class="ui-input"
-                                       name="duration_days"
-                                       x-model="durationDays"
-                                       min="1"
-                                       placeholder="e.g. 30">
+                                <input type="number" class="ui-input" name="duration_days"
+                                       x-model="durationDays" min="1" placeholder="e.g. 30">
                                 <input type="hidden" name="end_date" :value="calculateEndDate()">
                             </div>
                             <div>
                                 <label class="ui-label">End Date</label>
-                                <input type="text" class="ui-input" readonly
-                                       :value="calculateEndDate()"
-                                       style="background: #f8fafc;">
-                                <div class="field-hint">Auto-calculated</div>
+                                <input type="text" class="ui-input bg-gray-50" readonly :value="calculateEndDate()">
+                                <p class="text-xs text-gray-400 mt-1">Auto-calculated</p>
                             </div>
                         </div>
-
-                        <hr class="my-5 border-gray-100">
-
-                        <!-- Optional Fields (Collapsible) -->
-                        <details class="group">
-                            <summary class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-[#1a3a5c] select-none list-none mb-3">
-                                <i class="fas fa-chevron-right text-xs transition-transform group-open:rotate-90"></i>
-                                Optional Fields (Budget, Manager, Notes)
-                            </summary>
-
-                            <div class="mt-3">
-                                <!-- Budget with Templates -->
-                                <div class="mb-4">
-                                    <label class="ui-label">Budget (USD)</label>
-                                    <div class="flex flex-wrap gap-2 mb-2">
-                                        <button type="button" class="btn-secondary btn-sm"
-                                                @click="applyBudgetTemplate(5000)">
-                                            Small (~$5K)
-                                        </button>
-                                        <button type="button" class="btn-secondary btn-sm"
-                                                @click="applyBudgetTemplate(15000)">
-                                            Medium (~$15K)
-                                        </button>
-                                        <button type="button" class="btn-secondary btn-sm"
-                                                @click="applyBudgetTemplate(50000)">
-                                            Large (~$50K)
-                                        </button>
-                                    </div>
-                                    <input type="number" class="ui-input"
-                                           name="budget"
-                                           x-model="budget"
-                                           step="0.01" min="0" placeholder="0.00">
-                                </div>
-
-                                <!-- Project Manager -->
-                                <div class="mb-4">
-                                    <label class="ui-label">Project Manager</label>
-                                    <select class="ui-select" name="project_manager_id">
-                                        <option value="">Assign Later (Optional)</option>
-                                        @foreach($projectManagers as $manager)
-                                        <option value="{{ $manager->id }}">{{ $manager->full_name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <!-- Priority -->
-                                <div class="mb-4">
-                                    <label class="ui-label">Priority Level</label>
-                                    <select class="ui-select" name="priority">
-                                        <option value="normal" selected>🟢 Normal Priority</option>
-                                        <option value="high">🔴 High Priority</option>
-                                        <option value="low">⚪ Low Priority</option>
-                                        <option value="emergency">🚨 Emergency</option>
-                                    </select>
-                                </div>
-
-                                <!-- Description -->
-                                <div class="mb-4">
-                                    <label class="ui-label">Project Description</label>
-                                    <textarea class="ui-input" name="description" rows="3"
-                                              placeholder="Optional: Describe objectives, scope, and deliverables...">{{ old('description') }}</textarea>
-                                </div>
-
-                                <!-- Notes -->
-                                <div class="mb-4">
-                                    <label class="ui-label">Additional Notes</label>
-                                    <textarea class="ui-input" name="notes" rows="2"
-                                              placeholder="Optional: Special requirements or constraints...">{{ old('notes') }}</textarea>
-                                </div>
-                            </div>
-                        </details>
-
-                        <hr class="my-5 border-gray-100">
-
-                        {{-- Terminal Upload Section --}}
-                        @include('projects.partials.terminal-upload-section')
-
                     </div>
 
-                    <!-- Footer -->
-                    <div class="px-5 py-4 border-t border-gray-100 flex justify-between items-center bg-gray-50">
-                        <a href="{{ route('projects.index') }}" class="btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i> Cancel
-                        </a>
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-rocket me-2"></i> Create Project & Continue
-                        </button>
+                    {{-- Section 3: Optional Fields (collapsible) --}}
+                    <details class="group border-b border-gray-100">
+                        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none list-none hover:bg-gray-50 transition-colors">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider m-0">Optional Fields</p>
+                            <span class="flex items-center gap-2 text-xs text-gray-400">
+                                Budget · Manager · Priority · Notes
+                                <i class="fas fa-chevron-down text-xs transition-transform group-open:rotate-180"></i>
+                            </span>
+                        </summary>
+                        <div class="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                            <div>
+                                <label class="ui-label">Budget (USD)</label>
+                                <div class="flex gap-2 mb-2">
+                                    <button type="button" class="btn-secondary btn-sm" @click="applyBudgetTemplate(5000)">~$5K</button>
+                                    <button type="button" class="btn-secondary btn-sm" @click="applyBudgetTemplate(15000)">~$15K</button>
+                                    <button type="button" class="btn-secondary btn-sm" @click="applyBudgetTemplate(50000)">~$50K</button>
+                                </div>
+                                <input type="number" class="ui-input" name="budget" x-model="budget" step="0.01" min="0" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="ui-label">Project Manager</label>
+                                <select class="ui-select" name="project_manager_id">
+                                    <option value="">Assign Later (Optional)</option>
+                                    @foreach($projectManagers as $manager)
+                                    <option value="{{ $manager->id }}">{{ $manager->full_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="ui-label">Priority Level</label>
+                                <select class="ui-select" name="priority">
+                                    <option value="normal" selected>Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="low">Low</option>
+                                    <option value="emergency">Emergency</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="ui-label">Project Description</label>
+                                <textarea class="ui-input" name="description" rows="2"
+                                          placeholder="Objectives, scope, deliverables…">{{ old('description') }}</textarea>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="ui-label">Additional Notes</label>
+                                <textarea class="ui-input" name="notes" rows="2"
+                                          placeholder="Special requirements or constraints…">{{ old('notes') }}</textarea>
+                            </div>
+                        </div>
+                    </details>
+
+                    {{-- Section 4: Terminal Assignment --}}
+                    <div class="px-5 py-5 border-b border-gray-100">
+                        @include('projects.partials.terminal-upload-section')
+                    </div>
+
+                    {{-- Footer --}}
+                    <div class="px-5 py-4 flex justify-between items-center bg-gray-50 rounded-b-xl">
+                        <a href="{{ route('projects.index') }}" class="btn-secondary">← Cancel</a>
+                        <button type="submit" class="btn-primary">Create Project & Continue →</button>
                     </div>
                 </form>
             </div>
