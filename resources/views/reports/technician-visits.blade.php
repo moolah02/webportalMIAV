@@ -23,29 +23,29 @@
     <!-- Stats -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📅</div>
-            <div class="flex-1 min-w-0">
+            <div class="stat-icon stat-icon-blue">📅</div>
+            <div>
                 <div class="stat-number" id="stat-today">{{ $stats['today_visits'] ?? 0 }}</div>
                 <div class="stat-label">Today's Visits</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
-            <div class="flex-1 min-w-0">
+            <div class="stat-icon stat-icon-green">✅</div>
+            <div>
                 <div class="stat-number" id="stat-working">{{ $stats['working_terminals'] ?? 0 }}</div>
                 <div class="stat-label">Working Terminals</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⚠️</div>
-            <div class="flex-1 min-w-0">
+            <div class="stat-icon stat-icon-orange">⚠️</div>
+            <div>
                 <div class="stat-number" id="stat-issues">{{ $stats['issues_found'] ?? 0 }}</div>
                 <div class="stat-label">Issues Found</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🔴</div>
-            <div class="flex-1 min-w-0">
+            <div class="stat-icon stat-icon-red">🔴</div>
+            <div>
                 <div class="stat-number" id="stat-not-seen">{{ $stats['not_seen'] ?? 0 }}</div>
                 <div class="stat-label">Not Seen</div>
             </div>
@@ -110,7 +110,7 @@
                        placeholder="Terminal ID, Merchant, Visit ID..." name="search">
             </div>
             <div class="flex gap-2 items-end">
-                <button type="submit" class="btn-secondary">Apply</button>
+                <button type="submit" class="btn-primary">Apply</button>
                 <button type="button" class="btn-secondary" onclick="resetFilters()">Reset</button>
             </div>
 

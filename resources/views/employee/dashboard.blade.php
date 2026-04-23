@@ -39,42 +39,66 @@
     {{-- Stat Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
         <div class="stat-card">
-            <div class="stat-number">{{ $stats['jobs']['today'] ?? 0 }}</div>
-            <div class="stat-label">Jobs Today</div>
+            <div class="stat-icon stat-icon-blue">&#x1F4C5;</div>
+            <div>
+                <div class="stat-number">{{ $stats['jobs']['today'] ?? 0 }}</div>
+                <div class="stat-label">Jobs Today</div>
+            </div>
         </div>
         @if(Route::has('jobs.mine'))
         <a href="{{ route('jobs.mine') }}" class="stat-card no-underline hover:shadow-md transition-shadow">
-            <div class="stat-number">{{ $stats['jobs']['assigned'] ?? 0 }}</div>
-            <div class="stat-label">Assigned</div>
+            <div class="stat-icon stat-icon-gray">&#x1F4CB;</div>
+            <div>
+                <div class="stat-number">{{ $stats['jobs']['assigned'] ?? 0 }}</div>
+                <div class="stat-label">Assigned</div>
+            </div>
         </a>
         @else
         <div class="stat-card">
-            <div class="stat-number">{{ $stats['jobs']['assigned'] ?? 0 }}</div>
-            <div class="stat-label">Assigned</div>
+            <div class="stat-icon stat-icon-gray">&#x1F4CB;</div>
+            <div>
+                <div class="stat-number">{{ $stats['jobs']['assigned'] ?? 0 }}</div>
+                <div class="stat-label">Assigned</div>
+            </div>
         </div>
         @endif
-        <div class="stat-card border-l-4 border-orange-400">
-            <div class="stat-number text-orange-500">{{ $stats['jobs']['in_progress'] ?? 0 }}</div>
-            <div class="stat-label">In Progress</div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-orange">&#x1F504;</div>
+            <div>
+                <div class="stat-number">{{ $stats['jobs']['in_progress'] ?? 0 }}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
         </div>
-        <div class="stat-card border-l-4 border-green-400">
-            <div class="stat-number text-green-600">{{ $stats['jobs']['completed'] ?? 0 }}</div>
-            <div class="stat-label">Completed</div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green">&#x2705;</div>
+            <div>
+                <div class="stat-number">{{ $stats['jobs']['completed'] ?? 0 }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
         </div>
         @if(Route::has('asset-requests.index'))
         <a href="{{ route('asset-requests.index') }}" class="stat-card no-underline hover:shadow-md transition-shadow">
-            <div class="stat-number">{{ $stats['my_requests'] ?? 0 }}</div>
-            <div class="stat-label">My Requests</div>
+            <div class="stat-icon stat-icon-purple">&#x1F4E6;</div>
+            <div>
+                <div class="stat-number">{{ $stats['my_requests'] ?? 0 }}</div>
+                <div class="stat-label">My Requests</div>
+            </div>
         </a>
         @else
         <div class="stat-card">
-            <div class="stat-number">{{ $stats['my_requests'] ?? 0 }}</div>
-            <div class="stat-label">My Requests</div>
+            <div class="stat-icon stat-icon-purple">&#x1F4E6;</div>
+            <div>
+                <div class="stat-number">{{ $stats['my_requests'] ?? 0 }}</div>
+                <div class="stat-label">My Requests</div>
+            </div>
         </div>
         @endif
-        <div class="stat-card {{ ($stats['pending_approvals'] ?? 0) > 0 ? 'border-l-4 border-orange-400' : '' }}">
-            <div class="stat-number {{ ($stats['pending_approvals'] ?? 0) > 0 ? 'text-orange-500' : '' }}">{{ $stats['pending_approvals'] ?? 0 }}</div>
-            <div class="stat-label">Pending Approvals</div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-yellow">&#x23F0;</div>
+            <div>
+                <div class="stat-number">{{ $stats['pending_approvals'] ?? 0 }}</div>
+                <div class="stat-label">Pending Approvals</div>
+            </div>
         </div>
     </div>
 

@@ -13,13 +13,19 @@
 
     {{-- Top stats --}}
     <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="bg-[#1a3a5c] rounded-xl p-4 text-white">
-            <div class="text-3xl font-bold">{{ number_format($stats['total']) }}</div>
-            <div class="text-sm opacity-80 mt-1">Total Events Logged</div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">📋</div>
+            <div>
+                <div class="stat-number">{{ number_format($stats['total']) }}</div>
+                <div class="stat-label">Total Events Logged</div>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-4">
-            <div class="text-3xl font-bold text-blue-600">{{ number_format($stats['today']) }}</div>
-            <div class="text-sm text-gray-500 mt-1">Events Today</div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green">📅</div>
+            <div>
+                <div class="stat-number">{{ number_format($stats['today']) }}</div>
+                <div class="stat-label">Events Today</div>
+            </div>
         </div>
     </div>
 
@@ -53,75 +59,70 @@
     </div>
 
     {{-- Filters --}}
-    <div class="bg-white rounded-xl border border-gray-200 p-4 mb-5">
-        <form method="GET" class="flex flex-wrap gap-3 items-end">
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Search</label>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search description..."
-                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Category</label>
-                <select name="category" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Categories</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Action</label>
-                <select name="action" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Actions</option>
-                    @foreach($actions as $action)
-                        <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>
-                            {{ ucfirst(str_replace('_', ' ', $action)) }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Employee</label>
-                <select name="employee_id" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Employees</option>
-                    @foreach($employees as $emp)
-                        <option value="{{ $emp->id }}" {{ request('employee_id') == $emp->id ? 'selected' : '' }}>
-                            {{ $emp->first_name }} {{ $emp->last_name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">From</label>
-                <input type="date" name="date_from" value="{{ request('date_from') }}"
-                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">To</label>
-                <input type="date" name="date_to" value="{{ request('date_to') }}"
-                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <button type="submit" class="bg-[#1a3a5c] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#152e4a] transition-colors">
-                Filter
-            </button>
+    <form method="GET" class="filter-bar">
+        <div class="filter-group">
+            <label class="ui-label">Search</label>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search description…" class="ui-input">
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">Category</label>
+            <select name="category" class="ui-select">
+                <option value="">All Categories</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">Action</label>
+            <select name="action" class="ui-select">
+                <option value="">All Actions</option>
+                @foreach($actions as $action)
+                    <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>
+                        {{ ucfirst(str_replace('_', ' ', $action)) }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">Employee</label>
+            <select name="employee_id" class="ui-select">
+                <option value="">All Employees</option>
+                @foreach($employees as $emp)
+                    <option value="{{ $emp->id }}" {{ request('employee_id') == $emp->id ? 'selected' : '' }}>
+                        {{ $emp->first_name }} {{ $emp->last_name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">From</label>
+            <input type="date" name="date_from" value="{{ request('date_from') }}" class="ui-input">
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">To</label>
+            <input type="date" name="date_to" value="{{ request('date_to') }}" class="ui-input">
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Apply</button>
             @if(request()->hasAny(['search','action','category','employee_id','date_from','date_to']))
-                <a href="{{ route('audit-trail.index') }}" class="text-gray-500 text-sm px-3 py-2 hover:text-gray-700">Clear</a>
+                <a href="{{ route('audit-trail.index') }}" class="btn-secondary">Clear</a>
             @endif
-        </form>
-    </div>
+        </div>
+    </form>
 
     {{-- Table --}}
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-50 border-b border-gray-200">
+    <div class="ui-card overflow-hidden">
+        <table class="ui-table">
+            <thead>
                 <tr>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">When</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Who</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Entity</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
-                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">IP</th>
+                    <th>When</th>
+                    <th>Who</th>
+                    <th>Category</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Description</th>
+                    <th>IP</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -215,7 +216,7 @@
         </table>
 
         @if($logs->hasPages())
-            <div class="px-4 py-3 border-t border-gray-200">
+            <div class="ui-card-footer justify-center">
                 {{ $logs->links() }}
             </div>
         @endif

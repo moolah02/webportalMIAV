@@ -10,30 +10,30 @@
 {{-- Stat Cards --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">📋</div>
+        <div class="stat-icon stat-icon-blue">📋</div>
         <div>
             <div class="stat-number">{{ $stats['total'] }}</div>
             <div class="stat-label">Total Projects</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center text-xl flex-shrink-0">🟢</div>
+        <div class="stat-icon stat-icon-green">🟢</div>
         <div>
-            <div class="stat-number text-green-600">{{ $stats['active'] }}</div>
+            <div class="stat-number">{{ $stats['active'] }}</div>
             <div class="stat-label">Active</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center text-xl flex-shrink-0">✅</div>
+        <div class="stat-icon stat-icon-teal">✅</div>
         <div>
-            <div class="stat-number text-blue-600">{{ $stats['completed'] }}</div>
+            <div class="stat-number">{{ $stats['completed'] }}</div>
             <div class="stat-label">Completed</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-yellow-100 flex items-center justify-center text-xl flex-shrink-0">⏸️</div>
+        <div class="stat-icon stat-icon-yellow">⏸️</div>
         <div>
-            <div class="stat-number text-yellow-600">{{ $stats['paused'] }}</div>
+            <div class="stat-number">{{ $stats['paused'] }}</div>
             <div class="stat-label">Paused / On Hold</div>
         </div>
     </div>

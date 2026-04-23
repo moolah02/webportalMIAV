@@ -20,119 +20,150 @@
     <!-- Statistics Cards -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⏳</div>
-            <div class="flex-1 min-w-0">
+            <div class="stat-icon stat-icon-yellow">&#x23F3;</div>
+            <div>
                 <div class="stat-number">{{ $stats['pending_requests'] }}</div>
-                <div class="stat-label uppercase tracking-wide">Pending Requests</div>
+                <div class="stat-label">Pending Requests</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🚨</div>
-            <div class="flex-1 min-w-0">
+            <div class="stat-icon stat-icon-red">&#x1F6A8;</div>
+            <div>
                 <div class="stat-number">{{ $stats['pending_high_priority'] }}</div>
-                <div class="stat-label uppercase tracking-wide">High Priority</div>
+                <div class="stat-label">High Priority</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">💰</div>
-            <div class="flex-1 min-w-0">
+            <div class="stat-icon stat-icon-green">&#x1F4B0;</div>
+            <div>
                 <div class="stat-number">${{ number_format($stats['total_pending_value'], 0) }}</div>
-                <div class="stat-label uppercase tracking-wide">Pending Value</div>
+                <div class="stat-label">Pending Value</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📈</div>
-            <div class="flex-1 min-w-0">
+            <div class="stat-icon stat-icon-blue">&#x1F4C8;</div>
+            <div>
                 <div class="stat-number">{{ $stats['requests_this_month'] }}</div>
-                <div class="stat-label uppercase tracking-wide">This Month</div>
+                <div class="stat-label">This Month</div>
             </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="filter-bar">
-        <form method="GET" class="flex flex-wrap gap-3 items-center w-full">
-            <select name="status" class="ui-select w-auto">
-                    <option value="">All Status</option>
-                    <option value="pending"   {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="approved"  {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                    <option value="rejected"  {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
-                    <option value="fulfilled" {{ request('status') == 'fulfilled' ? 'selected' : '' }}>Fulfilled</option>
-                </select>
+    <form method="GET" class="filter-bar">
+        <div class="filter-group">
+            <label class="ui-label">Status</label>
+            <select name="status" class="ui-select">
+                <option value="">All Status</option>
+                <option value="pending"   {{ request('status') == 'pending'   ? 'selected' : '' }}>Pending</option>
+                <option value="approved"  {{ request('status') == 'approved'  ? 'selected' : '' }}>Approved</option>
+                <option value="rejected"  {{ request('status') == 'rejected'  ? 'selected' : '' }}>Rejected</option>
+                <option value="fulfilled" {{ request('status') == 'fulfilled' ? 'selected' : '' }}>Fulfilled</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">Priority</label>
             <select name="priority" class="ui-select">
-                    <option value="">All Priority</option>
-                    <option value="urgent" {{ request('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
-                    <option value="high"   {{ request('priority') == 'high'   ? 'selected' : '' }}>High</option>
-                    <option value="normal" {{ request('priority') == 'normal' ? 'selected' : '' }}>Normal</option>
-                    <option value="low"    {{ request('priority') == 'low'    ? 'selected' : '' }}>Low</option>
-                </select>
+                <option value="">All Priority</option>
+                <option value="urgent" {{ request('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
+                <option value="high"   {{ request('priority') == 'high'   ? 'selected' : '' }}>High</option>
+                <option value="normal" {{ request('priority') == 'normal' ? 'selected' : '' }}>Normal</option>
+                <option value="low"    {{ request('priority') == 'low'    ? 'selected' : '' }}>Low</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">From</label>
             <input type="date" name="date_from" value="{{ request('date_from') }}" class="ui-input">
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">To</label>
             <input type="date" name="date_to" value="{{ request('date_to') }}" class="ui-input">
-            <button type="submit" class="btn-secondary">Filter</button>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Apply</button>
             @if(request()->hasAny(['status', 'priority', 'date_from', 'date_to']))
             <a href="{{ route('asset-approvals.index') }}" class="btn-secondary">Clear</a>
             @endif
-        </form>
-    </div>
+        </div>
+    </form>
 
     <!-- Requests Table -->
     <div class="ui-card overflow-hidden mt-4">
-        <div class="overflow-x-auto">
-    <table class="ui-table">
-        <thead>
-            <tr>
-                <th>Select</th>
-                <th>Request Number</th>
-                <th>Employee</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Created At</th>
-                <th>Total Cost</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($requests as $request)
-            <tr class="{{ $request->priority }}">
-                <td>
-                    @if($request->status === 'pending')
-                        <input type="checkbox" name="request_ids[]" value="{{ $request->id }}" class="request-checkbox">
-                    @endif
-                </td>
-                <td>{{ $request->request_number }}</td>
-                <td>{{ $request->employee->full_name }}</td>
-                <td>
-                    <span class="badge badge-gray">{{ ucfirst($request->status) }}</span>
-                </td>
-                <td>
-                    <span class="badge badge-gray">{{ ucfirst($request->priority) }}</span>
-                </td>
-                <td>{{ $request->created_at->format('M d, Y \a\t g:i A') }}</td>
-                <td>${{ number_format($request->total_estimated_cost, 2) }}</td>
-                <td>
-                    <a href="{{ route('asset-approvals.show', $request) }}" class="btn-secondary btn-sm">Review</a>
-                    @if($request->status === 'pending')
-                        <button onclick="showQuickApprove({{ $request->id }})" class="btn-secondary btn-sm">✅</button>
-                        <button onclick="showQuickReject({{ $request->id }})" class="btn-secondary btn-sm">❌</button>
-                    @endif
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="8" class="empty-state">No requests to review.</td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
+        <div class="ui-card-header">
+            <span class="text-sm font-semibold text-gray-800">Asset Requests</span>
+            <span class="badge badge-gray">{{ $requests->total() }} requests</span>
         </div>
+        <div class="overflow-x-auto">
+            <table class="ui-table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Request #</th>
+                        <th>Employee</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Created At</th>
+                        <th>Total Cost</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($requests as $request)
+                    @php
+                        $statusClass = match($request->status) {
+                            'approved'  => 'badge-green',
+                            'fulfilled' => 'badge-blue',
+                            'rejected'  => 'badge-red',
+                            'pending'   => 'badge-yellow',
+                            default     => 'badge-gray',
+                        };
+                        $priorityClass = match($request->priority) {
+                            'urgent' => 'badge-red',
+                            'high'   => 'badge-orange',
+                            'normal' => 'badge-blue',
+                            'low'    => 'badge-gray',
+                            default  => 'badge-gray',
+                        };
+                    @endphp
+                    <tr>
+                        <td>
+                            @if($request->status === 'pending')
+                                <input type="checkbox" name="request_ids[]" value="{{ $request->id }}" class="request-checkbox">
+                            @endif
+                        </td>
+                        <td><span class="code-chip">{{ $request->request_number }}</span></td>
+                        <td class="text-sm font-medium text-gray-800">{{ $request->employee->full_name }}</td>
+                        <td><span class="status-badge {{ $statusClass }}">{{ ucfirst($request->status) }}</span></td>
+                        <td><span class="status-badge {{ $priorityClass }}">{{ ucfirst($request->priority) }}</span></td>
+                        <td class="text-xs text-gray-600">{{ $request->created_at->format('M d, Y') }}<br><span class="text-gray-400">{{ $request->created_at->format('g:i A') }}</span></td>
+                        <td class="text-sm font-semibold text-gray-800">${{ number_format($request->total_estimated_cost, 2) }}</td>
+                        <td>
+                            <div class="action-group">
+                                <a href="{{ route('asset-approvals.show', $request) }}" class="btn-secondary btn-sm">Review</a>
+                                @if($request->status === 'pending')
+                                    <button onclick="showQuickApprove({{ $request->id }})" class="action-btn action-view" title="Quick Approve">&#x2705;</button>
+                                    <button onclick="showQuickReject({{ $request->id }})" class="action-btn action-delete" title="Quick Reject">&#x274C;</button>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8" class="py-16 text-center text-gray-400">
+                            <div class="text-4xl mb-3">&#x1F4CB;</div>
+                            <p class="text-sm font-medium text-gray-600">No requests to review</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($requests->hasPages())
+        <div class="ui-card-footer justify-center">
+            {{ $requests->appends(request()->query())->links() }}
+        </div>
+        @endif
     </div>
-
-    <!-- Pagination -->
-    @if($requests->hasPages())
-    <div class="pagination-wrapper">
-        {{ $requests->appends(request()->query())->links() }}
-    @endif
-</div>
 
 <!-- Modals for Quick Approve and Reject -->
 <div id="quickApproveModal" class="modal">

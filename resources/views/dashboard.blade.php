@@ -42,56 +42,56 @@
     {{-- Main Stats Grid --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <a href="{{ route('pos-terminals.index') }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">&#x1F5A5;&#xFE0F;</div>
+            <div class="stat-icon stat-icon-blue">&#x1F5A5;&#xFE0F;</div>
             <div>
                 <div class="stat-number">{{ number_format($stats['total_terminals']) }}</div>
                 <div class="stat-label">Total Terminals</div>
-                <div class="text-xs text-green-600 mt-1">&#8599; +{{ $stats['new_terminals_this_month'] }} this month</div>
+                <div class="stat-sub text-green-600">&#8599; +{{ $stats['new_terminals_this_month'] }} this month</div>
             </div>
         </a>
 
         <a href="{{ route('pos-terminals.index', ['status' => 'active']) }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">&#x2705;</div>
+            <div class="stat-icon stat-icon-green">&#x2705;</div>
             <div>
                 <div class="stat-number">{{ number_format($stats['active_terminals']) }}</div>
                 <div class="stat-label">Active Terminals</div>
-                <div class="text-xs text-green-600 mt-1">{{ $stats['network_uptime'] }}% uptime</div>
+                <div class="stat-sub text-green-600">{{ $stats['network_uptime'] }}% uptime</div>
             </div>
         </a>
 
         <a href="{{ route('business-licenses.index') }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">&#x1F4CB;</div>
+            <div class="stat-icon stat-icon-teal">&#x1F4CB;</div>
             <div>
                 <div class="stat-number">{{ number_format($stats['license_stats']['total_licenses']) }}</div>
                 <div class="stat-label">Business Licenses</div>
-                <div class="text-xs text-green-600 mt-1">{{ $stats['license_stats']['active_licenses'] }} active</div>
+                <div class="stat-sub text-green-600">{{ $stats['license_stats']['active_licenses'] }} active</div>
             </div>
         </a>
 
-        <a href="{{ route('pos-terminals.index') }}?status=faulty&status=offline&status=maintenance" class="stat-card border-l-4 border-red-400 text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-2xl flex-shrink-0">&#x26A0;&#xFE0F;</div>
+        <a href="{{ route('pos-terminals.index') }}?status=faulty&status=offline&status=maintenance" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
+            <div class="stat-icon stat-icon-red">&#x26A0;&#xFE0F;</div>
             <div>
-                <div class="stat-number text-red-600">{{ number_format($stats['need_attention']) }}</div>
+                <div class="stat-number">{{ number_format($stats['need_attention']) }}</div>
                 <div class="stat-label">Need Attention</div>
-                <div class="text-xs text-red-500 mt-1">{{ $stats['urgent_issues'] }} urgent</div>
+                <div class="stat-sub text-red-500">{{ $stats['urgent_issues'] }} urgent</div>
             </div>
         </a>
 
         <a href="{{ route('clients.index') }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">&#x1F3E2;</div>
+            <div class="stat-icon stat-icon-purple">&#x1F3E2;</div>
             <div>
                 <div class="stat-number">{{ number_format($stats['total_clients']) }}</div>
                 <div class="stat-label">Active Clients</div>
-                <div class="text-xs text-gray-500 mt-1">{{ $stats['new_clients_this_month'] }} new this month</div>
+                <div class="stat-sub">{{ $stats['new_clients_this_month'] }} new this month</div>
             </div>
         </a>
 
         <a href="{{ route('business-licenses.compliance') }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">&#x2705;</div>
+            <div class="stat-icon stat-icon-yellow">&#x2705;</div>
             <div>
                 <div class="stat-number">{{ number_format($stats['license_stats']['compliance_rate']) }}%</div>
                 <div class="stat-label">License Compliance</div>
-                <div class="text-xs text-gray-500 mt-1">{{ $stats['license_stats']['expiring_soon'] }} expiring soon</div>
+                <div class="stat-sub">{{ $stats['license_stats']['expiring_soon'] }} expiring soon</div>
             </div>
         </a>
     </div>

@@ -17,31 +17,31 @@
     try { $pendingOnboarding = \App\Models\Employee::where('status','pending')->count(); } catch (\Exception $e) { $pendingOnboarding = 0; }
 @endphp
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-    <div class="stat-card border-l-4 border-blue-500">
-        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">&#x1F465;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">👥</div>
         <div>
-            <div class="stat-number text-blue-600">{{ $totalEmployees }}</div>
+            <div class="stat-number">{{ $totalEmployees }}</div>
             <div class="stat-label">Total Employees</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-green-500">
-        <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">&#x2705;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-green">✅</div>
         <div>
-            <div class="stat-number text-green-600">{{ $activeEmployees }}</div>
+            <div class="stat-number">{{ $activeEmployees }}</div>
             <div class="stat-label">Active Employees</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-orange-400">
-        <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">&#x1F195;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-orange">🆕</div>
         <div>
-            <div class="stat-number text-orange-500">{{ $newThisMonth }}</div>
+            <div class="stat-number">{{ $newThisMonth }}</div>
             <div class="stat-label">New This Month</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-purple-500">
-        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 text-xl leading-none">&#x23F3;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-purple">⏳</div>
         <div>
-            <div class="stat-number text-purple-600">{{ $pendingOnboarding }}</div>
+            <div class="stat-number">{{ $pendingOnboarding }}</div>
             <div class="stat-label">Pending Onboarding</div>
         </div>
     </div>

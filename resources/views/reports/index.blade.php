@@ -13,52 +13,52 @@
 
 {{-- Key Metrics --}}
 <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-5">
-    <div class="stat-card border-l-4 border-blue-500">
-        <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F3E2;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">🏢</div>
         <div>
-            <div class="stat-number text-blue-600">{{ $systemOverview['total_clients'] }}</div>
+            <div class="stat-number">{{ $systemOverview['total_clients'] }}</div>
             <div class="stat-label">Total Clients</div>
-            <div class="text-xs text-gray-400 mt-0.5">{{ $systemOverview['active_clients'] }} active</div>
+            <div class="stat-sub">{{ $systemOverview['active_clients'] }} active</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-green-500">
-        <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F4BB;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-green">💻</div>
         <div>
-            <div class="stat-number text-green-600">{{ $systemOverview['total_terminals'] }}</div>
+            <div class="stat-number">{{ $systemOverview['total_terminals'] }}</div>
             <div class="stat-label">POS Terminals</div>
-            <div class="text-xs text-gray-400 mt-0.5">{{ $systemOverview['terminal_uptime'] }}% uptime</div>
+            <div class="stat-sub">{{ $systemOverview['terminal_uptime'] }}% uptime</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-orange-400">
-        <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F465;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-orange">👥</div>
         <div>
-            <div class="stat-number text-orange-500">{{ $systemOverview['total_employees'] }}</div>
+            <div class="stat-number">{{ $systemOverview['total_employees'] }}</div>
             <div class="stat-label">Employees</div>
-            <div class="text-xs text-gray-400 mt-0.5">Active workforce</div>
+            <div class="stat-sub">Active workforce</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-purple-500">
-        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F4CB;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-purple">📋</div>
         <div>
-            <div class="stat-number text-purple-600">{{ $systemOverview['active_projects'] }}</div>
+            <div class="stat-number">{{ $systemOverview['active_projects'] }}</div>
             <div class="stat-label">Active Projects</div>
-            <div class="text-xs text-gray-400 mt-0.5">{{ $systemOverview['total_projects'] }} total</div>
+            <div class="stat-sub">{{ $systemOverview['total_projects'] }} total</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-red-500">
-        <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F3AB;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-red">🎫</div>
         <div>
-            <div class="stat-number text-red-600">{{ $systemOverview['open_tickets'] }}</div>
+            <div class="stat-number">{{ $systemOverview['open_tickets'] }}</div>
             <div class="stat-label">Open Tickets</div>
-            <div class="text-xs text-gray-400 mt-0.5">Need attention</div>
+            <div class="stat-sub">Need attention</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-teal-500">
-        <div class="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0 text-xl">&#x1F4B0;</div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-teal">💰</div>
         <div>
-            <div class="stat-number text-teal-600">${{ number_format($systemOverview['revenue_impact'] / 1000) }}K</div>
+            <div class="stat-number">${{ number_format($systemOverview['revenue_impact'] / 1000) }}K</div>
             <div class="stat-label">Revenue Impact</div>
-            <div class="text-xs text-gray-400 mt-0.5">Monthly estimate</div>
+            <div class="stat-sub">Monthly estimate</div>
         </div>
     </div>
 </div>

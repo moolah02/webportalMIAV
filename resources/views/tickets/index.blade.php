@@ -54,27 +54,31 @@
 
 {{-- Stats --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-    <div class="stat-card border-l-4 border-blue-500">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">&#x1F3AB;</div>
         <div>
-            <div class="stat-number text-blue-600" id="openTickets">{{ $stats['open'] ?? 0 }}</div>
+            <div class="stat-number" id="openTickets">{{ $stats['open'] ?? 0 }}</div>
             <div class="stat-label">Open Tickets</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-yellow-400">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-yellow">&#x1F504;</div>
         <div>
-            <div class="stat-number text-yellow-600" id="inProgressTickets">{{ $stats['in_progress'] ?? 0 }}</div>
+            <div class="stat-number" id="inProgressTickets">{{ $stats['in_progress'] ?? 0 }}</div>
             <div class="stat-label">In Progress</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-green-500">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-green">&#x2705;</div>
         <div>
-            <div class="stat-number text-green-600" id="resolvedTickets">{{ $stats['resolved'] ?? 0 }}</div>
+            <div class="stat-number" id="resolvedTickets">{{ $stats['resolved'] ?? 0 }}</div>
             <div class="stat-label">Resolved This Month</div>
         </div>
     </div>
-    <div class="stat-card border-l-4 border-red-500">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-red">&#x1F6A8;</div>
         <div>
-            <div class="stat-number text-red-600" id="criticalTickets">{{ $stats['critical'] ?? 0 }}</div>
+            <div class="stat-number" id="criticalTickets">{{ $stats['critical'] ?? 0 }}</div>
             <div class="stat-label">Critical Priority</div>
         </div>
     </div>

@@ -3,697 +3,349 @@
 
 @section('content')
 <div>
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
-        <div style="display: flex; align-items: center; gap: 16px;">
-            <a href="{{ route('client-dashboards.index') }}"
-               style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; background: #F8F9FA; color: #666; text-decoration: none; transition: all 0.2s ease; font-size: 18px;"
-               onmouseover="this.style.background='#E0E0E0'"
-               onmouseout="this.style.background='#F8F9FA'">
-                ←
-            </a>
+    {{-- Header --}}
+    <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('client-dashboards.index') }}" class="btn-secondary btn-sm">&#x2190; Back</a>
             <div>
-                <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
-                    <span style="color: #666; font-size: 14px; font-family: monospace;">{{ $client->client_code }}</span>
-                    <span class="badge badge-gray">
-                        {{ ucfirst($client->status) }}
-                    </span>
-                </div>
+                <span class="text-xs text-gray-400 font-mono">{{ $client->client_code }}</span>
+                <span class="badge badge-gray ml-2">{{ ucfirst($client->status) }}</span>
             </div>
         </div>
-        <button onclick="exportData()" class="btn-primary">Export Data</button>
+        <button onclick="exportData()" class="btn-secondary">Export Data</button>
     </div>
 
-    <!-- Statistics Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-block-end: 30px;">
+    {{-- Stat Cards --}}
+    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #333; font-size: 24px;">💻</span>
-            </div>
-            <div class="flex-1 min-w-0">
+            <div class="stat-icon stat-icon-blue">&#x1F5A5;&#xFE0F;</div>
+            <div>
                 <div class="stat-number">{{ $terminalStats['total'] }}</div>
-                <div class="stat-label uppercase tracking-wide">TOTAL TERMINALS</div>
-                <div style="font-size: 11px; color: #999; margin-top: 2px;">Active network size</div>
+                <div class="stat-label">Total Terminals</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #388E3C; font-size: 24px;">✅</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #388E3C;">{{ $terminalStats['by_status']['active'] ?? 0 }}</div>
-                <div class="stat-label uppercase tracking-wide">ACTIVE</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">
-                    {{ $terminalStats['total'] > 0 ? round((($terminalStats['by_status']['active'] ?? 0) / $terminalStats['total']) * 100, 1) : 0 }}% uptime
-                </div>
+            <div class="stat-icon stat-icon-green">&#x2705;</div>
+            <div>
+                <div class="stat-number">{{ $terminalStats['by_status']['active'] ?? 0 }}</div>
+                <div class="stat-label">Active</div>
+                <div class="stat-sub">{{ $terminalStats['total'] > 0 ? round((($terminalStats['by_status']['active'] ?? 0) / $terminalStats['total']) * 100, 1) : 0 }}% uptime</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #D32F2F; font-size: 24px;">⚠️</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #D32F2F;">
-                    {{ ($terminalStats['by_status']['maintenance'] ?? 0) + ($terminalStats['by_status']['faulty'] ?? 0) }}
-                </div>
-                <div class="stat-label uppercase tracking-wide">NEED ATTENTION</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">Require service</div>
+            <div class="stat-icon stat-icon-red">&#x26A0;&#xFE0F;</div>
+            <div>
+                <div class="stat-number">{{ ($terminalStats['by_status']['maintenance'] ?? 0) + ($terminalStats['by_status']['faulty'] ?? 0) }}</div>
+                <div class="stat-label">Need Attention</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #F57C00; font-size: 24px;">📴</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #F57C00;">{{ $terminalStats['by_status']['offline'] ?? 0 }}</div>
-                <div class="stat-label uppercase tracking-wide">OFFLINE</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">Not responding</div>
+            <div class="stat-icon stat-icon-orange">&#x1F4F4;</div>
+            <div>
+                <div class="stat-number">{{ $terminalStats['by_status']['offline'] ?? 0 }}</div>
+                <div class="stat-label">Offline</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #1976D2; font-size: 24px;">🔧</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #1976D2;">0</div>
-                <div class="stat-label uppercase tracking-wide">RECENTLY SERVICED</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">Last 30 days</div>
+            <div class="stat-icon stat-icon-teal">&#x1F527;</div>
+            <div>
+                <div class="stat-number">0</div>
+                <div class="stat-label">Serviced (30d)</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #CC6600; font-size: 24px;">📅</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #CC6600;">{{ $terminalStats['total'] }}</div>
-                <div class="stat-label uppercase tracking-wide">SERVICE DUE</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">Maintenance needed</div>
+            <div class="stat-icon stat-icon-yellow">&#x1F4C5;</div>
+            <div>
+                <div class="stat-number">{{ $terminalStats['total'] }}</div>
+                <div class="stat-label">Service Due</div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="ui-card p-6" style="margin-block-end: 30px;">
-        <h3 style="margin: 0 0 24px 0; color: #333; font-size: 18px; font-weight: 600;">Terminal Analytics</h3>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-block-end: 24px;">
-            <!-- Service Timeline -->
-            <div style="background: #FAFAFA; padding: 20px; border-radius: 8px; border: 1px solid #F0F0F0;">
-                <h4 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 600;">Service Timeline</h4>
-                <div style="position: relative; height: 200px;">
-                    <canvas id="serviceDueChart"></canvas>
-                </div>
-                <div style="margin-top: 12px; font-size: 12px; color: #666; text-align: center;">
-                    Maintenance schedule tracking
-                </div>
-            </div>
-
-            <!-- Regional Distribution -->
-            <div style="background: #FAFAFA; padding: 20px; border-radius: 8px; border: 1px solid #F0F0F0;">
-                <h4 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 600;">Regional Distribution</h4>
-                <div style="position: relative; height: 200px;">
-                    <canvas id="locationChart"></canvas>
-                </div>
-                <div style="margin-top: 12px; font-size: 12px; color: #666; text-align: center;">
-                    Terminals by location
-                </div>
-            </div>
-
-            <!-- Device Models -->
-            <div style="background: #FAFAFA; padding: 20px; border-radius: 8px; border: 1px solid #F0F0F0;">
-                <h4 style="margin: 0 0 16px 0; color: #333; font-size: 14px; font-weight: 600;">Device Models</h4>
-                <div style="position: relative; height: 200px;">
-                    <canvas id="modelsChart"></canvas>
-                </div>
-                <div style="margin-top: 12px; font-size: 12px; color: #666; text-align: center;">
-                    Terminal model distribution
-                </div>
-            </div>
+    {{-- Charts --}}
+    <div class="ui-card mb-6">
+        <div class="ui-card-header">
+            <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4CA; Terminal Analytics</h4>
         </div>
-
-        <!-- Additional Metrics Row -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-            <div style="text-align: center; padding: 16px; border-radius: 8px; background: #E3F2FD; border: 1px solid #BBDEFB;">
-                <div style="font-size: 20px; font-weight: 600; color: #1976D2; margin-bottom: 4px;">0</div>
-                <div style="font-size: 12px; color: #1976D2; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Recently Serviced</div>
-            </div>
-
-            <div style="text-align: center; padding: 16px; border-radius: 8px; background: #FFF0E6; border: 1px solid #FFE0CC;">
-                <div style="font-size: 20px; font-weight: 600; color: #CC6600; margin-bottom: 4px;">{{ $terminalStats['total'] }}</div>
-                <div style="font-size: 12px; color: #CC6600; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Service Due</div>
-            </div>
-
-            <div style="text-align: center; padding: 16px; border-radius: 8px; background: #E8F5E8; border: 1px solid #C8E6C9;">
-                <div style="font-size: 20px; font-weight: 600; color: #388E3C; margin-bottom: 4px;">0</div>
-                <div style="font-size: 12px; color: #388E3C; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">New Installs</div>
-            </div>
-
-            <div style="text-align: center; padding: 16px; border-radius: 8px; background: #F3E5F5; border: 1px solid #E1BEE7;">
-                <div style="font-size: 20px; font-weight: 600; color: #7B1FA2; margin-bottom: 4px;">4</div>
-                <div style="font-size: 12px; color: #7B1FA2; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Device Types</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content Grid -->
-    <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 30px;">
-        <!-- POS Terminals Table -->
-        <div class="ui-card p-6">
-            <!-- Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px; padding-bottom: 16px; border-bottom: 1px solid #F0F0F0;">
-                <div>
-                    <h3 style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">POS Terminals</h3>
-                    <p style="margin: 4px 0 0 0; color: #666; font-size: 14px;">{{ $terminalStats['total'] }} total terminals</p>
-                </div>
-                <button onclick="exportTable()" class="btn-secondary">Export</button>
-            </div>
-
-            <!-- Filters -->
-            <div class="filters-section" style="background: #F8F9FA; padding: 20px; border-radius: 8px; margin-block-end: 20px; border: 1px solid #F0F0F0;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-block-end: 16px;">
-                    <span style="color: #666; font-size: 20px;">🔍</span>
-                    <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Filters & Search</h4>
-                    <button type="button" onclick="clearFilters()" style="background: none; border: none; color: #1976D2; font-size: 12px; cursor: pointer; text-decoration: underline;">Clear All Filters</button>
-                </div>
-
-                <form method="GET" action="{{ route('client-dashboards.show', $client) }}">
-                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 12px; margin-block-end: 12px;">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search terminals..."
-                               style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
-                        <button type="submit" class="btn-primary">Search</button>
-                        <button type="button" onclick="clearFilters()" class="btn-secondary">Clear</button>
-                        <button type="button" onclick="addTerminal()" class="btn-primary">+ Add Terminal</button>
-                        <button type="button" onclick="exportTable()" class="btn-secondary">Export</button>
+        <div class="ui-card-body">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h4 class="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">Service Timeline</h4>
+                    <div class="relative h-48">
+                        <canvas id="serviceDueChart"></canvas>
                     </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h4 class="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">Regional Distribution</h4>
+                    <div class="relative h-48">
+                        <canvas id="locationChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h4 class="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">Device Models</h4>
+                    <div class="relative h-48">
+                        <canvas id="modelsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="text-center bg-blue-50 border border-blue-100 rounded-lg p-4">
+                    <div class="text-xl font-bold text-blue-700 mb-1">0</div>
+                    <div class="text-xs text-blue-600 font-medium uppercase tracking-wide">Recently Serviced</div>
+                </div>
+                <div class="text-center bg-orange-50 border border-orange-100 rounded-lg p-4">
+                    <div class="text-xl font-bold text-orange-700 mb-1">{{ $terminalStats['total'] }}</div>
+                    <div class="text-xs text-orange-600 font-medium uppercase tracking-wide">Service Due</div>
+                </div>
+                <div class="text-center bg-green-50 border border-green-100 rounded-lg p-4">
+                    <div class="text-xl font-bold text-green-700 mb-1">0</div>
+                    <div class="text-xs text-green-600 font-medium uppercase tracking-wide">New Installs</div>
+                </div>
+                <div class="text-center bg-purple-50 border border-purple-100 rounded-lg p-4">
+                    <div class="text-xl font-bold text-purple-700 mb-1">4</div>
+                    <div class="text-xs text-purple-600 font-medium uppercase tracking-wide">Device Types</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
-                        <select name="client" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
-                            <option value="">All Clients</option>
-                            <option value="{{ $client->id }}" selected>{{ $client->company_name }}</option>
-                        </select>
-                        <select name="status" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
-                            <option value="">All Status</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="offline" {{ request('status') == 'offline' ? 'selected' : '' }}>Offline</option>
-                            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
-                            <option value="faulty" {{ request('status') == 'faulty' ? 'selected' : '' }}>Faulty</option>
-                        </select>
-                        <select name="region" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
-                            <option value="">All Regions</option>
-                            @if(isset($regions))
+    {{-- Main 2-col layout --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {{-- Left: POS Terminals --}}
+        <div class="lg:col-span-2 space-y-5">
+
+            {{-- Terminals Table --}}
+            <div class="ui-card overflow-hidden">
+                <div class="ui-card-header">
+                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F5A5;&#xFE0F; POS Terminals</h4>
+                    <span class="badge badge-gray">{{ $terminalStats['total'] }} terminals</span>
+                </div>
+
+                {{-- Filters --}}
+                <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
+                    <form method="GET" action="{{ route('client-dashboards.show', $client) }}" class="flex flex-wrap gap-3 items-end">
+                        <div class="filter-group">
+                            <label class="ui-label">Search</label>
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                   placeholder="Search terminals…" class="ui-input">
+                        </div>
+                        <div class="filter-group">
+                            <label class="ui-label">Status</label>
+                            <select name="status" class="ui-select">
+                                <option value="">All Status</option>
+                                <option value="active"      {{ request('status') == 'active'      ? 'selected' : '' }}>Active</option>
+                                <option value="offline"     {{ request('status') == 'offline'     ? 'selected' : '' }}>Offline</option>
+                                <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+                                <option value="faulty"      {{ request('status') == 'faulty'      ? 'selected' : '' }}>Faulty</option>
+                            </select>
+                        </div>
+                        @if(isset($regions) && $regions->count())
+                        <div class="filter-group">
+                            <label class="ui-label">Region</label>
+                            <select name="region" class="ui-select">
+                                <option value="">All Regions</option>
                                 @foreach($regions as $region)
-                                    <option value="{{ $region->id }}" {{ request('region') == $region->id ? 'selected' : '' }}>
-                                        {{ $region->name }}
-                                    </option>
+                                    <option value="{{ $region->id }}" {{ request('region') == $region->id ? 'selected' : '' }}>{{ $region->name }}</option>
                                 @endforeach
+                            </select>
+                        </div>
+                        @endif
+                        <div class="filter-actions">
+                            <button type="submit" class="btn-primary">Apply</button>
+                            @if(request()->hasAny(['search','status','region','city']))
+                            <a href="{{ route('client-dashboards.show', $client) }}" class="btn-secondary">Clear</a>
                             @endif
-                        </select>
-                        <select name="city" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
-                            <option value="">All Cities</option>
-                            @if(isset($cities))
-                                @foreach($cities as $city)
-                                    <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>
-                                        {{ $city }}
-                                    </option>
-                                @endforeach
-                            @endif
-                        </select>
-                        <select name="province" style="padding: 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 14px;">
-                            <option value="">All Provinces</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Table -->
-            <div class="overflow-x-auto">
-                <table class="terminals-table">
-                    <thead>
-                        <tr>
-                            <th>Terminal ID</th>
-                            <th>Client/Bank</th>
-                            <th>Merchant</th>
-                            <th>Contact</th>
-                            <th>Location</th>
-                            <th>Status</th>
-                            <th>Last Service</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($terminals as $terminal)
-                        <tr>
-                            <td>
-                                <div style="font-weight: 500; color: #333;">{{ $terminal->terminal_id }}</div>
-                            </td>
-                            <td>
-                                <div style="color: #333;">{{ $client->company_name }}</div>
-                            </td>
-                            <td>
-                                <div style="font-weight: 500; color: #333;">{{ $terminal->merchant_name ?? 'City Electronics' }}</div>
-                                <div style="font-size: 12px; color: #666;">{{ $terminal->merchant_contact_person ?? 'Mike Smith' }}</div>
-                            </td>
-                            <td>
-                                <div style="color: #333;">{{ $terminal->merchant_contact_person ?? 'Jane Doe' }}</div>
-                                <div style="font-size: 12px; color: #666;">{{ $terminal->merchant_phone ?? '+254734567890' }}</div>
-                            </td>
-                            <td>
-                                <div style="color: #333;">{{ $terminal->city ?? 'Unknown' }}</div>
-                            </td>
-                            <td>
-                                <span class="terminal-status-badge status-{{ $terminal->current_status ?? 'maintenance' }}">
-                                    {{ strtoupper($terminal->current_status ?? 'MAINTENANCE') }}
-                                </span>
-                            </td>
-                            <td>
-                                <div style="color: #333; font-size: 14px;">
-                                    {{ $terminal->last_service_date ? \Carbon\Carbon::parse($terminal->last_service_date)->format('M d, Y') : 'Jul 15, 2024' }}
-                                </div>
-                                <div style="font-size: 12px; color: #999;">
-                                    {{ $terminal->last_service_date ? \Carbon\Carbon::parse($terminal->last_service_date)->diffForHumans() : '1 year ago' }}
-                                </div>
-                            </td>
-                            <td>
-                                <div style="display: flex; gap: 6px;">
-                                    <button onclick="viewTerminal('{{ $terminal->id }}')" class="action-btn" title="View">👁️</button>
-                                    <button onclick="editTerminal('{{ $terminal->id }}')" class="action-btn" title="Edit">✏️</button>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <!-- Sample Data Rows -->
-                        <tr>
-                            <td>
-                                <div style="font-weight: 500; color: #333;">POS-002</div>
-                            </td>
-                            <td>
-                                <div style="color: #333;">{{ $client->company_name }}</div>
-                            </td>
-                            <td>
-                                <div style="font-weight: 500; color: #333;">City Electronics</div>
-                                <div style="font-size: 12px; color: #666;">Mike Smith</div>
-                            </td>
-                            <td>
-                                <div style="color: #333;">Mike Smith</div>
-                                <div style="font-size: 12px; color: #666;">+254734567890</div>
-                            </td>
-                            <td>
-                                <div style="color: #333;">Unknown</div>
-                            </td>
-                            <td>
-                                <span class="terminal-status-badge status-maintenance">
-                                    MAINTENANCE
-                                </span>
-                            </td>
-                            <td>
-                                <div style="color: #333; font-size: 14px;">Jul 15, 2024</div>
-                                <div style="font-size: 12px; color: #999;">1 year ago</div>
-                            </td>
-                            <td>
-                                <div style="display: flex; gap: 6px;">
-                                    <button onclick="viewTerminal('sample')" class="action-btn" title="View">👁️</button>
-                                    <button onclick="editTerminal('sample')" class="action-btn" title="Edit">✏️</button>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            @if(isset($terminals) && method_exists($terminals, 'links'))
-            <div style="margin-top: 20px; display: flex; justify-content: center;">
-                {{ $terminals->appends(request()->query())->links() }}
-            </div>
-            @endif
-
-            <!-- Projects Section -->
-            <div style="border-top: 1px solid #F0F0F0; margin-top: 24px; padding-top: 24px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 16px;">
-                    <div>
-                        <h4 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Active Projects</h4>
-                        <p style="margin: 4px 0 0 0; color: #666; font-size: 14px;">{{ $projects->count() ?? 3 }} ongoing projects</p>
-                    </div>
-                    <button onclick="createProject()" class="btn-secondary">+ Create Project</button>
+                        </div>
+                    </form>
                 </div>
 
-                @if(isset($projects) && $projects->count() > 0)
-                    @foreach($projects->take(3) as $project)
-                    <div style="background: #FAFAFA; border: 1px solid #F0F0F0; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                            <div>
-                                <h5 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">{{ $project->project_name }}</h5>
-                                <p style="margin: 4px 0; color: #666; font-size: 12px; font-family: monospace;">{{ $project->project_code }}</p>
-                                <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">{{ $project->description }}</p>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="badge badge-gray">{{ ucfirst($project->status) }}</span>
-                                <span style="font-size: 12px; color: #666;">{{ ucfirst($project->priority ?? 'normal') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                @else
-                <div style="background: #FAFAFA; border: 1px solid #F0F0F0; border-radius: 8px; padding: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div>
-                            <h5 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Terminal Discovery Phase 1</h5>
-                            <p style="margin: 4px 0; color: #666; font-size: 12px; font-family: monospace;">CLI-DIS-202508-01</p>
-                            <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">Initial discovery and assessment of all POS terminals...</p>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <span class="badge badge-green">Active</span>
-                            <span style="font-size: 12px; color: #666;">Discovery</span>
-                        </div>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="ui-table">
+                        <thead>
+                            <tr>
+                                <th>Terminal ID</th>
+                                <th>Merchant</th>
+                                <th>Contact</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Last Service</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($terminals as $terminal)
+                            @php
+                                $tsc = match($terminal->current_status ?? 'unknown') {
+                                    'active'      => 'badge-green',
+                                    'offline'     => 'badge-yellow',
+                                    'maintenance' => 'badge-blue',
+                                    'faulty'      => 'badge-red',
+                                    default       => 'badge-gray',
+                                };
+                            @endphp
+                            <tr>
+                                <td><span class="code-chip">{{ $terminal->terminal_id }}</span></td>
+                                <td>
+                                    <div class="text-sm font-medium text-gray-900">{{ $terminal->merchant_name ?? '—' }}</div>
+                                    <div class="text-xs text-gray-400">{{ $terminal->merchant_contact_person ?? '' }}</div>
+                                </td>
+                                <td class="text-sm text-gray-600">{{ $terminal->merchant_phone ?? '—' }}</td>
+                                <td class="text-sm text-gray-600">{{ $terminal->city ?? '—' }}</td>
+                                <td>
+                                    <span class="status-badge {{ $tsc }}">{{ ucfirst($terminal->current_status ?? 'unknown') }}</span>
+                                </td>
+                                <td>
+                                    <div class="text-xs font-medium text-gray-700">
+                                        {{ $terminal->last_service_date ? \Carbon\Carbon::parse($terminal->last_service_date)->format('M d, Y') : '—' }}
+                                    </div>
+                                    <div class="text-xs text-gray-400">
+                                        {{ $terminal->last_service_date ? \Carbon\Carbon::parse($terminal->last_service_date)->diffForHumans() : '' }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-group">
+                                        <a href="{{ route('client-dashboards.terminals.show', [$client, $terminal]) }}" class="action-btn action-view" title="View">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7" class="py-16 text-center text-gray-400">
+                                    <div class="text-4xl mb-3">&#x1F5A5;&#xFE0F;</div>
+                                    <p class="text-sm font-medium text-gray-600">No terminals found</p>
+                                    <p class="text-xs text-gray-400 mt-1">Terminals assigned to this client will appear here.</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if(isset($terminals) && method_exists($terminals, 'links') && $terminals->hasPages())
+                <div class="ui-card-footer justify-center">
+                    {{ $terminals->appends(request()->query())->links() }}
                 </div>
                 @endif
             </div>
-        </div>
 
-        <!-- Sidebar -->
-        <div style="display: flex; flex-direction: column; gap: 24px;">
-            <!-- Recent Visits -->
-    <div class="ui-card p-6">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 16px; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0;">
-            <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Recent Visits</h4>
-            <a href="{{ route('visits.index') }}?client_id={{ $client->id }}"
-               style="background: none; border: none; color: #1976D2; font-size: 12px; cursor: pointer; text-decoration: underline;">
-               View More
-            </a>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-            @if(isset($recentVisits) && $recentVisits->count() > 0)
-                @foreach($recentVisits->take(4) as $visit)
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <div style="font-weight: 500; color: #333; font-size: 14px;">
-                            <a href="{{ route('client-dashboards.terminals.show', [$client, $visit->posTerminal]) }}"
-                               style="color: #333; text-decoration: none;">
-                               Terminal {{ $visit->posTerminal->terminal_id ?? 'N/A' }}
-                            </a>
-                        </div>
-                        <div style="color: #666; font-size: 12px;">{{ $visit->technician->full_name ?? 'Technician' }}</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <span class="badge badge-gray" style="font-size: 10px; padding: 2px 6px;">
-                            {{ ucfirst($visit->status ?? 'Open') }}
-                        </span>
-                        <div style="font-size: 11px; color: #999; margin-top: 2px;">
-                            {{ $visit->visit_date ? \Carbon\Carbon::parse($visit->visit_date)->format('M d, Y') : 'Aug 26, 2025' }}
+            {{-- Active Projects --}}
+            <div class="ui-card overflow-hidden">
+                <div class="ui-card-header">
+                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4CB; Active Projects</h4>
+                    <a href="{{ route('client-dashboards.projects.create', $client) }}" class="btn-primary btn-sm">+ New Project</a>
+                </div>
+                <div class="ui-card-body space-y-3">
+                    @forelse(isset($projects) ? $projects->take(3) : collect() as $project)
+                    @php
+                        $psc = match($project->status) {
+                            'active'    => 'badge-green',
+                            'completed' => 'badge-blue',
+                            'paused'    => 'badge-yellow',
+                            'cancelled' => 'badge-red',
+                            default     => 'badge-gray',
+                        };
+                    @endphp
+                    <div class="bg-gray-50 border border-gray-100 rounded-lg p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">{{ $project->project_name }}</div>
+                                <div class="text-xs text-gray-400 font-mono mt-0.5">{{ $project->project_code }}</div>
+                                @if($project->description)
+                                <div class="text-xs text-gray-500 mt-1">{{ Str::limit($project->description, 80) }}</div>
+                                @endif
+                            </div>
+                            <span class="badge {{ $psc }} ml-3 flex-shrink-0">{{ ucfirst($project->status) }}</span>
                         </div>
                     </div>
+                    @empty
+                    <div class="empty-state">
+                        <div class="empty-state-icon">&#x1F4CB;</div>
+                        <p class="empty-state-msg">No active projects</p>
+                    </div>
+                    @endforelse
                 </div>
-                @endforeach
-            @else
-                {{-- Sample data when no visits exist --}}
-                @for($i = 1; $i <= 4; $i++)
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <div style="font-weight: 500; color: #333; font-size: 14px;">Terminal {{ $i }}</div>
-                        <div style="color: #666; font-size: 12px;">Monah Chimwa</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <span class="badge badge-green" style="font-size: 10px; padding: 2px 6px;">Open</span>
-                        <div style="font-size: 11px; color: #999; margin-top: 2px;">Aug 26, 2025</div>
-                    </div>
-                </div>
-                @endfor
-            @endif
-        </div>
-    </div>
-
-    <!-- Open Tickets -->
-    <div class="ui-card p-6">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0; margin-block-end: 16px;">
-            <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Open Tickets</h4>
-            <a href="{{ route('tickets.index') }}?client_id={{ $client->id }}"
-               style="background: none; border: none; color: #1976D2; font-size: 12px; cursor: pointer; text-decoration: underline;">
-               View All
-            </a>
-        </div>
-        @if(isset($openTickets) && $openTickets->count() > 0)
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                @foreach($openTickets->take(3) as $ticket)
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <div style="font-weight: 500; color: #333; font-size: 14px;">
-                            <a href="{{ route('tickets.show', $ticket) }}"
-                               style="color: #333; text-decoration: none;">
-                               {{ $ticket->title ?? 'Support Ticket' }}
-                            </a>
-                        </div>
-                        <div style="color: #666; font-size: 12px;">{{ $ticket->posTerminal->terminal_id ?? 'Terminal' }}</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <span class="badge badge-gray" style="font-size: 10px; padding: 2px 6px;">
-                            {{ ucfirst($ticket->status) }}
-                        </span>
-                        <div style="font-size: 11px; color: #999; margin-top: 2px;">{{ $ticket->created_at->format('M d, Y') }}</div>
-                    </div>
-                </div>
-                @endforeach
             </div>
-        @else
-        <div style="text-align: center; padding: 20px; color: #666;">
-            <div style="font-size: 32px; margin-bottom: 8px;">🎫</div>
-            <p style="margin: 0; font-size: 14px;">No open tickets</p>
-        </div>
-        @endif
-    </div>
 
-    <!-- Active Projects -->
-    <div class="ui-card p-6">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #F0F0F0; margin-block-end: 16px;">
-            <h4 style="margin: 0; color: #333; font-size: 14px; font-weight: 600;">Active Projects</h4>
-            <a href="{{ route('client-dashboards.projects.create', $client) }}"
-               style="background: none; border: none; color: #1976D2; font-size: 12px; cursor: pointer; text-decoration: underline;">
-               + New Project
-            </a>
         </div>
-        @if(isset($projects) && $projects->count() > 0)
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                @foreach($projects->take(2) as $project)
-                <div style="background: #FAFAFA; border: 1px solid #F0F0F0; border-radius: 8px; padding: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                        <div style="font-weight: 500; color: #333; font-size: 13px;">{{ $project->project_name }}</div>
-                        <span class="badge badge-gray" style="font-size: 10px; padding: 2px 6px;">
-                            {{ ucfirst($project->status) }}
-                        </span>
-                    </div>
-                    <div style="font-size: 11px; color: #666; font-family: monospace; margin-bottom: 4px;">{{ $project->project_code }}</div>
-                    <div style="font-size: 12px; color: #666;">{{ Str::limit($project->description, 60) }}</div>
+
+        {{-- Right sidebar --}}
+        <div class="space-y-5">
+
+            {{-- Recent Visits --}}
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4CD; Recent Visits</h4>
+                    <a href="{{ route('visits.index') }}?client_id={{ $client->id }}" class="btn-secondary btn-sm">View More</a>
                 </div>
-                @endforeach
+                <div class="ui-card-body space-y-3">
+                    @if(isset($recentVisits) && $recentVisits->count() > 0)
+                        @foreach($recentVisits->take(4) as $visit)
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="text-sm font-medium text-gray-800">
+                                    Terminal {{ $visit->posTerminal->terminal_id ?? 'N/A' }}
+                                </div>
+                                <div class="text-xs text-gray-400">{{ $visit->technician->full_name ?? 'Technician' }}</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="badge badge-gray text-xs">{{ ucfirst($visit->status ?? 'Open') }}</span>
+                                <div class="text-xs text-gray-400 mt-1">
+                                    {{ $visit->visit_date ? \Carbon\Carbon::parse($visit->visit_date)->format('M d, Y') : '' }}
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    @else
+                    <div class="empty-state">
+                        <div class="empty-state-icon">&#x1F4CD;</div>
+                        <p class="empty-state-msg">No recent visits</p>
+                    </div>
+                    @endif
+                </div>
             </div>
-        @else
-        <div style="text-align: center; padding: 20px; color: #666;">
-            <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
-            <p style="margin: 0; font-size: 14px;">No active projects</p>
+
+            {{-- Open Tickets --}}
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F3AB; Open Tickets</h4>
+                    <a href="{{ route('tickets.index') }}?client_id={{ $client->id }}" class="btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="ui-card-body">
+                    @if(isset($openTickets) && $openTickets->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($openTickets->take(3) as $ticket)
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1 min-w-0">
+                                    <a href="{{ route('tickets.show', $ticket) }}"
+                                       class="text-sm font-medium text-gray-800 hover:text-[#1a3a5c] no-underline truncate block">
+                                        {{ $ticket->title ?? 'Support Ticket' }}
+                                    </a>
+                                    <div class="text-xs text-gray-400">{{ $ticket->posTerminal->terminal_id ?? 'Terminal' }}</div>
+                                </div>
+                                <div class="text-right ml-3 flex-shrink-0">
+                                    <span class="badge badge-gray text-xs">{{ ucfirst($ticket->status) }}</span>
+                                    <div class="text-xs text-gray-400 mt-1">{{ $ticket->created_at->format('M d, Y') }}</div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                    <div class="empty-state">
+                        <div class="empty-state-icon">&#x1F3AB;</div>
+                        <p class="empty-state-msg">No open tickets</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
         </div>
-        @endif
     </div>
 </div>
 
-{{-- Add this JavaScript to the bottom of your view to fix the terminal view links --}}
-<script>
-// Function to view terminal details
-function viewTerminalDetails(terminalId) {
-    if (terminalId && terminalId !== 'sample') {
-        window.location.href = `/client-dashboards/{{ $client->id }}/terminals/${terminalId}`;
-    }
-}
-
-// Update the table action buttons to use the correct terminal IDs
-document.addEventListener('DOMContentLoaded', function() {
-    // Fix any sample terminal links
-    document.querySelectorAll('a[href*="/terminals/sample"]').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('This is sample data. No terminal details available.');
-        });
-    });
-});
-</script>
-/* Metric Cards */
-.metric-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #F0F0F0;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.metric-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.metric-content {
-    flex: 1;
-}
-
-.metric-number {
-    font-size: 28px;
-    font-weight: bold;
-    color: #333;
-    line-height: 1;
-    margin-bottom: 4px;
-}
-
-.metric-label {
-    font-size: 12px;
-    color: #666;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-}
-
-/* Content Card */
-.content-card {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #F0F0F0;
-}
-
-/* Table Styles */
-.table-container {
-    overflow-x: auto;
-}
-
-.terminals-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-
-.terminals-table th {
-    background: #F8F9FA;
-    padding: 12px;
-    text-align: left;
-    font-weight: 600;
-    color: #333;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid #E0E0E0;
-}
-
-.terminals-table td {
-    padding: 12px;
-    border-bottom: 1px solid #F0F0F0;
-    vertical-align: top;
-}
-
-.terminals-table tr:hover {
-    background: #FAFAFA;
-}
-
-/* Status Badges */
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: capitalize;
-}
-
-.status-active { background: #E8F5E8; color: #2E7D32; }
-.status-pending { background: #FFF3E0; color: #F57C00; }
-.status-inactive { background: #F5F5F5; color: #666; }
-.status-planning { background: #E3F2FD; color: #1976D2; }
-.status-completed { background: #E8F5E8; color: #2E7D32; }
-.status-on_hold { background: #FFF3E0; color: #F57C00; }
-.status-cancelled { background: #FFEBEE; color: #D32F2F; }
-
-.terminal-status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.terminal-status-badge.status-active { background: #E8F5E8; color: #2E7D32; }
-.terminal-status-badge.status-offline { background: #FFF3E0; color: #F57C00; }
-.terminal-status-badge.status-maintenance { background: #FFF3E0; color: #F57C00; }
-.terminal-status-badge.status-faulty { background: #FFEBEE; color: #D32F2F; }
-
-/* Action Buttons */
-.action-btn {
-    width: 28px;
-    height: 28px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    transition: all 0.2s ease;
-    background: #F8F9FA;
-    color: #666;
-}
-
-.action-btn:hover {
-    background: #E0E0E0;
-    transform: translateY(-1px);
-}
-
-/* Buttons */
-.btn {
-    padding: 10px 16px;
-    border: 1px solid #E0E0E0;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #1976D2;
-    color: #1976D2;
-}
-
-.btn-primary {
-    background: #1976D2;
-    color: white;
-    border-color: #1976D2;
-}
-
-.btn-primary:hover {
-    background: #1565C0;
-    border-color: #1565C0;
-    color: white;
-}
-</style>
-
-<!-- Chart.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-
-<!-- Chart Data & JavaScript -->
 <script>
-// Chart Data
 window.chartData = {
     stats: {
         total_terminals: {{ $terminalStats['total'] }},
@@ -716,22 +368,18 @@ window.chartData = {
     }
 };
 
-// Chart instances
 let charts = {};
 
-// Initialize Charts
 function initializeCharts() {
-    // Destroy existing charts
     Object.values(charts).forEach(chart => chart?.destroy());
     charts = {};
 
-    // Service Due Chart
     const serviceDueCtx = document.getElementById('serviceDueChart');
     if (serviceDueCtx) {
         charts.serviceDue = new Chart(serviceDueCtx, {
             type: 'bar',
             data: {
-                labels: ['Recently Serviced', 'Due Soon', 'Overdue', 'Never Serviced'],
+                labels: ['Serviced', 'Due Soon', 'Overdue', 'Never'],
                 datasets: [{
                     data: [
                         window.chartData.serviceDue.recentlyServiced,
@@ -739,127 +387,74 @@ function initializeCharts() {
                         window.chartData.serviceDue.overdueService,
                         window.chartData.serviceDue.neverServiced
                     ],
-                    backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d'],
-                    borderColor: ['#1e7e34', '#e0a800', '#bd2130', '#545b62'],
-                    borderWidth: 1
+                    backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#9e9e9e'],
+                    borderWidth: 0,
+                    borderRadius: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
-                }
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
             }
         });
     }
 
-    // Regional Distribution Chart
     const locationCtx = document.getElementById('locationChart');
     if (locationCtx) {
         charts.location = new Chart(locationCtx, {
-            type: 'bar',
+            type: 'doughnut',
             data: {
-                labels: ['HARARE', 'BULAWAYO', 'GWERU', 'KWEKWE', 'MUTARE'],
+                labels: ['Active', 'Offline', 'Maintenance', 'Faulty'],
                 datasets: [{
-                    data: [25, 15, 8, 5, 0],
-                    backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#6f42c1'],
-                    borderWidth: 0
+                    data: [
+                        window.chartData.stats.active_terminals,
+                        window.chartData.stats.offline_terminals,
+                        {{ $terminalStats['by_status']['maintenance'] ?? 0 }},
+                        {{ $terminalStats['by_status']['faulty'] ?? 0 }}
+                    ],
+                    backgroundColor: ['#4caf50', '#ff9800', '#2196f3', '#f44336'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 5 } }
-                }
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
             }
         });
     }
 
-    // Device Models Chart
     const modelsCtx = document.getElementById('modelsChart');
     if (modelsCtx) {
         charts.models = new Chart(modelsCtx, {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: Object.keys(window.chartData.modelDistribution),
                 datasets: [{
                     data: Object.values(window.chartData.modelDistribution),
-                    backgroundColor: ['#17a2b8', '#fd7e14', '#20c997', '#6c757d']
+                    backgroundColor: ['#1a3a5c', '#2196f3', '#4caf50', '#9e9e9e'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
             }
         });
     }
 }
 
-// Button Functions
 function exportData() {
-    window.open(`/client-dashboards/{{ $client->id }}/export-data`, '_blank');
+    alert('Export functionality coming soon.');
 }
 
-function exportTable() {
-    const params = new URLSearchParams(window.location.search);
-    const queryString = params.toString();
-    const url = `/client-dashboards/{{ $client->id }}/export-table${queryString ? '?' + queryString : ''}`;
-    window.open(url, '_blank');
-}
-
-function clearFilters() {
-    window.location.href = '{{ route("client-dashboards.show", $client) }}';
-}
-
-function addTerminal() {
-    window.location.href = '/client-dashboards/{{ $client->id }}/terminals/create';
-}
-
-function viewTerminal(terminalId) {
-    if (terminalId !== 'sample') {
-        window.location.href = `/client-dashboards/{{ $client->id }}/terminals/${terminalId}`;
-    }
-}
-
-function editTerminal(terminalId) {
-    if (terminalId !== 'sample') {
-        window.location.href = `/client-dashboards/{{ $client->id }}/terminals/${terminalId}/edit`;
-    }
-}
-
-function createProject() {
-    window.location.href = '/client-dashboards/{{ $client->id }}/projects/create';
-}
-
-function generateReport() {
-    const reportType = prompt('Generate report:\n\n1. Monthly Summary\n2. Terminal Performance\n3. Activity Report\n\nEnter 1, 2, or 3:');
-
-    if (reportType) {
-        const reportTypes = {
-            '1': 'monthly',
-            '2': 'terminals',
-            '3': 'activity'
-        };
-
-        if (reportTypes[reportType]) {
-            window.open(`/client-dashboards/{{ $client->id }}/reports/${reportTypes[reportType]}`, '_blank');
-        } else {
-            alert('Invalid selection. Please enter 1, 2, or 3.');
-        }
-    }
-}
-
-// Initialize charts on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeCharts();
-    console.log('Client Dashboard initialized for client {{ $client->id }}');
 });
 </script>
 @endsection

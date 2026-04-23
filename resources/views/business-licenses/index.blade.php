@@ -6,126 +6,126 @@
 <div>
 
     {{-- Header --}}
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;">
+    <div class="flex justify-between items-end mb-5">
         <div>
-            <h2 style="margin:0;color:#222;font-weight:600;">
+            <h2 class="text-lg font-semibold text-gray-900">
                 @if($direction === 'company_held') Business Licenses
                 @elseif($direction === 'customer_issued') Customer Licenses
-                @else All Licenses — History & Lookup
+                @else All Licenses — History &amp; Lookup
                 @endif
             </h2>
-            <p style="color:#6b7280;margin:6px 0 0 0;font-size:14px;">
+            <p class="text-sm text-gray-500 mt-0.5">
                 @if($direction === 'company_held') Repository of licenses and compliance records
                 @elseif($direction === 'customer_issued') Repository of customer-issued licenses
                 @else Complete record of all issued and held licenses
                 @endif
             </p>
         </div>
-        <div style="display:flex;gap:8px;">
-            @if($direction !== 'all')
-                <a href="{{ route('business-licenses.compliance', ['direction' => $direction]) }}" class="btn-secondary">Compliance</a>
-                <a href="{{ route('business-licenses.expiring', ['direction' => $direction]) }}" class="btn-secondary">Expiring</a>
-                <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn-primary">Add {{ $direction === 'company_held' ? 'License' : 'Customer License' }}</a>
-            @endif
+        @if($direction !== 'all')
+        <div class="flex items-center gap-2">
+            <a href="{{ route('business-licenses.compliance', ['direction' => $direction]) }}" class="btn-secondary">Compliance</a>
+            <a href="{{ route('business-licenses.expiring', ['direction' => $direction]) }}" class="btn-secondary">Expiring</a>
+            <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn-primary">
+                + Add {{ $direction === 'company_held' ? 'License' : 'Customer License' }}
+            </a>
         </div>
+        @endif
     </div>
 
     {{-- Direction toggle --}}
-    <div style="margin-bottom:20px;">
-        <div style="display:inline-flex;gap:0;">
-            <a href="{{ route('business-licenses.index', ['direction' => 'company_held']) }}"
-               class="seg {{ $direction === 'company_held' ? 'seg--active' : '' }}">Our Licenses</a>
-            <a href="{{ route('business-licenses.index', ['direction' => 'customer_issued']) }}"
-               class="seg {{ $direction === 'customer_issued' ? 'seg--active' : '' }}">Customer Licenses</a>
-            <a href="{{ route('business-licenses.index', ['direction' => 'all']) }}"
-               class="seg {{ $direction === 'all' ? 'seg--active' : '' }}">All / History</a>
-        </div>
+    <div class="flex gap-1 mb-5">
+        <a href="{{ route('business-licenses.index', ['direction' => 'company_held']) }}"
+           class="{{ $direction === 'company_held' ? 'btn-primary btn-sm' : 'btn-secondary btn-sm' }}">Our Licenses</a>
+        <a href="{{ route('business-licenses.index', ['direction' => 'customer_issued']) }}"
+           class="{{ $direction === 'customer_issued' ? 'btn-primary btn-sm' : 'btn-secondary btn-sm' }}">Customer Licenses</a>
+        <a href="{{ route('business-licenses.index', ['direction' => 'all']) }}"
+           class="{{ $direction === 'all' ? 'btn-primary btn-sm' : 'btn-secondary btn-sm' }}">All / History</a>
     </div>
 
     {{-- Stats --}}
-    <div id="stats-cards" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+    <div id="stats-cards" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-5">
         @if($direction === 'company_held')
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-green">✅</div>
+                <div>
                     <div class="stat-number" id="active-count">{{ $stats['active_licenses'] }}</div>
                     <div class="stat-label">Active Licenses</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⚠️</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-yellow">⚠️</div>
+                <div>
                     <div class="stat-number" id="expiring-count">{{ $stats['expiring_soon'] }}</div>
                     <div class="stat-label">Expiring Soon</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">❌</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-red">❌</div>
+                <div>
                     <div class="stat-number" id="expired-count">{{ $stats['expired_licenses'] }}</div>
                     <div class="stat-label">Expired</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">💰</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-teal">💰</div>
+                <div>
                     <div class="stat-number" id="annual-cost">${{ number_format($stats['total_annual_cost'], 0) }}</div>
                     <div class="stat-label">Annual Cost</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🚨</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-orange">🚨</div>
+                <div>
                     <div class="stat-number" id="critical-count">{{ $stats['critical_licenses'] }}</div>
                     <div class="stat-label">Critical Priority</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📋</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-blue">📋</div>
+                <div>
                     <div class="stat-number" id="total-count">{{ $stats['total_licenses'] }}</div>
                     <div class="stat-label">Total Licenses</div>
                 </div>
             </div>
         @elseif($direction === 'customer_issued')
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-green">✅</div>
+                <div>
                     <div class="stat-number" id="active-count">{{ $stats['active_licenses'] }}</div>
                     <div class="stat-label">Active Licenses</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">💵</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-teal">💵</div>
+                <div>
                     <div class="stat-number" id="revenue-amount">${{ number_format($stats['total_revenue'], 0) }}</div>
                     <div class="stat-label">Annual Revenue</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">👥</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-blue">👥</div>
+                <div>
                     <div class="stat-number" id="customers-count">{{ $stats['unique_customers'] }}</div>
                     <div class="stat-label">Unique Customers</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⚠️</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-yellow">⚠️</div>
+                <div>
                     <div class="stat-number" id="expiring-count">{{ $stats['expiring_soon'] }}</div>
                     <div class="stat-label">Expiring Soon</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">❌</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-red">❌</div>
+                <div>
                     <div class="stat-number" id="expired-count">{{ $stats['expired_licenses'] }}</div>
                     <div class="stat-label">Expired</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📋</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-gray">📋</div>
+                <div>
                     <div class="stat-number" id="total-count">{{ $stats['total_licenses'] }}</div>
                     <div class="stat-label">Total Licenses</div>
                 </div>
@@ -133,43 +133,43 @@
         @else
             {{-- All / History --}}
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📋</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-blue">📋</div>
+                <div>
                     <div class="stat-number">{{ $stats['total_licenses'] }}</div>
                     <div class="stat-label">Total Records</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-green">✅</div>
+                <div>
                     <div class="stat-number">{{ $stats['active_licenses'] }}</div>
                     <div class="stat-label">Active</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">❌</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-red">❌</div>
+                <div>
                     <div class="stat-number">{{ $stats['expired_licenses'] }}</div>
                     <div class="stat-label">Expired</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⚠️</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-yellow">⚠️</div>
+                <div>
                     <div class="stat-number">{{ $stats['expiring_soon'] }}</div>
                     <div class="stat-label">Expiring Soon</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🏢</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-blue">🏢</div>
+                <div>
                     <div class="stat-number">{{ $stats['company_held'] }}</div>
                     <div class="stat-label">Company-Held</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">👤</div>
-                <div class="flex-1 min-w-0">
+                <div class="stat-icon stat-icon-purple">👤</div>
+                <div>
                     <div class="stat-number">{{ $stats['customer_issued'] }}</div>
                     <div class="stat-label">Customer-Issued</div>
                 </div>
@@ -230,7 +230,7 @@
                 </select>
             @endif
 
-            <button type="submit" class="btn-secondary">Filter</button>
+            <button type="submit" class="btn-primary">Apply</button>
             @if(request()->hasAny(['search', 'status', 'license_type', 'priority', 'department', 'billing_cycle', 'support_level']))
                 <a href="{{ route('business-licenses.index', ['direction' => $direction]) }}" class="btn-secondary" id="clear-filters">Clear</a>
             @endif

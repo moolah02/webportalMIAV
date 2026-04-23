@@ -2,1187 +2,657 @@
 @section('title', 'POS Terminals')
 
 @section('content')
-<div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
 
-    <!-- Navigation Tabs with 4 Tabs -->
-    <div class="tab-navigation" style="display: flex; border-bottom: 2px solid #dee2e6; margin-bottom: 30px; background: white; border-radius: 8px 8px 0 0; overflow: hidden;">
-        <button class="tab-btn active" onclick="switchTab('overview')" style="padding: 16px 20px; background: white; border: none; border-bottom: 3px solid #007bff; cursor: pointer; font-weight: 500; color: #007bff; transition: all 0.2s ease; flex: 1; text-align: center;">
-            📋 Terminal Overview
-        </button>
-
-        <button class="tab-btn" onclick="switchTab('import')" style="padding: 16px 20px; background: #f8f9fa; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 500; color: #666; transition: all 0.2s ease; flex: 1; text-align: center;">
-            📤 Smart Import
-        </button>
+{{-- ── Stats ──────────────────────────────────────────────── --}}
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">💳</div>
+        <div>
+            <div class="stat-number">{{ $stats['total_terminals'] ?? 0 }}</div>
+            <div class="stat-label">Total Terminals</div>
+        </div>
     </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-green">✅</div>
+        <div>
+            <div class="stat-number">{{ $stats['active_terminals'] ?? 0 }}</div>
+            <div class="stat-label">Active</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-orange">⚠️</div>
+        <div>
+            <div class="stat-number">{{ $stats['faulty_terminals'] ?? 0 }}</div>
+            <div class="stat-label">Need Attention</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-red">🔴</div>
+        <div>
+            <div class="stat-number">{{ $stats['offline_terminals'] ?? 0 }}</div>
+            <div class="stat-label">Offline</div>
+        </div>
+    </div>
+</div>
 
-    <!-- Terminal Overview Tab (Clean - Table Only) -->
-    <div id="overview-tab" class="tab-content active">
-        <div class="main-card" style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+{{-- ── Tab Navigation ──────────────────────────────────────── --}}
+<div class="tab-nav mb-5">
+    <button class="tab-btn active" onclick="switchTab('overview', this)">
+        💳 Terminal Overview
+    </button>
+    <button class="tab-btn" onclick="switchTab('import', this)">
+        📤 Smart Import
+    </button>
+</div>
 
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                <div class="stat-card">
-                    <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📋</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="stat-number">{{ $stats['total_terminals'] ?? 0 }}</div>
-                        <div class="stat-label">Total</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="stat-number">{{ $stats['active_terminals'] ?? 0 }}</div>
-                        <div class="stat-label">Active</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⚠️</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="stat-number">{{ $stats['faulty_terminals'] ?? 0 }}</div>
-                        <div class="stat-label">Need Attention</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🔴</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="stat-number">{{ $stats['offline_terminals'] ?? 0 }}</div>
-                        <div class="stat-label">Offline</div>
-                    </div>
-                </div>
+{{-- ═══════════════════════════════════════════════════════════
+     TAB 1 — TERMINAL OVERVIEW
+════════════════════════════════════════════════════════════ --}}
+<div id="overview-tab" class="tab-content">
+
+    {{-- Filter bar --}}
+    <form method="GET" action="{{ route('pos-terminals.index') }}" class="filter-bar" id="filter-form">
+        <div class="filter-group">
+            <label class="ui-label">Search</label>
+            <input type="text" name="search" id="search-input"
+                   placeholder="Search terminals…"
+                   value="{{ request('search') }}"
+                   class="ui-input"
+                   onkeydown="if(event.key==='Enter'){this.form.submit();}">
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">Client</label>
+            <select name="client" class="ui-select" onchange="this.form.submit()">
+                <option value="">All Clients</option>
+                @foreach($clients as $client)
+                    <option value="{{ $client->id }}" {{ request('client') == $client->id ? 'selected' : '' }}>
+                        {{ $client->company_name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">Status</label>
+            <select name="status" class="ui-select" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="active"       {{ request('status') == 'active'       ? 'selected' : '' }}>Active</option>
+                <option value="offline"      {{ request('status') == 'offline'      ? 'selected' : '' }}>Offline</option>
+                <option value="faulty"       {{ request('status') == 'faulty'       ? 'selected' : '' }}>Faulty</option>
+                <option value="maintenance"  {{ request('status') == 'maintenance'  ? 'selected' : '' }}>Maintenance</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">Region</label>
+            <select name="region" class="ui-select" onchange="this.form.submit()">
+                <option value="">All Regions</option>
+                @foreach($regions as $region)
+                    <option value="{{ $region }}" {{ request('region') == $region ? 'selected' : '' }}>{{ $region }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="ui-label">City</label>
+            <select name="city" class="ui-select" onchange="this.form.submit()">
+                <option value="">All Cities</option>
+                @foreach($cities as $city)
+                    <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Apply</button>
+            <a href="{{ route('pos-terminals.index') }}" class="btn-secondary">Reset</a>
+            <a href="{{ route('pos-terminals.export', request()->query()) }}" class="btn-secondary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export
+            </a>
+            <a href="{{ route('pos-terminals.create') }}" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Add Terminal
+            </a>
+        </div>
+    </form>
+
+    {{-- Terminals table --}}
+    <div class="ui-card overflow-hidden">
+        <div class="ui-card-header">
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold text-gray-800">Terminal Inventory</span>
+                <span class="badge badge-gray">{{ $terminals->total() }} terminals</span>
             </div>
-
-            <!-- Enhanced Filters Section -->
-            <div class="filters-section" style="margin-bottom: 30px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="font-size: 20px; color: #1e293b;">🔍 Filters & Search</h2>
-                    <button onclick="clearAllFilters()" style="background: #f1f5f9; color: #475569; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">Clear All Filters</button>
-                </div>
-
-                <form method="GET" action="{{ route('pos-terminals.index') }}" class="filters-form" id="filter-form">
-                    <!-- Search and Actions Row -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 20px;">
-                        <div style="flex: 1; max-width: 400px;">
-                            <input type="text"
-                                   name="search"
-                                   id="search-input"
-                                   placeholder="Search terminals..."
-                                   value="{{ request('search') }}"
-                                   onkeyup="handleSearch(event)"
-                                   style="width: 100%; padding: 10px 16px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; transition: border-color 0.2s ease;">
-                        </div>
-
-                        <div style="display: flex; gap: 10px;">
-                            <button type="submit" style="display: inline-block; padding: 10px 20px; border: 1px solid #6c757d; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none; text-align: center; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; background: #6c757d; color: white;">Search</button>
-                            <a href="{{ route('pos-terminals.index') }}" style="display: inline-block; padding: 10px 20px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none; text-align: center; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; background: white; color: #333;">Clear</a>
-                            <a href="{{ route('pos-terminals.create') }}" style="display: inline-block; padding: 10px 20px; border: 1px solid #007bff; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none; text-align: center; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; background: #007bff; color: white;">Add Terminal</a>
-                            <a href="{{ route('pos-terminals.export', request()->query()) }}" style="display: inline-block; padding: 10px 20px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none; text-align: center; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; background: white; color: #333;">Export</a>
-                        </div>
-                    </div>
-
-                    <!-- Filters Row -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
-                        <select name="client" onchange="applyFilters()" style="padding: 10px 16px; border: 2px solid #dee2e6; border-radius: 6px; background: white; font-size: 14px; cursor: pointer; transition: border-color 0.2s ease;">
-                            <option value="">All Clients</option>
-                            @foreach($clients as $client)
-                                <option value="{{ $client->id }}" {{ request('client') == $client->id ? 'selected' : '' }}>
-                                    {{ $client->company_name }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        <select name="status" onchange="applyFilters()" style="padding: 10px 16px; border: 2px solid #dee2e6; border-radius: 6px; background: white; font-size: 14px; cursor: pointer; transition: border-color 0.2s ease;">
-                            <option value="">All Status</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="offline" {{ request('status') == 'offline' ? 'selected' : '' }}>Offline</option>
-                            <option value="faulty" {{ request('status') == 'faulty' ? 'selected' : '' }}>Faulty</option>
-                            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
-                        </select>
-
-                        <select name="region" onchange="applyFilters()" style="padding: 10px 16px; border: 2px solid #dee2e6; border-radius: 6px; background: white; font-size: 14px; cursor: pointer; transition: border-color 0.2s ease;">
-                            <option value="">All Regions</option>
-                            @foreach($regions as $region)
-                                <option value="{{ $region }}" {{ request('region') == $region ? 'selected' : '' }}>
-                                    {{ $region }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        <select name="city" onchange="applyFilters()" style="padding: 10px 16px; border: 2px solid #dee2e6; border-radius: 6px; background: white; font-size: 14px; cursor: pointer; transition: border-color 0.2s ease;">
-                            <option value="">All Cities</option>
-                            @foreach($cities as $city)
-                                <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>
-                                    {{ $city }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        <select name="province" onchange="applyFilters()" style="padding: 10px 16px; border: 2px solid #dee2e6; border-radius: 6px; background: white; font-size: 14px; cursor: pointer; transition: border-color 0.2s ease;">
-                            <option value="">All Provinces</option>
-                            @foreach($provinces as $province)
-                                <option value="{{ $province }}" {{ request('province') == $province ? 'selected' : '' }}>
-                                    {{ $province }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Terminals Table -->
-            <div style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 8px;">
-                <table class="terminals-table" style="width: 100%; border-collapse: collapse; background: white;">
-                    <thead>
-                        <tr>
-                            <th style="background: #f8f9fa; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #333; border-bottom: 2px solid #dee2e6; white-space: nowrap;">Terminal ID</th>
-                            <th style="background: #f8f9fa; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #333; border-bottom: 2px solid #dee2e6; white-space: nowrap;">Client/Bank</th>
-                            <th style="background: #f8f9fa; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #333; border-bottom: 2px solid #dee2e6; white-space: nowrap;">Merchant</th>
-                            <th style="background: #f8f9fa; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #333; border-bottom: 2px solid #dee2e6; white-space: nowrap;">Contact</th>
-                            <th style="background: #f8f9fa; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #333; border-bottom: 2px solid #dee2e6; white-space: nowrap;">Location</th>
-                            <th style="background: #f8f9fa; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #333; border-bottom: 2px solid #dee2e6; white-space: nowrap;">Status</th>
-                            <th style="background: #f8f9fa; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #333; border-bottom: 2px solid #dee2e6; white-space: nowrap;">Last Service</th>
-                            <th style="background: #f8f9fa; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #333; border-bottom: 2px solid #dee2e6; white-space: nowrap;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($terminals as $terminal)
-                        <tr style="border-bottom: 1px solid #dee2e6;">
-                            <td style="padding: 16px 12px; vertical-align: top;">
-                                <div style="font-weight: 600; color: #333; font-size: 14px;">{{ $terminal->terminal_id }}</div>
-                            </td>
-                            <td style="padding: 16px 12px; vertical-align: top;">
-                                <div style="font-weight: 500; color: #333; font-size: 14px;">{{ $terminal->client->company_name }}</div>
-                            </td>
-                            <td style="padding: 16px 12px; vertical-align: top;">
-                                <div style="font-weight: 500; color: #333; font-size: 14px;">{{ $terminal->merchant_name }}</div>
-                                @if($terminal->business_type)
-                                <div style="font-size: 12px; color: #666; margin-top: 2px;">{{ $terminal->business_type }}</div>
-                                @endif
-                            </td>
-                            <td style="padding: 16px 12px; vertical-align: top;">
-                                @if($terminal->merchant_contact_person)
-                                <div style="font-weight: 500; color: #333; font-size: 13px;">{{ $terminal->merchant_contact_person }}</div>
-                                @endif
-                                @if($terminal->merchant_phone)
-                                <div style="font-size: 12px; color: #666; margin-top: 2px;">{{ $terminal->merchant_phone }}</div>
-                                @endif
-                            </td>
-                            <td style="padding: 16px 12px; vertical-align: top;">
-                                <div style="font-weight: 500; color: #333; font-size: 13px;">{{ $terminal->region ?: 'No region' }}</div>
-                                @if($terminal->city)
-                                <div style="font-size: 12px; color: #666; margin-top: 2px;">{{ $terminal->city }}</div>
-                                @endif
-                            </td>
-                            <td style="padding: 16px 12px; vertical-align: top;">
-                                <span class="status-badge status-{{ $terminal->status }}" style="display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-                                    @if($terminal->status == 'active') background: #d4edda; color: #155724; @endif
-                                    @if($terminal->status == 'offline') background: #fff3cd; color: #856404; @endif
-                                    @if($terminal->status == 'maintenance') background: #d1ecf1; color: #0c5460; @endif
-                                    @if($terminal->status == 'faulty') background: #f8d7da; color: #721c24; @endif">
-                                    {{ ucfirst($terminal->status) }}
-                                </span>
-                            </td>
-                            <td style="padding: 16px 12px; vertical-align: top;">
-                                @if($terminal->last_service_date)
-                                <div style="font-weight: 500; color: #333; font-size: 13px;">{{ $terminal->last_service_date->format('M d, Y') }}</div>
-                                <div style="font-size: 12px; color: #666; margin-top: 2px;">{{ $terminal->last_service_date->diffForHumans() }}</div>
-                                @else
-                                <div style="font-size: 13px; color: #999; font-style: italic;">Never serviced</div>
-                                @endif
-                            </td>
-                            <td style="padding: 16px 12px; vertical-align: top;">
-                                <div style="display: flex; gap: 6px;">
-                                    <a href="{{ route('pos-terminals.show', $terminal) }}" style="display: inline-block; padding: 6px 12px; background: white; border: 1px solid #dee2e6; border-radius: 4px; font-size: 12px; text-decoration: none; color: #333; transition: all 0.2s ease;">View</a>
-                                    <a href="{{ route('pos-terminals.edit', $terminal) }}" style="display: inline-block; padding: 6px 12px; background: white; border: 1px solid #dee2e6; border-radius: 4px; font-size: 12px; text-decoration: none; color: #333; transition: all 0.2s ease;">Edit</a>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 60px 20px;">
-                                <div>
-                                    <h4 style="margin: 0 0 10px 0; color: #333;">No terminals found</h4>
-                                    <p style="margin: 0; color: #666;">Try adjusting your filters or <a href="{{ route('pos-terminals.create') }}" style="color: #007bff; text-decoration: none;">add your first terminal</a></p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            @if($terminals->hasPages())
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
-                <div style="color: #666; font-size: 14px;">
-                    Showing {{ $terminals->firstItem() ?? 0 }} to {{ $terminals->lastItem() ?? 0 }} of {{ $terminals->total() }} terminals
-                </div>
-                <nav aria-label="Terminals pagination">
-                    <ul style="display: flex; list-style: none; padding: 0; margin: 0; gap: 4px;">
-                        {{-- Previous Page Link --}}
-                        @if ($terminals->onFirstPage())
-                            <li>
-                                <span style="display: inline-block; padding: 8px 12px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; color: #adb5bd; font-size: 14px;">
-                                    <span style="font-size: 12px;">←</span> Previous
-                                </span>
-                            </li>
-                        @else
-                            <li>
-                                <a href="{{ $terminals->previousPageUrl() }}" rel="prev" style="display: inline-block; padding: 8px 12px; background: white; border: 1px solid #dee2e6; border-radius: 4px; color: #495057; text-decoration: none; font-size: 14px; transition: all 0.2s;">
-                                    <span style="font-size: 12px;">←</span> Previous
-                                </a>
-                            </li>
-                        @endif
-
-                        {{-- Pagination Elements --}}
-                        @php
-                            $currentPage = $terminals->currentPage();
-                            $lastPage = $terminals->lastPage();
-                            $start = max(1, $currentPage - 2);
-                            $end = min($lastPage, $currentPage + 2);
-                        @endphp
-
-                        {{-- First Page --}}
-                        @if($start > 1)
-                            <li>
-                                <a href="{{ $terminals->url(1) }}" style="display: inline-block; padding: 8px 12px; background: white; border: 1px solid #dee2e6; border-radius: 4px; color: #495057; text-decoration: none; font-size: 14px; min-width: 40px; text-align: center; transition: all 0.2s;">1</a>
-                            </li>
-                            @if($start > 2)
-                                <li><span style="display: inline-block; padding: 8px 4px; color: #adb5bd;">...</span></li>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="ui-table">
+                <thead>
+                    <tr>
+                        <th>Terminal ID</th>
+                        <th>Client / Bank</th>
+                        <th>Merchant</th>
+                        <th>Contact</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Last Service</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($terminals as $terminal)
+                    <tr>
+                        <td>
+                            <span class="code-chip">{{ $terminal->terminal_id }}</span>
+                        </td>
+                        <td>
+                            <div class="cell-primary">{{ $terminal->client->company_name }}</div>
+                        </td>
+                        <td>
+                            <div class="cell-primary">{{ $terminal->merchant_name }}</div>
+                            @if($terminal->business_type)
+                            <div class="cell-sub">{{ $terminal->business_type }}</div>
                             @endif
-                        @endif
-
-                        {{-- Page Links --}}
-                        @for($i = $start; $i <= $end; $i++)
-                            @if($i == $currentPage)
-                                <li>
-                                    <span style="display: inline-block; padding: 8px 12px; background: #007bff; border: 1px solid #007bff; border-radius: 4px; color: white; font-size: 14px; font-weight: 500; min-width: 40px; text-align: center;">{{ $i }}</span>
-                                </li>
+                        </td>
+                        <td>
+                            @if($terminal->merchant_contact_person)
+                            <div class="cell-primary">{{ $terminal->merchant_contact_person }}</div>
+                            @endif
+                            @if($terminal->merchant_phone)
+                            <div class="cell-sub">{{ $terminal->merchant_phone }}</div>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="cell-primary">{{ $terminal->region ?: 'No region' }}</div>
+                            @if($terminal->city)
+                            <div class="cell-sub">{{ $terminal->city }}</div>
+                            @endif
+                        </td>
+                        <td>
+                            @php
+                                $statusClass = match($terminal->status) {
+                                    'active'      => 'badge-green',
+                                    'offline'     => 'badge-yellow',
+                                    'maintenance' => 'badge-blue',
+                                    'faulty'      => 'badge-red',
+                                    default       => 'badge-gray',
+                                };
+                            @endphp
+                            <span class="status-badge {{ $statusClass }}">{{ ucfirst($terminal->status) }}</span>
+                        </td>
+                        <td>
+                            @if($terminal->last_service_date)
+                            <div class="cell-primary">{{ $terminal->last_service_date->format('M d, Y') }}</div>
+                            <div class="cell-sub">{{ $terminal->last_service_date->diffForHumans() }}</div>
                             @else
-                                <li>
-                                    <a href="{{ $terminals->url($i) }}" style="display: inline-block; padding: 8px 12px; background: white; border: 1px solid #dee2e6; border-radius: 4px; color: #495057; text-decoration: none; font-size: 14px; min-width: 40px; text-align: center; transition: all 0.2s;">{{ $i }}</a>
-                                </li>
+                            <span class="text-gray-400 text-xs italic">Never serviced</span>
                             @endif
-                        @endfor
-
-                        {{-- Last Page --}}
-                        @if($end < $lastPage)
-                            @if($end < $lastPage - 1)
-                                <li><span style="display: inline-block; padding: 8px 4px; color: #adb5bd;">...</span></li>
-                            @endif
-                            <li>
-                                <a href="{{ $terminals->url($lastPage) }}" style="display: inline-block; padding: 8px 12px; background: white; border: 1px solid #dee2e6; border-radius: 4px; color: #495057; text-decoration: none; font-size: 14px; min-width: 40px; text-align: center; transition: all 0.2s;">{{ $lastPage }}</a>
-                            </li>
-                        @endif
-
-                        {{-- Next Page Link --}}
-                        @if ($terminals->hasMorePages())
-                            <li>
-                                <a href="{{ $terminals->nextPageUrl() }}" rel="next" style="display: inline-block; padding: 8px 12px; background: white; border: 1px solid #dee2e6; border-radius: 4px; color: #495057; text-decoration: none; font-size: 14px; transition: all 0.2s;">
-                                    Next <span style="font-size: 12px;">→</span>
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <a href="{{ route('pos-terminals.show', $terminal) }}" class="action-btn action-view" title="View">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
-                            </li>
-                        @else
-                            <li>
-                                <span style="display: inline-block; padding: 8px 12px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; color: #adb5bd; font-size: 14px;">
-                                    Next <span style="font-size: 12px;">→</span>
-                                </span>
-                            </li>
-                        @endif
-                    </ul>
-                </nav>
-            </div>
-            @endif
+                                <a href="{{ route('pos-terminals.edit', $terminal) }}" class="action-btn action-edit" title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8" class="py-16 text-center text-gray-400">
+                            <div class="text-4xl mb-3">💳</div>
+                            <p class="text-sm">No terminals found. Try adjusting your filters or
+                                <a href="{{ route('pos-terminals.create') }}" class="link">add your first terminal</a>.
+                            </p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Pagination --}}
+        @if($terminals->hasPages())
+        <div class="ui-card-footer justify-between">
+            <span class="text-xs text-gray-500">
+                Showing {{ $terminals->firstItem() ?? 0 }}–{{ $terminals->lastItem() ?? 0 }}
+                of {{ $terminals->total() }} terminals
+            </span>
+            {{ $terminals->appends(request()->query())->links() }}
+        </div>
+        @endif
+    </div>
+</div>
+
+{{-- ═══════════════════════════════════════════════════════════
+     TAB 2 — SMART IMPORT
+════════════════════════════════════════════════════════════ --}}
+<div id="import-tab" class="tab-content hidden">
+
+    {{-- Header --}}
+    <div class="flex items-start justify-between mb-5">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">Terminal Data Import</h2>
+            <p class="text-sm text-gray-500 mt-0.5">Import terminals from Excel, CSV, or TXT files with smart column detection</p>
+        </div>
+        <a href="{{ route('pos-terminals.download-template') }}" class="btn-success">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Download Template
+        </a>
+    </div>
+
+    {{-- Info cards --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        <div class="ui-card ui-card-body">
+            <h3 class="text-sm font-semibold text-gray-800 mb-3">Required Fields</h3>
+            <p class="text-xs font-semibold text-red-600 mb-1">Required</p>
+            <ul class="text-sm text-gray-700 ml-4 list-disc space-y-0.5 mb-3">
+                <li>Terminal ID</li>
+                <li>Merchant Name</li>
+            </ul>
+            <p class="text-xs font-semibold text-green-600 mb-1">Optional</p>
+            <p class="text-xs text-gray-500 leading-relaxed">
+                Contact Person, Phone, Email, Address, City, Province, Region,
+                Business Type, Terminal Model, Serial Number, Installation Date, Status, etc.
+            </p>
+        </div>
+        <div class="ui-card ui-card-body">
+            <h3 class="text-sm font-semibold text-gray-800 mb-3">Smart Features</h3>
+            <ul class="text-sm text-gray-700 ml-4 list-disc space-y-1">
+                <li>Auto-detects column headers</li>
+                <li>Processes any column order</li>
+                <li>Supports CSV, XLSX, XLS, TXT</li>
+                <li>Handles files up to 50 MB</li>
+                <li>Preview before importing</li>
+                <li>Duplicate detection</li>
+            </ul>
         </div>
     </div>
 
-    <!-- Statistics & Analytics Tab -->
-    <div id="analytics-tab" class="tab-content" style="display: none;">
-        <div class="main-card" style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <div style="text-align: center; padding: 40px;">
-                <h3 style="color: #666;">Analytics Dashboard</h3>
-                <p style="color: #999;">Charts and analytics will be displayed here</p>
+    {{-- Import form --}}
+    <form id="smart-import-form" action="{{ route('pos-terminals.import') }}" method="POST"
+          enctype="multipart/form-data" class="ui-card ui-card-body space-y-5">
+        @csrf
+
+        {{-- Client + mapping row --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+                <label class="ui-label" for="client_id">Client / Bank <span class="text-red-500">*</span></label>
+                <select name="client_id" id="client_id" required class="ui-select">
+                    <option value="">Choose the client for these terminals…</option>
+                    @foreach($clients as $client)
+                        <option value="{{ $client->id }}">{{ $client->company_name }}</option>
+                    @endforeach
+                </select>
+                @error('client_id')
+                    <p class="ui-hint text-red-500">{{ $message }}</p>
+                @enderror
             </div>
-        </div>
-    </div>
-
-    <!-- FIXED Smart Import Tab -->
-    <div id="import-tab" class="tab-content" style="display: none;">
-        <div class="main-card" style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-
-            <!-- Header Section -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
-                <div>
-                    <h3 style="margin: 0 0 10px 0; color: #333; font-size: 24px;">🚀 Terminal Data Import</h3>
-                    <p style="margin: 0; color: #666; font-size: 16px;">Import terminals from Excel, CSV, or TXT files with smart column detection</p>
-                </div>
-                <a href="{{ route('pos-terminals.download-template') }}" style="display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500; transition: all 0.2s ease;">
-                    📥 Download Template
-                </a>
-            </div>
-
-            <!-- System Template Information -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;">
-                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; border: 1px solid #e9ecef;">
-                    <h4 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">📋 Required Fields</h4>
-                    <div style="margin-bottom: 15px;">
-                        <span style="color: #dc3545; font-weight: 600;">Required:</span>
-                        <ul style="margin: 5px 0 0 0; padding-left: 20px; color: #333;">
-                            <li>Terminal ID</li>
-                            <li>Merchant Name</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <span style="color: #28a745; font-weight: 600;">Optional:</span>
-                        <small style="color: #666; display: block; margin-top: 5px;">
-                            Contact Person, Phone, Email, Address, City, Province, Region, Business Type, Terminal Model, Serial Number, Installation Date, Status, Issues, Actions, etc.
-                        </small>
-                    </div>
-                </div>
-
-                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; border: 1px solid #e9ecef;">
-                    <h4 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">⚡ Smart Features</h4>
-                    <ul style="margin: 0; padding-left: 20px; color: #333; line-height: 1.6;">
-                        <li>Auto-detects column headers</li>
-                        <li>Processes any column order</li>
-                        <li>Supports CSV, XLSX, XLS, TXT</li>
-                        <li>Handles files up to 50MB</li>
-                        <li>Preview before importing</li>
-                        <li>Duplicate detection</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Import Form -->
-            <form id="smart-import-form" action="{{ route('pos-terminals.import') }}" method="POST" enctype="multipart/form-data" style="background: #f8f9fa; padding: 25px; border-radius: 12px; border: 1px solid #e9ecef;">
-                @csrf
-
-                <!-- Client and Mapping Selection -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
-                    <div>
-                        <label for="client_id" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">Select Client/Bank <span style="color: #dc3545;">*</span></label>
-                        <select name="client_id" id="client_id" required style="width: 100%; padding: 12px 16px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; background: white; transition: border-color 0.2s ease;">
-                            <option value="">Choose the client for these terminals...</option>
-                            @foreach($clients as $client)
-                                <option value="{{ $client->id }}">{{ $client->company_name }}</option>
+            <div>
+                <label class="ui-label" for="mapping_id">Column Mapping <span class="text-gray-400 normal-case font-normal">(optional)</span></label>
+                <div class="flex gap-2">
+                    <select name="mapping_id" id="mapping_id" class="ui-select flex-1">
+                        <option value="">Auto-detect columns</option>
+                        @if(isset($mappings) && $mappings->count() > 0)
+                            @foreach($mappings as $mapping)
+                                <option value="{{ $mapping->id }}">
+                                    {{ $mapping->mapping_name }}
+                                    @if($mapping->client) ({{ $mapping->client->company_name }}) @endif
+                                </option>
                             @endforeach
-                        </select>
-                        @error('client_id')
-                            <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ $message }}</div>
-                        @enderror
-                    </div>
+                        @endif
+                    </select>
+                    <a href="{{ route('pos-terminals.column-mapping') }}" target="_blank" class="btn-secondary">
+                        ⚙️ Manage
+                    </a>
+                </div>
+                <p class="ui-hint">Leave blank for automatic header detection</p>
+            </div>
+        </div>
 
+        {{-- File drop zone --}}
+        <div>
+            <label class="ui-label">Upload Data File <span class="text-red-500">*</span></label>
+            <div id="drop-zone"
+                 class="border-2 border-dashed border-[#1a3a5c]/30 rounded-xl p-10 text-center bg-gray-50 hover:bg-blue-50 hover:border-[#1a3a5c]/60 transition-colors cursor-pointer"
+                 onclick="document.getElementById('smart-file-input').click()">
+                <div class="text-5xl mb-3">📁</div>
+                <p class="text-sm font-medium text-gray-700 mb-1">Drop your file here or click to browse</p>
+                <p class="text-xs text-gray-500 mb-5">Supports Excel (.xlsx, .xls), CSV, and TXT files up to 50 MB</p>
+                <div class="flex gap-3 justify-center" onclick="event.stopPropagation()">
+                    <input type="file" name="file" id="smart-file-input"
+                           accept=".csv,.xlsx,.xls,.txt" required class="hidden">
+                    <button type="button" class="btn-primary btn-sm"
+                            onclick="document.getElementById('smart-file-input').click()">
+                        📂 Choose File
+                    </button>
+                    <button type="button" id="preview-btn" disabled class="btn-success btn-sm opacity-50 cursor-not-allowed">
+                        👁️ Preview & Analyze
+                    </button>
+                </div>
+                @error('file')
+                    <p class="text-red-500 text-xs mt-3">{{ $message }}</p>
+                @enderror
+                <div id="file-info" class="hidden mt-4">
+                    <div class="flash-success">
+                        <span class="text-lg">✅</span>
+                        <div>
+                            <div id="file-name" class="font-medium text-sm"></div>
+                            <div id="file-details" class="text-xs mt-0.5"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-4">
+                    <strong>Pro Tip:</strong> No need to worry about column order — our smart system detects and maps columns automatically!
+                </p>
+            </div>
+        </div>
+
+        {{-- Import options --}}
+        <div>
+            <p class="ui-label">Import Options</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-[#1a3a5c]/40 hover:bg-blue-50 transition-colors">
+                    <input type="checkbox" name="options[]" value="skip_duplicates" checked
+                           class="mt-0.5 w-4 h-4 accent-[#1a3a5c]">
                     <div>
-                        <label for="mapping_id" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">Column Mapping <span style="color: #6c757d;">(Optional)</span></label>
-                        <div style="display: flex; gap: 10px;">
-                            <select name="mapping_id" id="mapping_id" style="flex: 1; padding: 12px 16px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; background: white; transition: border-color 0.2s ease;">
-                                <option value="">Column Mapping</option>
-                                @if(isset($mappings) && $mappings->count() > 0)
-                                    @foreach($mappings as $mapping)
-                                        <option value="{{ $mapping->id }}">
-                                            {{ $mapping->mapping_name }}
-                                            @if($mapping->client) ({{ $mapping->client->company_name }}) @endif
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </select>
-                            <a href="{{ route('pos-terminals.column-mapping') }}" target="_blank" style="padding: 12px 16px; background: white; border: 2px solid #007bff; color: #007bff; text-decoration: none; border-radius: 6px; font-size: 12px; white-space: nowrap; transition: all 0.2s ease; display: flex; align-items: center;">
-                                ⚙️ Manage
-                            </a>
-                        </div>
-                        <small style="color: #666; font-size: 12px; margin-top: 4px; display: block; line-height: 1.3;">Leave blank for automatic header detection - works with most Excel/CSV formats</small>
+                        <p class="text-sm font-medium text-gray-800">Skip Duplicate Terminal IDs</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Existing terminals with the same ID will be ignored during import</p>
                     </div>
-                </div>
-
-                <!-- File Upload Section -->
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">Upload Data File <span style="color: #dc3545;">*</span></label>
-
-                    <div style="border: 3px dashed #007bff; border-radius: 12px; padding: 40px; text-align: center; background: white; transition: all 0.2s ease; position: relative;" id="drop-zone">
-                        <div style="font-size: 48px; margin-bottom: 16px;">📁</div>
-                        <h4 style="margin: 0 0 8px 0; color: #333;">Drop your file here or click to browse</h4>
-                        <p style="margin: 0 0 20px 0; color: #666; font-size: 14px;">Supports Excel (.xlsx, .xls), CSV, and TXT files up to 50MB</p>
-
-                        <div style="display: flex; gap: 15px; align-items: center; justify-content: center;">
-                            <input type="file"
-                                   name="file"
-                                   id="smart-file-input"
-                                   accept=".csv,.xlsx,.xls,.txt"
-                                   required
-                                   style="display: none;">
-
-                            <button type="button" onclick="document.getElementById('smart-file-input').click()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
-                                📂 Choose File
-                            </button>
-
-                            <button type="button" id="preview-btn" disabled style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; opacity: 0.6;">
-                                👁️ Preview & Analyze
-                            </button>
-                        </div>
-
-                        @error('file')
-                            <div style="color: #dc3545; font-size: 12px; margin-top: 8px;">{{ $message }}</div>
-                        @enderror
-
-                        <div id="file-info" style="margin-top: 15px; display: none;">
-                            <div style="background: #e8f5e8; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #28a745;">
-                                <div id="file-name" style="font-weight: 500; color: #155724; font-size: 14px;"></div>
-                                <div id="file-details" style="font-size: 12px; color: #155724; margin-top: 4px;"></div>
-                            </div>
-                        </div>
-
-                        <div style="font-size: 12px; color: #666; margin-top: 15px; line-height: 1.4;">
-                            <strong>Pro Tip:</strong> No need to worry about column order - our smart system detects and maps columns automatically!
-                        </div>
+                </label>
+                <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-[#1a3a5c]/40 hover:bg-blue-50 transition-colors">
+                    <input type="checkbox" name="options[]" value="update_existing"
+                           class="mt-0.5 w-4 h-4 accent-[#1a3a5c]">
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">Update Existing Records</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Override existing terminal data with new imported values</p>
                     </div>
-                </div>
-
-                <!-- Import Options -->
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #333; font-size: 14px;">Import Options</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 15px; background: white; border: 2px solid #e9ecef; border-radius: 8px; transition: all 0.2s ease;">
-                            <input type="checkbox" name="options[]" value="skip_duplicates" checked style="margin: 0; width: 18px; height: 18px; accent-color: #007bff; margin-top: 2px;">
-                            <div>
-                                <div style="font-weight: 500; color: #333; margin-bottom: 4px;">Skip Duplicate Terminal IDs</div>
-                                <small style="color: #666; font-size: 12px; line-height: 1.3;">Existing terminals with the same ID will be ignored during import</small>
-                            </div>
-                        </label>
-
-                        <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 15px; background: white; border: 2px solid #e9ecef; border-radius: 8px; transition: all 0.2s ease;">
-                            <input type="checkbox" name="options[]" value="update_existing" style="margin: 0; width: 18px; height: 18px; accent-color: #007bff; margin-top: 2px;">
-                            <div>
-                                <div style="font-weight: 500; color: #333; margin-bottom: 4px;">Update Existing Records</div>
-                                <small style="color: #666; font-size: 12px; line-height: 1.3;">Override existing terminal data with new imported values</small>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div style="display: flex; gap: 12px; margin-top: 30px; justify-content: flex-start;">
-                    <button type="submit" id="import-submit-btn" disabled style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; opacity: 0.6;">
-                        <span style="font-size: 16px;">🚀</span>
-                        Start Smart Import
-                    </button>
-                    <button type="button" onclick="resetImportForm()" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: white; color: #6c757d; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
-                        🔄 Reset Form
-                    </button>
-                </div>
-            </form>
+                </label>
+            </div>
         </div>
-    </div>
+
+        {{-- Action buttons --}}
+        <div class="flex gap-3 pt-2">
+            <button type="submit" id="import-submit-btn" disabled
+                    class="btn-primary opacity-50 cursor-not-allowed">
+                🚀 Start Smart Import
+            </button>
+            <button type="button" onclick="resetImportForm()" class="btn-secondary">
+                🔄 Reset Form
+            </button>
+        </div>
+    </form>
 </div>
 
-<!-- Preview Modal -->
-<div id="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
-    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;">
-        <div style="background: white; border-radius: 12px; width: 100%; max-width: 1200px; max-height: 90vh; overflow-y: auto;">
-            <!-- Modal Header -->
-            <div style="padding: 25px; border-bottom: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; color: #333; font-size: 20px; display: flex; align-items: center; gap: 10px;">
-                    👁️ Smart Import Preview & Analysis
-                </h3>
-                <button onclick="closePreviewModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 5px;">&times;</button>
+{{-- ── Preview Modal ───────────────────────────────────────── --}}
+<div id="preview-modal" class="hidden fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="ui-card w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="ui-card-header">
+                <h3 class="text-base font-semibold text-gray-900">👁️ Smart Import Preview & Analysis</h3>
+                <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none bg-transparent border-none cursor-pointer">&times;</button>
             </div>
-
-            <!-- Modal Body -->
-            <div id="preview-content" style="padding: 25px;">
-                <div style="text-align: center; padding: 40px;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">🔄</div>
-                    <h4 style="margin: 0 0 10px 0; color: #333;">Analyzing Your File...</h4>
-                    <p style="margin: 0; color: #666;">Please wait while we detect columns and validate data</p>
+            <div id="preview-content" class="ui-card-body">
+                <div class="text-center py-16 text-gray-400">
+                    <div class="text-5xl mb-3">🔄</div>
+                    <p class="text-sm">Analyzing your file…</p>
                 </div>
             </div>
-
-            <!-- Modal Footer -->
-            <div style="padding: 20px 25px; border-top: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center;">
-                <button onclick="closePreviewModal()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">
-                    Close Preview
-                </button>
-                <button id="proceed-import-btn" onclick="proceedWithImport()" disabled style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; opacity: 0.6;">
-                    ✅ Looks Good - Proceed with Import
+            <div class="ui-card-footer">
+                <button onclick="closePreviewModal()" class="btn-secondary">Close Preview</button>
+                <button id="proceed-import-btn" onclick="proceedWithImport()" disabled
+                        class="btn-success opacity-50 cursor-not-allowed">
+                    ✅ Looks Good — Proceed with Import
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Processing Modal -->
-<div id="processing-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001;">
-    <div style="display: flex; align-items: center; justify-content: center; height: 100vh;">
-        <div style="background: white; padding: 40px; border-radius: 12px; text-align: center; min-width: 300px;">
-            <div style="font-size: 48px; margin-bottom: 20px;">⚡</div>
-            <h4 style="margin: 0 0 15px 0; color: #333;">Processing Your Smart Import</h4>
-            <p style="margin: 0 0 20px 0; color: #666; line-height: 1.4;">Large files are processed in chunks automatically.<br>This may take a few minutes...</p>
-            <div style="width: 100%; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
-                <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #007bff, #28a745); animation: loading 2s infinite;"></div>
+{{-- ── Processing Modal ────────────────────────────────────── --}}
+<div id="processing-modal" class="hidden fixed inset-0 bg-black/70 z-[60]">
+    <div class="flex items-center justify-center h-full">
+        <div class="ui-card p-10 text-center max-w-sm w-full">
+            <div class="text-5xl mb-4">⚡</div>
+            <h4 class="text-base font-semibold text-gray-900 mb-2">Processing Your Smart Import</h4>
+            <p class="text-sm text-gray-500 mb-5">Large files are processed in chunks automatically. This may take a few minutes…</p>
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-[#1a3a5c] to-green-500 animate-pulse rounded-full"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Enhanced CSS -->
-<style>
-@keyframes loading {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
+@endsection
 
-/* Tab styles */
-.tab-btn:hover {
-    background: #e9ecef !important;
-    color: #333 !important;
-}
-
-.tab-btn.active {
-    background: white !important;
-    color: #007bff !important;
-    border-bottom-color: #007bff !important;
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-.terminals-table tbody tr:hover {
-    background: #f8f9fa;
-}
-
-/* Import form enhancements */
-#drop-zone:hover {
-    border-color: #0056b3;
-    background: #f8f9fa;
-}
-
-#drop-zone.dragover {
-    border-color: #28a745;
-    background: #e8f5e8;
-}
-
-/* Checkbox styling */
-input[type="checkbox"]:hover + div {
-    background: #f8f9fa;
-}
-
-label:hover {
-    background: #f8f9fa !important;
-    border-color: #007bff !important;
-}
-
-/* Responsive design */
-@media (max-width: 1024px) {
-    .tab-navigation {
-        flex-wrap: wrap;
-    }
-
-    .tab-btn {
-        flex: 1 1 50%;
-        min-width: 200px;
-    }
-}
-
-@media (max-width: 768px) {
-    .tab-navigation {
-        flex-direction: column;
-    }
-
-    .tab-btn {
-        flex: 1;
-        min-width: auto;
-    }
-
-    [style*="grid-template-columns: 1fr 1fr"] {
-        grid-template-columns: 1fr !important;
-    }
-}
-</style>
-
-<!-- CORRECTED JavaScript - This replaces all your existing JavaScript -->
+@push('scripts')
 <script>
-// Global variables
-window.importData = {
-    currentFile: null,
-    previewData: null,
-    isProcessing: false
-};
+// ── Tab switching ────────────────────────────────────────────
+function switchTab(tabName, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const tab = document.getElementById(tabName + '-tab');
+    if (tab) tab.classList.remove('hidden');
+    if (btn) btn.classList.add('active');
+}
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Smart Import: Initializing...');
+// ── Filter helpers ───────────────────────────────────────────
+function applyFilters() {
+    document.getElementById('filter-form')?.submit();
+}
 
-    // Initialize all components
-    initializeFileUpload();
-    initializePreview();
-    initializeFormHandlers();
+// ── File upload ──────────────────────────────────────────────
+window.importData = { currentFile: null, previewData: null, isProcessing: false };
 
-    console.log('Smart Import: Ready!');
-});
-
-// File upload initialization
-function initializeFileUpload() {
+document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('smart-file-input');
-    const dropZone = document.getElementById('drop-zone');
-    const fileInfo = document.getElementById('file-info');
-    const fileName = document.getElementById('file-name');
-    const fileDetails = document.getElementById('file-details');
+    const dropZone  = document.getElementById('drop-zone');
     const previewBtn = document.getElementById('preview-btn');
-    const submitBtn = document.getElementById('import-submit-btn');
+    const submitBtn  = document.getElementById('import-submit-btn');
 
-    if (!fileInput || !dropZone) {
-        console.warn('File upload elements not found');
-        return;
+    if (!fileInput) return;
+
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFileSelection(e.target.files[0]); });
+
+    if (dropZone) {
+        dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('bg-blue-50'); });
+        dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('bg-blue-50'); });
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-blue-50');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+                handleFileSelection(file);
+            }
+        });
     }
-
-    // File input change handler
-    fileInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            handleFileSelection(file);
-        }
-    });
-
-    // Drag and drop handlers
-    dropZone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        dropZone.style.borderColor = '#007bff';
-        dropZone.style.backgroundColor = '#f8f9fa';
-    });
-
-    dropZone.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        dropZone.style.borderColor = '';
-        dropZone.style.backgroundColor = '';
-    });
-
-    dropZone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        dropZone.style.borderColor = '';
-        dropZone.style.backgroundColor = '';
-
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            // Manually set the file to the input
-            const dt = new DataTransfer();
-            dt.items.add(files[0]);
-            fileInput.files = dt.files;
-
-            handleFileSelection(files[0]);
-        }
-    });
 
     function handleFileSelection(file) {
-        console.log('File selected:', file.name, 'Size:', formatFileSize(file.size));
+        const allowed = ['.csv', '.xlsx', '.xls', '.txt'];
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (!allowed.includes(ext)) { alert('Please select a valid file type: CSV, XLSX, XLS, or TXT'); return; }
+        if (file.size > 50 * 1024 * 1024) { alert('File size exceeds 50 MB limit.'); return; }
 
-        // Validate file type
-        const allowedTypes = ['.csv', '.xlsx', '.xls', '.txt'];
-        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-
-        if (!allowedTypes.includes(fileExtension)) {
-            showError('Please select a valid file type: CSV, XLSX, XLS, or TXT');
-            resetFileInput();
-            return;
-        }
-
-        // Validate file size (50MB limit)
-        const maxSize = 50 * 1024 * 1024;
-        if (file.size > maxSize) {
-            showError('File size exceeds 50MB limit. Please choose a smaller file.');
-            resetFileInput();
-            return;
-        }
-
-        // Store file reference
         window.importData.currentFile = file;
 
-        // Display file info
-        if (fileName && fileDetails && fileInfo) {
-            fileName.textContent = `✅ ${file.name}`;
-            fileDetails.innerHTML = `
-                <strong>Size:</strong> ${formatFileSize(file.size)} |
-                <strong>Type:</strong> ${fileExtension.toUpperCase()} |
-                <strong>Modified:</strong> ${new Date(file.lastModified).toLocaleDateString()}
-            `;
-            fileInfo.style.display = 'block';
-        }
+        const nameEl    = document.getElementById('file-name');
+        const detailEl  = document.getElementById('file-details');
+        const infoEl    = document.getElementById('file-info');
+        if (nameEl)   nameEl.textContent   = file.name;
+        if (detailEl) detailEl.textContent = `${formatBytes(file.size)} · ${ext.toUpperCase()} · Modified ${new Date(file.lastModified).toLocaleDateString()}`;
+        if (infoEl)   infoEl.classList.remove('hidden');
 
-        // Enable buttons
-        if (previewBtn) {
-            previewBtn.disabled = false;
-            previewBtn.style.opacity = '1';
-        }
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-        }
-
-        console.log('File ready for processing');
+        if (previewBtn) { previewBtn.disabled = false; previewBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
+        if (submitBtn)  { submitBtn.disabled  = false; submitBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
     }
 
-    function resetFileInput() {
-        if (fileInput) fileInput.value = '';
-        if (fileInfo) fileInfo.style.display = 'none';
-        if (previewBtn) {
-            previewBtn.disabled = true;
-            previewBtn.style.opacity = '0.6';
-        }
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.6';
-        }
-        window.importData.currentFile = null;
+    function formatBytes(b) {
+        if (b === 0) return '0 B';
+        const k = 1024, s = ['B','KB','MB','GB'], i = Math.floor(Math.log(b)/Math.log(k));
+        return (b/Math.pow(k,i)).toFixed(2)+' '+s[i];
     }
 
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    if (previewBtn) {
+        previewBtn.addEventListener('click', function () {
+            if (window.importData.isProcessing) return;
+            const clientId = document.getElementById('client_id')?.value;
+            if (!fileInput.files[0]) { alert('Please select a file first'); return; }
+            if (!clientId) { alert('Please select a client first'); return; }
+            startPreview(fileInput.files[0], clientId, document.getElementById('mapping_id')?.value);
+        });
     }
-}
-
-// Preview functionality
-function initializePreview() {
-    const previewBtn = document.getElementById('preview-btn');
-    if (!previewBtn) return;
-
-    previewBtn.addEventListener('click', function() {
-        if (window.importData.isProcessing) {
-            console.log('Already processing, ignoring click');
-            return;
-        }
-
-        const fileInput = document.getElementById('smart-file-input');
-        const clientId = document.getElementById('client_id')?.value;
-        const mappingId = document.getElementById('mapping_id')?.value;
-
-        // Validation
-        if (!fileInput?.files[0]) {
-            showError('Please select a file first');
-            return;
-        }
-
-        if (!clientId) {
-            showError('Please select a client first');
-            return;
-        }
-
-        // Start preview
-        startPreview(fileInput.files[0], clientId, mappingId);
-    });
-}
+});
 
 function startPreview(file, clientId, mappingId) {
-    console.log('Starting preview for:', file.name);
-
     window.importData.isProcessing = true;
     showPreviewModal();
 
-    // Prepare form data
     const formData = new FormData();
     formData.append('file', file);
     formData.append('client_id', clientId);
     if (mappingId) formData.append('mapping_id', mappingId);
     formData.append('preview_rows', '5');
 
-    // Get CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    if (csrfToken) {
-        formData.append('_token', csrfToken);
-    }
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => { ctrl.abort(); displayPreviewError('Request timed out. Try a smaller file or split into chunks.'); }, 120000);
 
-    // Create AbortController for timeout handling
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-        controller.abort();
-        console.log('Preview request timed out');
-        displayPreviewError('Request timed out. Large files may need to be processed differently. Try breaking your file into smaller chunks (under 10MB each).');
-    }, 480000); // 2 minute timeout
-
-    // Make request with timeout
     fetch('/pos-terminals/preview-import', {
         method: 'POST',
         body: formData,
-        headers: {
-            'X-CSRF-TOKEN': csrfToken || '',
-            'Accept': 'application/json',
-        },
-        signal: controller.signal
+        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        signal: ctrl.signal
     })
-    .then(response => {
-        clearTimeout(timeoutId);
-        console.log('Preview response status:', response.status);
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        return response.json();
-    })
-    .then(data => {
-        console.log('Preview response:', data);
-        if (data.success) {
-            displayPreviewData(data);
-        } else {
-            displayPreviewError(data.message || 'Preview failed');
-        }
-    })
-    .catch(error => {
-        clearTimeout(timeoutId);
-        console.error('Preview error:', error);
-
-        if (error.name === 'AbortError') {
-            displayPreviewError('Preview timed out. For large files (>10MB), try splitting them into smaller files or contact support for assistance.');
-        } else {
-            displayPreviewError(`Failed to preview file: ${error.message}. Please check the file format and try again.`);
-        }
-    })
-    .finally(() => {
-        window.importData.isProcessing = false;
-    });
+    .then(r => { clearTimeout(tid); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(data => { data.success ? displayPreviewData(data) : displayPreviewError(data.message || 'Preview failed'); })
+    .catch(err  => { clearTimeout(tid); displayPreviewError(err.name === 'AbortError' ? 'Timed out. Try a smaller file.' : err.message); })
+    .finally(() => { window.importData.isProcessing = false; });
 }
-function showPreviewModal() {
-    const modal = document.getElementById('preview-modal');
-    const content = document.getElementById('preview-content');
 
-    if (modal && content) {
-        content.innerHTML = `
-            <div style="text-align: center; padding: 40px;">
-                <div style="font-size: 48px; margin-bottom: 20px;">🔄</div>
-                <h4 style="margin: 0 0 10px 0; color: #333;">Analyzing Your File...</h4>
-                <p style="margin: 0; color: #666;">Please wait while we detect columns and validate data</p>
-            </div>
-        `;
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
+function showPreviewModal() {
+    document.getElementById('preview-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
 
 function closePreviewModal() {
-    const modal = document.getElementById('preview-modal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
+    document.getElementById('preview-modal').classList.add('hidden');
+    document.body.style.overflow = '';
 }
 
 function displayPreviewData(data) {
+    const mapped   = data.column_mapping_info?.mapped_fields   || [];
+    const missing  = data.column_mapping_info?.missing_required || [];
+    const hasErrors = data.preview_data.some(r => r.validation_status !== 'valid');
+    const canImport = !hasErrors && missing.length === 0;
+
     const content = document.getElementById('preview-content');
+    content.innerHTML = `
+        <div class="grid grid-cols-2 gap-4 mb-5">
+            <div class="flash-success">
+                <div>
+                    <p class="font-semibold text-sm">File Analysis</p>
+                    <p class="text-xs mt-1">Mapping: ${data.mapping_name} · ${data.headers.length} columns · ${data.preview_data.length} preview rows</p>
+                </div>
+            </div>
+            <div class="${missing.length ? 'flash-error' : 'flash-success'}">
+                <div>
+                    <p class="font-semibold text-sm">Column Mapping</p>
+                    <p class="text-xs mt-1">${mapped.length} mapped · ${missing.length} missing required · ${missing.length === 0 ? 'All required fields found ✅' : 'Missing: ' + missing.join(', ')}</p>
+                </div>
+            </div>
+        </div>
+        <div class="ui-card overflow-hidden mb-5">
+            <div class="ui-card-header"><span class="text-sm font-semibold">Detected Columns</span></div>
+            <div class="overflow-x-auto">
+                <table class="ui-table">
+                    <thead><tr><th>#</th><th>Column Header</th><th>Status</th></tr></thead>
+                    <tbody>
+                        ${data.headers.map((h, i) => {
+                            const cls = mapped.includes(h.toLowerCase().replace(/\s+/g,'_')) ? 'badge-green' : 'badge-yellow';
+                            return `<tr><td>${i+1}</td><td><code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">${h}</code></td><td><span class="status-badge ${cls}">${cls === 'badge-green' ? 'Mapped' : 'Unmapped'}</span></td></tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="ui-card overflow-hidden mb-5">
+            <div class="ui-card-header"><span class="text-sm font-semibold">Data Preview</span></div>
+            <div class="overflow-x-auto">
+                <table class="ui-table">
+                    <thead><tr><th>Row</th><th>Terminal ID</th><th>Merchant</th><th>Status</th><th>Validation</th></tr></thead>
+                    <tbody>
+                        ${data.preview_data.map(r => `
+                            <tr>
+                                <td>${r.row_number}</td>
+                                <td><code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">${r.mapped_data.terminal_id||'N/A'}</code></td>
+                                <td>${r.mapped_data.merchant_name||'N/A'}</td>
+                                <td>${r.mapped_data.status||'active'}</td>
+                                <td><span class="status-badge ${r.validation_status==='valid'?'badge-green':'badge-red'}">${r.validation_status==='valid'?'Valid':'Error'}</span>${r.validation_status!=='valid'?'<br><span class="text-xs text-red-500">'+r.validation_message+'</span>':''}</td>
+                            </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="${canImport ? 'flash-success' : 'flash-error'}">
+            <span class="text-xl">${canImport ? '✅' : '❌'}</span>
+            <div>
+                <p class="font-semibold text-sm">${canImport ? 'Ready for Import' : 'Issues Detected'}</p>
+                <p class="text-xs mt-0.5">${canImport ? 'All required fields present and validation passed.' : 'Resolve issues before importing.'}</p>
+            </div>
+        </div>
+    `;
+
     const proceedBtn = document.getElementById('proceed-import-btn');
-
-    if (!content) return;
-
-    // Store preview data
-    window.importData.previewData = data;
-
-    let html = `
-        <!-- File Analysis Summary -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-            <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
-                <h4 style="margin: 0 0 10px 0; color: #155724;">📊 File Analysis Results</h4>
-                <div style="font-size: 14px; color: #155724; line-height: 1.6;">
-                    <strong>Mapping Used:</strong> ${data.mapping_name}<br>
-                    <strong>Total Columns:</strong> ${data.headers.length}<br>
-                    <strong>Preview Rows:</strong> ${data.preview_data.length}<br>
-                    <strong>Detection:</strong> Smart auto-mapping active
-                </div>
-            </div>
-
-            <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
-                <h4 style="margin: 0 0 10px 0; color: #0066cc;">🎯 Column Mapping Status</h4>
-                <div style="font-size: 14px; color: #0066cc; line-height: 1.6;">
-                    <strong>Mapped Fields:</strong> ${(data.column_mapping_info?.mapped_fields || []).length}<br>
-                    <strong>Extra Fields:</strong> ${(data.column_mapping_info?.extra_fields || []).length}<br>
-                    <strong>Missing Required:</strong> ${(data.column_mapping_info?.missing_required || []).length}<br>
-                    ${(data.column_mapping_info?.missing_required || []).length === 0
-                        ? '<span style="color: #28a745;">✅ All required fields found!</span>'
-                        : '<span style="color: #dc3545;">❌ Missing: ' + (data.column_mapping_info?.missing_required || []).join(', ') + '</span>'
-                    }
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Add column mapping table
-    html += `
-        <div style="margin-bottom: 30px;">
-            <h4 style="margin: 0 0 15px 0; color: #333;">📋 Detected Columns</h4>
-            <div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead style="background: #f8f9fa;">
-                        <tr>
-                            <th style="padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6;">#</th>
-                            <th style="padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6;">Column Header</th>
-                            <th style="padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-    `;
-
-    data.headers.forEach((header, index) => {
-        const isMapped = (data.column_mapping_info?.mapped_fields || []).includes(header.toLowerCase().replace(/\s+/g, '_'));
-        const isExtra = (data.column_mapping_info?.extra_fields || []).includes(header.toLowerCase().replace(/\s+/g, '_'));
-
-        let status = '<span style="background: #ffc107; color: #856404; padding: 3px 8px; border-radius: 12px; font-size: 11px;">UNMAPPED</span>';
-        if (isMapped) {
-            status = '<span style="background: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;">MAPPED</span>';
-        } else if (isExtra) {
-            status = '<span style="background: #007bff; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;">EXTRA</span>';
-        }
-
-        html += `
-            <tr style="border-bottom: 1px solid #f8f9fa;">
-                <td style="padding: 10px 12px;">${index + 1}</td>
-                <td style="padding: 10px 12px;"><code style="background: #f8f9fa; padding: 2px 6px; border-radius: 3px;">${header}</code></td>
-                <td style="padding: 10px 12px;">${status}</td>
-            </tr>
-        `;
-    });
-
-    html += '</tbody></table></div></div>';
-
-    // Add preview data table
-    html += `
-        <div style="margin-bottom: 30px;">
-            <h4 style="margin: 0 0 15px 0; color: #333;">👁️ Data Preview</h4>
-            <div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead style="background: #007bff; color: white;">
-                        <tr>
-                            <th style="padding: 12px; white-space: nowrap;">Row</th>
-                            <th style="padding: 12px; white-space: nowrap;">Terminal ID</th>
-                            <th style="padding: 12px; white-space: nowrap;">Merchant</th>
-                            <th style="padding: 12px; white-space: nowrap;">Status</th>
-                            <th style="padding: 12px; white-space: nowrap;">Validation</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-    `;
-
-    data.preview_data.forEach(row => {
-        const validationBadge = row.validation_status === 'valid'
-            ? '<span style="background: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;">✅ VALID</span>'
-            : '<span style="background: #dc3545; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px;">❌ ERROR</span>';
-
-        html += `
-            <tr style="border-bottom: 1px solid #f8f9fa;">
-                <td style="padding: 10px 12px;">${row.row_number}</td>
-                <td style="padding: 10px 12px;"><code>${row.mapped_data.terminal_id || 'N/A'}</code></td>
-                <td style="padding: 10px 12px;">${row.mapped_data.merchant_name || 'N/A'}</td>
-                <td style="padding: 10px 12px;">${row.mapped_data.status || 'active'}</td>
-                <td style="padding: 10px 12px;">
-                    ${validationBadge}
-                    ${row.validation_status !== 'valid' ? `<br><small style="color: #dc3545; font-size: 11px;">${row.validation_message}</small>` : ''}
-                </td>
-            </tr>
-        `;
-    });
-
-    html += '</tbody></table></div></div>';
-
-    // Import readiness
-    const hasErrors = data.preview_data.some(row => row.validation_status !== 'valid');
-    const missingRequired = (data.column_mapping_info?.missing_required || []).length > 0;
-    const canImport = !hasErrors && !missingRequired;
-
-    html += `
-        <div style="background: ${canImport ? '#e8f5e8' : '#f8d7da'}; padding: 20px; border-radius: 8px; border-left: 4px solid ${canImport ? '#28a745' : '#dc3545'};">
-            <h4 style="margin: 0 0 10px 0; color: ${canImport ? '#155724' : '#721c24'};">
-                ${canImport ? '✅ Ready for Import' : '❌ Import Issues Detected'}
-            </h4>
-            <p style="margin: 0; color: ${canImport ? '#155724' : '#721c24'};">
-                ${canImport
-                    ? 'Your file looks great! All required fields are present and data validation passed.'
-                    : 'There are issues that need to be resolved before importing.'
-                }
-            </p>
-        </div>
-    `;
-
-    content.innerHTML = html;
-
-    // Enable/disable proceed button
     if (proceedBtn) {
         proceedBtn.disabled = !canImport;
-        proceedBtn.style.opacity = canImport ? '1' : '0.6';
+        proceedBtn.classList.toggle('opacity-50', !canImport);
+        proceedBtn.classList.toggle('cursor-not-allowed', !canImport);
     }
 }
 
-function displayPreviewError(message) {
-    const content = document.getElementById('preview-content');
-    if (!content) return;
-
-    content.innerHTML = `
-        <div style="text-align: center; padding: 40px;">
-            <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
-            <h4 style="margin: 0 0 10px 0; color: #dc3545;">Preview Failed</h4>
-            <p style="margin: 0 0 20px 0; color: #666;">${message}</p>
-            <div style="background: #f8d7da; padding: 15px; border-radius: 6px; color: #721c24; text-align: left;">
-                <strong>Troubleshooting:</strong><br>
-                • Ensure your file is a valid CSV, XLSX, XLS, or TXT format<br>
-                • Check that the file contains Terminal ID and Merchant Name columns<br>
-                • Verify the file is not corrupted or password-protected<br>
-                • Try downloading our template and formatting your data accordingly
+function displayPreviewError(msg) {
+    document.getElementById('preview-content').innerHTML = `
+        <div class="text-center py-16">
+            <div class="text-5xl mb-3">❌</div>
+            <p class="text-sm font-semibold text-gray-800 mb-2">Preview Failed</p>
+            <p class="text-sm text-gray-500 mb-5">${msg}</p>
+            <div class="flash-warning text-left">
+                <span>⚠️</span>
+                <div class="text-xs">
+                    <strong>Troubleshooting:</strong><br>
+                    • Ensure the file is valid CSV, XLSX, XLS, or TXT<br>
+                    • Check it contains Terminal ID and Merchant Name columns<br>
+                    • Verify the file is not corrupted or password-protected
+                </div>
             </div>
         </div>
     `;
-}
-
-// Form handlers
-function initializeFormHandlers() {
-    // Reset form button
-    const resetBtn = document.querySelector('button[onclick="resetImportForm()"]');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            resetImportForm();
-        });
-    }
-
-    // Proceed with import
-    const proceedBtn = document.getElementById('proceed-import-btn');
-    if (proceedBtn) {
-        proceedBtn.addEventListener('click', proceedWithImport);
-    }
-
-    // Form submission
-    const form = document.getElementById('smart-import-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            if (window.importData.isProcessing) {
-                e.preventDefault();
-                return false;
-            }
-
-            showProcessingModal();
-        });
-    }
-}
-
-function resetImportForm() {
-    console.log('Resetting import form');
-
-    const form = document.getElementById('smart-import-form');
-    if (form) form.reset();
-
-    const fileInfo = document.getElementById('file-info');
-    const previewBtn = document.getElementById('preview-btn');
-    const submitBtn = document.getElementById('import-submit-btn');
-
-    if (fileInfo) fileInfo.style.display = 'none';
-    if (previewBtn) {
-        previewBtn.disabled = true;
-        previewBtn.style.opacity = '0.6';
-    }
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.6';
-    }
-
-    window.importData.currentFile = null;
-    window.importData.previewData = null;
 }
 
 function proceedWithImport() {
-    console.log('Proceeding with import');
     closePreviewModal();
-    showProcessingModal();
-
-    const form = document.getElementById('smart-import-form');
-    if (form) {
-        form.submit();
-    }
+    document.getElementById('processing-modal').classList.remove('hidden');
+    document.getElementById('smart-import-form')?.submit();
 }
 
-function showProcessingModal() {
-    const modal = document.getElementById('processing-modal');
-    if (modal) {
-        modal.style.display = 'block';
-    }
+function resetImportForm() {
+    document.getElementById('smart-import-form')?.reset();
+    document.getElementById('file-info')?.classList.add('hidden');
+    const pBtn = document.getElementById('preview-btn');
+    const sBtn = document.getElementById('import-submit-btn');
+    if (pBtn) { pBtn.disabled = true; pBtn.classList.add('opacity-50', 'cursor-not-allowed'); }
+    if (sBtn) { sBtn.disabled = true; sBtn.classList.add('opacity-50', 'cursor-not-allowed'); }
+    window.importData = { currentFile: null, previewData: null, isProcessing: false };
 }
 
-// Tab switching function
-function switchTab(tabName) {
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-        tab.style.display = 'none';
-    });
-
-    // Remove active from all buttons
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        btn.style.background = '#f8f9fa';
-        btn.style.color = '#666';
-        btn.style.borderBottomColor = 'transparent';
-    });
-
-    // Show selected tab
-    const selectedTab = document.getElementById(tabName + '-tab');
-    if (selectedTab) {
-        selectedTab.classList.add('active');
-        selectedTab.style.display = 'block';
-    }
-
-    // Mark button as active
-    event.target.classList.add('active');
-    event.target.style.background = 'white';
-    event.target.style.color = '#007bff';
-    event.target.style.borderBottomColor = '#007bff';
-}
-
-// Filter functions
-function applyFilters() {
-    const form = document.getElementById('filter-form');
-    if (form) form.submit();
-}
-
-function clearAllFilters() {
-    const form = document.getElementById('filter-form');
-    if (!form) return;
-
-    const inputs = form.querySelectorAll('select, input[type="text"]');
-
-    inputs.forEach(input => {
-        if (input.tagName === 'SELECT') {
-            input.selectedIndex = 0;
-        } else {
-            input.value = '';
-        }
-    });
-
-    window.location.href = window.location.pathname;
-}
-
-function handleSearch(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        applyFilters();
-    }
-}
-
-// Utility functions
-function showError(message) {
-    console.error('Import Error:', message);
-    alert(message); // Replace with your preferred error display method
-}
-
-// Modal handlers
-document.addEventListener('click', function(e) {
-    const modal = document.getElementById('preview-modal');
-    if (modal && e.target === modal) {
-        closePreviewModal();
-    }
+// Close modal on backdrop click or Escape
+document.addEventListener('click', e => {
+    if (e.target.id === 'preview-modal') closePreviewModal();
 });
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closePreviewModal();
-    }
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePreviewModal();
 });
 </script>
+@endpush
 @endsection
