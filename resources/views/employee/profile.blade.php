@@ -151,7 +151,7 @@
                         <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">{{ strtoupper(substr($sub->first_name,0,1).substr($sub->last_name,0,1)) }}</div>
                         <div class="flex-1 min-w-0">
                             <div class="text-sm font-semibold text-gray-800">{{ $sub->full_name }}</div>
-                            <div class="text-xs text-gray-500">{{ $sub->role->name ?? 'No role' }}</div>
+                            <div class="text-xs text-gray-500">{{ $sub->role?->name ?? 'No role' }}</div>
                         </div>
                         @if($sub->isFieldTechnician())<span class="badge badge-yellow">&#x1F527;</span>@endif
                     </div>

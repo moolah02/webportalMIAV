@@ -595,13 +595,24 @@ public function store(Request $request)
             ->where('is_active', true)
             ->count();
 
-        $visitedTerminals = DB::table('project_terminals pt')
-            ->join('technician_visits tv', 'pt.pos_terminal_id', '=', 'tv.pos_terminal_id')
-            ->join('job_assignments ja', 'tv.job_assignment_id', '=', 'ja.id')
+        // Count terminals visited via web app (technician_visits)
+        $webVisited = DB::table('project_terminals as pt')
+            ->join('technician_visits as tv', 'pt.pos_terminal_id', '=', 'tv.pos_terminal_id')
+            ->join('job_assignments as ja', 'tv.job_assignment_id', '=', 'ja.id')
             ->where('pt.project_id', $project->id)
             ->where('ja.project_id', $project->id)
-            ->distinct('pt.pos_terminal_id')
-            ->count('pt.pos_terminal_id');
+            ->distinct()
+            ->pluck('pt.pos_terminal_id');
+
+        // Also count terminals visited via mobile app (visits table)
+        $mobileVisited = DB::table('project_terminals as pt')
+            ->join('job_assignments as ja', 'ja.project_id', '=', 'pt.project_id')
+            ->join('visits as v', 'v.assignment_id', '=', 'ja.id')
+            ->where('pt.project_id', $project->id)
+            ->distinct()
+            ->pluck('pt.pos_terminal_id');
+
+        $visitedTerminals = $webVisited->merge($mobileVisited)->unique()->count();
 
         if ($visitedTerminals < $totalTerminals) {
             $unvisited = $totalTerminals - $visitedTerminals;
@@ -1312,9 +1323,9 @@ private function calculateDetailedProgress($project)
     // Count completed assignments (not individual terminals)
     $completedAssignments = $assignments->where('status', 'completed')->count();
 
-    // Count total visits for this project
+    // Count total visits for this project (visits table stores mobile app completions)
     $totalVisits = DB::table('visits as v')
-        ->join('job_assignments as ja', 'v.assignment_id', '=', 'ja.assignment_id')
+        ->join('job_assignments as ja', 'v.assignment_id', '=', 'ja.id')
         ->where('ja.project_id', $project->id)
         ->count();
 
@@ -1351,15 +1362,27 @@ private function calculateProjectProgress($project)
     }
 
     try {
-        // Use your actual table structure
-        $completedTerminals = DB::table('project_terminals pt')
-            ->join('visits v', 'pt.pos_terminal_id', '=', 'v.merchant_id') // Use merchant_id
-            ->join('job_assignments ja', 'v.assignment_id', '=', 'ja.assignment_id') // Use assignment_id
+        // Count terminals visited via web (technician_visits) OR mobile app (visits)
+        $visitedViaWeb = DB::table('project_terminals as pt')
+            ->join('technician_visits as tv', 'pt.pos_terminal_id', '=', 'tv.pos_terminal_id')
+            ->join('job_assignments as ja', 'tv.job_assignment_id', '=', 'ja.id')
             ->where('pt.project_id', $project->id)
             ->where('pt.is_active', true)
             ->where('ja.project_id', $project->id)
-            ->distinct('pt.pos_terminal_id')
-            ->count('pt.pos_terminal_id');
+            ->distinct()
+            ->pluck('pt.pos_terminal_id');
+
+        $visitedViaMobile = DB::table('project_terminals as pt')
+            ->join('visits as v', 'v.assignment_id', '=',
+                DB::raw('(SELECT id FROM job_assignments WHERE project_id = ' . $project->id . ' AND id = v.assignment_id LIMIT 1)'))
+            ->join('job_assignments as ja', 'v.assignment_id', '=', 'ja.id')
+            ->where('pt.project_id', $project->id)
+            ->where('pt.is_active', true)
+            ->where('ja.project_id', $project->id)
+            ->distinct()
+            ->pluck('pt.pos_terminal_id');
+
+        $completedTerminals = $visitedViaWeb->merge($visitedViaMobile)->unique()->count();
     } catch (\Exception $e) {
         Log::warning('Could not calculate completed terminals: ' . $e->getMessage());
         $completedTerminals = 0;
@@ -1376,11 +1399,18 @@ private function calculateProjectProgress($project)
     }
 
     try {
-        // Use your actual table structure
-        $totalVisits = DB::table('visits v')
-            ->join('job_assignments ja', 'v.assignment_id', '=', 'ja.assignment_id') // Use assignment_id
+        // Count visits from both web (technician_visits) and mobile app (visits table)
+        $webVisits = DB::table('technician_visits as tv')
+            ->join('job_assignments as ja', 'tv.job_assignment_id', '=', 'ja.id')
             ->where('ja.project_id', $project->id)
             ->count();
+
+        $mobileVisits = DB::table('visits as v')
+            ->join('job_assignments as ja', 'v.assignment_id', '=', 'ja.id')
+            ->where('ja.project_id', $project->id)
+            ->count();
+
+        $totalVisits = $webVisits + $mobileVisits;
     } catch (\Exception $e) {
         Log::warning('Could not get total visits: ' . $e->getMessage());
         $totalVisits = 0;

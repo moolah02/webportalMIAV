@@ -307,16 +307,16 @@ class SiteVisitController extends Controller
         ]);
 
         $visit = TechnicianVisit::create([
-            'technician_id'     => $validated['technician_id'],
-            'pos_terminal_id'   => $validated['pos_terminal_id'],
-            'job_assignment_id' => $validated['job_assignment_id'] ?? null,
-            'started_at'        => $validated['started_at'],
-            'ended_at'          => $validated['ended_at'] ?? null,
-            'terminal_status'   => $validated['terminal_status'],
-            'condition_notes'   => $validated['condition_notes'] ?? null,
-            'issues_found'      => $validated['issues_found'] ?? null,
-            'corrective_action' => $validated['corrective_action'] ?? null,
-            'visit_summary'     => $validated['visit_summary'] ?? null,
+            'technician_id'                => $validated['technician_id'],
+            'pos_terminal_id'              => $validated['pos_terminal_id'],
+            'job_assignment_id'            => $validated['job_assignment_id'] ?? null,
+            'started_at'                   => $validated['started_at'],
+            'ended_at'                     => $validated['ended_at'] ?? null,
+            'terminal_status_during_visit' => $validated['terminal_status'],
+            'condition_notes'              => $validated['condition_notes'] ?? null,
+            'issues_found'                 => $validated['issues_found'] ?? null,
+            'corrective_action'            => $validated['corrective_action'] ?? null,
+            'visit_summary'                => $validated['visit_summary'] ?? null,
         ]);
 
         ActivityLog::log(
@@ -325,7 +325,7 @@ class SiteVisitController extends Controller
             $visit
         );
 
-        return redirect()->route('visits.index')
+        return redirect()->route('site_visits.index')
             ->with('success', 'Site visit logged successfully.');
     }
 

@@ -75,11 +75,11 @@ class TicketController extends Controller
             ->orderBy('terminal_id')
             ->get();
 
-        $technicians = Employee::whereHas('role', function($query) {
-            $query->whereRaw('LOWER(name) = ?', ['technician']);
-        })->select('id', 'first_name', 'last_name')
-        ->orderBy('first_name')
-        ->get();
+        // Load all active employees for assignment dropdown (not just exact-match technicians)
+        $technicians = Employee::where('status', 'active')
+            ->select('id', 'first_name', 'last_name')
+            ->orderBy('first_name')
+            ->get();
 
         return view('tickets.index', compact('tickets', 'stats', 'posTerminals', 'technicians'));
     }
@@ -147,13 +147,17 @@ class TicketController extends Controller
 
         // Notify the directly-assigned employee (if any)
         if (!empty($validated['assigned_to'])) {
-            $assignee = \App\Models\Employee::find($validated['assigned_to']);
-            $assignee?->notify(new SystemNotification(
-                "New ticket assigned to you",
-                "Ticket #{$ticket->ticket_id}: {$ticket->title}",
-                'ticket',
-                route('tickets.show', $ticket)
-            ));
+            try {
+                $assignee = \App\Models\Employee::find($validated['assigned_to']);
+                $assignee?->notify(new SystemNotification(
+                    "New ticket assigned to you",
+                    "Ticket #{$ticket->ticket_id}: {$ticket->title}",
+                    'ticket',
+                    route('tickets.show', $ticket)
+                ));
+            } catch (\Throwable $e) {
+                // Notification failure should not block ticket creation
+            }
         }
 
         if ($request->expectsJson()) {
@@ -183,11 +187,10 @@ class TicketController extends Controller
             ->orderBy('terminal_id')
             ->get();
 
-        $technicians = Employee::whereHas('role', function($query) {
-            $query->whereRaw('LOWER(name) = ?', ['technician']);
-        })->select('id', 'first_name', 'last_name')
-        ->orderBy('first_name')
-        ->get();
+        $technicians = Employee::where('status', 'active')
+            ->select('id', 'first_name', 'last_name')
+            ->orderBy('first_name')
+            ->get();
 
         $clients = Client::select('id', 'company_name')
             ->where('status', 'active')
@@ -285,14 +288,18 @@ class TicketController extends Controller
         ActivityLog::log('status_changed', "Ticket #{$ticket->ticket_id} status: {$oldStatus} → {$validated['status']}", $ticket, ['status' => $oldStatus], ['status' => $validated['status']]);
 
         // Notify the ticket creator about the status change (if not the one making the change)
-        $creator = $ticket->technician;
-        if ($creator && $creator->id !== auth()->id()) {
-            $creator->notify(new SystemNotification(
-                "Ticket status updated",
-                "#{$ticket->ticket_id} ({$ticket->title}) is now: " . ucfirst(str_replace('_', ' ', $validated['status'])),
-                'ticket',
-                route('tickets.show', $ticket)
-            ));
+        try {
+            $creator = $ticket->technician;
+            if ($creator && $creator->id !== auth()->id()) {
+                $creator->notify(new SystemNotification(
+                    "Ticket status updated",
+                    "#{$ticket->ticket_id} ({$ticket->title}) is now: " . ucfirst(str_replace('_', ' ', $validated['status'])),
+                    'ticket',
+                    route('tickets.show', $ticket)
+                ));
+            }
+        } catch (\Throwable $e) {
+            // Notification failure should not block status update
         }
 
         if ($request->expectsJson()) {

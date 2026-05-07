@@ -363,7 +363,7 @@ class BusinessLicenseController extends Controller
     public function expiring(Request $request)
     {
         $direction = $request->get('direction', 'company_held');
-        (int)$days = $request->get('days', 30);
+        $days = (int) $request->get('days', 30);
 
         $licenses = BusinessLicense::where('license_direction', $direction)
             ->expiringSoon($days)
