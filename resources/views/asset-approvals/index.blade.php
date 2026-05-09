@@ -166,40 +166,50 @@
     </div>
 
 <!-- Modals for Quick Approve and Reject -->
-<div id="quickApproveModal" class="modal">
-    <div class="modal-content">
-        <h3>✅ Quick Approve Request</h3>
-        <form id="quickApproveForm" method="POST">
-            @csrf
-            <input type="hidden" name="request_id" id="approveRequestId">
-            <div>
-                <label>Approval Notes (Optional)</label>
-                <textarea name="approval_notes" rows="3" placeholder="Any notes for the requester..." class="ui-input"></textarea>
-            </div>
-            <div class="modal-actions">
-                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
-                <button type="submit" class="btn-primary">Approve Request</button>
-            </div>
-        </form>
+<div id="quickApproveModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="ui-card w-full max-w-md">
+        <div class="ui-card-header" style="background:#1a3a5c;">
+            <h3 class="text-sm font-semibold text-white m-0">&#x2705; Quick Approve Request</h3>
+            <button onclick="closeModal()" class="text-white/70 hover:text-white text-xl leading-none border-0 bg-transparent cursor-pointer">&times;</button>
+        </div>
+        <div class="ui-card-body">
+            <form id="quickApproveForm" method="POST">
+                @csrf
+                <input type="hidden" name="request_id" id="approveRequestId">
+                <div class="mb-4">
+                    <label class="ui-label">Approval Notes <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+                    <textarea name="approval_notes" rows="3" class="ui-textarea" placeholder="Any notes for the requester..."></textarea>
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="btn-primary flex-1">Approve Request</button>
+                    <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div id="quickRejectModal" class="modal">
-    <div class="modal-content">
-        <h3>❌ Reject Request</h3>
-        <form id="quickRejectForm" method="POST">
-            @csrf
-            <input type="hidden" name="request_id" id="rejectRequestId">
-            <div>
-                <label>Rejection Reason *</label>
-                <textarea name="rejection_reason" rows="4" required placeholder="Please explain why this request is being rejected..." class="ui-input"></textarea>
-                <div class="note">This reason will be visible to the employee</div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
-                <button type="submit" class="btn-danger">Reject Request</button>
-            </div>
-        </form>
+<div id="quickRejectModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="ui-card w-full max-w-md">
+        <div class="ui-card-header" style="background:#1a3a5c;">
+            <h3 class="text-sm font-semibold text-white m-0">&#x274C; Reject Request</h3>
+            <button onclick="closeModal()" class="text-white/70 hover:text-white text-xl leading-none border-0 bg-transparent cursor-pointer">&times;</button>
+        </div>
+        <div class="ui-card-body">
+            <form id="quickRejectForm" method="POST">
+                @csrf
+                <input type="hidden" name="request_id" id="rejectRequestId">
+                <div class="mb-4">
+                    <label class="ui-label">Rejection Reason <span class="text-red-500">*</span></label>
+                    <textarea name="rejection_reason" rows="4" required class="ui-textarea" placeholder="Please explain why this request is being rejected..."></textarea>
+                    <p class="text-xs text-gray-400 mt-1">This reason will be visible to the employee.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="btn-danger flex-1">Reject Request</button>
+                    <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -211,25 +221,25 @@ const BASE = (document.querySelector('meta[name="app-base-url"]')?.content || ''
 function showQuickApprove(requestId) {
     document.getElementById('approveRequestId').value = requestId;
     document.getElementById('quickApproveForm').action = `${BASE}/asset-approvals/${requestId}/approve`;
-    document.getElementById('quickApproveModal').style.display = 'block';
+    document.getElementById('quickApproveModal').classList.remove('hidden');
 }
 
 function showQuickReject(requestId) {
     document.getElementById('rejectRequestId').value = requestId;
     document.getElementById('quickRejectForm').action = `${BASE}/asset-approvals/${requestId}/reject`;
-    document.getElementById('quickRejectModal').style.display = 'block';
+    document.getElementById('quickRejectModal').classList.remove('hidden');
 }
 
-// Close modal + reset
 function closeModal() {
-    document.getElementById('quickApproveModal').style.display = 'none';
-    document.getElementById('quickRejectModal').style.display = 'none';
+    document.getElementById('quickApproveModal').classList.add('hidden');
+    document.getElementById('quickRejectModal').classList.add('hidden');
     document.getElementById('quickApproveForm').reset();
     document.getElementById('quickRejectForm').reset();
 }
 
-// Backdrop & ESC close
-document.addEventListener('click', e => { if (e.target.classList.contains('modal')) closeModal(); });
+document.addEventListener('click', e => {
+    if (e.target.id === 'quickApproveModal' || e.target.id === 'quickRejectModal') closeModal();
+});
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 // Optional: prevent double submit
