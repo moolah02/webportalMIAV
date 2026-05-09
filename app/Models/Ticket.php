@@ -151,15 +151,20 @@ class Ticket extends Model
     public static function generateTicketId()
     {
         $prefix = 'TKT-' . date('Y') . '-';
-        $lastTicket = self::where('ticket_id', 'like', $prefix . '%')
-            ->orderBy('ticket_id', 'desc')
-            ->first();
 
-        if ($lastTicket) {
-            $lastNumber = intval(substr($lastTicket->ticket_id, -3));
-            $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '001';
+        try {
+            $lastTicket = self::where('ticket_id', 'like', $prefix . '%')
+                ->orderBy('ticket_id', 'desc')
+                ->first();
+
+            if ($lastTicket) {
+                $lastNumber = intval(substr($lastTicket->ticket_id, -3));
+                $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+            } else {
+                $newNumber = '001';
+            }
+        } catch (\Throwable $e) {
+            $newNumber = str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
         }
 
         return $prefix . $newNumber;

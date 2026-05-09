@@ -129,7 +129,7 @@
                     <div class="flex items-start justify-between p-2.5 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
                         <div class="min-w-0">
                             <div class="text-sm font-semibold text-gray-800">{{ $request->request_number }}</div>
-                            <div class="text-xs text-gray-500">@if($request->business_justification){{ Str::limit($request->business_justification, 40) }}@endif@if($request->total_estimated_cost) &middot; ${{ number_format($request->total_estimated_cost, 0) }}@endif</div>
+                            <div class="text-xs text-gray-500">@if($request->business_justification){{ Str::limit($request->business_justification, 40) }}@endif @if($request->total_estimated_cost) &middot; ${{ number_format($request->total_estimated_cost, 0) }}@endif</div>
                         </div>
                         <div class="flex flex-col gap-1 items-end ml-2 flex-shrink-0">
                             @php $rBadge = match($request->status) { 'approved' => 'badge-green', 'rejected' => 'badge-red', 'pending' => 'badge-yellow', 'fulfilled' => 'badge-blue', default => 'badge-gray' }; @endphp

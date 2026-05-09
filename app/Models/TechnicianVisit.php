@@ -193,15 +193,21 @@ class TechnicianVisit extends Model
     public static function generateVisitId()
     {
         $prefix = 'VIS-' . date('Ymd') . '-';
-        $lastVisit = self::where('visit_id', 'like', $prefix . '%')
-            ->orderBy('visit_id', 'desc')
-            ->first();
 
-        if ($lastVisit) {
-            $lastNumber = intval(substr($lastVisit->visit_id, -3));
-            $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '001';
+        try {
+            $lastVisit = self::where('visit_id', 'like', $prefix . '%')
+                ->orderBy('visit_id', 'desc')
+                ->first();
+
+            if ($lastVisit) {
+                $lastNumber = intval(substr($lastVisit->visit_id, -3));
+                $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+            } else {
+                $newNumber = '001';
+            }
+        } catch (\Throwable $e) {
+            // visit_id column may not exist on this DB instance yet
+            $newNumber = str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
         }
 
         return $prefix . $newNumber;

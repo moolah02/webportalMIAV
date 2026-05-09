@@ -158,272 +158,99 @@
                     </tr>
                 </thead>
                 <tbody id="visitsTableBody">
-                    <tr data-visit-id="2">
+                    @forelse($visits as $visit)
+                    <tr data-visit-id="{{ $visit->id }}">
                         <td>
-                            <strong>VIS-20250826-002</strong>
+                            <strong>{{ $visit->visit_id ?? '#'.$visit->id }}</strong>
                         </td>
                         <td>
-                            <div style="font-weight: 500;">Aug 26</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">12:57</div>
+                            <div style="font-weight: 500;">{{ optional($visit->visit_date)->format('M j') ?? optional($visit->started_at)->format('M j') ?? '—' }}</div>
+                            <div style="font-size: 0.75rem; color: #4b5563;">{{ optional($visit->visit_date)->format('H:i') ?? optional($visit->started_at)->format('H:i') ?? '' }}</div>
                         </td>
                         <td>
-                            <div style="font-weight: 500;">John Mavhu</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">+263771234567</div>
+                            @if($visit->technician)
+                            <div style="font-weight: 500;">{{ $visit->technician->first_name }} {{ $visit->technician->last_name }}</div>
+                            <div style="font-size: 0.75rem; color: #4b5563;">{{ $visit->technician->phone ?? '' }}</div>
+                            @else
+                            <span style="color: #9ca3af; font-size: 0.75rem;">Unassigned</span>
+                            @endif
                         </td>
                         <td>
-                            <div style="font-weight: 500;">14, 25</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">2 terminals</div>
+                            @if($visit->posTerminal)
+                            <div style="font-weight: 500;">{{ $visit->posTerminal->terminal_id }}</div>
+                            @else
+                            <span style="color: #9ca3af; font-size: 0.75rem;">N/A</span>
+                            @endif
                         </td>
                         <td>
-                            <div style="font-weight: 500;">ACME Stores</div>
+                            @if($visit->posTerminal)
+                            <div style="font-weight: 500;">{{ $visit->posTerminal->merchant_name }}</div>
                             <div style="font-size: 0.75rem; color: #4b5563; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                Harare Central Business District
+                                {{ $visit->posTerminal->physical_address ?? '' }}
+                            </div>
+                            @else
+                            <span style="color: #9ca3af; font-size: 0.75rem;">N/A</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($visit->posTerminal && $visit->posTerminal->region)
+                            <span class="status-badge badge-info">{{ $visit->posTerminal->region->name }}</span>
+                            @else
+                            <span style="color: #9ca3af; font-size: 0.75rem;">—</span>
+                            @endif
+                        </td>
+                        <td>
+                            @php
+                                $ts = $visit->terminal_status_during_visit ?? $visit->terminal_status;
+                                $tsClass = match($ts) {
+                                    'working', 'seen_working' => 'badge-success',
+                                    'not_working', 'seen_issues' => 'badge-warning',
+                                    'not_found', 'not_seen'   => 'badge-danger',
+                                    default => 'badge-info',
+                                };
+                                $tsLabel = match($ts) {
+                                    'working', 'seen_working'  => 'Working',
+                                    'not_working', 'seen_issues' => 'Issues',
+                                    'needs_maintenance'        => 'Needs Maint.',
+                                    'not_found', 'not_seen'    => 'Not Seen',
+                                    default => ucwords(str_replace('_', ' ', $ts ?? 'Unknown')),
+                                };
+                            @endphp
+                            <span class="status-badge {{ $tsClass }}">{{ $tsLabel }}</span>
+                        </td>
+                        <td>
+                            @if($visit->duration_minutes)
+                            <span style="color: #4b5563; font-size: 0.75rem;">{{ floor($visit->duration_minutes / 60) }}h {{ $visit->duration_minutes % 60 }}m</span>
+                            @else
+                            <span style="color: #9ca3af; font-size: 0.75rem;">N/A</span>
+                            @endif
+                        </td>
+                        <td>
+                            @php $issuesCount = is_array($visit->issues_found) ? count($visit->issues_found) : 0; @endphp
+                            @if($issuesCount > 0)
+                            <span class="status-badge badge-warning">{{ $issuesCount }}</span>
+                            @else
+                            <span style="color: #9ca3af; font-size: 0.75rem;">None</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <button class="action-btn" onclick="viewVisitDetails({{ $visit->id }})" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
                         </td>
-                        <td>
-                            <span class="status-badge badge-info">Central Region</span>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-warning">Issues</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">2h 30m</span>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-warning">1</span>
-                        </td>
-                        <td>
-                            <a href="/visits/2" class="btn-secondary btn-sm">View</a>
-                        </td>
                     </tr>
-                    <tr data-visit-id="3">
-                        <td>
-                            <strong>VIS-20250826-003</strong>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Aug 26</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">12:57</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Sarah Mutendi</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">+263712345678</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">14, 25</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">2 terminals</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">ACME Stores</div>
-                            <div style="font-size: 0.75rem; color: #4b5563; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                Westgate Shopping Centre
+                    @empty
+                    <tr>
+                        <td colspan="10">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <div class="empty-state-msg">No visits found for the selected period</div>
                             </div>
                         </td>
-                        <td>
-                            <span class="status-badge badge-info">West Region</span>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-warning">Issues</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">1h 45m</span>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-warning">1</span>
-                        </td>
-                        <td>
-                            <a href="/visits/3" class="btn-secondary btn-sm">View</a>
-                        </td>
                     </tr>
-                    <tr data-visit-id="4">
-                        <td>
-                            <strong>VIS-20250826-004</strong>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Aug 26</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">12:57</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Sarah Mutendi</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">+263712345678</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">14</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">1 terminal</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">TM Pick n' Pay</div>
-                            <div style="font-size: 0.75rem; color: #4b5563; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                Sam Levy's Village
-                            </div>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-info">North Region</span>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-success">Working</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">1h 15m</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">None</span>
-                        </td>
-                        <td>
-                            <a href="/visits/4" class="btn-secondary btn-sm">View</a>
-                        </td>
-                    </tr>
-                    <tr data-visit-id="5">
-                        <td>
-                            <strong>VIS-20250826-005</strong>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Aug 26</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">12:57</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Sarah Mutendi</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">+263712345678</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">14</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">1 terminal</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">TM Pick n' Pay</div>
-                            <div style="font-size: 0.75rem; color: #4b5563; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                Eastgate Mall
-                            </div>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-info">East Region</span>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-success">Working</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">0h 45m</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">None</span>
-                        </td>
-                        <td>
-                            <a href="/visits/5" class="btn-secondary btn-sm">View</a>
-                        </td>
-                    </tr>
-                    <tr data-visit-id="6">
-                        <td>
-                            <strong>VIS-20250826-006</strong>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Aug 26</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">12:57</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Mike Chikwanha</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">+263785123456</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">14</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">1 terminal</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">TM Pick n' Pay</div>
-                            <div style="font-size: 0.75rem; color: #4b5563; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                Borrowdale Village
-                            </div>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-info">North Region</span>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-success">Working</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">1h 00m</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">None</span>
-                        </td>
-                        <td>
-                            <a href="/visits/6" class="btn-secondary btn-sm">View</a>
-                        </td>
-                    </tr>
-                    <tr data-visit-id="7">
-                        <td>
-                            <strong>VIS-20250827-007</strong>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Aug 27</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">12:57</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Sarah Mutendi</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">+263712345678</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">88203567</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">1 terminal</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">CITY GROCERS LTD</div>
-                            <div style="font-size: 0.75rem; color: #4b5563; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                Avondale Shopping Centre
-                            </div>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-info">Central Region</span>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-success">Working</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">1h 20m</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">None</span>
-                        </td>
-                        <td>
-                            <a href="/visits/7" class="btn-secondary btn-sm">View</a>
-                        </td>
-                    </tr>
-                    <tr data-visit-id="8">
-                        <td>
-                            <strong>VIS-20250827-008</strong>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Aug 27</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">12:57</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">Sarah Mutendi</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">+263712345678</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">88203567</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">1 terminal</div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">CITY GROCERS LTD</div>
-                            <div style="font-size: 0.75rem; color: #4b5563; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                Highlands Shopping Centre
-                            </div>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-info">South Region</span>
-                        </td>
-                        <td>
-                            <span class="status-badge badge-success">Working</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">1h 10m</span>
-                        </td>
-                        <td>
-                            <span style="color: #4b5563; font-size: 0.75rem;">None</span>
-                        </td>
-                        <td>
-                            <a href="/visits/8" class="btn-secondary btn-sm">View</a>
-                        </td>
-                    </tr>
+                    @endforelse
                 </tbody>
             </table>
 

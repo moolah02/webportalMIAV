@@ -580,6 +580,7 @@
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify(formData)
@@ -587,10 +588,18 @@
 
             if (response.ok) {
                 closeTicketModal();
-                window.location.reload(); // Refresh page to show updated data
+                window.location.reload();
             } else {
-                const errorData = await response.json();
-                alert('Error saving ticket: ' + (errorData.message || 'Unknown error'));
+                let message = 'Unknown error';
+                try {
+                    const errorData = await response.json();
+                    if (errorData.errors) {
+                        message = Object.values(errorData.errors).flat().join('\n');
+                    } else {
+                        message = errorData.message || message;
+                    }
+                } catch (_) {}
+                alert('Error saving ticket: ' + message);
             }
         } catch (error) {
             console.error('Error:', error);
