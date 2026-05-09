@@ -1009,4 +1009,116 @@ public function getAssignmentData(AssetAssignment $assignment)
         return response()->json(['success' => false, 'message' => 'Failed to transfer asset.'], 500);
     }
 }
+
+    public function showImport()
+    {
+        return view('assets.import');
+    }
+
+    public function importTemplate()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $headers = ['name','description','category','brand','model','sku','barcode','unit_price','currency','stock_quantity','min_stock_level','status','is_requestable','requires_approval','notes'];
+        foreach ($headers as $col => $h) {
+            $sheet->setCellValueByColumnAndRow($col + 1, 1, $h);
+            $sheet->getColumnDimensionByColumn($col + 1)->setWidth(18);
+        }
+        // Style header row
+        $sheet->getStyle('A1:O1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:O1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FF1a3a5c');
+        $sheet->getStyle('A1:O1')->getFont()->getColor()->setARGB('FFFFFFFF');
+
+        // Example row
+        $sheet->fromArray(['Laptop','14-inch business laptop','IT Equipment','Dell','Latitude 5540','DELL-LAT-001','','1200.00','USD','5','2','active','1','0',''], 2, 'A', 2);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'assets_import_template.xlsx';
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        $file = $request->file('file');
+        $ext  = strtolower($file->getClientOriginalExtension());
+
+        try {
+            if ($ext === 'csv') {
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+            } else {
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+            }
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($file->getRealPath());
+            $rows = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Could not read file: ' . $e->getMessage());
+        }
+
+        if (count($rows) < 2) {
+            return back()->with('error', 'The file has no data rows.');
+        }
+
+        // Map header row to column indices
+        $headers = array_map('strtolower', array_map('trim', $rows[0]));
+        $col     = array_flip($headers);
+
+        $imported = 0;
+        $skipped  = [];
+
+        DB::beginTransaction();
+        try {
+            foreach (array_slice($rows, 1) as $i => $row) {
+                $rowNum = $i + 2;
+                $name   = trim($row[$col['name'] ?? -1] ?? '');
+
+                if ($name === '') {
+                    $skipped[] = "Row {$rowNum}: missing name";
+                    continue;
+                }
+
+                Asset::create([
+                    'name'             => $name,
+                    'description'      => $row[$col['description'] ?? -1] ?? null,
+                    'category'         => $row[$col['category'] ?? -1] ?? null,
+                    'brand'            => $row[$col['brand'] ?? -1] ?? null,
+                    'model'            => $row[$col['model'] ?? -1] ?? null,
+                    'sku'              => $row[$col['sku'] ?? -1] ?? null,
+                    'barcode'          => $row[$col['barcode'] ?? -1] ?? null,
+                    'unit_price'       => is_numeric($row[$col['unit_price'] ?? -1] ?? '') ? $row[$col['unit_price']] : null,
+                    'currency'         => $row[$col['currency'] ?? -1] ?? 'USD',
+                    'stock_quantity'   => (int) ($row[$col['stock_quantity'] ?? -1] ?? 0),
+                    'min_stock_level'  => (int) ($row[$col['min_stock_level'] ?? -1] ?? 0),
+                    'status'           => $row[$col['status'] ?? -1] ?? 'active',
+                    'is_requestable'   => filter_var($row[$col['is_requestable'] ?? -1] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    'requires_approval'=> filter_var($row[$col['requires_approval'] ?? -1] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    'notes'            => $row[$col['notes'] ?? -1] ?? null,
+                ]);
+                $imported++;
+            }
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->with('error', 'Import failed at a row: ' . $e->getMessage());
+        }
+
+        ActivityLog::log('created', "Bulk imported {$imported} assets via Excel");
+
+        $msg = "{$imported} asset(s) imported successfully.";
+        if ($skipped) {
+            $msg .= ' Skipped: ' . implode('; ', $skipped);
+        }
+
+        return redirect()->route('assets.index')->with('success', $msg);
+    }
 }

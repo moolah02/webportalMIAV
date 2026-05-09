@@ -42,32 +42,51 @@
             </div>
             <div class="ui-card-body grid grid-cols-1 sm:grid-cols-2 gap-5">
 
+                {{-- Technician: locked to self for non-admins, full dropdown for admins --}}
                 <div>
                     <label class="ui-label">Technician <span class="text-red-500">*</span></label>
-                    <select name="technician_id" required class="ui-select">
-                        <option value="">— Select technician —</option>
-                        @foreach($technicians as $tech)
-                            <option value="{{ $tech->id }}" {{ old('technician_id') == $tech->id ? 'selected' : '' }}>
-                                {{ $tech->first_name }} {{ $tech->last_name }}
-                                @if($tech->employee_number)({{ $tech->employee_number }})@endif
-                            </option>
-                        @endforeach
-                    </select>
+                    @if($isAdmin)
+                        <select name="technician_id" required class="ui-select">
+                            <option value="">— Select technician —</option>
+                            @foreach($technicians as $tech)
+                                <option value="{{ $tech->id }}" {{ old('technician_id', $me->id) == $tech->id ? 'selected' : '' }}>
+                                    {{ $tech->first_name }} {{ $tech->last_name }}
+                                    @if($tech->employee_number)({{ $tech->employee_number }})@endif
+                                </option>
+                            @endforeach
+                        </select>
+                    @else
+                        <div class="ui-input bg-gray-50 text-gray-700 flex items-center gap-2 cursor-default select-none">
+                            <span class="w-7 h-7 rounded-full bg-[#1a3a5c] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                                {{ strtoupper(substr($me->first_name,0,1).substr($me->last_name,0,1)) }}
+                            </span>
+                            {{ $me->first_name }} {{ $me->last_name }}
+                            @if($me->employee_number)<span class="text-gray-400 text-xs">({{ $me->employee_number }})</span>@endif
+                        </div>
+                        <input type="hidden" name="technician_id" value="{{ $me->id }}">
+                        <p class="text-xs text-gray-400 mt-1">Logging as yourself</p>
+                    @endif
                     @error('technician_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
                     <label class="ui-label">POS Terminal <span class="text-red-500">*</span></label>
-                    <select name="pos_terminal_id" id="pos_terminal_id" required class="ui-select">
-                        <option value="">— Select terminal —</option>
-                        @foreach($terminals as $term)
-                            <option value="{{ $term->id }}" {{ old('pos_terminal_id') == $term->id ? 'selected' : '' }}>
-                                {{ $term->terminal_id }}
-                                @if($term->merchant_name) — {{ $term->merchant_name }}@endif
-                                @if($term->client) ({{ $term->client->company_name }})@endif
-                            </option>
-                        @endforeach
-                    </select>
+                    @if(!$isAdmin && $terminals->isEmpty())
+                        <div class="ui-input bg-gray-50 text-gray-400 text-sm">No terminals linked to your active assignments</div>
+                        <input type="hidden" name="pos_terminal_id" value="">
+                    @else
+                        <select name="pos_terminal_id" id="pos_terminal_id" required class="ui-select">
+                            <option value="">— Select terminal —</option>
+                            @foreach($terminals as $term)
+                                <option value="{{ $term->id }}" {{ old('pos_terminal_id') == $term->id ? 'selected' : '' }}>
+                                    {{ $term->terminal_id }}
+                                    @if($term->merchant_name) — {{ $term->merchant_name }}@endif
+                                    @if($term->client) ({{ $term->client->company_name }})@endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @if(!$isAdmin)<p class="text-xs text-gray-400 mt-1">Terminals from your active assignments</p>@endif
+                    @endif
                     @error('pos_terminal_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
@@ -81,6 +100,9 @@
                             </option>
                         @endforeach
                     </select>
+                    @if(!$isAdmin && $assignments->isEmpty())
+                        <p class="text-xs text-amber-600 mt-1">You have no active assignments.</p>
+                    @endif
                     @error('job_assignment_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
@@ -163,9 +185,9 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const searchable = ['technician_id', 'pos_terminal_id', 'job_assignment_id'];
-    searchable.forEach(function (name) {
-        const el = document.querySelector('[name="' + name + '"]');
+    // Only enhance <select> elements (skip hidden inputs for locked technician)
+    ['technician_id', 'pos_terminal_id', 'job_assignment_id'].forEach(function (name) {
+        const el = document.querySelector('select[name="' + name + '"]');
         if (el) {
             new TomSelect(el, {
                 allowEmptyOption: true,

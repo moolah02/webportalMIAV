@@ -67,6 +67,7 @@
         </select>
     </div>
     <a href="{{ route('assets.export') }}" class="btn-secondary ml-auto">&#x1F4CA; Export CSV</a>
+    <a href="{{ route('assets.import-form') }}" class="btn-secondary">&#x1F4C2; Bulk Import</a>
     <a href="{{ route('assets.create') }}" class="btn-primary">+ Add New Asset</a>
 </div>
 

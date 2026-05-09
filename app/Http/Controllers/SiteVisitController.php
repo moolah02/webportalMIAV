@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Auth;
 
 class SiteVisitController extends Controller
 {
@@ -265,26 +266,40 @@ class SiteVisitController extends Controller
      */
     public function create()
     {
-        $technicians = Employee::whereHas('roles', function ($q) {
-            $q->whereIn('name', ['technician', 'field_technician', 'Technician']);
-        })->orWhere('department', 'like', '%tech%')
-          ->orderBy('first_name')
-          ->get(['id', 'first_name', 'last_name', 'employee_number']);
+        $me      = Auth::user();
+        $isAdmin = $me->isAdmin();
 
-        if ($technicians->isEmpty()) {
-            $technicians = Employee::orderBy('first_name')->get(['id', 'first_name', 'last_name', 'employee_number']);
+        if ($isAdmin) {
+            // Admins see all active employees and all active assignments
+            $technicians = Employee::orderBy('first_name')
+                ->get(['id', 'first_name', 'last_name', 'employee_number']);
+
+            $assignments = JobAssignment::whereIn('status', ['pending', 'in_progress', 'assigned'])
+                ->latest()->limit(200)
+                ->get(['id', 'assignment_id', 'status', 'pos_terminals']);
+
+            $terminals = PosTerminal::with('client')
+                ->orderBy('terminal_id')
+                ->get(['id', 'terminal_id', 'merchant_name', 'client_id']);
+        } else {
+            // Regular users: technician locked to self, only their assignments + terminals
+            $technicians = collect([$me]);
+
+            $assignments = JobAssignment::where('technician_id', $me->id)
+                ->whereIn('status', ['pending', 'in_progress', 'assigned'])
+                ->latest()
+                ->get(['id', 'assignment_id', 'status', 'pos_terminals']);
+
+            $terminalIds = $assignments
+                ->flatMap(fn($a) => is_array($a->pos_terminals) ? $a->pos_terminals : [])
+                ->unique()->values();
+
+            $terminals = $terminalIds->isNotEmpty()
+                ? PosTerminal::with('client')->whereIn('id', $terminalIds)->orderBy('terminal_id')->get(['id', 'terminal_id', 'merchant_name', 'client_id'])
+                : collect();
         }
 
-        $terminals = PosTerminal::with('client')
-            ->orderBy('terminal_id')
-            ->get(['id', 'terminal_id', 'merchant_name', 'client_id']);
-
-        $assignments = JobAssignment::whereIn('status', ['pending', 'in_progress', 'assigned'])
-            ->latest()
-            ->limit(100)
-            ->get(['id', 'assignment_id', 'status']);
-
-        return view('visits.create', compact('technicians', 'terminals', 'assignments'));
+        return view('visits.create', compact('me', 'isAdmin', 'technicians', 'terminals', 'assignments'));
     }
 
     /**

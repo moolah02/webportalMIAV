@@ -341,6 +341,19 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->middleware('permission:manage_assets,all')
             ->name('store');
 
+        // Bulk Excel import
+        Route::get('/import/form', [AssetController::class, 'showImport'])
+            ->middleware('permission:manage_assets,all')
+            ->name('import-form');
+
+        Route::post('/import', [AssetController::class, 'import'])
+            ->middleware('permission:manage_assets,all')
+            ->name('import');
+
+        Route::get('/import/template', [AssetController::class, 'importTemplate'])
+            ->middleware('permission:manage_assets,all')
+            ->name('import-template');
+
         Route::get('/{asset}', [AssetController::class, 'show'])
             ->middleware('permission:view_assets,manage_assets,all')
             ->name('show');
