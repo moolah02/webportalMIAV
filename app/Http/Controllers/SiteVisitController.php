@@ -345,12 +345,97 @@ class SiteVisitController extends Controller
     }
 
     /**
+     * All completed / closed visits.
+     * GET /site-visits/completed
+     */
+    public function completedVisits(Request $request)
+    {
+        $query = TechnicianVisit::with([
+                'technician:id,first_name,last_name',
+                'posTerminal:id,terminal_id,merchant_name,physical_address,client_id',
+                'posTerminal.client:id,company_name',
+            ])
+            ->where(function ($q) {
+                $q->where('status', 'closed')
+                  ->orWhere('outcome', 'completed');
+            });
+
+        // Filters
+        if ($request->filled('technician_id')) {
+            $query->where('technician_id', $request->technician_id);
+        }
+        if ($request->filled('outcome')) {
+            $query->where('outcome', $request->outcome);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('started_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('started_at', '<=', $request->date_to);
+        }
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('visit_id', 'like', "%{$s}%")
+                  ->orWhereHas('posTerminal', fn($q2) =>
+                      $q2->where('terminal_id', 'like', "%{$s}%")
+                         ->orWhere('merchant_name', 'like', "%{$s}%")
+                  )
+                  ->orWhereHas('technician', fn($q2) =>
+                      $q2->where('first_name', 'like', "%{$s}%")
+                         ->orWhere('last_name', 'like', "%{$s}%")
+                  );
+            });
+        }
+
+        $visits = $query->latest('started_at')->paginate(25)->withQueryString();
+
+        $stats = [
+            'total'        => TechnicianVisit::where('status', 'closed')->orWhere('outcome', 'completed')->count(),
+            'this_month'   => TechnicianVisit::where(fn($q) => $q->where('status', 'closed')->orWhere('outcome', 'completed'))
+                                ->whereMonth('started_at', now()->month)
+                                ->whereYear('started_at', now()->year)
+                                ->count(),
+            'avg_duration' => (int) TechnicianVisit::where('status', 'closed')
+                                ->whereNotNull('duration_minutes')
+                                ->avg('duration_minutes'),
+            'outcomes'     => TechnicianVisit::where('status', 'closed')
+                                ->selectRaw('outcome, count(*) as cnt')
+                                ->groupBy('outcome')
+                                ->pluck('cnt', 'outcome'),
+        ];
+
+        $technicians = Employee::orderBy('first_name')->get(['id', 'first_name', 'last_name']);
+
+        return view('site_visits.completed', compact('visits', 'stats', 'technicians'));
+    }
+
+    /**
      * Show a single visit
      */
     public function show(TechnicianVisit $visit)
     {
-        $visit->load(['technician', 'posTerminal.client', 'attachments']);
-        return view('site_visits.show', compact('visit'));
+        $visit->load([
+            'technician',
+            'posTerminal.client',
+            'posTerminal.region',
+            'attachments',
+            'jobAssignment.project',
+            'jobAssignment.client',
+        ]);
+
+        // History: other visits to the same terminal
+        $history = collect();
+        if ($visit->pos_terminal_id) {
+            $history = TechnicianVisit::with('technician:id,first_name,last_name')
+                ->where('pos_terminal_id', $visit->pos_terminal_id)
+                ->where('id', '!=', $visit->id)
+                ->latest('started_at')
+                ->limit(10)
+                ->get();
+        }
+
+        return view('site_visits.show', compact('visit', 'history'));
     }
 
     /**

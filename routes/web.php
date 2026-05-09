@@ -849,6 +849,10 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
             ->middleware('permission:manage_visits,all')
             ->name('storeManual');
 
+        Route::get('/completed', [SiteVisitController::class, 'completedVisits'])
+            ->middleware('permission:view_visits,manage_visits,all')
+            ->name('completed');
+
         Route::get('/{visit}', [SiteVisitController::class, 'show'])
             ->middleware('permission:view_visits,manage_visits,all')
             ->name('show');
