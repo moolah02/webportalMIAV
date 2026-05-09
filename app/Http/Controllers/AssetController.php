@@ -1021,19 +1021,28 @@ public function getAssignmentData(AssetAssignment $assignment)
         $sheet = $spreadsheet->getActiveSheet();
 
         $headers = ['name','description','category','brand','model','sku','barcode','unit_price','currency','stock_quantity','min_stock_level','status','is_requestable','requires_approval','notes'];
-        foreach ($headers as $col => $h) {
-            $sheet->setCellValueByColumnAndRow($col + 1, 1, $h);
-            $sheet->getColumnDimensionByColumn($col + 1)->setWidth(18);
+        $lastCol = 'A';
+
+        foreach ($headers as $i => $h) {
+            $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i + 1);
+            $sheet->setCellValue($col . '1', $h);
+            $sheet->getColumnDimension($col)->setWidth(18);
+            $lastCol = $col;
         }
-        // Style header row
-        $sheet->getStyle('A1:O1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:O1')->getFill()
+
+        $headerRange = 'A1:' . $lastCol . '1';
+        $sheet->getStyle($headerRange)->getFont()->setBold(true);
+        $sheet->getStyle($headerRange)->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FF1a3a5c');
-        $sheet->getStyle('A1:O1')->getFont()->getColor()->setARGB('FFFFFFFF');
+        $sheet->getStyle($headerRange)->getFont()->getColor()->setARGB('FFFFFFFF');
 
         // Example row
-        $sheet->fromArray(['Laptop','14-inch business laptop','IT Equipment','Dell','Latitude 5540','DELL-LAT-001','','1200.00','USD','5','2','active','1','0',''], 2, 'A', 2);
+        $example = ['Laptop','14-inch business laptop','IT Equipment','Dell','Latitude 5540','DELL-LAT-001','','1200.00','USD','5','2','active','1','0',''];
+        foreach ($example as $i => $val) {
+            $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i + 1);
+            $sheet->setCellValue($col . '2', $val);
+        }
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $filename = 'assets_import_template.xlsx';
