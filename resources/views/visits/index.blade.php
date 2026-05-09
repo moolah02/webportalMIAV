@@ -31,6 +31,12 @@
         <input type="date" name="dateTo" value="{{ request('dateTo') }}" class="ui-input w-36">
     </div>
     <div>
+        <label class="ui-label">Terminal</label>
+        <input id="terminal" name="terminal" value="{{ request('terminal') }}" class="ui-input w-44"
+               placeholder="Search terminal ID..." list="terminal-list" autocomplete="off">
+        <datalist id="terminal-list"></datalist>
+    </div>
+    <div>
         <label class="ui-label">Keywords</label>
         <input type="text" name="q" value="{{ request('q') }}" class="ui-input w-40" placeholder="Keywords...">
     </div>
@@ -169,14 +175,17 @@
   const form = document.getElementById('visits-filter');
   const merchantInput = document.getElementById('merchant');
   const employeeInput = document.getElementById('employee');
+  const terminalInput = document.getElementById('terminal');
   const merchantList = document.getElementById('merchant-list');
   const employeeList = document.getElementById('employee-list');
+  const terminalList = document.getElementById('terminal-list');
 
-  let mTimer = null, eTimer = null;
+  let mTimer = null, eTimer = null, tTimer = null;
 
   function debounce(key, fn, delay){
     if (key==='m') { clearTimeout(mTimer); mTimer=setTimeout(fn, delay); }
     if (key==='e') { clearTimeout(eTimer); eTimer=setTimeout(fn, delay); }
+    if (key==='t') { clearTimeout(tTimer); tTimer=setTimeout(fn, delay); }
   }
 
   function fetchJSON(url, cb){
@@ -197,6 +206,13 @@
     });
   }
 
+  function suggestTerminals(q){
+    if(q.length<1){ terminalList.innerHTML=''; return; }
+    fetchJSON(`{{ route('visits.suggest.terminals') }}?q=${encodeURIComponent(q)}`, items=>{
+      terminalList.innerHTML = items.map(v=>`<option value="${v}"></option>`).join('');
+    });
+  }
+
   merchantInput.addEventListener('input', (e)=>{
     const q = e.target.value || '';
     debounce('m', ()=>suggestMerchants(q), 150);
@@ -207,6 +223,12 @@
     const q = e.target.value || '';
     debounce('e', ()=>suggestEmployees(q), 150);
     debounce('e', ()=>form.requestSubmit(), 400);
+  });
+
+  terminalInput.addEventListener('input', (e)=>{
+    const q = e.target.value || '';
+    debounce('t', ()=>suggestTerminals(q), 150);
+    debounce('t', ()=>form.requestSubmit(), 400);
   });
 })();
 </script>

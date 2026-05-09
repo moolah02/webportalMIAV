@@ -36,10 +36,10 @@ class VisitController extends Controller
             });
         }
 
-        // Filter by terminal ID if provided
-        if ($request->filled('terminal_id')) {
-            $terminalId = $request->input('terminal_id');
-            $q->whereRaw("JSON_EXTRACT(terminal, '$.terminal_id') = ?", [$terminalId]);
+        // Filter by terminal ID (partial match against JSON terminal snapshot)
+        if ($request->filled('terminal')) {
+            $t = $request->input('terminal');
+            $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(terminal, '$.terminal_id')) LIKE ?", ["%{$t}%"]);
         }
 
         // Filter by terminal status if provided
@@ -163,6 +163,27 @@ public function posTerminal()
             ->values();
 
         return response()->json($statuses);
+    }
+
+    /**
+     * Autocomplete terminal IDs from the JSON terminal snapshot
+     */
+    public function suggestTerminals(Request $request)
+    {
+        $term = (string) $request->query('q', '');
+        if (mb_strlen($term) < 1) return response()->json([]);
+
+        $ids = Visit::query()
+            ->whereNotNull('terminal')
+            ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(terminal, '$.terminal_id')) LIKE ?", ["%{$term}%"])
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(terminal, '$.terminal_id')) as terminal_id")
+            ->distinct()
+            ->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(terminal, '$.terminal_id'))")
+            ->limit(10)
+            ->pluck('terminal_id')
+            ->filter();
+
+        return response()->json($ids->values());
     }
 
     /**

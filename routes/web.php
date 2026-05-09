@@ -1080,6 +1080,10 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::get('/suggest/employees', [VisitController::class, 'suggestEmployees'])
             ->middleware('permission:view_visits,all')
             ->name('suggest.employees');
+
+        Route::get('/suggest/terminals', [VisitController::class, 'suggestTerminals'])
+            ->middleware('permission:view_visits,all')
+            ->name('suggest.terminals');
     });
 
     // ==============================================
