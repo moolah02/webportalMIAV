@@ -1,404 +1,153 @@
 <?php
-// app/Http/Controllers/TechnicianReportsController.php
 
 namespace App\Http\Controllers;
 
-use App\Models\TechnicianVisit;
+use App\Models\Visit;
 use App\Models\Employee;
-use App\Models\Region;
-use App\Models\Client;
-use App\Models\PosTerminal;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class TechnicianReportsController extends Controller
 {
-    /**
-     * Display technician visit reports
-     */
     public function index(Request $request)
     {
-        // Check if TechnicianVisit table exists
-        if (!class_exists(\App\Models\TechnicianVisit::class)) {
-            return view('reports.technician-visits', [
-                'visits' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
-                'technicians' => Employee::select('id', 'first_name', 'last_name')->get(),
-                'regions' => Region::where('is_active', true)->get(),
-                'clients' => Client::orderBy('company_name', 'asc')->get(),
-                'stats' => [
-                    'total_visits' => 0,
-                    'completed_visits' => 0,
-                    'pending_visits' => 0,
-                    'total_terminals' => 0,
-                ],
-                'message' => 'Technician visits data is not available'
-            ]);
-        }
+        $query = $this->buildQuery($request);
+        $visits = $query->paginate(25)->withQueryString();
 
-        try {
-            // Get filter parameters
-            $dateRange = $request->get('date_range', 'last_7_days');
-            $technicianId = $request->get('technician_id');
-            $regionId = $request->get('region_id');
-            $terminalStatus = $request->get('terminal_status');
-            $clientId = $request->get('client_id');
-            $search = $request->get('search');
+        $stats = $this->calcStats();
+        $technicians = Employee::orderBy('first_name')->get(['id', 'first_name', 'last_name']);
 
-            // Build query with proper relationships
-            $query = TechnicianVisit::with([
-                'technician:id,first_name,last_name,phone',
-                'posTerminal:id,terminal_id,merchant_name,physical_address,region_id,client_id',
-                'posTerminal.region:id,name',
-                'posTerminal.client:id,company_name'
-
-            ]);
-
-        // Apply date range filter
-        $this->applyDateRangeFilter($query, $dateRange, $request);
-
-        // Apply other filters
-        if ($technicianId) {
-            $query->where('technician_id', $technicianId);
-        }
-
-        if ($regionId) {
-            $query->whereHas('posTerminal', function($q) use ($regionId) {
-                $q->where('region_id', $regionId);
-            });
-        }
-
-        if ($terminalStatus) {
-            $query->where('terminal_status', $terminalStatus);
-        }
-
-        if ($clientId) {
-            $query->whereHas('posTerminal', function($q) use ($clientId) {
-                $q->where('client_id', $clientId);
-            });
-        }
-
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('visit_id', 'like', "%{$search}%")
-                  ->orWhere('asset_id', 'like', "%{$search}%")
-                  ->orWhereHas('posTerminal', function($subQ) use ($search) {
-                      $subQ->where('terminal_id', 'like', "%{$search}%")
-                           ->orWhere('merchant_name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        // Get paginated results
-        $visits = $query->orderBy('visit_date', 'desc')->paginate(20);
-
-        // Add computed names to technicians
-        $visits->getCollection()->transform(function ($visit) {
-            if ($visit->technician) {
-                $visit->technician->name = $visit->technician->first_name . ' ' . $visit->technician->last_name;
-            }
-            return $visit;
-        });
-
-       $technicians = Employee::select('id', 'first_name', 'last_name')
-    ->orderBy('first_name')
-    ->get()
-    ->map(function($technician) {
-        $technician->name = $technician->first_name . ' ' . $technician->last_name;
-        return $technician;
-    });
-
-
-        $regions = Region::where('is_active', true)->orderBy('name')->get();
-        // This will work with your current database structure
-$clients = Client::orderBy('company_name', 'asc')->get();
-
-            // Calculate stats
-            $stats = $this->calculateStats($dateRange, $request);
-
-            return view('reports.technician-visits', compact(
-                'visits', 'technicians', 'regions', 'clients', 'stats'
-            ));
-        } catch (\Exception $e) {
-            // TechnicianVisit table doesn't exist or has issues
-            return view('reports.technician-visits', [
-                'visits' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
-                'technicians' => Employee::select('id', 'first_name', 'last_name')->get(),
-                'regions' => Region::where('is_active', true)->get(),
-                'clients' => Client::orderBy('company_name', 'asc')->get(),
-                'stats' => [
-                    'total_visits' => 0,
-                    'completed_visits' => 0,
-                    'pending_visits' => 0,
-                    'total_terminals' => 0,
-                ],
-                'error' => 'Unable to load technician visits: ' . $e->getMessage()
-            ]);
-        }
+        return view('reports.technician-visits', compact('visits', 'stats', 'technicians'));
     }
 
-    /**
-     * Get filtered data via AJAX
-     */
     public function filter(Request $request)
     {
-        // Same logic as index but return JSON
-        $dateRange = $request->get('date_range', 'last_7_days');
-        $technicianId = $request->get('technician_id');
-        $regionId = $request->get('region_id');
-        $terminalStatus = $request->get('terminal_status');
-        $clientId = $request->get('client_id');
-        $search = $request->get('search');
-
-        $query = TechnicianVisit::with([
-            'technician:id,first_name,last_name,phone',
-            'posTerminal:id,terminal_id,merchant_name,physical_address,region_id,client_id',
-            'posTerminal.region:id,name',
-            'posTerminal.client:id,company_name'
-
-        ]);
-
-        $this->applyDateRangeFilter($query, $dateRange, $request);
-
-        if ($technicianId) $query->where('technician_id', $technicianId);
-        if ($regionId) {
-            $query->whereHas('posTerminal', function($q) use ($regionId) {
-                $q->where('region_id', $regionId);
-            });
-        }
-        if ($terminalStatus) $query->where('terminal_status', $terminalStatus);
-        if ($clientId) {
-            $query->whereHas('posTerminal', function($q) use ($clientId) {
-                $q->where('client_id', $clientId);
-            });
-        }
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('visit_id', 'like', "%{$search}%")
-                  ->orWhere('asset_id', 'like', "%{$search}%")
-                  ->orWhereHas('posTerminal', function($subQ) use ($search) {
-                      $subQ->where('terminal_id', 'like', "%{$search}%")
-                           ->orWhere('merchant_name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $visits = $query->orderBy('visit_date', 'desc')->get();
-
-        // Add computed names
-        $visits->transform(function ($visit) {
-            if ($visit->technician) {
-                $visit->technician->name = $visit->technician->first_name . ' ' . $visit->technician->last_name;
-            }
-            return $visit;
-        });
-
-        $stats = $this->calculateStats($dateRange, $request);
+        $visits = $this->buildQuery($request)->get();
+        $stats  = $this->calcStats();
 
         return response()->json([
             'success' => true,
-            'visits' => $visits,
-            'stats' => $stats
+            'visits'  => $visits->map(fn($v) => $this->formatVisit($v)),
+            'stats'   => $stats,
+            'total'   => $visits->count(),
         ]);
     }
 
-    /**
-     * Get visit details
-     */
     public function show($visitId)
     {
-        $visit = TechnicianVisit::with([
-            'technician:id,first_name,last_name,phone,specialization',
-            'posTerminal.region:id,name',
-            'posTerminal.client:id,company_name'
-
-        ])->findOrFail($visitId);
-
-        // Add computed name
-        if ($visit->technician) {
-            $visit->technician->name = $visit->technician->first_name . ' ' . $visit->technician->last_name;
-        }
-
-        $html = view('reports.partials.visit-details', compact('visit'))->render();
-
-        return response()->json([
-            'success' => true,
-            'html' => $html
-        ]);
+        $visit = Visit::with('employee')->findOrFail($visitId);
+        return response()->json(['success' => true, 'visit' => $this->formatVisit($visit)]);
     }
 
-    /**
-     * Get visit photos
-     */
-    public function getPhotos($visitId)
-    {
-        $visit = TechnicianVisit::findOrFail($visitId);
-
-        $photos = [];
-        if ($visit->photos) {
-            $photoData = json_decode($visit->photos, true);
-            foreach ($photoData as $photo) {
-                $photos[] = [
-                    'url' => asset('storage/visit-photos/' . $photo['filename']),
-                    'caption' => $photo['caption'] ?? null
-                ];
-            }
-        }
-
-        return response()->json([
-            'success' => true,
-            'photos' => $photos
-        ]);
-    }
-
-    /**
-     * Export visits to CSV
-     */
     public function export(Request $request)
     {
-        $dateRange = $request->get('date_range', 'last_7_days');
-        $technicianId = $request->get('technician_id');
-        $regionId = $request->get('region_id');
-        $terminalStatus = $request->get('terminal_status');
-        $clientId = $request->get('client_id');
-        $search = $request->get('search');
+        $visits = $this->buildQuery($request)->get();
 
-        $query = TechnicianVisit::with([
-            'technician:id,first_name,last_name,phone',
-            'posTerminal:id,terminal_id,merchant_name,physical_address,region_id,client_id',
-            'posTerminal.region:id,name',
-            'posTerminal.client:id,company_name'
-
-        ]);
-
-        $this->applyDateRangeFilter($query, $dateRange, $request);
-
-        if ($technicianId) $query->where('technician_id', $technicianId);
-        if ($regionId) {
-            $query->whereHas('posTerminal', function($q) use ($regionId) {
-                $q->where('region_id', $regionId);
-            });
-        }
-        if ($terminalStatus) $query->where('terminal_status', $terminalStatus);
-        if ($clientId) {
-            $query->whereHas('posTerminal', function($q) use ($clientId) {
-                $q->where('client_id', $clientId);
-            });
-        }
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('visit_id', 'like', "%{$search}%")
-                  ->orWhere('asset_id', 'like', "%{$search}%")
-                  ->orWhereHas('posTerminal', function($subQ) use ($search) {
-                      $subQ->where('terminal_id', 'like', "%{$search}%")
-                           ->orWhere('merchant_name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $visits = $query->orderBy('visit_date', 'desc')->get();
-
-        // Create CSV
-        $filename = 'technician-visits-' . date('Y-m-d') . '.csv';
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        $filename = 'visit-reports-' . date('Y-m-d') . '.csv';
+        $headers  = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function() use ($visits) {
+        return response()->stream(function () use ($visits) {
             $file = fopen('php://output', 'w');
-
-            // CSV headers
-            fputcsv($file, [
-                'Visit ID', 'Date', 'Time', 'Technician', 'Terminal ID',
-                'Merchant Name', 'Region', 'Client', 'Status', 'Duration (minutes)',
-                'Issues Found', 'Feedback', 'Comments'
-            ]);
-
-            foreach ($visits as $visit) {
-                $technicianName = '';
-                if ($visit->technician) {
-                    $technicianName = $visit->technician->first_name . ' ' . $visit->technician->last_name;
-                }
-
+            fputcsv($file, ['ID', 'Date', 'Merchant', 'Merchant ID', 'Employee', 'Assignment', 'Terminal ID', 'Status', 'Summary', 'Action Points']);
+            foreach ($visits as $v) {
                 fputcsv($file, [
-                    $visit->visit_id,
-                    date('Y-m-d', strtotime($visit->visit_date)),
-                    date('H:i:s', strtotime($visit->visit_date)),
-                    $technicianName,
-                    $visit->posTerminal->terminal_id ?? 'N/A',
-                    $visit->posTerminal->merchant_name ?? 'N/A',
-                    $visit->posTerminal->region->name ?? 'N/A',
-                    $visit->posTerminal->client->name ?? 'N/A',
-                    $visit->terminal_status,
-                    $visit->duration_minutes,
-                    $visit->issues_found ? count(json_decode($visit->issues_found)) : 0,
-                    $visit->technician_feedback,
-                    $visit->comments
+                    $v->id,
+                    optional($v->completed_at)->format('Y-m-d H:i'),
+                    $v->merchant_name,
+                    $v->merchant_id,
+                    optional($v->employee)->full_name ?? $v->employee_id,
+                    $v->assignment_id,
+                    $v->terminal['terminal_id'] ?? '',
+                    $v->completed_at ? 'Completed' : 'Pending',
+                    $v->visit_summary,
+                    $v->action_points,
                 ]);
             }
-
             fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        }, 200, $headers);
     }
 
-    /**
-     * Apply date range filter to query
-     */
-    private function applyDateRangeFilter($query, $dateRange, $request)
-    {
-        $now = Carbon::now();
+    // ----------------------------------------------------------------
 
-        switch ($dateRange) {
-            case 'today':
-                $query->whereDate('visit_date', $now->toDateString());
-                break;
-            case 'yesterday':
-                $query->whereDate('visit_date', $now->subDay()->toDateString());
-                break;
-            case 'last_7_days':
-                $query->where('visit_date', '>=', $now->subDays(7));
-                break;
-            case 'last_30_days':
-                $query->where('visit_date', '>=', $now->subDays(30));
-                break;
-            case 'this_month':
-                $query->whereMonth('visit_date', $now->month)
-                      ->whereYear('visit_date', $now->year);
-                break;
-            case 'custom':
-                if ($request->start_date && $request->end_date) {
-                    $query->whereBetween('visit_date', [
-                        $request->start_date . ' 00:00:00',
-                        $request->end_date . ' 23:59:59'
-                    ]);
-                }
-                break;
+    private function buildQuery(Request $request)
+    {
+        $query = Visit::with('employee')->latest('completed_at');
+
+        // Date range
+        $range = $request->get('date_range', 'last_7_days');
+        if ($range === 'custom') {
+            if ($request->filled('start_date')) {
+                $query->where('completed_at', '>=', $request->start_date . ' 00:00:00');
+            }
+            if ($request->filled('end_date')) {
+                $query->where('completed_at', '<=', $request->end_date . '23:59:59');
+            }
+        } else {
+            $from = match ($range) {
+                'today'        => Carbon::today(),
+                'yesterday'    => Carbon::yesterday(),
+                'last_7_days'  => Carbon::now()->subDays(7),
+                'last_30_days' => Carbon::now()->subDays(30),
+                'this_month'   => Carbon::now()->startOfMonth(),
+                default        => Carbon::now()->subDays(7),
+            };
+            $query->where('completed_at', '>=', $from);
         }
+
+        // Employee / technician filter
+        if ($request->filled('technician_id')) {
+            $query->where('employee_id', $request->technician_id);
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            if ($request->status === 'completed') {
+                $query->whereNotNull('completed_at');
+            } elseif ($request->status === 'pending') {
+                $query->whereNull('completed_at');
+            }
+        }
+
+        // Keyword search
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('merchant_name', 'like', "%{$s}%")
+                  ->orWhere('visit_summary', 'like', "%{$s}%")
+                  ->orWhere('action_points', 'like', "%{$s}%");
+            });
+        }
+
+        return $query;
     }
 
-    /**
-     * Calculate statistics
-     */
-    private function calculateStats($dateRange, $request)
+    private function calcStats(): array
     {
-        $baseQuery = TechnicianVisit::query();
-        $this->applyDateRangeFilter($baseQuery, $dateRange, $request);
-
-        $todayVisits = TechnicianVisit::whereDate('visit_date', Carbon::today())->count();
-
-        $workingTerminals = (clone $baseQuery)->where('terminal_status', 'seen_working')->count();
-        $issuesFound = (clone $baseQuery)->where('terminal_status', 'seen_issues')->count();
-        $notSeen = (clone $baseQuery)->where('terminal_status', 'not_seen')->count();
-
         return [
-            'today_visits' => $todayVisits,
-            'working_terminals' => $workingTerminals,
-            'issues_found' => $issuesFound,
-            'not_seen' => $notSeen,
-            'total_visits' => $baseQuery->count()
+            'today_visits'    => Visit::whereDate('completed_at', Carbon::today())->count(),
+            'completed'       => Visit::whereNotNull('completed_at')->count(),
+            'pending'         => Visit::whereNull('completed_at')->count(),
+            'total_visits'    => Visit::count(),
+        ];
+    }
+
+    private function formatVisit(Visit $v): array
+    {
+        return [
+            'id'           => $v->id,
+            'completed_at' => optional($v->completed_at)->toDateTimeString(),
+            'merchant_name'=> $v->merchant_name,
+            'merchant_id'  => $v->merchant_id,
+            'employee_name'=> optional($v->employee)->full_name ?? ('Employee #' . $v->employee_id),
+            'assignment_id'=> $v->assignment_id,
+            'terminal_id'  => $v->terminal['terminal_id'] ?? null,
+            'status'       => $v->completed_at ? 'completed' : 'pending',
+            'visit_summary'=> $v->visit_summary,
+            'action_points'=> $v->action_points,
+            'evidence_count'=> count(is_array($v->evidence) ? $v->evidence : []),
         ];
     }
 }

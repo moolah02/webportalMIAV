@@ -1,639 +1,221 @@
-﻿{{-- resources/views/reports/technician-visits.blade.php --}}
 @extends('layouts.app')
-
 @section('title', 'Technician Visit Reports')
 
 @section('content')
-<style>
-.date-range-custom { display: none; }
-.date-range-custom.show { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-</style>
 
-<div>
-    <!-- Header actions -->
-    <div class="flex justify-end gap-2 mb-6">
-        <button class="btn-secondary" onclick="refreshData()">
-            <i class="fas fa-sync-alt"></i> Refresh
-        </button>
-        <button class="btn-secondary" onclick="exportReports()">
-            <i class="fas fa-download"></i> Export
-        </button>
-    </div>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div class="stat-card">
-            <div class="stat-icon stat-icon-blue">📅</div>
-            <div>
-                <div class="stat-number" id="stat-today">{{ $stats['today_visits'] ?? 0 }}</div>
-                <div class="stat-label">Today's Visits</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon stat-icon-green">✅</div>
-            <div>
-                <div class="stat-number" id="stat-working">{{ $stats['working_terminals'] ?? 0 }}</div>
-                <div class="stat-label">Working Terminals</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon stat-icon-orange">⚠️</div>
-            <div>
-                <div class="stat-number" id="stat-issues">{{ $stats['issues_found'] ?? 0 }}</div>
-                <div class="stat-label">Issues Found</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon stat-icon-red">🔴</div>
-            <div>
-                <div class="stat-number" id="stat-not-seen">{{ $stats['not_seen'] ?? 0 }}</div>
-                <div class="stat-label">Not Seen</div>
-            </div>
+{{-- Stats --}}
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">📅</div>
+        <div>
+            <div class="stat-number" id="stat-today">{{ $stats['today_visits'] ?? 0 }}</div>
+            <div class="stat-label">Today's Visits</div>
         </div>
     </div>
-
-    <!-- Filters -->
-    <div class="filter-bar mb-5">
-        <form id="filterForm" class="flex flex-wrap gap-3 items-end w-full">
-            <div class="flex flex-col">
-                <label class="ui-label">Date Range</label>
-                <select class="ui-select w-auto" id="dateRange" name="date_range">
-                    <option value="today">Today</option>
-                    <option value="yesterday">Yesterday</option>
-                    <option value="last_7_days" selected>Last 7 Days</option>
-                    <option value="last_30_days">Last 30 Days</option>
-                    <option value="this_month">This Month</option>
-                    <option value="custom">Custom Range</option>
-                </select>
-            </div>
-            <div class="flex flex-col">
-                <label class="ui-label">Technician</label>
-                <select class="ui-select w-auto" id="technicianFilter" name="technician_id">
-                    <option value="">All Technicians</option>
-                    @foreach($technicians as $technician)
-                    <option value="{{ $technician->id }}">{{ $technician->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="flex flex-col">
-                <label class="ui-label">Region</label>
-                <select class="ui-select w-auto" id="regionFilter" name="region_id">
-                    <option value="">All Regions</option>
-                    @foreach($regions as $region)
-                    <option value="{{ $region->id }}">{{ $region->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="flex flex-col">
-                <label class="ui-label">Status</label>
-                <select class="ui-select w-auto" id="statusFilter" name="terminal_status">
-                    <option value="">All Status</option>
-                    <option value="seen_working">Working</option>
-                    <option value="seen_issues">Issues</option>
-                    <option value="not_seen">Not Seen</option>
-                    <option value="relocated">Relocated</option>
-                    <option value="missing">Missing</option>
-                </select>
-            </div>
-            <div class="flex flex-col">
-                <label class="ui-label">Client</label>
-                <select class="ui-select w-auto" id="clientFilter" name="client_id">
-                    <option value="">All Clients</option>
-                    @foreach($clients as $client)
-                    <option value="{{ $client->id }}">{{ $client->company_name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="flex flex-col flex-1 min-w-48">
-                <label class="ui-label">Search</label>
-                <input type="text" class="ui-input" id="searchTerm"
-                       placeholder="Terminal ID, Merchant, Visit ID..." name="search">
-            </div>
-            <div class="flex gap-2 items-end">
-                <button type="submit" class="btn-primary">Apply</button>
-                <button type="button" class="btn-secondary" onclick="resetFilters()">Reset</button>
-            </div>
-
-            <!-- Custom Date Range (Hidden by default) -->
-            <div class="date-range-custom w-full" id="customDateInputs">
-                <div class="flex flex-col">
-                    <label class="ui-label">From Date</label>
-                    <input type="date" class="ui-input" id="startDate" name="start_date">
-                </div>
-                <div class="flex flex-col">
-                    <label class="ui-label">To Date</label>
-                    <input type="date" class="ui-input" id="endDate" name="end_date">
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <!-- Data Section -->
-    <div class="ui-card overflow-hidden" id="dataSection">
-        <div class="ui-card-header">
-            <span class="text-sm font-semibold text-gray-800">Visit Reports <span id="visitCount">(7)</span></span>
-            <div class="flex items-center gap-3">
-                <button class="btn-secondary btn-sm" onclick="toggleView()">
-                    <i class="fas fa-th" id="viewToggleIcon"></i>
-                    <span id="viewToggleText">Card View</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Table View -->
-        <div id="tableView" class="overflow-x-auto">
-            <table class="ui-table" id="visitsTable">
-                <thead>
-                    <tr>
-                        <th>Visit ID</th>
-                        <th>Date</th>
-                        <th>Technician</th>
-                        <th>Terminal</th>
-                        <th>Merchant</th>
-                        <th>Region</th>
-                        <th>Status</th>
-                        <th>Duration</th>
-                        <th>Issues</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="visitsTableBody">
-                    @forelse($visits as $visit)
-                    <tr data-visit-id="{{ $visit->id }}">
-                        <td>
-                            <strong>{{ $visit->visit_id ?? '#'.$visit->id }}</strong>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500;">{{ optional($visit->visit_date)->format('M j') ?? optional($visit->started_at)->format('M j') ?? '—' }}</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">{{ optional($visit->visit_date)->format('H:i') ?? optional($visit->started_at)->format('H:i') ?? '' }}</div>
-                        </td>
-                        <td>
-                            @if($visit->technician)
-                            <div style="font-weight: 500;">{{ $visit->technician->first_name }} {{ $visit->technician->last_name }}</div>
-                            <div style="font-size: 0.75rem; color: #4b5563;">{{ $visit->technician->phone ?? '' }}</div>
-                            @else
-                            <span style="color: #9ca3af; font-size: 0.75rem;">Unassigned</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($visit->posTerminal)
-                            <div style="font-weight: 500;">{{ $visit->posTerminal->terminal_id }}</div>
-                            @else
-                            <span style="color: #9ca3af; font-size: 0.75rem;">N/A</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($visit->posTerminal)
-                            <div style="font-weight: 500;">{{ $visit->posTerminal->merchant_name }}</div>
-                            <div style="font-size: 0.75rem; color: #4b5563; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                {{ $visit->posTerminal->physical_address ?? '' }}
-                            </div>
-                            @else
-                            <span style="color: #9ca3af; font-size: 0.75rem;">N/A</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($visit->posTerminal && $visit->posTerminal->region)
-                            <span class="status-badge badge-info">{{ $visit->posTerminal->region->name }}</span>
-                            @else
-                            <span style="color: #9ca3af; font-size: 0.75rem;">—</span>
-                            @endif
-                        </td>
-                        <td>
-                            @php
-                                $ts = $visit->terminal_status_during_visit ?? $visit->terminal_status;
-                                $tsClass = match($ts) {
-                                    'working', 'seen_working' => 'badge-success',
-                                    'not_working', 'seen_issues' => 'badge-warning',
-                                    'not_found', 'not_seen'   => 'badge-danger',
-                                    default => 'badge-info',
-                                };
-                                $tsLabel = match($ts) {
-                                    'working', 'seen_working'  => 'Working',
-                                    'not_working', 'seen_issues' => 'Issues',
-                                    'needs_maintenance'        => 'Needs Maint.',
-                                    'not_found', 'not_seen'    => 'Not Seen',
-                                    default => ucwords(str_replace('_', ' ', $ts ?? 'Unknown')),
-                                };
-                            @endphp
-                            <span class="status-badge {{ $tsClass }}">{{ $tsLabel }}</span>
-                        </td>
-                        <td>
-                            @if($visit->duration_minutes)
-                            <span style="color: #4b5563; font-size: 0.75rem;">{{ floor($visit->duration_minutes / 60) }}h {{ $visit->duration_minutes % 60 }}m</span>
-                            @else
-                            <span style="color: #9ca3af; font-size: 0.75rem;">N/A</span>
-                            @endif
-                        </td>
-                        <td>
-                            @php $issuesCount = is_array($visit->issues_found) ? count($visit->issues_found) : 0; @endphp
-                            @if($issuesCount > 0)
-                            <span class="status-badge badge-warning">{{ $issuesCount }}</span>
-                            @else
-                            <span style="color: #9ca3af; font-size: 0.75rem;">None</span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="action-group">
-                                <button class="action-btn" onclick="viewVisitDetails({{ $visit->id }})" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="10">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">📋</div>
-                                <div class="empty-state-msg">No visits found for the selected period</div>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-
-            <!-- Pagination -->
-            <div class="px-5 py-4 border-t border-gray-100 flex justify-center">
-                {{ $visits->appends(request()->query())->links() }}
-            </div>
-        </div>
-
-        <!-- Card View (Initially Hidden) -->
-        <div id="cardView" style="display: none;">
-            <div class="ui-card-grid p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="cardContainer">
-                <!-- Cards populated via JavaScript -->
-            </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-green">✅</div>
+        <div>
+            <div class="stat-number" id="stat-completed">{{ $stats['completed'] ?? 0 }}</div>
+            <div class="stat-label">Completed</div>
         </div>
     </div>
-</div>
-<div class="modal fade" id="visitDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Visit Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="visitDetailsBody">
-                <!-- Content loaded via AJAX -->
-            </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-yellow">⏳</div>
+        <div>
+            <div class="stat-number" id="stat-pending">{{ $stats['pending'] ?? 0 }}</div>
+            <div class="stat-label">Pending</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-navy">📋</div>
+        <div>
+            <div class="stat-number" id="stat-total">{{ $stats['total_visits'] ?? 0 }}</div>
+            <div class="stat-label">Total Visits</div>
         </div>
     </div>
 </div>
 
-<!-- Photos Modal -->
-<div class="modal fade" id="photosModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Visit Photos</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="photosBody">
-                <!-- Photos loaded via AJAX -->
-            </div>
+{{-- Filters --}}
+<div class="filter-bar mb-5">
+    <form id="filterForm" method="GET" action="{{ route('reports.technician-visits') }}" class="flex flex-wrap gap-3 items-end w-full">
+        <div class="flex flex-col">
+            <label class="ui-label">Date Range</label>
+            <select class="ui-select" name="date_range" id="dateRange" onchange="toggleCustomDates(this.value)">
+                <option value="today"        {{ request('date_range') === 'today'        ? 'selected' : '' }}>Today</option>
+                <option value="yesterday"    {{ request('date_range') === 'yesterday'    ? 'selected' : '' }}>Yesterday</option>
+                <option value="last_7_days"  {{ !request('date_range') || request('date_range') === 'last_7_days'  ? 'selected' : '' }}>Last 7 Days</option>
+                <option value="last_30_days" {{ request('date_range') === 'last_30_days' ? 'selected' : '' }}>Last 30 Days</option>
+                <option value="this_month"   {{ request('date_range') === 'this_month'   ? 'selected' : '' }}>This Month</option>
+                <option value="custom"       {{ request('date_range') === 'custom'       ? 'selected' : '' }}>Custom Range</option>
+            </select>
         </div>
-    </div>
+
+        <div class="flex flex-col" id="customFrom" style="{{ request('date_range') === 'custom' ? '' : 'display:none' }}">
+            <label class="ui-label">From</label>
+            <input type="date" name="start_date" class="ui-input" value="{{ request('start_date') }}">
+        </div>
+        <div class="flex flex-col" id="customTo" style="{{ request('date_range') === 'custom' ? '' : 'display:none' }}">
+            <label class="ui-label">To</label>
+            <input type="date" name="end_date" class="ui-input" value="{{ request('end_date') }}">
+        </div>
+
+        <div class="flex flex-col">
+            <label class="ui-label">Employee</label>
+            <select class="ui-select" name="technician_id">
+                <option value="">All Employees</option>
+                @foreach($technicians as $tech)
+                    <option value="{{ $tech->id }}" {{ request('technician_id') == $tech->id ? 'selected' : '' }}>
+                        {{ $tech->first_name }} {{ $tech->last_name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="flex flex-col">
+            <label class="ui-label">Status</label>
+            <select class="ui-select" name="status">
+                <option value="">All Status</option>
+                <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>Pending</option>
+            </select>
+        </div>
+
+        <div class="flex flex-col flex-1 min-w-48">
+            <label class="ui-label">Search</label>
+            <input type="text" class="ui-input" name="search"
+                   placeholder="Merchant, summary, action points…" value="{{ request('search') }}">
+        </div>
+
+        <div class="flex gap-2 items-end">
+            <button type="submit" class="btn-primary">Apply</button>
+            <a href="{{ route('reports.technician-visits') }}" class="btn-secondary">Reset</a>
+            <a href="{{ route('reports.technician-visits.export') }}?{{ http_build_query(request()->all()) }}" class="btn-secondary">
+                ↓ Export CSV
+            </a>
+        </div>
+    </form>
 </div>
-@endsection
 
-@section('scripts')
-<script>
-let currentView = 'table';
+{{-- Table --}}
+<div class="ui-card overflow-hidden">
+    <div class="ui-card-header">
+        <span class="text-sm font-semibold text-gray-800">
+            Visit Reports
+            <span class="text-gray-400 font-normal">({{ $visits->total() }})</span>
+        </span>
+    </div>
 
-// Handle date range selection
-document.getElementById('dateRange').addEventListener('change', function() {
-    const customInputs = document.getElementById('customDateInputs');
-    if (this.value === 'custom') {
-        customInputs.classList.add('show');
-    } else {
-        customInputs.classList.remove('show');
-    }
-});
-
-// Handle filter form submission
-document.getElementById('filterForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    loadFilteredData();
-});
-
-// Load filtered data
-function loadFilteredData() {
-    const formData = new FormData(document.getElementById('filterForm'));
-    const params = new URLSearchParams(formData);
-
-    showLoading(true);
-
-    fetch(`/reports/technician-visits/filter?${params}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateTable(data.visits);
-                updateStats(data.stats);
-                updateVisitCount(data.total || 0);
-                if (currentView === 'card') {
-                    updateCardView(data.visits);
-                }
-            } else {
-                showAlert('Error loading filtered data', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Error loading filtered data', 'error');
-        })
-        .finally(() => {
-            showLoading(false);
-        });
-}
-
-// Update table with new data
-function updateTable(visits) {
-    const tbody = document.getElementById('visitsTableBody');
-    tbody.innerHTML = '';
-
-    visits.forEach(visit => {
-        const statusConfig = getStatusConfig(visit.terminal_status);
-        const issuesCount = visit.issues_found ? JSON.parse(visit.issues_found).length : 0;
-        const photosCount = visit.photos ? JSON.parse(visit.photos).length : 0;
-
-        const row = `
-            <tr data-visit-id="${visit.id}">
-                <td>
-                    <strong>${visit.visit_id}</strong>
-                    ${photosCount > 0 ? '<i class="fas fa-camera text-info ms-1" title="Has photos" style="font-size: 0.75rem;"></i>' : ''}
-                </td>
-                <td>
-                    <div style="font-weight: 500;">${new Date(visit.visit_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
-                    <div style="font-size: 0.75rem; color: #4b5563;">${new Date(visit.visit_date).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})}</div>
-                </td>
-                <td>
-                    <div style="font-weight: 500;">${visit.technician.name}</div>
-                    <div style="font-size: 0.75rem; color: #4b5563;">${visit.technician.phone || ''}</div>
-                </td>
-                <td>
-                    <div style="font-weight: 500;">${visit.pos_terminal.terminal_id}</div>
-                    <div style="font-size: 0.75rem; color: #4b5563;">${visit.asset_id || 'N/A'}</div>
-                </td>
-                <td>
-                    <div style="font-weight: 500;">${visit.pos_terminal.merchant_name}</div>
-                    <div style="font-size: 0.75rem; color: #4b5563; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        ${visit.pos_terminal.physical_address || ''}
-                    </div>
-                </td>
-                <td>
-                    <span class="status-badge badge-info">
-                        ${visit.pos_terminal.region ? visit.pos_terminal.region.name : 'N/A'}
-                    </span>
-                </td>
-                <td>
-                    <span class="status-badge ${statusConfig.class}">${statusConfig.text}</span>
-                </td>
-                <td>
-                    ${visit.duration_minutes ?
-                        `${Math.floor(visit.duration_minutes / 60)}h ${visit.duration_minutes % 60}m` :
-                        '<span style="color: #4b5563; font-size: 0.75rem;">N/A</span>'}
-                </td>
-                <td>
-                    ${issuesCount > 0 ?
-                        `<span class="status-badge badge-warning">${issuesCount}</span>` :
-                        '<span style="color: #4b5563; font-size: 0.75rem;">None</span>'}
-                </td>
-                <td>
-                    <div class="action-group">
-                        <button class="action-btn" onclick="viewVisitDetails(${visit.id})" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        ${photosCount > 0 ?
-                            `<button class="action-btn" onclick="viewPhotos(${visit.id})" title="View Photos">
-                                <i class="fas fa-images"></i>
-                            </button>` : ''}
-                        <button class="action-btn" onclick="generateReport(${visit.id})" title="Generate Report">
-                            <i class="fas fa-file-pdf"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-        tbody.insertAdjacentHTML('beforeend', row);
-    });
-}
-
-// Update stats cards
-function updateStats(stats) {
-    document.getElementById('stat-today').textContent = stats.today_visits || 0;
-    document.getElementById('stat-working').textContent = stats.working_terminals || 0;
-    document.getElementById('stat-issues').textContent = stats.issues_found || 0;
-    document.getElementById('stat-not-seen').textContent = stats.not_seen || 0;
-}
-
-// Update visit count
-function updateVisitCount(count) {
-    document.getElementById('visitCount').textContent = `(${count})`;
-}
-
-// Get status configuration
-function getStatusConfig(status) {
-    const configs = {
-        'seen_working': { class: 'badge-success', text: 'Working' },
-        'seen_issues': { class: 'badge-warning', text: 'Issues' },
-        'not_seen': { class: 'badge-danger', text: 'Not Seen' },
-        'relocated': { class: 'badge-info', text: 'Relocated' },
-        'missing': { class: 'badge-dark', text: 'Missing' }
-    };
-    return configs[status] || { class: 'badge-dark', text: status };
-}
-
-// Toggle between table and card view
-function toggleView() {
-    const tableView = document.getElementById('tableView');
-    const cardView = document.getElementById('cardView');
-    const toggleIcon = document.getElementById('viewToggleIcon');
-    const toggleText = document.getElementById('viewToggleText');
-
-    if (currentView === 'table') {
-        tableView.style.display = 'none';
-        cardView.style.display = 'block';
-        toggleIcon.className = 'fas fa-table';
-        toggleText.textContent = 'Table View';
-        currentView = 'card';
-        updateCardView();
-    } else {
-        tableView.style.display = 'block';
-        cardView.style.display = 'none';
-        toggleIcon.className = 'fas fa-th';
-        toggleText.textContent = 'Card View';
-        currentView = 'table';
-    }
-}
-
-// Show/hide loading indicator
-function showLoading(show) {
-    const dataSection = document.getElementById('dataSection');
-    if (show) {
-        dataSection.classList.add('loading');
-        dataSection.insertAdjacentHTML('beforeend', '<div class="spinner"></div>');
-    } else {
-        dataSection.classList.remove('loading');
-        const spinner = dataSection.querySelector('.spinner');
-        if (spinner) spinner.remove();
-    }
-}
-
-// Utility functions
-function viewVisitDetails(visitId) {
-    showLoading(true);
-
-    fetch(`/reports/technician-visits/${visitId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('visitDetailsBody').innerHTML = data.html;
-                new bootstrap.Modal(document.getElementById('visitDetailsModal')).show();
-            } else {
-                showAlert('Error loading visit details', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Error loading visit details', 'error');
-        })
-        .finally(() => {
-            showLoading(false);
-        });
-}
-
-function viewPhotos(visitId) {
-    fetch(`/reports/technician-visits/${visitId}/photos`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                let photosHtml = '<div class="grid grid-cols-1 md:grid-cols-2 gap-5">';
-                data.photos.forEach(photo => {
-                    photosHtml += `
-                        <div class="col-md-6 mb-3">
-                            <img src="${photo.url}" class="img-fluid rounded" alt="Visit Photo">
-                            ${photo.caption ? `<p class="mt-2"><small class="text-muted">${photo.caption}</small></p>` : ''}
+    <div class="overflow-x-auto">
+        <table class="ui-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date & Time</th>
+                    <th>Employee</th>
+                    <th>Merchant</th>
+                    <th>Assignment</th>
+                    <th>Terminal</th>
+                    <th>Status</th>
+                    <th>Summary</th>
+                    <th>Evidence</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($visits as $visit)
+                @php
+                    $terminal = is_array($visit->terminal) ? $visit->terminal : [];
+                    $evidence = is_array($visit->evidence) ? $visit->evidence : [];
+                @endphp
+                <tr>
+                    <td>
+                        <span class="inline-block px-2 py-0.5 rounded-md text-white text-xs font-semibold" style="background:#1a3a5c">
+                            {{ $visit->id }}
+                        </span>
+                    </td>
+                    <td>
+                        @if($visit->completed_at)
+                            <div class="text-sm font-medium">{{ $visit->completed_at->format('M j, Y') }}</div>
+                            <div class="text-xs text-gray-400">{{ $visit->completed_at->format('H:i') }}</div>
+                        @else
+                            <span class="text-xs text-gray-400">Not completed</span>
+                        @endif
+                    </td>
+                    <td class="text-sm text-gray-700">
+                        {{ optional($visit->employee)->full_name ?? ('Emp #'.$visit->employee_id) }}
+                    </td>
+                    <td>
+                        <div class="text-sm font-semibold text-gray-900">{{ $visit->merchant_name ?? '—' }}</div>
+                        <div class="text-xs text-gray-400">ID: {{ $visit->merchant_id }}</div>
+                    </td>
+                    <td class="text-sm text-gray-600">{{ $visit->assignment_id ?? '—' }}</td>
+                    <td>
+                        @if(!empty($terminal['terminal_id']))
+                            <span class="badge badge-green text-xs">{{ $terminal['terminal_id'] }}</span>
+                            @if(!empty($terminal['status']))
+                                <div class="text-xs text-gray-400 mt-0.5">{{ $terminal['status'] }}</div>
+                            @endif
+                        @else
+                            <span class="text-gray-400 text-xs">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($visit->completed_at)
+                            <span class="badge badge-green">✓ Completed</span>
+                        @else
+                            <span class="badge badge-yellow">⏳ Pending</span>
+                        @endif
+                    </td>
+                    <td class="max-w-xs">
+                        <div class="text-sm text-gray-700 leading-snug">
+                            {{ \Illuminate\Support\Str::limit($visit->visit_summary, 100) }}
                         </div>
-                    `;
-                });
-                photosHtml += '</div>';
+                        @if($visit->action_points)
+                            <div class="text-xs text-gray-400 mt-1">
+                                {{ \Illuminate\Support\Str::limit($visit->action_points, 80) }}
+                            </div>
+                        @endif
+                    </td>
+                    <td>
+                        @if(count($evidence))
+                            <span class="badge badge-blue">📎 {{ count($evidence) }}</span>
+                        @else
+                            <span class="text-xs text-gray-400">None</span>
+                        @endif
+                    </td>
+                    <td>
+                        <a href="{{ route('visits.show', $visit) }}" class="btn-secondary btn-sm">View</a>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="10">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-msg">No visits found for the selected filters</div>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-                document.getElementById('photosBody').innerHTML = photosHtml;
-                new bootstrap.Modal(document.getElementById('photosModal')).show();
-            } else {
-                showAlert('Error loading photos', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('Error loading photos', 'error');
-        });
-}
+    @if($visits->hasPages())
+    <div class="px-5 py-4 border-t border-gray-100 flex justify-center">
+        {{ $visits->links() }}
+    </div>
+    @endif
+</div>
 
-function generateReport(visitId) {
-    window.open(`/reports/technician-visits/${visitId}/pdf`, '_blank');
-}
-
-function exportReports() {
-    const formData = new FormData(document.getElementById('filterForm'));
-    const params = new URLSearchParams(formData);
-    window.open(`/reports/technician-visits/export?${params}`, '_blank');
-}
-
-function updateCardView(visits) {
-    const container = document.getElementById('cardContainer');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    if (!visits || visits.length === 0) {
-        container.innerHTML = '<div class="col-12 text-center py-4"><p class="text-muted">No visits found</p></div>';
-        return;
-    }
-
-    visits.forEach(visit => {
-        const statusConfig = getStatusConfig(visit.terminal_status);
-        const photosCount = visit.photos ? JSON.parse(visit.photos).length : 0;
-
-        const card = `
-            <div class="visit-card">
-                <div class="ui-card-header-compact">
-                    <small class="text-muted">${visit.visit_id}</small>
-                    <span class="status-badge ${statusConfig.class}">${statusConfig.text}</span>
-                </div>
-                <div class="ui-card-body-compact">
-                    <h6 style="margin-bottom: 0.5rem; font-weight: 600;">${visit.pos_terminal.terminal_id}</h6>
-                    <p style="margin-bottom: 0.5rem; font-size: 0.875rem;">
-                        <strong>Merchant:</strong> ${visit.pos_terminal.merchant_name}<br>
-                        <strong>Technician:</strong> ${visit.technician.name}<br>
-                        <strong>Date:</strong> ${new Date(visit.visit_date).toLocaleDateString()}
-                    </p>
-                    ${visit.technician_feedback ?
-                        `<p style="margin: 0; font-size: 0.75rem; color: #4b5563;">${visit.technician_feedback.substring(0, 100)}...</p>` : ''}
-                </div>
-                <div class="ui-card-footer-compact">
-                    <div class="action-group" style="justify-content: center;">
-                        <button class="action-btn" onclick="viewVisitDetails(${visit.id})" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        ${photosCount > 0 ?
-                            `<button class="action-btn" onclick="viewPhotos(${visit.id})" title="View Photos">
-                                <i class="fas fa-images"></i>
-                            </button>` : ''}
-                        <button class="action-btn" onclick="generateReport(${visit.id})" title="Generate Report">
-                            <i class="fas fa-file-pdf"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', card);
-    });
-}
-
-function refreshData() {
-    loadFilteredData();
-}
-
-function resetFilters() {
-    document.getElementById('filterForm').reset();
-    document.getElementById('dateRange').value = 'last_7_days';
-    document.getElementById('customDateInputs').classList.remove('show');
-    loadFilteredData();
-}
-
-function showAlert(message, type) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
-    alertDiv.style.position = 'fixed';
-    alertDiv.style.top = '20px';
-    alertDiv.style.right = '20px';
-    alertDiv.style.zIndex = '9999';
-    alertDiv.style.maxWidth = '300px';
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    document.body.appendChild(alertDiv);
-
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
-        }
-    }, 5000);
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 7);
-
-    document.getElementById('endDate').valueAsDate = endDate;
-    document.getElementById('startDate').valueAsDate = startDate;
-});
-</script>
 @endsection
+
+@push('scripts')
+<script>
+function toggleCustomDates(val) {
+    const show = val === 'custom';
+    document.getElementById('customFrom').style.display = show ? '' : 'none';
+    document.getElementById('customTo').style.display   = show ? '' : 'none';
+}
+</script>
+@endpush
