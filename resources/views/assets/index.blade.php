@@ -3,6 +3,20 @@
 
 @section('title', 'Asset Management')
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+.ts-wrapper .ts-control{border:1px solid #d1d5db;border-radius:.375rem;padding:.4rem .625rem;font-size:.875rem;min-block-size:2.375rem;box-shadow:none;background:#fff;}
+.ts-wrapper.focus .ts-control{border-color:#1a3a5c;box-shadow:0 0 0 2px rgba(26,58,92,.15);}
+.ts-wrapper .ts-dropdown{border:1px solid #d1d5db;border-radius:.375rem;box-shadow:0 4px 12px rgba(0,0,0,.08);font-size:.875rem;}
+.ts-wrapper .ts-dropdown .option.active{background:#1a3a5c;color:#fff;}
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+@endpush
+
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
