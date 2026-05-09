@@ -1,6 +1,17 @@
 @extends('layouts.app')
 @section('title', 'Log a Visit')
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+.ts-wrapper .ts-control{border:1px solid #d1d5db;border-radius:0.375rem;padding:0.4rem 0.625rem;font-size:0.875rem;min-block-size:2.375rem;box-shadow:none;background:#fff;}
+.ts-wrapper.focus .ts-control{border-color:#1a3a5c;box-shadow:0 0 0 2px rgba(26,58,92,.15);}
+.ts-wrapper .ts-dropdown{border:1px solid #d1d5db;border-radius:0.375rem;box-shadow:0 4px 12px rgba(0,0,0,.08);font-size:0.875rem;}
+.ts-wrapper .ts-dropdown .option.active{background:#1a3a5c;color:#fff;}
+.ts-wrapper .ts-dropdown .option:hover{background:#eef2f7;}
+</style>
+@endpush
+
 @section('content')
 <div>
     {{-- Header --}}
@@ -147,4 +158,23 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchable = ['technician_id', 'pos_terminal_id', 'job_assignment_id'];
+    searchable.forEach(function (name) {
+        const el = document.querySelector('[name="' + name + '"]');
+        if (el) {
+            new TomSelect(el, {
+                allowEmptyOption: true,
+                placeholder: el.querySelector('option[value=""]')?.textContent ?? '— Select —',
+            });
+        }
+    });
+});
+</script>
+@endpush
+
 @endsection
