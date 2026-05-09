@@ -1,314 +1,311 @@
-<!-- Quick Assignment Form -->
-<div class="content-card" style="margin-block-end: 30px;">
-    <h3 style="margin-block-end: 20px; color: #333; font-size: 20px; display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 20px;">🎯</span>
-        Quick Asset Assignment
-    </h3>
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+.ts-wrapper .ts-control{border:1px solid #d1d5db;border-radius:.375rem;padding:.4rem .625rem;font-size:.875rem;min-block-size:2.375rem;box-shadow:none;background:#fff;}
+.ts-wrapper.focus .ts-control{border-color:#1a3a5c;box-shadow:0 0 0 2px rgba(26,58,92,.15);}
+.ts-wrapper .ts-dropdown{border:1px solid #d1d5db;border-radius:.375rem;box-shadow:0 4px 12px rgba(0,0,0,.08);font-size:.875rem;}
+.ts-wrapper .ts-dropdown .option.active{background:#1a3a5c;color:#fff;}
+</style>
+@endpush
 
-    <form id="quickAssignForm" method="POST" action="{{ route('assets.assign') }}" style="margin-bottom: 20px;">
-        @csrf
+{{-- Quick Assignment Card --}}
+<div class="ui-card mb-5">
+    <div class="ui-card-header">
+        <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F3AF; Quick Asset Assignment</h3>
+    </div>
+    <div class="ui-card-body">
+        @if(isset($fromRequest))
+        <div class="flash-info mb-4">
+            &#x1F4E6; Assigning assets from <strong>Approved Request #{{ $fromRequest }}</strong>. Employee has been pre-selected.
+        </div>
+        @endif
 
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <td>
-                    <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Select Asset</label>
-                    <select name="asset_id" id="quick_asset_select" required
-                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
-                        <option value="">Choose an asset...</option>
+        <form id="quickAssignForm" method="POST" action="{{ route('assets.assign') }}">
+            @csrf
+            <input type="hidden" name="assignment_date" value="{{ now()->format('Y-m-d') }}">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label class="ui-label">Asset <span class="text-red-500">*</span></label>
+                    <select name="asset_id" id="quick_asset_select" required class="ui-select">
+                        <option value="">Choose an asset…</option>
                         @foreach($availableAssets as $asset)
                             <option value="{{ $asset->id }}" data-available="{{ $asset->available_quantity ?? $asset->stock_quantity }}">
-                                {{ $asset->name }} ({{ $asset->available_quantity ?? $asset->stock_quantity }} available)
+                                {{ $asset->name }} ({{ $asset->available_quantity ?? $asset->stock_quantity }} avail.)
                             </option>
                         @endforeach
                     </select>
-                </td>
-                <td>
-                    <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Select Employee</label>
-                    <select name="employee_id" id="quick_employee_select" required
-                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
-                        <option value="">Choose an employee...</option>
-                        @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}">
-                                {{ $employee->full_name }} ({{ $employee->employee_number }}) - {{ $employee->department->name ?? 'No Dept' }}
+                </div>
+
+                <div>
+                    <label class="ui-label">Employee <span class="text-red-500">*</span></label>
+                    <select name="employee_id" id="quick_employee_select" required class="ui-select">
+                        <option value="">Choose an employee…</option>
+                        @foreach($employees as $emp)
+                            <option value="{{ $emp->id }}">
+                                {{ $emp->full_name }} ({{ $emp->employee_number }})
+                                @if($emp->department) — {{ $emp->department->name ?? '' }}@endif
                             </option>
                         @endforeach
                     </select>
-                </td>
-                <td>
-                    <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Quantity</label>
-                    <input type="number" name="quantity" id="quick_quantity" min="1" value="1" required
-                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
-                </td>
-                <td>
-                    <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">Condition</label>
-                    <select name="condition_when_assigned" required
-                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;">
+                </div>
+
+                <div>
+                    <label class="ui-label">Qty <span class="text-red-500">*</span></label>
+                    <input type="number" name="quantity" id="quick_quantity" min="1" value="1" required class="ui-input">
+                </div>
+
+                <div>
+                    <label class="ui-label">Condition <span class="text-red-500">*</span></label>
+                    <select name="condition_when_assigned" required class="ui-select">
                         @foreach($conditionOptions as $value => $label)
                             <option value="{{ $value }}" {{ $value === 'good' ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
-                </td>
-                <td>
-                    <button type="button" onclick="openDetailedAssignModal()" class="btn-primary" style="padding: 12px 20px; font-size: 16px;">
-                        🎯 Assign Asset
-                    </button>
-                    <input type="hidden" name="assignment_date" value="{{ now()->format('Y-m-d') }}">
-                </td>
-            </tr>
-        </table>
-    </form>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="button" onclick="openDetailedAssignModal()" class="btn-primary">
+                    &#x1F3AF; Assign Asset
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
-<!-- Available Assets for Assignment -->
-<div class="content-card">
-    <h3 style="margin-block-end: 20px; color: #333; display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 24px;">📦</span>
-        Available Assets for Assignment
-    </h3>
-
-    @if($availableAssets->count() > 0)
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Asset Name</th>
-                    <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Category</th>
-                    <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Price</th>
-                    <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Availability</th>
-                    <th style="text-align: left; padding: 10px; border-bottom: 2px solid #ddd;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($availableAssets as $asset)
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                        <strong>{{ $asset->name }}</strong>
-                        <div style="font-size: 14px; color: #666;">
-                            @php
-                                $categoryObj = $assetCategories->where('name', $asset->category)->first();
-                            @endphp
-                            {{ $categoryObj->icon ?? '📦' }} {{ $asset->category }}
+{{-- Available Assets Table --}}
+<div class="ui-card">
+    <div class="ui-card-header">
+        <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F4E6; Available Assets for Assignment</h3>
+        <span class="badge badge-blue">{{ $availableAssets->count() }} assets</span>
+    </div>
+    <div class="ui-card-body p-0">
+        @if($availableAssets->count() > 0)
+        <div class="overflow-x-auto">
+            <table class="shared-table">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Category</th>
+                        <th>Unit Price</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($availableAssets as $asset)
+                    <tr>
+                        <td>
+                            <div class="font-semibold text-gray-800 text-sm">{{ $asset->name }}</div>
                             @if($asset->brand || $asset->model)
-                                • {{ $asset->brand }} {{ $asset->model }}
+                            <div class="text-xs text-gray-400">{{ trim($asset->brand . ' ' . $asset->model) }}</div>
                             @endif
-                        </div>
-                    </td>
-                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">{{ $asset->category }}</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                        {{ $asset->currency }} {{ number_format($asset->unit_price, 2) }}
-                    </td>
-                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                        Total: {{ $asset->stock_quantity }}<br>
-                        Available: {{ $asset->available_quantity ?? $asset->stock_quantity }}<br>
-                        @if(isset($asset->assigned_quantity) && $asset->assigned_quantity > 0)
-                        Assigned: {{ $asset->assigned_quantity }}
-                        @endif
-                    </td>
-                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                        <button onclick="openAssignModal({{ $asset->id }})" class="btn-small btn-primary">
-                            🎯 Assign Now
-                        </button>
-                        <button onclick="viewAsset({{ $asset->id }})" class="btn-small" style="background: #f5f5f5; color: #666;">
-                            👁️ View
-                        </button>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                            @if($asset->sku)
+                            <div class="text-xs text-gray-400">SKU: {{ $asset->sku }}</div>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="badge badge-gray">{{ $asset->category ?? '—' }}</span>
+                        </td>
+                        <td class="text-sm text-gray-700">
+                            {{ $asset->currency ?? 'USD' }} {{ number_format($asset->unit_price ?? 0, 2) }}
+                        </td>
+                        <td>
+                            @php $avail = $asset->available_quantity ?? $asset->stock_quantity; @endphp
+                            <div class="text-sm font-semibold text-gray-800">{{ $avail }} available</div>
+                            <div class="text-xs text-gray-400">of {{ $asset->stock_quantity }} total</div>
+                            @if(($asset->assigned_quantity ?? 0) > 0)
+                            <div class="text-xs text-amber-600">{{ $asset->assigned_quantity }} assigned</div>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                <button onclick="openAssignModal({{ $asset->id }})" class="btn-primary btn-sm">
+                                    &#x1F3AF; Assign Now
+                                </button>
+                                <a href="{{ route('assets.show', $asset->id) }}" class="btn-secondary btn-sm">View</a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
-        <!-- Pagination -->
         @if($availableAssets->hasPages())
-        <div style="margin-top: 30px; display: flex; justify-content: center;">
-            <div>
-                {{ $availableAssets->links('pagination::simple-bootstrap-4') }}
-            </div>
+        <div class="px-4 py-3 border-t border-gray-100">
+            {{ $availableAssets->links() }}
         </div>
         @endif
-    @else
-        <div style="text-align: center; padding: 60px; color: #666;">
-            <div style="font-size: 64px; margin-block-end: 20px;">📦</div>
-            <h3>No Assets Available for Assignment</h3>
-            <p>All requestable assets are either out of stock or fully assigned.</p>
-            <a href="{{ route('assets.index', ['tab' => 'assets']) }}" class="btn-primary" style="margin-block-start: 15px;">
-                View All Assets
-            </a>
+
+        @else
+        <div class="empty-state py-16">
+            <div class="empty-state-icon">&#x1F4E6;</div>
+            <div class="empty-state-msg">No assets available for assignment. All requestable assets are out of stock or fully assigned.</div>
+            <a href="{{ route('assets.index', ['tab' => 'assets']) }}" class="btn-primary mt-4">View All Assets</a>
         </div>
-    @endif
+        @endif
+    </div>
 </div>
 
-<!-- Detailed Assignment Modal -->
-<div id="detailedAssignModal" style="display: none; position: fixed; top: 0; left: 0; inline-size: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-inline-size: 500px; inline-size: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>🎯</span>
-                <span>Asset Assignment Details</span>
-            </h3>
-            <button onclick="closeDetailedAssignModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
+{{-- Detailed Assignment Modal --}}
+<div id="detailedAssignModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="ui-card w-full max-w-lg">
+        <div class="ui-card-header" style="background:#1a3a5c;">
+            <h3 class="text-sm font-semibold text-white m-0">&#x1F3AF; Asset Assignment Details</h3>
+            <button onclick="closeDetailedAssignModal()" class="text-white/70 hover:text-white text-xl leading-none border-0 bg-transparent cursor-pointer">&times;</button>
         </div>
-
-        <!-- Modal Body -->
-        <div style="padding: 20px;">
-            <form id="detailedAssignForm" method="POST" action="{{ route('assets.assign') }}">
+        <div class="ui-card-body">
+            <form id="detailedAssignForm" method="POST" action="{{ route('assets.assign') }}" class="space-y-4">
                 @csrf
 
-                <div style="display: grid; gap: 20px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600;">Asset</label>
-                            <select name="asset_id" id="detailed_asset_id" required style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                                <option value="">Select asset...</option>
-                                @foreach($availableAssets as $asset)
-                                    <option value="{{ $asset->id }}">{{ $asset->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600;">Employee</label>
-                            <select name="employee_id" id="detailed_employee_id" required style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                                <option value="">Select employee...</option>
-                                @foreach($employees as $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->full_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600;">Quantity</label>
-                            <input type="number" name="quantity" id="detailed_quantity" min="1" value="1" required
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600;">Condition</label>
-                            <select name="condition_when_assigned" required style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                                @foreach($conditionOptions as $value => $label)
-                                    <option value="{{ $value }}" {{ $value === 'good' ? 'selected' : '' }}>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600;">Assignment Date</label>
-                            <input type="date" name="assignment_date" value="{{ now()->format('Y-m-d') }}" required
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600;">Expected Return Date</label>
-                            <input type="date" name="expected_return_date"
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                        </div>
-                    </div>
-
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600;">Assignment Notes</label>
-                        <textarea name="assignment_notes" rows="3" placeholder="Optional notes about this assignment..."
-                                  style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
+                        <label class="ui-label">Asset <span class="text-red-500">*</span></label>
+                        <select name="asset_id" id="detailed_asset_id" required class="ui-select">
+                            <option value="">Select asset…</option>
+                            @foreach($availableAssets as $asset)
+                                <option value="{{ $asset->id }}" data-available="{{ $asset->available_quantity ?? $asset->stock_quantity }}">
+                                    {{ $asset->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="ui-label">Employee <span class="text-red-500">*</span></label>
+                        <select name="employee_id" id="detailed_employee_id" required class="ui-select">
+                            <option value="">Select employee…</option>
+                            @foreach($employees as $emp)
+                                <option value="{{ $emp->id }}">{{ $emp->full_name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="submit" class="btn-primary" style="flex: 1;">
-                        🎯 Assign Asset
-                    </button>
-                    <button type="button" onclick="closeDetailedAssignModal()" class="btn">
-                        Cancel
-                    </button>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="ui-label">Quantity <span class="text-red-500">*</span></label>
+                        <input type="number" name="quantity" id="detailed_quantity" min="1" value="1" required class="ui-input">
+                    </div>
+                    <div>
+                        <label class="ui-label">Condition <span class="text-red-500">*</span></label>
+                        <select name="condition_when_assigned" required class="ui-select">
+                            @foreach($conditionOptions as $value => $label)
+                                <option value="{{ $value }}" {{ $value === 'good' ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="ui-label">Assignment Date <span class="text-red-500">*</span></label>
+                        <input type="date" name="assignment_date" value="{{ now()->format('Y-m-d') }}" required class="ui-input">
+                    </div>
+                    <div>
+                        <label class="ui-label">Expected Return <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+                        <input type="date" name="expected_return_date" class="ui-input">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="ui-label">Notes <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+                    <textarea name="assignment_notes" rows="3" class="ui-textarea"
+                              placeholder="Purpose, special instructions…"></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="btn-primary flex-1">&#x1F3AF; Confirm Assignment</button>
+                    <button type="button" onclick="closeDetailedAssignModal()" class="btn-secondary">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
-function openDetailedAssignModal() {
-    const quickAsset = document.getElementById('quick_asset_select').value;
-    const quickEmployee = document.getElementById('quick_employee_select').value;
-    const quickQuantity = document.getElementById('quick_quantity').value;
+document.addEventListener('DOMContentLoaded', function () {
+    ['quick_asset_select','quick_employee_select','detailed_asset_id','detailed_employee_id'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) new TomSelect(el, { allowEmptyOption: true });
+    });
 
-    if (quickAsset) document.getElementById('detailed_asset_id').value = quickAsset;
-    if (quickEmployee) document.getElementById('detailed_employee_id').value = quickEmployee;
-    if (quickQuantity) document.getElementById('detailed_quantity').value = quickQuantity;
-
-    document.getElementById('detailedAssignModal').style.display = 'flex';
-}
-
-function closeDetailedAssignModal() {
-    document.getElementById('detailedAssignModal').style.display = 'none';
-}
-
-function openAssignModal(assetId) {
-    document.getElementById('detailed_asset_id').value = assetId;
-    document.getElementById('detailedAssignModal').style.display = 'flex';
-}
-
-function viewAsset(assetId) {
-    window.location.href = `{{ url('/assets') }}/${assetId}`;
-}
-
-// Update quantity max based on selected asset
-document.getElementById('quick_asset_select').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const available = selectedOption.getAttribute('data-available');
-    if (available) {
-        document.getElementById('quick_quantity').max = available;
-        if (parseInt(document.getElementById('quick_quantity').value) > parseInt(available)) {
-            document.getElementById('quick_quantity').value = available;
-        }
-    }
-});
-
-document.getElementById('detailed_asset_id').addEventListener('change', function() {
-    const assetId = this.value;
-    if (assetId) {
-        const assetOption = document.querySelector(`#quick_asset_select option[value="${assetId}"]`);
-        if (assetOption) {
-            const available = assetOption.getAttribute('data-available');
-            document.getElementById('detailed_quantity').max = available;
-        }
-    }
-});
-
-// Close modal when clicking outside
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('detailedAssignModal');
-    if (event.target === modal) {
-        closeDetailedAssignModal();
-    }
-});
-
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeDetailedAssignModal();
-    }
-});
-
-// Pre-select employee if coming from an approved asset request
-(function() {
+    // Pre-select from URL params (approved request flow)
     const params = new URLSearchParams(window.location.search);
     const employeeId = params.get('employee_id');
     const fromRequest = params.get('from_request');
 
     if (employeeId) {
-        const sel = document.getElementById('quick_employee_select');
-        if (sel) sel.value = employeeId;
-        const detailSel = document.getElementById('detailed_employee_id');
-        if (detailSel) detailSel.value = employeeId;
+        ['quick_employee_select','detailed_employee_id'].forEach(function(id) {
+            const el = document.getElementById(id);
+            if (el && el.tomselect) el.tomselect.setValue(employeeId);
+        });
     }
     if (fromRequest) {
         const banner = document.createElement('div');
-        banner.style.cssText = 'background:#dbeafe;border:1px solid #93c5fd;color:#1e40af;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;';
-        banner.innerHTML = `📦 You're assigning assets from <strong>Approved Request #${fromRequest}</strong>. Employee has been pre-selected below.`;
+        banner.className = 'flash-info mb-4';
+        banner.innerHTML = '&#x1F4E6; Assigning assets from <strong>Approved Request #' + fromRequest + '</strong>. Employee has been pre-selected.';
         const form = document.getElementById('quickAssignForm');
         if (form) form.parentNode.insertBefore(banner, form);
     }
-})();
+
+    // Sync quick-form qty cap when asset changes
+    document.getElementById('quick_asset_select').addEventListener('change', function() {
+        const avail = this.options[this.selectedIndex]?.getAttribute('data-available');
+        if (avail) {
+            const qty = document.getElementById('quick_quantity');
+            qty.max = avail;
+            if (parseInt(qty.value) > parseInt(avail)) qty.value = avail;
+        }
+    });
+
+    document.getElementById('detailed_asset_id').addEventListener('change', function() {
+        const avail = this.options[this.selectedIndex]?.getAttribute('data-available');
+        if (avail) {
+            const qty = document.getElementById('detailed_quantity');
+            qty.max = avail;
+        }
+    });
+});
+
+function openAssignModal(assetId) {
+    const sel = document.getElementById('detailed_asset_id');
+    if (sel && sel.tomselect) sel.tomselect.setValue(assetId);
+    else if (sel) sel.value = assetId;
+    openDetailedAssignModal();
+}
+
+function openDetailedAssignModal() {
+    const quickAsset    = document.getElementById('quick_asset_select')?.value;
+    const quickEmployee = document.getElementById('quick_employee_select')?.value;
+    const quickQty      = document.getElementById('quick_quantity')?.value;
+    const assetSel      = document.getElementById('detailed_asset_id');
+    const empSel        = document.getElementById('detailed_employee_id');
+
+    if (quickAsset && assetSel) {
+        assetSel.tomselect ? assetSel.tomselect.setValue(quickAsset) : (assetSel.value = quickAsset);
+    }
+    if (quickEmployee && empSel) {
+        empSel.tomselect ? empSel.tomselect.setValue(quickEmployee) : (empSel.value = quickEmployee);
+    }
+    if (quickQty) document.getElementById('detailed_quantity').value = quickQty;
+
+    document.getElementById('detailedAssignModal').classList.remove('hidden');
+}
+
+function closeDetailedAssignModal() {
+    document.getElementById('detailedAssignModal').classList.add('hidden');
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDetailedAssignModal();
+});
+
+document.getElementById('detailedAssignModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDetailedAssignModal();
+});
 </script>
+@endpush
