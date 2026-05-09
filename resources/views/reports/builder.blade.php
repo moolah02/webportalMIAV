@@ -864,7 +864,7 @@
                 <label class="rb-label">Description</label>
                 <textarea x-model="saveForm.description" rows="2" class="rb-input" style="resize:vertical;height:60px;"></textarea>
             </div>
-            @if($canManageTemplates)
+            @if($canMakeGlobal)
             <div style="margin-bottom:20px;">
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--rb-text);">
                     <input type="checkbox" x-model="saveForm.isGlobal"> Make visible to all users

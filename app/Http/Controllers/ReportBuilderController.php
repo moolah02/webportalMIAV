@@ -27,15 +27,18 @@ class ReportBuilderController extends Controller
         $fields = $this->queryBuilder->getAvailableFields();
         $filters = $this->queryBuilder->getFilterOptions();
 
-        // Check user capabilities for advanced features
-        $canManageTemplates = $user->can('manage-report-templates');
-        $canPreviewReports = true; // Allow all users to preview reports
-        $canExportReports = true;  // Allow all users to export reports
+        // All authenticated users can save/load their own templates.
+        // Only admins can mark a template as global (visible to all users).
+        $canManageTemplates  = true;
+        $canMakeGlobal       = $user->isAdmin() || $user->hasPermission('manage-report-templates');
+        $canPreviewReports   = true;
+        $canExportReports    = true;
 
         return view('reports.builder', compact(
             'fields',
             'filters',
             'canManageTemplates',
+            'canMakeGlobal',
             'canPreviewReports',
             'canExportReports'
         ));
