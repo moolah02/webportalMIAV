@@ -945,6 +945,7 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::post('/departments', [SettingsController::class, 'storeDepartment'])->name('departments.store');
         Route::put('/departments/{department}', [SettingsController::class, 'updateDepartment'])->name('departments.update');
         Route::delete('/departments/{department}', [SettingsController::class, 'deleteDepartment'])->name('departments.delete');
+        Route::post('/departments/quick-create', [SettingsController::class, 'quickCreateDepartment'])->name('departments.quick-create');
 
         // Asset Category Fields Management Routes
         Route::get('/asset-categories/{category}/fields', [AssetCategoryFieldController::class, 'index'])->name('asset-category-fields.index');

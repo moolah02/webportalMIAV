@@ -246,6 +246,17 @@ class SettingsController extends Controller
         return view('settings.manage-department', compact('departments'));
     }
 
+    public function quickCreateDepartment(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:departments,name',
+        ]);
+
+        $department = Department::create(['name' => $validated['name']]);
+
+        return response()->json(['id' => $department->id, 'name' => $department->name]);
+    }
+
     public function storeDepartment(Request $request)
     {
         $validated = $request->validate([

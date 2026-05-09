@@ -111,12 +111,17 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                             <div>
                                 <label class="form-label">Department *</label>
-                                <select name="department_id" required class="form-input">
-                                    <option value="">-- Select Department --</option>
-                                    @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="flex gap-2 items-center">
+                                    <select name="department_id" id="department_select" required class="form-input flex-1">
+                                        <option value="">-- Select Department --</option>
+                                        @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="button" onclick="openNewDeptModal()"
+                                        title="Add new department"
+                                        style="flex-shrink:0;width:36px;height:36px;border-radius:6px;background:#1a3a5c;color:#fff;border:none;cursor:pointer;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;">+</button>
+                                </div>
                                 @error('department_id') <div class="form-error">{{ $message }}</div> @enderror
                             </div>
                             <div>
@@ -369,5 +374,99 @@
         </div>
     </div>
 </div>
+
+{{-- Quick Add Department Modal --}}
+<div id="newDeptModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="ui-card w-full max-w-sm">
+        <div class="ui-card-header" style="background:#1a3a5c;">
+            <h3 class="text-sm font-semibold text-white m-0">&#x2795; Add New Department</h3>
+            <button onclick="closeNewDeptModal()" class="text-white/70 hover:text-white text-xl leading-none border-0 bg-transparent cursor-pointer">&times;</button>
+        </div>
+        <div class="ui-card-body">
+            <div class="mb-4">
+                <label class="ui-label">Department Name <span class="text-red-500">*</span></label>
+                <input type="text" id="newDeptName" class="ui-input" placeholder="e.g., Legal & Compliance" autofocus>
+                <p id="newDeptError" class="text-xs text-red-500 mt-1 hidden"></p>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="saveNewDept()" id="newDeptSaveBtn" class="btn-primary flex-1">Save Department</button>
+                <button type="button" onclick="closeNewDeptModal()" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openNewDeptModal() {
+    document.getElementById('newDeptName').value = '';
+    document.getElementById('newDeptError').classList.add('hidden');
+    document.getElementById('newDeptModal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('newDeptName').focus(), 50);
+}
+
+function closeNewDeptModal() {
+    document.getElementById('newDeptModal').classList.add('hidden');
+}
+
+function saveNewDept() {
+    const name = document.getElementById('newDeptName').value.trim();
+    const errEl = document.getElementById('newDeptError');
+    const btn = document.getElementById('newDeptSaveBtn');
+
+    if (!name) {
+        errEl.textContent = 'Department name is required.';
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    btn.textContent = 'Saving…';
+    btn.disabled = true;
+    errEl.classList.add('hidden');
+
+    fetch('{{ route("departments.quick-create") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                         || '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ name })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.errors) {
+            errEl.textContent = Object.values(data.errors)[0][0];
+            errEl.classList.remove('hidden');
+            return;
+        }
+        const sel = document.getElementById('department_select');
+        const opt = document.createElement('option');
+        opt.value = data.id;
+        opt.textContent = data.name;
+        opt.selected = true;
+        sel.appendChild(opt);
+        closeNewDeptModal();
+    })
+    .catch(() => {
+        errEl.textContent = 'Failed to save department. Please try again.';
+        errEl.classList.remove('hidden');
+    })
+    .finally(() => {
+        btn.textContent = 'Save Department';
+        btn.disabled = false;
+    });
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeNewDeptModal();
+    if (e.key === 'Enter' && !document.getElementById('newDeptModal').classList.contains('hidden')) {
+        e.preventDefault();
+        saveNewDept();
+    }
+});
+document.getElementById('newDeptModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('newDeptModal')) closeNewDeptModal();
+});
+</script>
 
 @endsection
