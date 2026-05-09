@@ -619,9 +619,17 @@ public function store(Request $request)
             $issues[] = "{$unvisited} terminal(s) have not been visited";
         }
 
-        // Check for pending assignments
+        // Check for pending assignments — exclude those completed via mobile app
+        // (mobile visits write to `visits` table without updating job_assignments.status)
+        $mobileCompletedIds = DB::table('visits')
+            ->join('job_assignments', 'visits.assignment_id', '=', 'job_assignments.id')
+            ->where('job_assignments.project_id', $project->id)
+            ->distinct()
+            ->pluck('visits.assignment_id');
+
         $pendingAssignments = JobAssignment::where('project_id', $project->id)
             ->whereIn('status', ['assigned', 'in_progress'])
+            ->whereNotIn('id', $mobileCompletedIds)
             ->count();
 
         if ($pendingAssignments > 0) {
@@ -1309,7 +1317,6 @@ private function calculateDetailedProgress($project)
 
     foreach ($assignmentData as $assignment) {
         if ($assignment->pos_terminals) {
-            // FIX: Check if it's already an array or needs to be decoded
             $terminals = is_array($assignment->pos_terminals)
                 ? $assignment->pos_terminals
                 : json_decode($assignment->pos_terminals, true);
@@ -1320,18 +1327,32 @@ private function calculateDetailedProgress($project)
         }
     }
 
-    // Count completed assignments (not individual terminals)
-    $completedAssignments = $assignments->where('status', 'completed')->count();
+    // Find assignments completed via mobile app (have a row in visits table)
+    // even if job_assignments.status wasn't updated to 'completed'
+    $mobileCompletedIds = DB::table('visits')
+        ->whereIn('assignment_id', $assignmentData->pluck('id'))
+        ->distinct()
+        ->pluck('assignment_id');
 
-    // Count total visits for this project (visits table stores mobile app completions)
+    // Treat assignments with mobile visits as effectively completed
+    $assignmentData = $assignmentData->map(function ($assignment) use ($mobileCompletedIds) {
+        if ($mobileCompletedIds->contains($assignment->id) && $assignment->status !== 'completed') {
+            $assignment->status = 'completed';
+        }
+        return $assignment;
+    });
+
+    $completedAssignments = $assignmentData->where('status', 'completed')->count();
+
+    // Count total visits for this project (visits table = mobile app completions)
     $totalVisits = DB::table('visits as v')
         ->join('job_assignments as ja', 'v.assignment_id', '=', 'ja.id')
         ->where('ja.project_id', $project->id)
         ->count();
 
-    // Calculate completion percentage based on assignments
-    $completionPercentage = $totalAssignments > 0 ?
-        round(($completedAssignments / $totalAssignments) * 100, 1) : 0;
+    $completionPercentage = $totalAssignments > 0
+        ? round(($completedAssignments / $totalAssignments) * 100, 1)
+        : 0;
 
     return [
         'total_terminals' => $totalTerminals,
@@ -1389,10 +1410,22 @@ private function calculateProjectProgress($project)
     }
 
     try {
-        $assignmentsByStatus = JobAssignment::where('project_id', $project->id)
-            ->selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')
-            ->pluck('count', 'status');
+        $allAssignments = JobAssignment::where('project_id', $project->id)->get(['id', 'status']);
+
+        // Treat assignments with mobile visits as completed
+        $mobileCompletedIds = DB::table('visits')
+            ->whereIn('assignment_id', $allAssignments->pluck('id'))
+            ->distinct()
+            ->pluck('assignment_id');
+
+        $allAssignments = $allAssignments->map(function ($a) use ($mobileCompletedIds) {
+            if ($mobileCompletedIds->contains($a->id) && $a->status !== 'completed') {
+                $a->status = 'completed';
+            }
+            return $a;
+        });
+
+        $assignmentsByStatus = $allAssignments->groupBy('status')->map->count();
     } catch (\Exception $e) {
         Log::warning('Could not get assignment status: ' . $e->getMessage());
         $assignmentsByStatus = collect();
