@@ -9,13 +9,13 @@
     <div class="flex justify-between items-end mb-5">
         <div>
             <h2 class="text-lg font-semibold text-gray-900">
-                @if($direction === 'company_held') Business Licenses
+                @if($direction === 'company_held') Internal Licenses
                 @elseif($direction === 'customer_issued') Customer Licenses
                 @else All Licenses — History &amp; Lookup
                 @endif
             </h2>
             <p class="text-sm text-gray-500 mt-0.5">
-                @if($direction === 'company_held') Repository of licenses and compliance records
+                @if($direction === 'company_held') Internal licenses and compliance records
                 @elseif($direction === 'customer_issued') Repository of customer-issued licenses
                 @else Complete record of all issued and held licenses
                 @endif
@@ -26,7 +26,7 @@
             <a href="{{ route('business-licenses.compliance', ['direction' => $direction]) }}" class="btn-secondary">Compliance</a>
             <a href="{{ route('business-licenses.expiring', ['direction' => $direction]) }}" class="btn-secondary">Expiring</a>
             <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn-primary">
-                + Add {{ $direction === 'company_held' ? 'License' : 'Customer License' }}
+                + Add {{ $direction === 'company_held' ? 'Internal License' : 'Customer License' }}
             </a>
         </div>
         @endif
@@ -35,7 +35,7 @@
     {{-- Direction toggle --}}
     <div class="flex gap-1 mb-5">
         <a href="{{ route('business-licenses.index', ['direction' => 'company_held']) }}"
-           class="{{ $direction === 'company_held' ? 'btn-primary btn-sm' : 'btn-secondary btn-sm' }}">Our Licenses</a>
+           class="{{ $direction === 'company_held' ? 'btn-primary btn-sm' : 'btn-secondary btn-sm' }}">Internal Licenses</a>
         <a href="{{ route('business-licenses.index', ['direction' => 'customer_issued']) }}"
            class="{{ $direction === 'customer_issued' ? 'btn-primary btn-sm' : 'btn-secondary btn-sm' }}">Customer Licenses</a>
         <a href="{{ route('business-licenses.index', ['direction' => 'all']) }}"
@@ -164,7 +164,7 @@
                 <div class="stat-icon stat-icon-blue">🏢</div>
                 <div>
                     <div class="stat-number">{{ $stats['company_held'] }}</div>
-                    <div class="stat-label">Company-Held</div>
+                    <div class="stat-label">Internal</div>
                 </div>
             </div>
             <div class="stat-card">
@@ -382,9 +382,9 @@
         @else
             <div style="text-align:center;padding:48px;">
                 <h3 style="color:#374151;margin-bottom:8px;font-weight:600;">No records found</h3>
-                <p style="color:#6b7280;margin-bottom:16px;">Start by adding a {{ $direction === 'company_held' ? 'business license' : 'customer license' }}.</p>
+                <p style="color:#6b7280;margin-bottom:16px;">Start by adding a {{ $direction === 'company_held' ? 'internal license' : 'customer license' }}.</p>
                 <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn-primary">
-                    Add {{ $direction === 'company_held' ? 'License' : 'Customer License' }}
+                    Add {{ $direction === 'company_held' ? 'Internal License' : 'Customer License' }}
                 </a>
             </div>
         @endif

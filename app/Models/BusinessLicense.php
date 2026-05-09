@@ -71,7 +71,7 @@ class BusinessLicense extends Model
 
     // License Direction Constants
     const LICENSE_DIRECTIONS = [
-        'company_held' => 'Company Held License',
+        'company_held' => 'Internal License',
         'customer_issued' => 'Customer Issued License'
     ];
 

@@ -8,7 +8,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <p style="color: #666; margin: 5px 0 0 0;">
-                {{ $direction === 'company_held' ? 'Register a company-held business license for compliance tracking' : 'Register a license issued to a customer' }}
+                {{ $direction === 'company_held' ? 'Register an internal license for compliance tracking' : 'Register a license issued to a customer' }}
             </p>
         </div>
         <a href="{{ route('business-licenses.index', ['direction' => $direction]) }}" class="btn-secondary">← Back to Licenses</a>
