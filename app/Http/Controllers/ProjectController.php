@@ -93,8 +93,7 @@ class ProjectController extends Controller
             ->orderBy('company_name')
             ->get();
 
-        $projectManagers = Employee::where('status', 'active')
-            ->whereHas('role', function($query) {
+        $projectManagers = Employee::whereHas('role', function($query) {
                 $query->whereJsonContains('permissions', 'manage_projects')
                       ->orWhereJsonContains('permissions', 'all');
             })
@@ -121,8 +120,7 @@ class ProjectController extends Controller
             ->orderBy('company_name')
             ->get();
 
-        $projectManagers = Employee::where('status', 'active')
-            ->whereHas('role', function($query) {
+        $projectManagers = Employee::whereHas('role', function($query) {
                 $query->whereJsonContains('permissions', 'manage_projects')
                       ->orWhereJsonContains('permissions', 'all');
             })
@@ -297,8 +295,7 @@ public function store(Request $request)
     public function edit(Project $project)
     {
         $clients = Client::where('status', 'active')->orderBy('company_name')->get();
-        $projectManagers = Employee::where('status', 'active')
-            ->whereHas('role', function($query) {
+        $projectManagers = Employee::whereHas('role', function($query) {
                 $query->whereJsonContains('permissions', 'manage_projects')
                       ->orWhereJsonContains('permissions', 'all');
             })

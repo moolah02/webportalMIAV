@@ -823,8 +823,7 @@ class AssetController extends Controller
     // Get available employees for AJAX
     public function getAvailableEmployees(Request $request)
     {
-        $employees = Employee::where('status', 'active')
-                            ->with('department:id,name')
+        $employees = Employee::with('department:id,name')
                             ->when($request->search, function($query, $search) {
                                 $query->where(function($q) use ($search) {
                                     $q->where('first_name', 'like', "%{$search}%")

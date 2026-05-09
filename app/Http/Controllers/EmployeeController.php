@@ -78,9 +78,7 @@ private function filterExistingColumns(string $table, array $data): array
 public function create()
 {
     try {
-        // Fix: Get managers without using scopes that don't exist
-        $managers = Employee::where('status', 'active')
-            ->whereHas('roles', function($query) {
+        $managers = Employee::whereHas('roles', function($query) {
                 $query->where('name', 'like', '%manager%')
                       ->orWhere('name', 'like', '%admin%')
                       ->orWhereJsonContains('permissions', 'manage_team')

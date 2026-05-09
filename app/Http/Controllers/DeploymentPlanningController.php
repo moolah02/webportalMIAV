@@ -37,9 +37,8 @@ class DeploymentPlanningController extends Controller
         ->orderBy('sort_order')
         ->get();
 
-    // Get technicians
-    $technicians = Employee::where('status', 'active')
-        ->whereHas('role', function($q) {
+    // Get technicians (all roles matching — no status filter to avoid missing employees)
+    $technicians = Employee::whereHas('role', function($q) {
             $q->whereIn('name', ['Technician', 'Field Technician', 'Maintenance']);
         })
         ->select('id', 'first_name', 'last_name', 'phone', 'role_id')

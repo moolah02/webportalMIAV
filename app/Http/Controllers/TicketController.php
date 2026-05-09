@@ -75,9 +75,7 @@ class TicketController extends Controller
             ->orderBy('terminal_id')
             ->get();
 
-        // Load all active employees for assignment dropdown (not just exact-match technicians)
-        $technicians = Employee::where('status', 'active')
-            ->select('id', 'first_name', 'last_name')
+        $technicians = Employee::select('id', 'first_name', 'last_name')
             ->orderBy('first_name')
             ->get();
 
@@ -187,8 +185,7 @@ class TicketController extends Controller
             ->orderBy('terminal_id')
             ->get();
 
-        $technicians = Employee::where('status', 'active')
-            ->select('id', 'first_name', 'last_name')
+        $technicians = Employee::select('id', 'first_name', 'last_name')
             ->orderBy('first_name')
             ->get();
 
