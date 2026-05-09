@@ -41,8 +41,8 @@
                         <tr><td class="px-3 py-1.5 font-mono">barcode</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Barcode / serial</td></tr>
                         <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">unit_price</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Numeric, e.g. 1200.00</td></tr>
                         <tr><td class="px-3 py-1.5 font-mono">currency</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Default: USD</td></tr>
-                        <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">stock_quantity</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Integer, default 0</td></tr>
-                        <tr><td class="px-3 py-1.5 font-mono">min_stock_level</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Low-stock threshold</td></tr>
+                        <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">stock_quantity</td><td class="px-3 py-1.5 text-red-500">Yes</td><td class="px-3 py-1.5">Integer, e.g. 10</td></tr>
+                        <tr><td class="px-3 py-1.5 font-mono">min_stock_level</td><td class="px-3 py-1.5 text-red-500">Yes</td><td class="px-3 py-1.5">Low-stock alert threshold</td></tr>
                         <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">status</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Default: active</td></tr>
                         <tr><td class="px-3 py-1.5 font-mono">is_requestable</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">1 = yes, 0 = no</td></tr>
                         <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">requires_approval</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">1 = yes, 0 = no</td></tr>

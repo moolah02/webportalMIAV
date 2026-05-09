@@ -1089,10 +1089,16 @@ public function getAssignmentData(AssetAssignment $assignment)
         try {
             foreach (array_slice($rows, 1) as $i => $row) {
                 $rowNum = $i + 2;
-                $name   = trim($row[$col['name'] ?? -1] ?? '');
+                $name  = trim($row[$col['name'] ?? -1] ?? '');
+                $stock = $row[$col['stock_quantity'] ?? -1] ?? '';
+                $min   = $row[$col['min_stock_level'] ?? -1] ?? '';
 
                 if ($name === '') {
                     $skipped[] = "Row {$rowNum}: missing name";
+                    continue;
+                }
+                if (!is_numeric($stock) || !is_numeric($min)) {
+                    $skipped[] = "Row {$rowNum}: stock_quantity and min_stock_level are required integers";
                     continue;
                 }
 
@@ -1106,8 +1112,8 @@ public function getAssignmentData(AssetAssignment $assignment)
                     'barcode'          => $row[$col['barcode'] ?? -1] ?? null,
                     'unit_price'       => is_numeric($row[$col['unit_price'] ?? -1] ?? '') ? $row[$col['unit_price']] : null,
                     'currency'         => $row[$col['currency'] ?? -1] ?? 'USD',
-                    'stock_quantity'   => (int) ($row[$col['stock_quantity'] ?? -1] ?? 0),
-                    'min_stock_level'  => (int) ($row[$col['min_stock_level'] ?? -1] ?? 0),
+                    'stock_quantity'   => (int) ($row[$col['stock_quantity'] ?? -1] ?? null),
+                    'min_stock_level'  => (int) ($row[$col['min_stock_level'] ?? -1] ?? null),
                     'status'           => $row[$col['status'] ?? -1] ?? 'active',
                     'is_requestable'   => filter_var($row[$col['is_requestable'] ?? -1] ?? false, FILTER_VALIDATE_BOOLEAN),
                     'requires_approval'=> filter_var($row[$col['requires_approval'] ?? -1] ?? false, FILTER_VALIDATE_BOOLEAN),
