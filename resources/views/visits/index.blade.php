@@ -61,6 +61,7 @@
                     <th>Merchant</th>
                     <th>Employee</th>
                     <th>Assignment</th>
+                    <th>Status</th>
                     <th>Terminal</th>
                     <th>Summary</th>
                     <th>Evidence</th>
@@ -93,6 +94,14 @@
                         <td class="text-sm text-gray-700">{{ optional($v->employee)->full_name ?? $v->employee_id }}</td>
                         <td>
                             <span class="text-xs font-medium text-gray-600">{{ $v->assignment_id ?? '&#x2014;' }}</span>
+                        </td>
+                        <td>
+                            @if($v->completed_at)
+                                <span class="badge badge-green">&#x2713; Completed</span>
+                                <div class="text-xs text-gray-400 mt-1">{{ $v->completed_at->format('M j, g:i A') }}</div>
+                            @else
+                                <span class="badge badge-yellow">&#x23F3; Pending</span>
+                            @endif
                         </td>
                         <td>
                             @php $completeTerminal = $v->getCompleteTerminalInfo(); @endphp
