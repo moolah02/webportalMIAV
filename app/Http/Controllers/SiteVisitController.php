@@ -232,6 +232,7 @@ class SiteVisitController extends Controller
                 $visit->visit_date = $visit->started_at ?? $now;
 
                 $visit->save();
+                $this->syncTerminal($terminal, $visit);
 
                 $created[] = [
                     'id'         => $visit->id,
@@ -333,6 +334,12 @@ class SiteVisitController extends Controller
             'corrective_action'            => $validated['corrective_action'] ?? null,
             'visit_summary'                => $validated['visit_summary'] ?? null,
         ]);
+
+        // Sync pos_terminal last_service_date and status
+        $posTerminal = PosTerminal::find($validated['pos_terminal_id']);
+        if ($posTerminal) {
+            $this->syncTerminal($posTerminal, $visit);
+        }
 
         ActivityLog::log(
             'created',
@@ -472,6 +479,11 @@ class SiteVisitController extends Controller
         }
 
         $visit->fill($validated)->save();
+
+        // Sync pos_terminal when a visit is updated (status/terminal condition may have changed)
+        if ($visit->pos_terminal_id && $visit->posTerminal) {
+            $this->syncTerminal($visit->posTerminal, $visit);
+        }
 
         return response()->json([
             'success' => true,
@@ -659,6 +671,33 @@ class SiteVisitController extends Controller
             'visits'  => $visits,
             'count'   => $visits->count(),
         ]);
+    }
+
+    /**
+     * Sync pos_terminals record after a visit is saved/updated.
+     * Updates last_service_date and status based on visit outcome.
+     */
+    private function syncTerminal(PosTerminal $terminal, TechnicianVisit $visit): void
+    {
+        $statusMap = [
+            'working'          => 'active',
+            'not_working'      => 'faulty',
+            'needs_maintenance'=> 'maintenance',
+            // 'not_found' — don't change the status; terminal may just be offline temporarily
+        ];
+
+        $serviceDate = optional($visit->ended_at ?? $visit->started_at)->toDateString()
+                       ?? now()->toDateString();
+
+        $update = ['last_service_date' => $serviceDate];
+
+        $visitStatus = $visit->terminal_status_during_visit;
+        if ($visitStatus && isset($statusMap[$visitStatus])) {
+            $update['status']         = $statusMap[$visitStatus];
+            $update['current_status'] = $statusMap[$visitStatus];
+        }
+
+        $terminal->update($update);
     }
 
     public function editTerminal(Request $request)

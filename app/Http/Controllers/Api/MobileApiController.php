@@ -160,10 +160,14 @@ class MobileApiController extends Controller
             ]);
 
             $terminal = PosTerminal::find($request->pos_terminal_id);
-            $terminal->update([
-                'last_service_date' => Carbon::parse($request->visit_date)->toDateString(),
-                'current_status'    => $this->mapTerminalStatus($request->terminal_status),
-            ]);
+            if ($terminal) {
+                $mappedStatus = $this->mapTerminalStatus($request->terminal_status);
+                $terminal->update([
+                    'last_service_date' => Carbon::parse($request->visit_date)->toDateString(),
+                    'status'            => $mappedStatus,
+                    'current_status'    => $mappedStatus,
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
