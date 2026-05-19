@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TechnicianVisit;
 use App\Models\TechnicianVisitAttachment;
+use App\Models\Visit;
 use App\Models\JobAssignment;
 use App\Models\Employee;
 use App\Models\PosTerminal;
@@ -322,9 +323,38 @@ class SiteVisitController extends Controller
             'visit_summary'         => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $visit = TechnicianVisit::create([
+        $posTerminal = PosTerminal::with('client')->findOrFail($validated['pos_terminal_id']);
+        $completedAt = $validated['ended_at'] ?? $validated['started_at'];
+
+        // Build a combined visit summary from all notes fields
+        $summaryParts = array_filter([
+            $validated['visit_summary'] ?? null,
+            $validated['condition_notes'] ? 'Condition: ' . $validated['condition_notes'] : null,
+            $validated['issues_found']   ? 'Issues: '    . $validated['issues_found']   : null,
+        ]);
+        $fullSummary = implode(' | ', $summaryParts) ?: null;
+
+        // --- Save to visits table (shown on the main /visits Site Visit page) ---
+        $visitRecord = Visit::create([
+            'employee_id'   => $validated['technician_id'],
+            'merchant_id'   => $posTerminal->client_id,
+            'merchant_name' => $posTerminal->merchant_name,
+            'assignment_id' => $validated['job_assignment_id'] ?? null,
+            'completed_at'  => $completedAt,
+            'visit_summary' => $fullSummary,
+            'action_points' => $validated['corrective_action'] ?? null,
+            'terminal'      => [
+                'terminal_id' => $posTerminal->terminal_id,
+                'status'      => $validated['terminal_status'],
+                'model'       => $posTerminal->terminal_model,
+                'serial'      => $posTerminal->serial_number,
+            ],
+        ]);
+
+        // --- Also save to technician_visits for detailed technical tracking ---
+        $techVisit = TechnicianVisit::create([
             'technician_id'                => $validated['technician_id'],
-            'pos_terminal_id'              => $validated['pos_terminal_id'],
+            'pos_terminal_id'              => $posTerminal->id,
             'job_assignment_id'            => $validated['job_assignment_id'] ?? null,
             'started_at'                   => $validated['started_at'],
             'ended_at'                     => $validated['ended_at'] ?? null,
@@ -335,19 +365,16 @@ class SiteVisitController extends Controller
             'visit_summary'                => $validated['visit_summary'] ?? null,
         ]);
 
-        // Sync pos_terminal last_service_date and status
-        $posTerminal = PosTerminal::find($validated['pos_terminal_id']);
-        if ($posTerminal) {
-            $this->syncTerminal($posTerminal, $visit);
-        }
+        // Sync pos_terminals last_service_date and status
+        $this->syncTerminal($posTerminal, $techVisit);
 
         ActivityLog::log(
             'created',
-            "Manual site visit logged for terminal #{$visit->pos_terminal_id} by technician #{$visit->technician_id}",
-            $visit
+            "Manual site visit logged for terminal {$posTerminal->terminal_id} by employee #{$validated['technician_id']}",
+            $visitRecord
         );
 
-        return redirect()->route('site_visits.index')
+        return redirect()->route('visits.index')
             ->with('success', 'Site visit logged successfully.');
     }
 
