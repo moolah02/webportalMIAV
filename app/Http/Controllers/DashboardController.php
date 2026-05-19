@@ -356,8 +356,8 @@ class DashboardController extends Controller
                     'icon' => '🔄',
                     'color' => '#4caf50',
                     'title' => 'License Renewed',
-                    'description' => "Renewed: {$license->license_name} until {$license->expiry_date->format('M Y')}",
-                    'time' => $license->renewal_date->diffForHumans(),
+                    'description' => "Renewed: {$license->license_name}" . ($license->expiry_date ? ' until ' . $license->expiry_date->format('M Y') : ''),
+                    'time' => optional($license->renewal_date)->diffForHumans() ?? 'Recently',
                     'action' => [
                         'url' => route('business-licenses.show', $license),
                         'label' => 'View'
@@ -396,7 +396,7 @@ class DashboardController extends Controller
                     'icon' => '📋',
                     'color' => '#ff9800',
                     'title' => 'Job Assignment Created',
-                    'description' => "Assignment {$job->assignment_id} created for {$job->technician->name}",
+                    'description' => "Assignment {$job->assignment_id} created" . ($job->technician ? " for {$job->technician->first_name} {$job->technician->last_name}" : ''),
                     'time' => $job->created_at->diffForHumans(),
                 ]);
             }
@@ -413,12 +413,14 @@ class DashboardController extends Controller
                     ->get();
 
                 foreach ($recentVisits as $visit) {
+                    $date = $visit->started_at ?? $visit->visit_date;
+                    if (!$date) continue;
                     $activities->push([
                         'icon' => '🔧',
                         'color' => '#9c27b0',
                         'title' => 'Technician Visit Completed',
-                        'description' => "{$visit->technician->name} visited terminal {$visit->posTerminal->terminal_id}",
-                        'time' => $visit->visit_date->diffForHumans(),
+                        'description' => ($visit->technician ? ($visit->technician->first_name . ' ' . $visit->technician->last_name) : 'A technician') . ' visited terminal ' . ($visit->posTerminal->terminal_id ?? 'N/A'),
+                        'time' => $date->diffForHumans(),
                     ]);
                 }
             } catch (\Exception $e) {
