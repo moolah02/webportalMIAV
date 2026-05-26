@@ -368,6 +368,22 @@ class SiteVisitController extends Controller
         // Sync pos_terminals last_service_date and status
         $this->syncTerminal($posTerminal, $techVisit);
 
+        // Update job assignment status based on visit progress
+        if (!empty($validated['job_assignment_id'])) {
+            $assignment = JobAssignment::find($validated['job_assignment_id']);
+            if ($assignment && !in_array($assignment->status, ['completed', 'closed'])) {
+                $allTerminalIds = is_array($assignment->pos_terminals) ? $assignment->pos_terminals : [];
+                if (count($allTerminalIds) > 0) {
+                    $visitedCount = TechnicianVisit::where('job_assignment_id', $assignment->id)
+                        ->whereIn('pos_terminal_id', $allTerminalIds)
+                        ->distinct('pos_terminal_id')
+                        ->count('pos_terminal_id');
+                    $newStatus = $visitedCount >= count($allTerminalIds) ? 'completed' : 'in_progress';
+                    $assignment->update(['status' => $newStatus]);
+                }
+            }
+        }
+
         ActivityLog::log(
             'created',
             "Manual site visit logged for terminal {$posTerminal->terminal_id} by employee #{$validated['technician_id']}",

@@ -63,7 +63,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Needed By Date</label>
                             <input type="date" name="needed_by_date" value="{{ old('needed_by_date') }}"
-                                   min="{{ date('Y-m-d', strtotime('+1 day')) }}"
+                                   min="{{ date('Y-m-d') }}"
                                    style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
                             @error('needed_by_date')
                                 <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>

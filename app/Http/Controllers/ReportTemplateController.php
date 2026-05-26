@@ -61,7 +61,8 @@ class ReportTemplateController extends Controller
             ]);
 
             // Check permissions for global templates
-            if (($validated['is_global'] ?? false) && !$user->can('manage-report-templates')) {
+            $canGlobal = $user->isAdmin() || $user->can('manage-report-templates');
+            if (($validated['is_global'] ?? false) && !$canGlobal) {
                 return response()->json([
                     'error' => 'Insufficient permissions to create global templates'
                 ], 403);
