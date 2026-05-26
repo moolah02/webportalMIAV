@@ -172,7 +172,7 @@ class SiteVisitController extends Controller
             // per-terminal payload (required)
             'terminals'                    => ['required','array','min:1'],
             'terminals.*.terminal_id'      => ['required','integer','exists:pos_terminals,id'],
-            'terminals.*.status'           => ['nullable', Rule::in(['working','not_working','needs_maintenance','not_found'])],
+            'terminals.*.status'           => ['nullable', Rule::in(['active','inactive','not_found','relocated','replaced'])],
             'terminals.*.comments'         => ['nullable','string'],
         ]);
 
@@ -316,7 +316,7 @@ class SiteVisitController extends Controller
             'job_assignment_id'     => ['nullable', 'exists:job_assignments,id'],
             'started_at'            => ['required', 'date'],
             'ended_at'              => ['nullable', 'date', 'after_or_equal:started_at'],
-            'terminal_status'       => ['required', 'in:working,not_working,needs_maintenance,not_found'],
+            'terminal_status'       => ['required', 'in:active,inactive,not_found,relocated,replaced'],
             'condition_notes'       => ['nullable', 'string', 'max:1000'],
             'issues_found'          => ['nullable', 'string', 'max:1000'],
             'corrective_action'     => ['nullable', 'string', 'max:1000'],
@@ -504,7 +504,7 @@ class SiteVisitController extends Controller
             'corrective_action'             => ['nullable','string'],
             'visit_summary'                 => ['nullable','string'],
             'recommended_next_action'       => ['nullable','string'],
-            'terminal_status_during_visit'  => ['nullable', Rule::in(['working','not_working','needs_maintenance','not_found'])],
+            'terminal_status_during_visit'  => ['nullable', Rule::in(['active','inactive','not_found','relocated','replaced'])],
 
             'merchant_sign_off_name'        => ['nullable','string','max:120'],
             'require_signature'             => ['nullable','boolean'],
@@ -723,10 +723,11 @@ class SiteVisitController extends Controller
     private function syncTerminal(PosTerminal $terminal, TechnicianVisit $visit): void
     {
         $statusMap = [
-            'working'          => 'active',
-            'not_working'      => 'faulty',
-            'needs_maintenance'=> 'maintenance',
-            // 'not_found' — don't change the status; terminal may just be offline temporarily
+            'active'    => 'active',
+            'inactive'  => 'faulty',
+            'relocated' => 'offline',
+            'replaced'  => 'offline',
+            // 'not_found' — don't change status; terminal may just be temporarily missing
         ];
 
         $serviceDate = optional($visit->ended_at ?? $visit->started_at)->toDateString()

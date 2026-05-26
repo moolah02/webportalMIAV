@@ -432,57 +432,60 @@
 .rb-confirm-icon { font-size:36px; text-align:center; margin-bottom:12px; }
 .rb-confirm p { font-size:14px; color:var(--rb-sub); margin:0 0 20px; line-height:1.6; }
 
-/* ─── Chart panel ────────────────────────────────────────────── */
-.rb-chart-panel {
-    background: var(--rb-surface);
-    border: 1px solid var(--rb-border);
-    border-radius: var(--rb-radius);
-    box-shadow: var(--rb-shadow);
+/* ─── Chart fullscreen modal ─────────────────────────────────── */
+.rb-chart-modal {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(10,20,40,0.92);
+    display: flex; flex-direction: column;
+    animation: rbChartFadeIn .18s ease;
+}
+@keyframes rbChartFadeIn { from { opacity:0; } to { opacity:1; } }
+.rb-chart-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    background: #0f1e35;
     flex-shrink: 0;
-    height: 420px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    gap: 10px; flex-wrap: wrap;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.rb-chart-modal-title {
+    font-size: 14px; font-weight: 700; color: #e2e8f0;
+    letter-spacing: .04em;
+}
+.rb-chart-modal-body {
+    flex: 1; min-height: 0; padding: 24px 32px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+}
+.rb-chart-modal-body canvas {
+    max-width: 100%; max-height: 100%;
+}
+.rb-chart-select {
+    height: 30px; padding: 0 8px;
+    border: 1px solid rgba(255,255,255,.2); border-radius: 6px;
+    font-size: 12px; color: #e2e8f0; background: rgba(255,255,255,.08);
+    cursor: pointer; max-width: 160px;
+}
+.rb-chart-select option { background:#1e3050; color:#e2e8f0; }
+.rb-chart-type-group {
+    display: flex; align-items: center; gap: 2px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+    border-radius: 7px; padding: 2px;
 }
 .rb-btn-export-chart {
     display:inline-flex;align-items:center;gap:4px;
-    height:26px;padding:0 10px;font-size:11px;font-weight:600;
-    border:1px solid var(--rb-border);border-radius:6px;
-    background:var(--rb-surface);color:var(--rb-sub);cursor:pointer;
+    height:30px;padding:0 12px;font-size:12px;font-weight:600;
+    border:1px solid rgba(255,255,255,.2);border-radius:6px;
+    background:rgba(255,255,255,.1);color:#e2e8f0;cursor:pointer;
     transition:background .15s;white-space:nowrap;
 }
-.rb-btn-export-chart:hover { background:#f1f5f9; }
-.rb-chart-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 9px 14px;
-    border-bottom: 1px solid var(--rb-border);
-    background: var(--rb-muted);
-    flex-shrink: 0;
-    gap: 8px; flex-wrap: wrap;
-}
-.rb-chart-title {
-    font-size: 12px; font-weight: 700; color: var(--rb-sub);
-    text-transform: uppercase; letter-spacing: .06em;
-}
-.rb-chart-body { flex: 1; min-height: 0; padding: 10px 14px; position: relative; }
-.rb-chart-select {
-    height: 26px; padding: 0 6px;
-    border: 1px solid var(--rb-border); border-radius: 6px;
-    font-size: 11px; color: var(--rb-text); background: var(--rb-surface);
-    cursor: pointer; max-width: 140px;
-}
-.rb-chart-type-group {
-    display: flex; align-items: center; gap: 2px;
-    background: var(--rb-muted); border: 1px solid var(--rb-border);
-    border-radius: 7px; padding: 2px;
-}
+.rb-btn-export-chart:hover { background:rgba(255,255,255,.2); }
 .rb-chart-type-btn {
-    padding: 3px 9px; border: none; background: none; border-radius: 5px;
-    cursor: pointer; font-size: 13px; transition: all .12s; color: var(--rb-sub);
-    font-family: inherit;
+    padding: 4px 12px; border: none; background: none; border-radius: 5px;
+    cursor: pointer; font-size: 13px; font-weight: 500; transition: all .12s;
+    color: #94a3b8; font-family: inherit;
 }
-.rb-chart-type-btn:hover { background: #e2e8f0; color: var(--rb-text); }
-.rb-chart-type-active { background: #fff !important; color: var(--rb-accent) !important; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.rb-chart-type-btn:hover { background: rgba(255,255,255,.15); color: #e2e8f0; }
+.rb-chart-type-active { background: #fff !important; color: #1a3a5c !important; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 .rb-btn-chart-on { background: #eff6ff !important; color: #1d4ed8 !important; border-color: #93c5fd !important; }
 </style>
 
@@ -760,18 +763,26 @@
                     </div>
                 </div>
 
-                {{-- Chart Panel --}}
-                <div class="rb-chart-panel" x-show="showChart && reportData && reportData.length > 0">
-                    <div class="rb-chart-head">
-                        <div class="rb-chart-title">&#128200; Visualisation</div>
-                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                            <div style="display:flex;align-items:center;gap:5px;" x-show="reportColumns.length > 1">
+                {{-- Chart Fullscreen Modal --}}
+                <div class="rb-chart-modal" x-show="showChart && reportData && reportData.length > 0"
+                     x-transition:enter="transition ease-out duration-150"
+                     @keydown.escape.window="showChart=false;destroyChart()"
+                     style="display:none;">
+                    <div class="rb-chart-modal-head">
+                        <div class="rb-chart-modal-title">&#128200; Chart Visualisation
+                            <span x-show="reportData" style="font-weight:400;font-size:12px;color:#94a3b8;margin-left:8px;"
+                                  x-text="reportData ? reportData.length + ' rows' : ''"></span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <div style="display:flex;align-items:center;gap:6px;" x-show="reportColumns.length > 1">
+                                <span style="font-size:11px;color:#94a3b8;">Label</span>
                                 <select x-model="chartLabelCol" @change="renderChart()" class="rb-chart-select" title="Label / X-axis column">
                                     <template x-for="col in reportColumns" :key="col">
                                         <option :value="col" x-text="col"></option>
                                     </template>
                                 </select>
-                                <span style="font-size:11px;color:#94a3b8;">&#8594;</span>
+                                <span style="font-size:13px;color:#64748b;">&#8594;</span>
+                                <span style="font-size:11px;color:#94a3b8;">Value</span>
                                 <select x-model="chartValueCol" @change="renderChart()" class="rb-chart-select" title="Value / Y-axis column">
                                     <template x-for="col in reportColumns" :key="col">
                                         <option :value="col" x-text="col"></option>
@@ -779,16 +790,19 @@
                                 </select>
                             </div>
                             <div class="rb-chart-type-group">
-                                <button @click="chartType='bar';renderChart()"      :class="{'rb-chart-type-active':chartType==='bar'}"      class="rb-chart-type-btn" title="Bar">Bar</button>
-                                <button @click="chartType='line';renderChart()"     :class="{'rb-chart-type-active':chartType==='line'}"     class="rb-chart-type-btn" title="Line">Line</button>
-                                <button @click="chartType='pie';renderChart()"      :class="{'rb-chart-type-active':chartType==='pie'}"      class="rb-chart-type-btn" title="Pie">Pie</button>
-                                <button @click="chartType='doughnut';renderChart()" :class="{'rb-chart-type-active':chartType==='doughnut'}" class="rb-chart-type-btn" title="Doughnut">Ring</button>
+                                <button @click="chartType='bar';renderChart()"      :class="{'rb-chart-type-active':chartType==='bar'}"      class="rb-chart-type-btn">Bar</button>
+                                <button @click="chartType='line';renderChart()"     :class="{'rb-chart-type-active':chartType==='line'}"     class="rb-chart-type-btn">Line</button>
+                                <button @click="chartType='pie';renderChart()"      :class="{'rb-chart-type-active':chartType==='pie'}"      class="rb-chart-type-btn">Pie</button>
+                                <button @click="chartType='doughnut';renderChart()" :class="{'rb-chart-type-active':chartType==='doughnut'}" class="rb-chart-type-btn">Ring</button>
                             </div>
-                            <button @click="exportChart()" class="rb-btn-export-chart" title="Download chart as PNG">&#8659; PNG</button>
-                            <button @click="showChart=false;destroyChart()" class="rb-btn rb-btn-ghost" style="padding:4px 8px;font-size:16px;line-height:1;">&#215;</button>
+                            <button @click="exportChart()" class="rb-btn-export-chart" title="Download chart as PNG">&#8659; Export PNG</button>
+                            <button @click="showChart=false;destroyChart()"
+                                    style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#e2e8f0;border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;">
+                                &#215; Close
+                            </button>
                         </div>
                     </div>
-                    <div class="rb-chart-body">
+                    <div class="rb-chart-modal-body">
                         <canvas id="rb-chart-canvas"></canvas>
                     </div>
                 </div>
@@ -1152,10 +1166,12 @@ document.addEventListener('alpine:init', () => {
             datasets: [{
               label:           this.chartValueCol,
               data:            values,
-              backgroundColor: isPie ? labels.map((_,i) => pal[i % pal.length] + 'dd') : 'rgba(26,58,92,.65)',
-              borderColor:     isPie ? labels.map((_,i) => pal[i % pal.length])         : '#1a3a5c',
+              backgroundColor: isPie
+                ? labels.map((_,i) => pal[i % pal.length] + 'dd')
+                : labels.map((_,i) => pal[i % pal.length] + 'aa'),
+              borderColor:     isPie ? labels.map((_,i) => pal[i % pal.length]) : labels.map((_,i) => pal[i % pal.length]),
               borderWidth:     isPie ? 2 : 1.5,
-              borderRadius:    isPie ? 0 : 4,
+              borderRadius:    isPie ? 0 : 5,
               tension:         0.35,
             }]
           },
@@ -1167,34 +1183,47 @@ document.addEventListener('alpine:init', () => {
                 display:  true,
                 position: manyLabels ? 'bottom' : 'right',
                 labels:   {
-                  font:     { size: manyLabels ? 10 : 11 },
-                  boxWidth: 12,
-                  padding:  manyLabels ? 8 : 12,
-                  // Truncate very long labels in legend
+                  color:    '#e2e8f0',
+                  font:     { size: manyLabels ? 11 : 13 },
+                  boxWidth: 14,
+                  padding:  manyLabels ? 10 : 16,
                   generateLabels(chart) {
                     return Chart.defaults.plugins.legend.labels.generateLabels(chart).map(item => {
-                      if (item.text && item.text.length > 20) item.text = item.text.slice(0, 18) + '…';
+                      if (item.text && item.text.length > 25) item.text = item.text.slice(0, 23) + '…';
                       return item;
                     });
                   }
                 }
               } : { display: false },
               tooltip: {
-                mode:      'index',
-                intersect: false,
+                mode:            'index',
+                intersect:       false,
+                backgroundColor: 'rgba(10,20,40,0.92)',
+                titleColor:      '#e2e8f0',
+                bodyColor:       '#94a3b8',
+                borderColor:     'rgba(255,255,255,.1)',
+                borderWidth:     1,
+                padding:         10,
                 callbacks: {
                   label(ctx) {
-                    const val = ctx.parsed.y ?? ctx.parsed;
+                    const val   = ctx.parsed.y ?? ctx.parsed;
                     const total = ctx.dataset.data.reduce((s,v) => s + (Number(v)||0), 0);
-                    const pct   = total ? ` (${((val/total)*100).toFixed(1)}%)` : '';
-                    return ` ${ctx.label}: ${val}${isPie ? pct : ''}`;
+                    const pct   = (isPie && total) ? ` (${((val/total)*100).toFixed(1)}%)` : '';
+                    return `  ${ctx.label}: ${val}${pct}`;
                   }
                 }
               },
             },
             scales: isPie ? {} : {
-              x: { ticks: { maxRotation: 40, font: { size: 10 } }, grid: { display: false } },
-              y: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.05)' }, beginAtZero: true },
+              x: {
+                ticks: { maxRotation: 40, font: { size: 11 }, color: '#94a3b8' },
+                grid:  { color: 'rgba(255,255,255,.05)' },
+              },
+              y: {
+                ticks: { font: { size: 11 }, color: '#94a3b8' },
+                grid:  { color: 'rgba(255,255,255,.07)' },
+                beginAtZero: true,
+              },
             }
           }
         });

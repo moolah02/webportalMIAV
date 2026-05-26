@@ -110,10 +110,11 @@
                     <label class="ui-label">Terminal Status <span class="text-red-500">*</span></label>
                     <select name="terminal_status" required class="ui-select">
                         <option value="">— Select outcome —</option>
-                        <option value="working"           {{ old('terminal_status') === 'working'           ? 'selected' : '' }}>Working</option>
-                        <option value="not_working"       {{ old('terminal_status') === 'not_working'       ? 'selected' : '' }}>Not Working</option>
-                        <option value="needs_maintenance" {{ old('terminal_status') === 'needs_maintenance' ? 'selected' : '' }}>Needs Maintenance</option>
-                        <option value="not_found"         {{ old('terminal_status') === 'not_found'         ? 'selected' : '' }}>Not Found</option>
+                        <option value="active"    {{ old('terminal_status') === 'active'    ? 'selected' : '' }}>Active</option>
+                        <option value="inactive"  {{ old('terminal_status') === 'inactive'  ? 'selected' : '' }}>Inactive</option>
+                        <option value="not_found" {{ old('terminal_status') === 'not_found' ? 'selected' : '' }}>Not Found</option>
+                        <option value="relocated" {{ old('terminal_status') === 'relocated' ? 'selected' : '' }}>Relocated</option>
+                        <option value="replaced"  {{ old('terminal_status') === 'replaced'  ? 'selected' : '' }}>Replaced</option>
                     </select>
                     @error('terminal_status')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>

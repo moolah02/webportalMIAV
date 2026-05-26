@@ -154,9 +154,10 @@
                         @if($statusText)
                             @php
                             $badgeMap = [
-                                'working'           => 'badge-green',
-                                'not_working'       => 'badge-red',
-                                'needs_maintenance' => 'badge-yellow',
+                                'active'    => 'badge-green',
+                                'inactive'  => 'badge-red',
+                                'relocated' => 'badge-yellow',
+                                'replaced'  => 'badge-yellow',
                                 'not_found'         => 'badge-gray',
                                 'closed'            => 'badge-green',
                                 'in_progress'       => 'badge-blue',
