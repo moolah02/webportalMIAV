@@ -439,11 +439,19 @@
     border-radius: var(--rb-radius);
     box-shadow: var(--rb-shadow);
     flex-shrink: 0;
-    height: 268px;
+    height: 420px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
+.rb-btn-export-chart {
+    display:inline-flex;align-items:center;gap:4px;
+    height:26px;padding:0 10px;font-size:11px;font-weight:600;
+    border:1px solid var(--rb-border);border-radius:6px;
+    background:var(--rb-surface);color:var(--rb-sub);cursor:pointer;
+    transition:background .15s;white-space:nowrap;
+}
+.rb-btn-export-chart:hover { background:#f1f5f9; }
 .rb-chart-head {
     display: flex; align-items: center; justify-content: space-between;
     padding: 9px 14px;
@@ -776,6 +784,7 @@
                                 <button @click="chartType='pie';renderChart()"      :class="{'rb-chart-type-active':chartType==='pie'}"      class="rb-chart-type-btn" title="Pie">Pie</button>
                                 <button @click="chartType='doughnut';renderChart()" :class="{'rb-chart-type-active':chartType==='doughnut'}" class="rb-chart-type-btn" title="Doughnut">Ring</button>
                             </div>
+                            <button @click="exportChart()" class="rb-btn-export-chart" title="Download chart as PNG">&#8659; PNG</button>
                             <button @click="showChart=false;destroyChart()" class="rb-btn rb-btn-ghost" style="padding:4px 8px;font-size:16px;line-height:1;">&#215;</button>
                         </div>
                     </div>
@@ -1105,11 +1114,37 @@ document.addEventListener('alpine:init', () => {
       this.$nextTick(() => {
         const canvas = document.getElementById('rb-chart-canvas');
         if (!canvas || !window.Chart) return;
-        const slice  = this.reportData.slice(0, 50);
-        const labels = slice.map(r => String(r[this.chartLabelCol] ?? '—'));
-        const values = slice.map(r => Number(r[this.chartValueCol] ?? 0));
-        const isPie  = (this.chartType === 'pie' || this.chartType === 'doughnut');
-        const pal    = ['#1a3a5c','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1'];
+
+        const isPie = (this.chartType === 'pie' || this.chartType === 'doughnut');
+        const pal   = ['#1a3a5c','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6',
+                        '#ec4899','#14b8a6','#f97316','#6366f1','#0ea5e9','#84cc16','#a855f7'];
+
+        let labels, values;
+        if (isPie) {
+          // For pie/ring: sort by value desc, take top 12, group rest as "Others"
+          const PIE_MAX = 12;
+          const allRows = this.reportData.map(r => ({
+            label: String(r[this.chartLabelCol] ?? '—'),
+            value: Number(r[this.chartValueCol] ?? 0),
+          })).sort((a, b) => b.value - a.value);
+
+          if (allRows.length > PIE_MAX) {
+            const top    = allRows.slice(0, PIE_MAX);
+            const others = allRows.slice(PIE_MAX).reduce((s, r) => s + r.value, 0);
+            labels = [...top.map(r => r.label), 'Others'];
+            values = [...top.map(r => r.value), others];
+          } else {
+            labels = allRows.map(r => r.label);
+            values = allRows.map(r => r.value);
+          }
+        } else {
+          const slice = this.reportData.slice(0, 50);
+          labels = slice.map(r => String(r[this.chartLabelCol] ?? '—'));
+          values = slice.map(r => Number(r[this.chartValueCol] ?? 0));
+        }
+
+        const manyLabels = isPie && labels.length > 6;
+
         this.chartInstance = new Chart(canvas.getContext('2d'), {
           type: this.chartType,
           data: {
@@ -1117,8 +1152,8 @@ document.addEventListener('alpine:init', () => {
             datasets: [{
               label:           this.chartValueCol,
               data:            values,
-              backgroundColor: isPie ? labels.map((_,i) => pal[i%pal.length]+'cc') : 'rgba(26,58,92,.65)',
-              borderColor:     isPie ? labels.map((_,i) => pal[i%pal.length])      : '#1a3a5c',
+              backgroundColor: isPie ? labels.map((_,i) => pal[i % pal.length] + 'dd') : 'rgba(26,58,92,.65)',
+              borderColor:     isPie ? labels.map((_,i) => pal[i % pal.length])         : '#1a3a5c',
               borderWidth:     isPie ? 2 : 1.5,
               borderRadius:    isPie ? 0 : 4,
               tension:         0.35,
@@ -1128,8 +1163,34 @@ document.addEventListener('alpine:init', () => {
             responsive:          true,
             maintainAspectRatio: false,
             plugins: {
-              legend:  { display: isPie, position: 'right', labels: { font: { size: 11 }, boxWidth: 12 } },
-              tooltip: { mode: 'index', intersect: false },
+              legend: isPie ? {
+                display:  true,
+                position: manyLabels ? 'bottom' : 'right',
+                labels:   {
+                  font:     { size: manyLabels ? 10 : 11 },
+                  boxWidth: 12,
+                  padding:  manyLabels ? 8 : 12,
+                  // Truncate very long labels in legend
+                  generateLabels(chart) {
+                    return Chart.defaults.plugins.legend.labels.generateLabels(chart).map(item => {
+                      if (item.text && item.text.length > 20) item.text = item.text.slice(0, 18) + '…';
+                      return item;
+                    });
+                  }
+                }
+              } : { display: false },
+              tooltip: {
+                mode:      'index',
+                intersect: false,
+                callbacks: {
+                  label(ctx) {
+                    const val = ctx.parsed.y ?? ctx.parsed;
+                    const total = ctx.dataset.data.reduce((s,v) => s + (Number(v)||0), 0);
+                    const pct   = total ? ` (${((val/total)*100).toFixed(1)}%)` : '';
+                    return ` ${ctx.label}: ${val}${isPie ? pct : ''}`;
+                  }
+                }
+              },
             },
             scales: isPie ? {} : {
               x: { ticks: { maxRotation: 40, font: { size: 10 } }, grid: { display: false } },
@@ -1138,6 +1199,15 @@ document.addEventListener('alpine:init', () => {
           }
         });
       });
+    },
+
+    exportChart() {
+      const canvas = document.getElementById('rb-chart-canvas');
+      if (!canvas || !this.chartInstance) { alert('Run a report and open the chart first.'); return; }
+      const link    = document.createElement('a');
+      link.download = 'report-chart.png';
+      link.href     = canvas.toDataURL('image/png');
+      link.click();
     },
     // ── End chart ─────────────────────────────────────────────────────
 
