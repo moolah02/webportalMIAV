@@ -47,7 +47,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Name *</label>
                             <input type="text" name="license_name" value="{{ old('license_name', $businessLicense->license_name) }}" required
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('license_name')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -56,7 +56,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Number *</label>
                             <input type="text" name="license_number" value="{{ old('license_number', $businessLicense->license_number) }}" required
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('license_number')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -66,7 +66,7 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Type *</label>
-                            <select name="license_type" required style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                            <select name="license_type" required class="form-input">
                                 <option value="">Select License Type</option>
                                 @foreach(\App\Models\BusinessLicense::LICENSE_TYPES as $key => $label)
                                 <option value="{{ $key }}" {{ old('license_type', $businessLicense->license_type) == $key ? 'selected' : '' }}>{{ $label }}</option>
@@ -79,7 +79,7 @@
 
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Status *</label>
-                            <select name="status" required style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                            <select name="status" required class="form-input">
                                 @foreach(\App\Models\BusinessLicense::STATUSES as $key => $label)
                                 <option value="{{ $key }}" {{ old('status', $businessLicense->status) == $key ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
@@ -93,7 +93,7 @@
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Issuing Authority *</label>
                         <input type="text" name="issuing_authority" value="{{ old('issuing_authority', $businessLicense->issuing_authority) }}" required
-                               style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                               class="form-input">
                         @error('issuing_authority')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -101,7 +101,7 @@
 
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Description</label>
-                        <textarea name="description" rows="3" style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">{{ old('description', $businessLicense->description) }}</textarea>
+                        <textarea name="description" rows="3" class="form-input">{{ old('description', $businessLicense->description) }}</textarea>
                         @error('description')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -116,7 +116,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Issue Date *</label>
                             <input type="date" name="issue_date" value="{{ old('issue_date', $businessLicense->issue_date?->format('Y-m-d')) }}" required
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('issue_date')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -125,7 +125,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Expiry Date *</label>
                             <input type="date" name="expiry_date" value="{{ old('expiry_date', $businessLicense->expiry_date?->format('Y-m-d')) }}" required
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('expiry_date')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -136,7 +136,7 @@
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Service Start Date</label>
                         <input type="date" name="service_start_date" value="{{ old('service_start_date', $businessLicense->service_start_date?->format('Y-m-d')) }}"
-                               style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                               class="form-input">
                         @error('service_start_date')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -153,7 +153,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Initial Cost ($)</label>
                             <input type="number" name="cost" value="{{ old('cost', $businessLicense->cost) }}" step="0.01" min="0"
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('cost')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -162,7 +162,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Renewal Cost ($)</label>
                             <input type="number" name="renewal_cost" value="{{ old('renewal_cost', $businessLicense->renewal_cost) }}" step="0.01" min="0"
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('renewal_cost')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -178,7 +178,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Regulatory Body</label>
                             <input type="text" name="regulatory_body" value="{{ old('regulatory_body', $businessLicense->regulatory_body) }}"
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('regulatory_body')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -187,7 +187,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Renewal Reminder (Days)</label>
                             <input type="number" name="renewal_reminder_days" value="{{ old('renewal_reminder_days', $businessLicense->renewal_reminder_days) }}" min="1" max="365"
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('renewal_reminder_days')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -196,7 +196,7 @@
 
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Business Impact</label>
-                        <textarea name="business_impact" rows="3" style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">{{ old('business_impact', $businessLicense->business_impact) }}</textarea>
+                        <textarea name="business_impact" rows="3" class="form-input">{{ old('business_impact', $businessLicense->business_impact) }}</textarea>
                         @error('business_impact')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -204,7 +204,7 @@
 
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Conditions</label>
-                        <textarea name="license_conditions" rows="3" style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">{{ old('license_conditions', $businessLicense->license_conditions) }}</textarea>
+                        <textarea name="license_conditions" rows="3" class="form-input">{{ old('license_conditions', $businessLicense->license_conditions) }}</textarea>
                         @error('license_conditions')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -212,7 +212,7 @@
 
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Compliance Notes</label>
-                        <textarea name="compliance_notes" rows="3" style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">{{ old('compliance_notes', $businessLicense->compliance_notes) }}</textarea>
+                        <textarea name="compliance_notes" rows="3" class="form-input">{{ old('compliance_notes', $businessLicense->compliance_notes) }}</textarea>
                         @error('compliance_notes')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -239,7 +239,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Customer Name *</label>
                             <input type="text" name="customer_name" value="{{ old('customer_name', $businessLicense->customer_name) }}" required
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('customer_name')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -248,7 +248,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Customer Email *</label>
                             <input type="email" name="customer_email" value="{{ old('customer_email', $businessLicense->customer_email) }}" required
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('customer_email')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -259,7 +259,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Customer Company</label>
                             <input type="text" name="customer_company" value="{{ old('customer_company', $businessLicense->customer_company) }}"
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('customer_company')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -268,7 +268,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Customer Phone</label>
                             <input type="text" name="customer_phone" value="{{ old('customer_phone', $businessLicense->customer_phone) }}"
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('customer_phone')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -277,7 +277,7 @@
 
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Customer Address</label>
-                        <textarea name="customer_address" rows="3" style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">{{ old('customer_address', $businessLicense->customer_address) }}</textarea>
+                        <textarea name="customer_address" rows="3" class="form-input">{{ old('customer_address', $businessLicense->customer_address) }}</textarea>
                         @error('customer_address')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -286,7 +286,7 @@
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Customer Reference</label>
                         <input type="text" name="customer_reference" value="{{ old('customer_reference', $businessLicense->customer_reference) }}"
-                               style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                               class="form-input">
                         @error('customer_reference')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -301,7 +301,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Revenue Amount ($) *</label>
                             <input type="number" name="revenue_amount" value="{{ old('revenue_amount', $businessLicense->revenue_amount) }}" required step="0.01" min="0"
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('revenue_amount')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -309,7 +309,7 @@
 
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Billing Cycle *</label>
-                            <select name="billing_cycle" required style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                            <select name="billing_cycle" required class="form-input">
                                 <option value="">Select Billing Cycle</option>
                                 @foreach(\App\Models\BusinessLicense::BILLING_CYCLES as $key => $label)
                                 <option value="{{ $key }}" {{ old('billing_cycle', $businessLicense->billing_cycle) == $key ? 'selected' : '' }}>{{ $label }}</option>
@@ -325,7 +325,7 @@
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Quantity</label>
                             <input type="number" name="license_quantity" value="{{ old('license_quantity', $businessLicense->license_quantity) }}" min="1"
-                                   style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                                   class="form-input">
                             @error('license_quantity')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                             @enderror
@@ -333,7 +333,7 @@
 
                         <div>
                             <label style="display: block; margin-block-end: 5px; font-weight: 500;">Support Level *</label>
-                            <select name="support_level" required style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                            <select name="support_level" required class="form-input">
                                 <option value="">Select Support Level</option>
                                 @foreach(\App\Models\BusinessLicense::SUPPORT_LEVELS as $key => $label)
                                 <option value="{{ $key }}" {{ old('support_level', $businessLicense->support_level) == $key ? 'selected' : '' }}>{{ $label }}</option>
@@ -348,7 +348,7 @@
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Usage Limit</label>
                         <input type="text" name="usage_limit" value="{{ old('usage_limit', $businessLicense->usage_limit) }}"
-                               style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                               class="form-input">
                         @error('usage_limit')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -361,7 +361,7 @@
 
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Terms</label>
-                        <textarea name="license_terms" rows="4" style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">{{ old('license_terms', $businessLicense->license_terms) }}</textarea>
+                        <textarea name="license_terms" rows="4" class="form-input">{{ old('license_terms', $businessLicense->license_terms) }}</textarea>
                         @error('license_terms')
                         <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
                         @enderror
@@ -393,7 +393,7 @@
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Document</label>
                         <input type="file" name="document" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                               style="inline-size: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 4px;">
+                               class="form-input">
                         <div style="font-size: 12px; color: #666; margin-block-start: 5px;">
                             Upload new document to replace existing (PDF, DOC, DOCX, JPG, PNG - Max 2MB)
                         </div>
