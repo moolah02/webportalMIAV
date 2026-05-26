@@ -772,6 +772,10 @@
                         <div class="rb-chart-modal-title">&#128200; Chart Visualisation
                             <span x-show="reportData" style="font-weight:400;font-size:12px;color:#94a3b8;margin-left:8px;"
                                   x-text="reportData ? reportData.length + ' rows' : ''"></span>
+                            <span id="rb-chart-mode-badge"
+                                  style="display:none;font-size:10px;font-weight:600;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44;border-radius:4px;padding:2px 7px;margin-left:8px;">
+                                COUNT MODE — no numeric column selected
+                            </span>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                             <div style="display:flex;align-items:center;gap:6px;" x-show="reportColumns.length > 1">
@@ -1130,32 +1134,68 @@ document.addEventListener('alpine:init', () => {
         if (!canvas || !window.Chart) return;
 
         const isPie = (this.chartType === 'pie' || this.chartType === 'doughnut');
-        const pal   = ['#1a3a5c','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6',
-                        '#ec4899','#14b8a6','#f97316','#6366f1','#0ea5e9','#84cc16','#a855f7'];
+        const pal   = ['#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6',
+                        '#ec4899','#14b8a6','#f97316','#6366f1','#0ea5e9','#84cc16','#a855f7','#1a3a5c'];
 
-        let labels, values;
-        if (isPie) {
-          // For pie/ring: sort by value desc, take top 12, group rest as "Others"
-          const PIE_MAX = 12;
-          const allRows = this.reportData.map(r => ({
-            label: String(r[this.chartLabelCol] ?? '—'),
-            value: Number(r[this.chartValueCol] ?? 0),
-          })).sort((a, b) => b.value - a.value);
+        // Detect if value column has real numeric data
+        const hasNumericValues = this.chartValueCol &&
+          this.chartValueCol !== this.chartLabelCol &&
+          this.reportData.some(r => {
+            const v = r[this.chartValueCol];
+            return v !== null && v !== '' && v !== undefined &&
+                   !isNaN(parseFloat(v)) && isFinite(Number(v)) && Number(v) !== 0;
+          });
 
-          if (allRows.length > PIE_MAX) {
-            const top    = allRows.slice(0, PIE_MAX);
-            const others = allRows.slice(PIE_MAX).reduce((s, r) => s + r.value, 0);
-            labels = [...top.map(r => r.label), 'Others'];
-            values = [...top.map(r => r.value), others];
+        let labels, values, datasetLabel;
+        const PIE_MAX = 12;
+
+        if (hasNumericValues) {
+          // ── Numeric mode: plot value column directly ──────────────────
+          datasetLabel = this.chartValueCol;
+          if (isPie) {
+            const allRows = this.reportData.map(r => ({
+              label: String(r[this.chartLabelCol] ?? '—'),
+              value: Number(r[this.chartValueCol] ?? 0),
+            })).sort((a, b) => b.value - a.value);
+            if (allRows.length > PIE_MAX) {
+              const top    = allRows.slice(0, PIE_MAX);
+              const others = allRows.slice(PIE_MAX).reduce((s, r) => s + r.value, 0);
+              labels = [...top.map(r => r.label), 'Others'];
+              values = [...top.map(r => r.value), others];
+            } else {
+              labels = allRows.map(r => r.label);
+              values = allRows.map(r => r.value);
+            }
           } else {
-            labels = allRows.map(r => r.label);
-            values = allRows.map(r => r.value);
+            const slice = this.reportData.slice(0, 50);
+            labels = slice.map(r => String(r[this.chartLabelCol] ?? '—'));
+            values = slice.map(r => Number(r[this.chartValueCol] ?? 0));
           }
         } else {
-          const slice = this.reportData.slice(0, 50);
-          labels = slice.map(r => String(r[this.chartLabelCol] ?? '—'));
-          values = slice.map(r => Number(r[this.chartValueCol] ?? 0));
+          // ── Count mode: group by label col, count occurrences ─────────
+          datasetLabel = 'Count';
+          const countMap = {};
+          this.reportData.forEach(r => {
+            const key = String(r[this.chartLabelCol] ?? '—');
+            countMap[key] = (countMap[key] || 0) + 1;
+          });
+          const sorted = Object.entries(countMap).sort((a, b) => b[1] - a[1]);
+          if (isPie) {
+            const top = sorted.slice(0, PIE_MAX);
+            const othersSum = sorted.slice(PIE_MAX).reduce((s, e) => s + e[1], 0);
+            labels = top.map(e => e[0]);
+            values = top.map(e => e[1]);
+            if (othersSum > 0) { labels.push('Others'); values.push(othersSum); }
+          } else {
+            const slice = sorted.slice(0, 40);
+            labels = slice.map(e => e[0]);
+            values = slice.map(e => e[1]);
+          }
         }
+
+        // Show/hide count mode badge
+        const badge = document.getElementById('rb-chart-mode-badge');
+        if (badge) badge.style.display = hasNumericValues ? 'none' : 'inline';
 
         const manyLabels = isPie && labels.length > 6;
 
@@ -1164,7 +1204,7 @@ document.addEventListener('alpine:init', () => {
           data: {
             labels,
             datasets: [{
-              label:           this.chartValueCol,
+              label:           datasetLabel,
               data:            values,
               backgroundColor: isPie
                 ? labels.map((_,i) => pal[i % pal.length] + 'dd')
@@ -1205,11 +1245,12 @@ document.addEventListener('alpine:init', () => {
                 borderWidth:     1,
                 padding:         10,
                 callbacks: {
+                  title(items) { return items[0]?.label || ''; },
                   label(ctx) {
                     const val   = ctx.parsed.y ?? ctx.parsed;
                     const total = ctx.dataset.data.reduce((s,v) => s + (Number(v)||0), 0);
                     const pct   = (isPie && total) ? ` (${((val/total)*100).toFixed(1)}%)` : '';
-                    return `  ${ctx.label}: ${val}${pct}`;
+                    return `  ${ctx.dataset.label}: ${val}${pct}`;
                   }
                 }
               },
