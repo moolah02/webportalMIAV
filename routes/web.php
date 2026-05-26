@@ -710,6 +710,11 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->name('filtered-stats');
     });
 
+    // Quick-create department (used inline from business-license create form)
+    Route::post('/departments/quick-create', [SettingsController::class, 'quickCreateDepartment'])
+        ->middleware('permission:manage_licenses,all')
+        ->name('departments.quick-create');
+
     // ==============================================
     // TICKET MANAGEMENT ROUTES
     // ==============================================
