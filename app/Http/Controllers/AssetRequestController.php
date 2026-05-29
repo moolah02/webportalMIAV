@@ -206,7 +206,7 @@ class AssetRequestController extends Controller
                 'delivery_instructions' => $request->delivery_instructions,
                 'priority' => $request->priority,
                 'total_estimated_cost' => $totalCost,
-                'department' => auth()->user()->department->name ?? null,
+                'department' => optional(auth()->user()->department)->name,
                 'status' => 'pending',
             ]);
 

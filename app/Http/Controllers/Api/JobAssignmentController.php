@@ -21,7 +21,7 @@ class JobAssignmentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = JobAssignment::with(['technician', 'posTerminals', 'client']);
+        $query = JobAssignment::with(['technician', 'client']);
 
         // Apply filters
         if ($request->has('status')) {
@@ -37,8 +37,10 @@ class JobAssignmentController extends Controller
         }
 
         if ($request->has('region')) {
-            $query->whereHas('posTerminals', function($q) use ($request) {
-                $q->where('region', $request->region);
+            $query->whereExists(function($q) use ($request) {
+                $q->select(\DB::raw(1))->from('pos_terminals')
+                  ->whereColumn('pos_terminals.id', \DB::raw('JSON_CONTAINS(job_assignments.pos_terminals, CAST(pos_terminals.id AS JSON))'))
+                  ->where('pos_terminals.region', $request->region);
             });
         }
 
@@ -66,7 +68,7 @@ class JobAssignmentController extends Controller
     {
         $employee = $request->user();
 
-        $query = JobAssignment::with(['posTerminals', 'client'])
+        $query = JobAssignment::with(['client'])
                               ->where('technician_id', $employee->id);
 
         // Filter by status if provided
@@ -106,13 +108,13 @@ class JobAssignmentController extends Controller
                         'estimated_duration' => $assignment->estimated_duration,
                         'actual_start_time' => $assignment->actual_start_time,
                         'actual_end_time' => $assignment->actual_end_time,
-                        'client' => [
+                        'client' => $assignment->client ? [
                             'id' => $assignment->client->id,
-                            'name' => $assignment->client->name,
+                            'name' => $assignment->client->company_name ?? $assignment->client->name,
                             'contact_person' => $assignment->client->contact_person,
                             'phone' => $assignment->client->phone,
-                        ],
-                        'terminals' => $assignment->posTerminals->map(function($terminal) {
+                        ] : null,
+                        'terminals' => $assignment->getTerminalModels()->map(function($terminal) {
                             return [
                                 'id' => $terminal->id,
                                 'terminal_id' => $terminal->terminal_id,
@@ -140,7 +142,7 @@ class JobAssignmentController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $assignment = JobAssignment::with(['technician', 'posTerminals', 'client'])
+        $assignment = JobAssignment::with(['technician', 'client'])
                                   ->findOrFail($id);
 
         // Check if user can view this assignment
@@ -172,15 +174,15 @@ class JobAssignmentController extends Controller
                         'name' => $assignment->technician->name,
                         'phone' => $assignment->technician->phone,
                     ],
-                    'client' => [
+                    'client' => $assignment->client ? [
                         'id' => $assignment->client->id,
-                        'name' => $assignment->client->name,
+                        'name' => $assignment->client->company_name ?? $assignment->client->name,
                         'contact_person' => $assignment->client->contact_person,
                         'phone' => $assignment->client->phone,
                         'email' => $assignment->client->email,
                         'address' => $assignment->client->address,
-                    ],
-                    'terminals' => $assignment->posTerminals,
+                    ] : null,
+                    'terminals' => $assignment->getTerminalModels(),
                     'notes' => $assignment->notes,
                     'photos' => $assignment->photos ?? [],
                     'created_at' => $assignment->created_at,

@@ -465,19 +465,21 @@ class AssetController extends Controller
                 // $as->asset->increment('available_quantity', (int)$as->quantity_assigned);
             }
 
-            // Optional: write assignment history
-            DB::table('asset_assignment_histories')->insert([
-                'assignment_id'   => $as->id,
-                'action'          => 'return',
-                'from_employee_id'=> $user->id,
-                'to_employee_id'  => null,
-                'action_date'     => now(),
-                'performed_by'    => $user->id,
-                'notes'           => $request->return_notes,
-                'old_status'      => 'assigned',
-                'new_status'      => 'returned',
-                'created_at'      => now(),
-            ]);
+            // Optional: write assignment history (only if table exists)
+            if (\Schema::hasTable('asset_assignment_histories')) {
+                DB::table('asset_assignment_histories')->insert([
+                    'assignment_id'   => $as->id,
+                    'action'          => 'return',
+                    'from_employee_id'=> $user->id,
+                    'to_employee_id'  => null,
+                    'action_date'     => now(),
+                    'performed_by'    => $user->id,
+                    'notes'           => $request->return_notes,
+                    'old_status'      => 'assigned',
+                    'new_status'      => 'returned',
+                    'created_at'      => now(),
+                ]);
+            }
 
             DB::commit();
 

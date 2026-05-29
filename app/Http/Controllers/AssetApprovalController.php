@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AssetRequest;
 use App\Models\AssetRequestItem;
+use App\Models\AssetAssignment;
 use App\Models\ActivityLog;
 use App\Notifications\SystemNotification;
 use Illuminate\Http\Request;
