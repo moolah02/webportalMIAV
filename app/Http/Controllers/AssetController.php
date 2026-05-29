@@ -431,7 +431,7 @@ class AssetController extends Controller
                 'notes' => $request->notes,
                 'is_requestable' => $request->boolean('is_requestable', false),
                 'requires_approval' => $request->boolean('requires_approval', true),
-                'specifications' => $request->input('specifications', []),
+                'specifications' => $request->input('specifications') ?: null,
                 'assigned_quantity' => 0,
             ]);
 
@@ -542,7 +542,7 @@ class AssetController extends Controller
                 'notes' => $request->notes,
                 'is_requestable' => $request->boolean('is_requestable', false),
                 'requires_approval' => $request->boolean('requires_approval', true),
-                'specifications' => $request->input('specifications', []),
+                'specifications' => $request->input('specifications') ?: null,
             ]);
 
             ActivityLog::log('updated', "Asset '{$asset->name}' updated (qty: {$asset->stock_quantity})", $asset);
