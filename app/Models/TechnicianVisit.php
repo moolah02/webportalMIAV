@@ -46,7 +46,8 @@ class TechnicianVisit extends Model
         'asset_type',
         'asset_id',
         'terminal_status',               // legacy
-        'terminal_status_during_visit',  // working | not_working | needs_maintenance | not_found
+        'terminal_status_during_visit',  // active | inactive | not_found | relocated | replaced
+        'terminal_condition',            // good | fair | poor | damaged
 
         // notes & content
         'technician_feedback',

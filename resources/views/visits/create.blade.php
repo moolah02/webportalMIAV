@@ -118,6 +118,18 @@
                     </select>
                     @error('terminal_status')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
+
+                <div>
+                    <label class="ui-label">Terminal Condition</label>
+                    <select name="terminal_condition" class="ui-select">
+                        <option value="">— Select condition —</option>
+                        <option value="good"    {{ old('terminal_condition') === 'good'    ? 'selected' : '' }}>Good</option>
+                        <option value="fair"    {{ old('terminal_condition') === 'fair'    ? 'selected' : '' }}>Fair</option>
+                        <option value="poor"    {{ old('terminal_condition') === 'poor'    ? 'selected' : '' }}>Poor</option>
+                        <option value="damaged" {{ old('terminal_condition') === 'damaged' ? 'selected' : '' }}>Damaged</option>
+                    </select>
+                    @error('terminal_condition')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
             </div>
         </div>
 
@@ -187,7 +199,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Only enhance <select> elements (skip hidden inputs for locked technician)
-    ['technician_id', 'pos_terminal_id', 'job_assignment_id'].forEach(function (name) {
+    ['technician_id', 'pos_terminal_id', 'job_assignment_id', 'terminal_status', 'terminal_condition'].forEach(function (name) {
         const el = document.querySelector('select[name="' + name + '"]');
         if (el) {
             new TomSelect(el, {
