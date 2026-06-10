@@ -222,6 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
             new TomSelect(el, {
                 allowEmptyOption: true,
                 placeholder: el.querySelector('option[value=""]')?.textContent ?? '— Select —',
+                dropdownParent: 'body',
             });
         }
     });
