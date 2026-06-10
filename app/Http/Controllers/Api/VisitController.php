@@ -12,6 +12,31 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VisitController extends Controller
 {
+    // GET /api/visit-templates
+    public function templates()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'issues_found' => [
+                    'No issues',
+                    'Missing Device',
+                    'Device relocated',
+                    'Merchant Closed',
+                    'Merchant Relocated',
+                    'Technical Update Failure',
+                    'Returned to HQ',
+                ],
+                'corrective_action' => [
+                    'No Action needed',
+                    'Follow up needed',
+                    'Replacement needed',
+                    'Escalate to Merchant HQ',
+                ],
+            ],
+        ]);
+    }
+
     // GET /api/visits
     public function index(Request $request)
     {

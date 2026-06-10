@@ -156,6 +156,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Top-level visits API (filterable index, create, show)
 
+// Public (auth required) template options — used by mobile app for Issues Found / Corrective Action dropdowns
+Route::middleware('auth:sanctum')->get('/visit-templates', [VisitController::class, 'templates']);
+
 Route::middleware('auth:sanctum')->prefix('visits')->group(function () {
     Route::get('/all', [VisitController::class, 'index']);     // ?assignmentId=&employeeId=&merchantId=&dateFrom=&dateTo=
     Route::post('/', [VisitController::class, 'store']);    // POST your payload

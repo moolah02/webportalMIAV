@@ -167,13 +167,29 @@
                 </div>
                 <div>
                     <label class="ui-label">Issues Found</label>
-                    <textarea name="issues_found" rows="3" class="ui-textarea"
+                    <div class="flex flex-wrap gap-1 mb-1.5" id="issues-templates">
+                        @foreach(['No issues','Missing Device','Device relocated','Merchant Closed','Merchant Relocated','Technical Update Failure','Returned to HQ'] as $tpl)
+                            <button type="button"
+                                    class="template-chip text-xs px-2 py-0.5 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c] transition-colors"
+                                    data-target="issues_found"
+                                    data-value="{{ $tpl }}">{{ $tpl }}</button>
+                        @endforeach
+                    </div>
+                    <textarea name="issues_found" id="issues_found" rows="3" class="ui-textarea"
                               placeholder="List any issues discovered…">{{ old('issues_found') }}</textarea>
                     @error('issues_found')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="ui-label">Corrective Action Taken</label>
-                    <textarea name="corrective_action" rows="3" class="ui-textarea"
+                    <div class="flex flex-wrap gap-1 mb-1.5" id="corrective-templates">
+                        @foreach(['No Action needed','Follow up needed','Replacement needed','Escalate to Merchant HQ'] as $tpl)
+                            <button type="button"
+                                    class="template-chip text-xs px-2 py-0.5 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c] transition-colors"
+                                    data-target="corrective_action"
+                                    data-value="{{ $tpl }}">{{ $tpl }}</button>
+                        @endforeach
+                    </div>
+                    <textarea name="corrective_action" id="corrective_action" rows="3" class="ui-textarea"
                               placeholder="What was done to fix or escalate…">{{ old('corrective_action') }}</textarea>
                     @error('corrective_action')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
@@ -207,6 +223,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 placeholder: el.querySelector('option[value=""]')?.textContent ?? '— Select —',
             });
         }
+    });
+
+    // Template chip click — append value to target textarea
+    document.querySelectorAll('.template-chip').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const textarea = document.getElementById(btn.dataset.target);
+            if (!textarea) return;
+            const val = btn.dataset.value;
+            textarea.value = textarea.value.trim()
+                ? textarea.value.trim() + '\n' + val
+                : val;
+            textarea.dispatchEvent(new Event('input'));
+            // Visual feedback: highlight chip briefly
+            btn.classList.add('bg-[#1a3a5c]', 'text-white', 'border-[#1a3a5c]');
+            setTimeout(() => btn.classList.remove('bg-[#1a3a5c]', 'text-white', 'border-[#1a3a5c]'), 600);
+        });
     });
 });
 </script>
