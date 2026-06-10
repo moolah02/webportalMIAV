@@ -2,7 +2,17 @@
 @section('title', 'Log a Visit')
 
 @push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 <style>
+/* TomSelect control (input box) */
+.ts-wrapper .ts-control{border:1px solid #d1d5db;border-radius:0.375rem;padding:0.4rem 0.625rem;font-size:0.875rem;min-height:2.375rem;box-shadow:none;background:#fff;}
+.ts-wrapper.focus .ts-control{border-color:#1a3a5c;box-shadow:0 0 0 2px rgba(26,58,92,.15);}
+/* Dropdown rendered on body — must be position:fixed so it escapes all stacking contexts */
+body > .ts-dropdown{position:fixed !important;z-index:99999 !important;border:1px solid #d1d5db;border-radius:0.375rem;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:0.875rem;background:#fff;}
+body > .ts-dropdown .option.active,
+body > .ts-dropdown .option:hover{background:#1a3a5c;color:#fff;}
+body > .ts-dropdown .ts-no-results{padding:0.5rem 0.75rem;color:#9ca3af;font-style:italic;}
+/* Template chips */
 .template-chip.active-chip{background:#1a3a5c;color:#fff;border-color:#1a3a5c;}
 </style>
 @endpush
@@ -206,8 +216,20 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Searchable selects — dropdown appended to body to avoid all stacking/overflow issues
+    ['technician_id', 'pos_terminal_id', 'job_assignment_id', 'terminal_status', 'terminal_condition'].forEach(function (name) {
+        const el = document.querySelector('select[name="' + name + '"]');
+        if (!el) return;
+        new TomSelect(el, {
+            allowEmptyOption: true,
+            dropdownParent: 'body',
+            plugins: ['no_backspace_delete'],
+        });
+    });
+
     // Template chip click — append value to target textarea
     document.querySelectorAll('.template-chip').forEach(function (btn) {
         btn.addEventListener('click', function () {
