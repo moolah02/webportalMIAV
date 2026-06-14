@@ -45,8 +45,8 @@ return [
     ],
 
     'pos_terminals' => [
-      ['key'=>'pos_terminals.id','label'=>'Terminal PK','type'=>'number'],
-      ['key'=>'pos_terminals.terminal_id','label'=>'Terminal ID','type'=>'string'],
+      ['key'=>'pos_terminals.id','label'=>'POS Terminal PK','type'=>'number'],
+      ['key'=>'pos_terminals.terminal_id','label'=>'Terminal Code (e.g. 77203156)','type'=>'string'],
       ['key'=>'pos_terminals.client_id','label'=>'Client ID','type'=>'number'],
       ['key'=>'pos_terminals.current_status','label'=>'Terminal Status (current)','type'=>'string'],
       ['key'=>'pos_terminals.region_id','label'=>'Region ID','type'=>'number'],
@@ -66,10 +66,10 @@ return [
     ],
 
     'technician_visits' => [
-      ['key'=>'technician_visits.id','label'=>'Tech Visit ID','type'=>'number'],
-      ['key'=>'technician_visits.visit_id','label'=>'Visit ID','type'=>'number'],
+      ['key'=>'technician_visits.id','label'=>'Tech Visit Record ID','type'=>'number'],
+      ['key'=>'technician_visits.visit_id','label'=>'Visit ID (FK)','type'=>'number'],
       ['key'=>'technician_visits.technician_id','label'=>'Technician ID','type'=>'number'],
-      ['key'=>'technician_visits.pos_terminal_id','label'=>'Terminal ID','type'=>'number'],
+      ['key'=>'technician_visits.pos_terminal_id','label'=>'POS Terminal PK (FK)','type'=>'number'],
       ['key'=>'technician_visits.job_assignment_id','label'=>'Assignment ID','type'=>'number'],
       ['key'=>'technician_visits.started_at','label'=>'Visit Start','type'=>'datetime'],
       ['key'=>'technician_visits.ended_at','label'=>'Visit End','type'=>'datetime'],

@@ -494,7 +494,7 @@ class ReportQueryBuilder
                     'expression' => "{$table}.{$column}",
                     'type'       => $type,
                     'category'   => $this->getFieldCategory($type),
-                    'label'      => $this->humanizeColumnName($column)
+                    'label'      => $this->humanizeColumnName($column, $table)
                 ];
             }
 
@@ -541,8 +541,31 @@ class ReportQueryBuilder
         return $type === 'numeric' ? 'measures' : 'dimensions';
     }
 
-    private function humanizeColumnName(string $column): string
+    private function humanizeColumnName(string $column, string $table = ''): string
     {
+        // Table-specific label overrides to avoid ambiguous duplicate names across tables.
+        // e.g. visit_terminals.terminal_id is a FK integer (→ pos_terminals.id),
+        //      NOT the human-readable terminal code string (pos_terminals.terminal_id).
+        $tableColumnLabels = [
+            'visit_terminals' => [
+                'terminal_id' => 'POS Terminal (FK → Terminal Code)',
+                'visit_id'    => 'Visit ID (FK)',
+                'id'          => 'Visit Terminal Record ID',
+            ],
+            'pos_terminals' => [
+                'terminal_id' => 'Terminal Code',
+                'id'          => 'POS Terminal PK',
+            ],
+            'technician_visits' => [
+                'visit_id'    => 'Visit ID (FK)',
+                'id'          => 'Tech Visit Record ID',
+            ],
+        ];
+
+        if ($table && isset($tableColumnLabels[$table][$column])) {
+            return $tableColumnLabels[$table][$column];
+        }
+
         return ucwords(str_replace('_', ' ', $column));
     }
 
