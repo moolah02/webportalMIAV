@@ -487,6 +487,39 @@
 .rb-chart-type-btn:hover { background: rgba(255,255,255,.15); color: #e2e8f0; }
 .rb-chart-type-active { background: #fff !important; color: #1a3a5c !important; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 .rb-btn-chart-on { background: #eff6ff !important; color: #1d4ed8 !important; border-color: #93c5fd !important; }
+
+/* ─── Preset cards ───────────────────────────────────────────── */
+.rb-preset-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 2px 0 4px;
+}
+@media (max-width: 540px) { .rb-preset-grid { grid-template-columns: 1fr; } }
+.rb-preset-card {
+    border: 1px solid var(--rb-border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+    background: var(--rb-surface);
+    text-align: left;
+}
+.rb-preset-card:hover {
+    border-color: var(--rb-accent);
+    box-shadow: 0 0 0 3px rgba(26,58,92,.08);
+    background: rgba(26,58,92,.02);
+}
+.rb-preset-icon { font-size: 28px; margin-bottom: 8px; line-height: 1; }
+.rb-preset-name { font-size: 14px; font-weight: 700; color: var(--rb-text); margin-bottom: 4px; }
+.rb-preset-desc { font-size: 12px; color: var(--rb-sub); line-height: 1.5; }
+.rb-preset-cols { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.rb-preset-col-tag {
+    font-size: 10px; font-weight: 600;
+    background: var(--rb-dim-bg); color: var(--rb-dim-fg);
+    border: 1px solid var(--rb-dim-bd);
+    border-radius: 4px; padding: 2px 6px;
+}
 </style>
 
 <div x-data="reportBuilder()" x-cloak>
@@ -561,6 +594,10 @@
 
                 <button @click="openTemplateModal()" class="rb-btn rb-btn-outline">
                     &#128193;&nbsp;Templates
+                </button>
+
+                <button @click="showPresetsModal=true" class="rb-btn rb-btn-outline" title="Load a pre-built report">
+                    &#9889;&nbsp;Presets
                 </button>
 
                 <a href="{{ route('reports.history') }}" class="rb-btn rb-btn-outline">
@@ -943,6 +980,31 @@
         </div>
     </div>
 
+    {{-- Presets modal --}}
+    <div x-show="showPresetsModal" x-transition class="rb-backdrop" @click.self="showPresetsModal=false">
+        <div class="rb-modal-lg" style="width:640px;">
+            <h3>&#9889; Report Presets</h3>
+            <p style="font-size:13px;color:var(--rb-sub);margin:-10px 0 16px;">Click any preset to instantly populate the builder with a ready-made report. You can customise it further before running.</p>
+            <div class="rb-preset-grid" style="overflow-y:auto;">
+                <template x-for="preset in presets" :key="preset.id">
+                    <button class="rb-preset-card" @click="applyPreset(preset)">
+                        <div class="rb-preset-icon" x-text="preset.icon"></div>
+                        <div class="rb-preset-name" x-text="preset.name"></div>
+                        <div class="rb-preset-desc" x-text="preset.desc"></div>
+                        <div class="rb-preset-cols">
+                            <template x-for="col in preset.fields" :key="col.expression">
+                                <span class="rb-preset-col-tag" x-text="col.label"></span>
+                            </template>
+                        </div>
+                    </button>
+                </template>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+                <button @click="showPresetsModal=false" class="rb-btn rb-btn-outline">Close</button>
+            </div>
+        </div>
+    </div>
+
     {{-- Data source confirm --}}
     <div x-show="showSourceConfirm" x-transition class="rb-backdrop">
         <div class="rb-modal rb-confirm">
@@ -980,6 +1042,7 @@ document.addEventListener('alpine:init', () => {
     showSourceConfirm:  false,
     pendingBaseTable:   '',
     availableTemplates: [],
+    showPresetsModal:   false,
 
     fields: [],
 
@@ -1378,6 +1441,95 @@ document.addEventListener('alpine:init', () => {
     },
 
     openTemplateModal() { this.showTemplateModal = true; this.loadTemplates(); },
+
+    applyPreset(preset) {
+      this.fields = preset.fields.map(f => ({ ...f, aggregate: '' }));
+      this.config = { baseTable: preset.baseTable, regionId: '', clientId: '', dateColumn: preset.dateColumn || '', dateFrom: '', dateTo: '', limit: 100 };
+      this.reportData = null; this.reportColumns = [];
+      this.showPresetsModal = false;
+      this.successMessage = `"${preset.name}" loaded — set any filters then click Run Report.`;
+    },
+
+    presets: [
+      {
+        id: 'visit-summary',
+        icon: '🗺️',
+        name: 'Visit Summary Report',
+        desc: 'All site visits with technician, merchant, completion time and outcome notes.',
+        baseTable: 'visits',
+        dateColumn: 'visits.completed_at',
+        fields: [
+          { label: 'Merchant Name',       expression: 'visits.merchant_name',  category: 'dimensions' },
+          { label: 'Technician ID',        expression: 'visits.employee_id',    category: 'measures'   },
+          { label: 'Visit Completed At',   expression: 'visits.completed_at',   category: 'dimensions' },
+          { label: 'Visit Summary',        expression: 'visits.visit_summary',  category: 'dimensions' },
+          { label: 'Action Points',        expression: 'visits.action_points',  category: 'dimensions' },
+        ],
+      },
+      {
+        id: 'terminal-condition',
+        icon: '🖥️',
+        name: 'Terminal Condition Report',
+        desc: 'Detailed per-visit terminal health: condition, issues raised and corrective action taken.',
+        baseTable: 'technician_visits',
+        dateColumn: 'technician_visits.started_at',
+        fields: [
+          { label: 'POS Terminal PK (FK)',   expression: 'technician_visits.pos_terminal_id',              category: 'measures'   },
+          { label: 'Terminal Condition',     expression: 'technician_visits.terminal_condition',            category: 'dimensions' },
+          { label: 'Terminal Status',        expression: 'technician_visits.terminal_status_during_visit',  category: 'dimensions' },
+          { label: 'Issues Raised',          expression: 'technician_visits.issues_found',                  category: 'dimensions' },
+          { label: 'Corrective Action',      expression: 'technician_visits.corrective_action',             category: 'dimensions' },
+          { label: 'Visit Start',            expression: 'technician_visits.started_at',                    category: 'dimensions' },
+        ],
+      },
+      {
+        id: 'terminal-overview',
+        icon: '📟',
+        name: 'Terminal Activity Overview',
+        desc: 'Master list of POS terminals with location, business type and current operational status.',
+        baseTable: 'pos_terminals',
+        dateColumn: 'pos_terminals.installation_date',
+        fields: [
+          { label: 'Terminal Code',          expression: 'pos_terminals.terminal_id',       category: 'dimensions' },
+          { label: 'Terminal Status',        expression: 'pos_terminals.current_status',     category: 'dimensions' },
+          { label: 'City',                   expression: 'pos_terminals.city',               category: 'dimensions' },
+          { label: 'Business Type',          expression: 'pos_terminals.business_type',      category: 'dimensions' },
+          { label: 'Installation Date',      expression: 'pos_terminals.installation_date',  category: 'dimensions' },
+        ],
+      },
+      {
+        id: 'job-assignments',
+        icon: '📋',
+        name: 'Field Assignment Overview',
+        desc: 'All job assignments with technician, client, priority, status and scheduled date.',
+        baseTable: 'job_assignments',
+        dateColumn: 'job_assignments.scheduled_date',
+        fields: [
+          { label: 'Assignment Code',   expression: 'job_assignments.assignment_id',   category: 'dimensions' },
+          { label: 'Technician ID',     expression: 'job_assignments.technician_id',   category: 'measures'   },
+          { label: 'Client ID',         expression: 'job_assignments.client_id',       category: 'measures'   },
+          { label: 'Assignment Status', expression: 'job_assignments.status',          category: 'dimensions' },
+          { label: 'Priority',          expression: 'job_assignments.priority',        category: 'dimensions' },
+          { label: 'Scheduled Date',    expression: 'job_assignments.scheduled_date',  category: 'dimensions' },
+        ],
+      },
+      {
+        id: 'ticket-summary',
+        icon: '🎫',
+        name: 'Support Ticket Summary',
+        desc: 'Open and resolved support tickets with terminal link, priority, status and resolution date.',
+        baseTable: 'tickets',
+        dateColumn: 'tickets.created_at',
+        fields: [
+          { label: 'Ticket Code',   expression: 'tickets.ticket_id',     category: 'dimensions' },
+          { label: 'Title',         expression: 'tickets.title',         category: 'dimensions' },
+          { label: 'Priority',      expression: 'tickets.priority',      category: 'dimensions' },
+          { label: 'Status',        expression: 'tickets.status',        category: 'dimensions' },
+          { label: 'Created At',    expression: 'tickets.created_at',    category: 'dimensions' },
+          { label: 'Resolved At',   expression: 'tickets.resolved_at',   category: 'dimensions' },
+        ],
+      },
+    ],
 
     applyTemplate(tpl) {
       try {
