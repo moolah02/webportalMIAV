@@ -62,6 +62,24 @@ return [
       ['key'=>'visits.employee_id','label'=>'Technician ID','type'=>'number'],
       ['key'=>'visits.completed_at','label'=>'Visit Completed At','type'=>'datetime'],
       ['key'=>'visits.visit_summary','label'=>'Visit Summary','type'=>'string'],
+      ['key'=>'visits.action_points','label'=>'Action Points','type'=>'string'],
+    ],
+
+    'technician_visits' => [
+      ['key'=>'technician_visits.id','label'=>'Tech Visit ID','type'=>'number'],
+      ['key'=>'technician_visits.visit_id','label'=>'Visit ID','type'=>'number'],
+      ['key'=>'technician_visits.technician_id','label'=>'Technician ID','type'=>'number'],
+      ['key'=>'technician_visits.pos_terminal_id','label'=>'Terminal ID','type'=>'number'],
+      ['key'=>'technician_visits.job_assignment_id','label'=>'Assignment ID','type'=>'number'],
+      ['key'=>'technician_visits.started_at','label'=>'Visit Start','type'=>'datetime'],
+      ['key'=>'technician_visits.ended_at','label'=>'Visit End','type'=>'datetime'],
+      ['key'=>'technician_visits.terminal_status_during_visit','label'=>'Terminal Status','type'=>'string'],
+      ['key'=>'technician_visits.terminal_condition','label'=>'Terminal Condition','type'=>'string'],
+      ['key'=>'technician_visits.condition_notes','label'=>'Condition Notes','type'=>'string'],
+      ['key'=>'technician_visits.issues_found','label'=>'Issues Raised','type'=>'string'],
+      ['key'=>'technician_visits.corrective_action','label'=>'Corrective Action','type'=>'string'],
+      ['key'=>'technician_visits.visit_summary','label'=>'Visit Summary (Detail)','type'=>'string'],
+      ['key'=>'technician_visits.created_at','label'=>'Created At','type'=>'datetime'],
     ],
 
     'job_assignments' => [

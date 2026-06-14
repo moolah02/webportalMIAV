@@ -26,6 +26,12 @@ class ReportQueryBuilder
             'id', 'merchant_id', 'merchant_name', 'employee_id', 'assignment_id', 'completed_at',
             'contact_person', 'phone_number', 'visit_summary', 'action_points', 'created_at', 'updated_at'
         ],
+        'technician_visits' => [
+            'id', 'visit_id', 'technician_id', 'pos_terminal_id', 'job_assignment_id',
+            'started_at', 'ended_at', 'terminal_status_during_visit', 'terminal_condition',
+            'condition_notes', 'issues_found', 'corrective_action', 'visit_summary',
+            'created_at', 'updated_at'
+        ],
         'visit_terminals' => [
             'id', 'visit_id', 'terminal_id', 'status', 'condition', 'serial_number', 'terminal_model',
             'device_type', 'comments', 'created_at', 'updated_at'
@@ -51,6 +57,7 @@ class ReportQueryBuilder
         'visit_terminals.visit_id = visits.id',
         'visit_terminals.terminal_id = pos_terminals.id',
         'visits.assignment_id = job_assignments.id',
+        'technician_visits.visit_id = visits.id',
         'tickets.pos_terminal_id = pos_terminals.id',
         'tickets.client_id = clients.id',
         'job_assignments.project_id = projects.id',
@@ -505,7 +512,8 @@ class ReportQueryBuilder
         $dateColumns = [
             'created_at', 'updated_at', 'installation_date', 'last_service_date',
             'contract_start_date', 'contract_end_date', 'scheduled_date',
-            'start_date', 'end_date', 'completed_at', 'resolved_at'
+            'start_date', 'end_date', 'completed_at', 'resolved_at',
+            'started_at', 'ended_at'
         ];
 
         $numericColumns = ['id', 'client_id', 'region_id', 'employee_id', 'technician_id'];
@@ -544,8 +552,9 @@ class ReportQueryBuilder
             'pos_terminals'  => 'POS Terminals',
             'clients'        => 'Clients',
             'regions'        => 'Regions',
-            'visits'         => 'Visits',
-            'visit_terminals'=> 'Visit Terminals',
+            'visits'              => 'Visits',
+            'technician_visits'   => 'Technician Visits (Detail)',
+            'visit_terminals'     => 'Visit Terminals',
             'tickets'        => 'Tickets',
             'job_assignments'=> 'Job Assignments',
             'projects'       => 'Projects'
