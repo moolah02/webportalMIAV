@@ -19,7 +19,7 @@ class ReportTemplateController extends Controller
     {
         try {
             $user = Auth::user();
-            $isManager = $user->can('manage-report-templates');
+            $isManager = $user->hasPermission('manage-report-templates');
 
             $query = ReportTemplate::with('creator:id,first_name,last_name');
 
@@ -61,7 +61,7 @@ class ReportTemplateController extends Controller
             ]);
 
             // Check permissions for global templates
-            $canGlobal = $user->isAdmin() || $user->can('manage-report-templates');
+            $canGlobal = $user->isAdmin() || $user->hasPermission('manage-report-templates');
             if (($validated['is_global'] ?? false) && !$canGlobal) {
                 return response()->json([
                     'error' => 'Insufficient permissions to create global templates'
@@ -97,7 +97,7 @@ class ReportTemplateController extends Controller
             $template = ReportTemplate::with('creator:id,first_name,last_name')->findOrFail($id);
 
             // Check if user can access this template
-            if (!$template->is_global && $template->created_by !== $user->id && !$user->can('manage-report-templates')) {
+            if (!$template->is_global && $template->created_by !== $user->id && !$user->hasPermission('manage-report-templates')) {
                 return response()->json(['error' => 'Access denied'], 403);
             }
 
@@ -121,7 +121,7 @@ class ReportTemplateController extends Controller
             $template = ReportTemplate::findOrFail($id);
 
             // Check if user can edit this template
-            if ($template->created_by !== $user->id && !$user->can('manage-report-templates')) {
+            if ($template->created_by !== $user->id && !$user->hasPermission('manage-report-templates')) {
                 return response()->json(['error' => 'Access denied'], 403);
             }
 
@@ -155,7 +155,7 @@ class ReportTemplateController extends Controller
             $template = ReportTemplate::findOrFail($id);
 
             // Check if user can delete this template
-            if ($template->created_by !== $user->id && !$user->can('manage-report-templates')) {
+            if ($template->created_by !== $user->id && !$user->hasPermission('manage-report-templates')) {
                 return response()->json(['error' => 'Access denied'], 403);
             }
 
@@ -181,7 +181,7 @@ class ReportTemplateController extends Controller
             $original = ReportTemplate::findOrFail($id);
 
             // Must be able to see the template to duplicate it
-            if (!$original->is_global && $original->created_by !== $user->id && !$user->can('manage-report-templates')) {
+            if (!$original->is_global && $original->created_by !== $user->id && !$user->hasPermission('manage-report-templates')) {
                 return response()->json(['error' => 'Access denied'], 403);
             }
 
@@ -212,7 +212,7 @@ class ReportTemplateController extends Controller
     {
         try {
             $user      = Auth::user();
-            $isManager = $user->can('manage-report-templates');
+            $isManager = $user->hasPermission('manage-report-templates');
 
             $query = ReportTemplate::select('tags');
 

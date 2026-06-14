@@ -210,12 +210,32 @@ class Employee extends Authenticatable
 
     public function isManager(): bool
     {
-        return $this->getEmployeeType() === 'manager';
+        // Check primary role first
+        if ($this->getEmployeeType() === 'manager') {
+            return true;
+        }
+        // Also check all many-to-many roles
+        foreach ($this->roles as $role) {
+            if (in_array($role->getEmployeeType(), ['manager', 'admin'])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function isAdmin(): bool
     {
-        return $this->getEmployeeType() === 'admin';
+        // Check primary role first
+        if ($this->getEmployeeType() === 'admin') {
+            return true;
+        }
+        // Also check all many-to-many roles
+        foreach ($this->roles as $role) {
+            if ($role->getEmployeeType() === 'admin') {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function updateLastLogin(): void
