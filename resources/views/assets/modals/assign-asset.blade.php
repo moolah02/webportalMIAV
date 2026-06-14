@@ -135,7 +135,13 @@ function loadEmployeesForAssignment() {
                     sel.appendChild(opt);
                 });
                 if (window.TomSelect) {
-                    assignEmployeeTomSelect = new TomSelect(sel, { allowEmptyOption: true });
+                    assignEmployeeTomSelect = new TomSelect(sel, { allowEmptyOption: true, dropdownParent: 'body' });
+                    assignEmployeeTomSelect.positionDropdown = function () {
+                        const rect = assignEmployeeTomSelect.control.getBoundingClientRect();
+                        assignEmployeeTomSelect.dropdown.style.top   = rect.bottom + 'px';
+                        assignEmployeeTomSelect.dropdown.style.left  = rect.left   + 'px';
+                        assignEmployeeTomSelect.dropdown.style.width = rect.width  + 'px';
+                    };
                 }
             }
         })

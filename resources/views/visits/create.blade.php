@@ -7,8 +7,9 @@
 /* TomSelect control (input box) */
 .ts-wrapper .ts-control{border:1px solid #d1d5db;border-radius:0.375rem;padding:0.4rem 0.625rem;font-size:0.875rem;min-height:2.375rem;box-shadow:none;background:#fff;}
 .ts-wrapper.focus .ts-control{border-color:#1a3a5c;box-shadow:0 0 0 2px rgba(26,58,92,.15);}
-/* Dropdown rendered on body — must be position:fixed so it escapes all stacking contexts */
-body > .ts-dropdown{position:fixed !important;z-index:99999 !important;border:1px solid #d1d5db;border-radius:0.375rem;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:0.875rem;background:#fff;}
+/* Dropdown rendered on body — position:fixed so viewport coordinates from getBoundingClientRect() map 1-to-1.
+   top/left are set by the JS positionDropdown override below (no scroll offset added). */
+body > .ts-dropdown{position:fixed !important;z-index:99999 !important;border:1px solid #d1d5db;border-radius:0.375rem;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:0.875rem;background:#fff;max-height:240px;overflow-y:auto;}
 body > .ts-dropdown .option.active,
 body > .ts-dropdown .option:hover{background:#1a3a5c;color:#fff;}
 body > .ts-dropdown .ts-no-results{padding:0.5rem 0.75rem;color:#9ca3af;font-style:italic;}
@@ -219,15 +220,27 @@ body > .ts-dropdown .ts-no-results{padding:0.5rem 0.75rem;color:#9ca3af;font-sty
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Searchable selects — dropdown appended to body to avoid all stacking/overflow issues
-    ['technician_id', 'pos_terminal_id', 'job_assignment_id', 'terminal_status', 'terminal_condition'].forEach(function (name) {
-        const el = document.querySelector('select[name="' + name + '"]');
+    // Searchable selects — dropdown appended to body to avoid all stacking/overflow issues.
+    // positionDropdown is overridden to use position:fixed + getBoundingClientRect() which
+    // gives viewport-relative coordinates — correct at any scroll depth or screen resolution.
+    function makeTomSelect(el) {
         if (!el) return;
-        new TomSelect(el, {
+        const ts = new TomSelect(el, {
             allowEmptyOption: true,
             dropdownParent: 'body',
             plugins: ['no_backspace_delete'],
         });
+        // Override the built-in positionDropdown which uses scrollTop offset (wrong for fixed).
+        ts.positionDropdown = function () {
+            const rect = ts.control.getBoundingClientRect();
+            const dd   = ts.dropdown;
+            dd.style.top   = rect.bottom + 'px';
+            dd.style.left  = rect.left   + 'px';
+            dd.style.width = rect.width  + 'px';
+        };
+    }
+    ['technician_id', 'pos_terminal_id', 'job_assignment_id', 'terminal_status', 'terminal_condition'].forEach(function (name) {
+        makeTomSelect(document.querySelector('select[name="' + name + '"]'));
     });
 
     // Template chip click — append value to target textarea

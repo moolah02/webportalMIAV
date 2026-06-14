@@ -216,9 +216,18 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    function makeTomSelectFixed(el) {
+        if (!el) return;
+        const ts = new TomSelect(el, { allowEmptyOption: true, dropdownParent: 'body' });
+        ts.positionDropdown = function () {
+            const rect = ts.control.getBoundingClientRect();
+            ts.dropdown.style.top   = rect.bottom + 'px';
+            ts.dropdown.style.left  = rect.left   + 'px';
+            ts.dropdown.style.width = rect.width  + 'px';
+        };
+    }
     ['quick_asset_select','quick_employee_select','detailed_asset_id','detailed_employee_id'].forEach(function(id) {
-        const el = document.getElementById(id);
-        if (el) new TomSelect(el, { allowEmptyOption: true });
+        makeTomSelectFixed(document.getElementById(id));
     });
 
     // Pre-select from URL params (approved request flow)
