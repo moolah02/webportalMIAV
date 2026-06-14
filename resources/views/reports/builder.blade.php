@@ -596,10 +596,6 @@
                     &#128193;&nbsp;Templates
                 </button>
 
-                <button @click="showPresetsModal=true" class="rb-btn rb-btn-outline" title="Load a pre-built report">
-                    &#9889;&nbsp;Presets
-                </button>
-
                 <a href="{{ route('reports.history') }}" class="rb-btn rb-btn-outline">
                     &#128221;&nbsp;History
                 </a>
@@ -942,21 +938,46 @@
         </div>
     </div>
 
-    {{-- Load template --}}
+    {{-- Load template (includes built-in presets at top) --}}
     <div x-show="showTemplateModal" x-transition class="rb-backdrop" @click.self="showTemplateModal=false">
-        <div class="rb-modal-lg">
-            <h3>&#128193; Load a Template</h3>
+        <div class="rb-modal-lg" style="width:660px;max-height:85vh;">
+            <h3>&#128193; Templates</h3>
 
-            <div x-show="templatesLoading" style="text-align:center;padding:30px;">
+            {{-- ── Built-in Presets ── --}}
+            <div style="margin-bottom:18px;">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rb-sub);margin-bottom:10px;">&#9889; Built-in Presets</div>
+                <div class="rb-preset-grid">
+                    <template x-for="preset in presets" :key="preset.id">
+                        <button class="rb-preset-card" @click="applyPreset(preset)">
+                            <div class="rb-preset-icon" x-text="preset.icon"></div>
+                            <div class="rb-preset-name" x-text="preset.name"></div>
+                            <div class="rb-preset-desc" x-text="preset.desc"></div>
+                            <div class="rb-preset-cols">
+                                <template x-for="col in preset.fields" :key="col.expression">
+                                    <span class="rb-preset-col-tag" x-text="col.label"></span>
+                                </template>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            {{-- ── Divider ── --}}
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                <div style="flex:1;height:1px;background:var(--rb-border);"></div>
+                <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rb-sub);">Saved Templates</span>
+                <div style="flex:1;height:1px;background:var(--rb-border);"></div>
+            </div>
+
+            {{-- ── Saved templates ── --}}
+            <div x-show="templatesLoading" style="text-align:center;padding:20px;">
                 <div class="rb-spinner"></div>
-                <p style="color:var(--rb-sub);font-size:13px;margin:0;">Loading templates…</p>
+                <p style="color:var(--rb-sub);font-size:13px;margin:0;">Loading…</p>
             </div>
 
             <div x-show="!templatesLoading && availableTemplates.length===0"
-                 style="text-align:center;padding:40px;color:#94a3b8;">
-                <div style="font-size:40px;margin-bottom:12px;">&#128193;</div>
-                <p style="font-size:14px;font-weight:600;color:#475569;margin:0 0 4px;">No templates yet</p>
-                <p style="font-size:13px;margin:0;">Save a report configuration above to create one.</p>
+                 style="text-align:center;padding:24px;color:#94a3b8;background:var(--rb-muted);border-radius:10px;">
+                <p style="font-size:13px;margin:0;">No saved templates yet. Use <strong>Save</strong> to store your own report configurations.</p>
             </div>
 
             <div x-show="!templatesLoading && availableTemplates.length > 0"
@@ -976,31 +997,6 @@
 
             <div style="display:flex;justify-content:flex-end;">
                 <button @click="showTemplateModal=false" class="rb-btn rb-btn-outline">Close</button>
-            </div>
-        </div>
-    </div>
-
-    {{-- Presets modal --}}
-    <div x-show="showPresetsModal" x-transition class="rb-backdrop" @click.self="showPresetsModal=false">
-        <div class="rb-modal-lg" style="width:640px;">
-            <h3>&#9889; Report Presets</h3>
-            <p style="font-size:13px;color:var(--rb-sub);margin:-10px 0 16px;">Click any preset to instantly populate the builder with a ready-made report. You can customise it further before running.</p>
-            <div class="rb-preset-grid" style="overflow-y:auto;">
-                <template x-for="preset in presets" :key="preset.id">
-                    <button class="rb-preset-card" @click="applyPreset(preset)">
-                        <div class="rb-preset-icon" x-text="preset.icon"></div>
-                        <div class="rb-preset-name" x-text="preset.name"></div>
-                        <div class="rb-preset-desc" x-text="preset.desc"></div>
-                        <div class="rb-preset-cols">
-                            <template x-for="col in preset.fields" :key="col.expression">
-                                <span class="rb-preset-col-tag" x-text="col.label"></span>
-                            </template>
-                        </div>
-                    </button>
-                </template>
-            </div>
-            <div style="display:flex;justify-content:flex-end;margin-top:16px;">
-                <button @click="showPresetsModal=false" class="rb-btn rb-btn-outline">Close</button>
             </div>
         </div>
     </div>
@@ -1042,7 +1038,6 @@ document.addEventListener('alpine:init', () => {
     showSourceConfirm:  false,
     pendingBaseTable:   '',
     availableTemplates: [],
-    showPresetsModal:   false,
 
     fields: [],
 
