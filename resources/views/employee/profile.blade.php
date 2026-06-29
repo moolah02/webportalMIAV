@@ -191,6 +191,7 @@
                 <div class="mb-5">
                     <label class="ui-label" for="cp_confirm">Confirm Password <span class="text-red-500">*</span></label>
                     <input type="password" name="password_confirmation" id="cp_confirm" class="ui-input" required minlength="8">
+                    @error('password_confirmation')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div class="flex gap-3">
                     <button type="submit" class="btn-primary">&#x1F510; Update Password</button>
