@@ -31,6 +31,71 @@
   <style>
     body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
 
+    /* Global toast notifications */
+    #systemToastContainer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 99999;
+      pointer-events: none;
+      max-width: min(380px, calc(100vw - 24px));
+    }
+    .system-toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid rgba(229, 231, 235, 1);
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.14);
+      color: #111827;
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity .22s ease, transform .22s ease;
+    }
+    .system-toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .system-toast.success { border-color: #10b981; }
+    .system-toast.error   { border-color: #ef4444; }
+    .system-toast.info    { border-color: #3b82f6; }
+    .system-toast .system-toast-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: #f3f4f6;
+      color: #111827;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .system-toast.success .system-toast-icon { background: #dcfce7; color: #047857; }
+    .system-toast.error   .system-toast-icon { background: #fee2e2; color: #b91c1c; }
+    .system-toast.info    .system-toast-icon { background: #dbeafe; color: #1d4ed8; }
+    .system-toast .system-toast-message {
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
+    }
+    .system-toast .system-toast-close {
+      background: transparent;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+    }
+
     /* Accordion: Tailwind can't animate max-height natively */
     .submenu          { max-height: 0;    overflow: hidden; transition: max-height .25s ease; }
     .submenu.show     { max-height: 600px; }

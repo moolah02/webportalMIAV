@@ -74,7 +74,7 @@ class ReportTemplateController extends Controller
                 'is_global' => $validated['is_global'] ?? false,
                 'payload' => $validated['payload'],
                 'created_by' => $user->id
-            ]);
+            ])->load('creator:id,first_name,last_name');
 
             return response()->json([
                 'success' => true,

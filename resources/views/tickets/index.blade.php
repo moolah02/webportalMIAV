@@ -628,11 +628,11 @@
                         message = errorData.message || message;
                     }
                 } catch (_) {}
-                alert('Error saving ticket: ' + message);
+                showNotification('error', 'Error saving ticket: ' + message);
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error saving ticket. Please try again.');
+            showNotification('error', 'Error saving ticket. Please try again.');
         }
     }
 
@@ -795,7 +795,7 @@
             document.getElementById('ticketStepsModal').classList.add('show');
         } catch (error) {
             console.error('Error:', error);
-            alert('Error loading ticket steps');
+            showNotification('error', 'Error loading ticket steps');
         }
     }
 
@@ -841,7 +841,7 @@
         const notes = document.getElementById('stepNotes').value;
 
         if (!description.trim()) {
-            alert('Please enter a description');
+            showNotification('error', 'Please enter a description');
             return;
         }
 
@@ -869,7 +869,7 @@
             await viewTicketSteps();
         } catch (error) {
             console.error('Error:', error);
-            alert('Error adding step');
+            showNotification('error', 'Error adding step');
         }
     }
 
@@ -901,7 +901,7 @@
             const currentStep = auditData.steps?.find(s => s.status === 'in_progress');
 
             if (!currentStep) {
-                alert('No active step to transfer');
+                showNotification('error', 'No active step to transfer');
                 return;
             }
 
@@ -925,12 +925,12 @@
 
             if (!transferResponse.ok) throw new Error('Failed to transfer');
 
-            alert('Ticket transferred successfully');
+            showNotification('success', 'Ticket transferred successfully');
             closeTransferModal();
             closeTicketStepsModal();
         } catch (error) {
             console.error('Error:', error);
-            alert('Error transferring ticket');
+            showNotification('error', 'Error transferring ticket');
         }
     }
 

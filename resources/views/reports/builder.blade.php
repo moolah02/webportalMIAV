@@ -1425,14 +1425,30 @@ document.addEventListener('alpine:init', () => {
 
     async loadTemplates() {
       this.templatesLoading = true;
+      this.availableTemplates = [];
       try {
         const res  = await fetch('/api/report/templates', { credentials:'same-origin', headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'} });
         const text = await res.text();
-        if (text.trim().startsWith('<!')) return;
+        if (text.trim().startsWith('<!')) {
+          this.errorMessage = 'Session expired — please refresh.';
+          return;
+        }
         const r = JSON.parse(text);
-        if (r.success) this.availableTemplates = Array.isArray(r.data) ? r.data : (r.data?.data || []);
-      } catch(e) { console.error(e); }
-      finally { this.templatesLoading = false; }
+        if (r.success) {
+          if (Array.isArray(r.data)) {
+            this.availableTemplates = r.data;
+          } else if (Array.isArray(r.data?.data)) {
+            this.availableTemplates = r.data.data;
+          }
+        } else {
+          this.errorMessage = r.error || 'Failed to load templates';
+        }
+      } catch(e) {
+        console.error(e);
+        this.errorMessage = 'Failed to load templates: ' + e.message;
+      } finally {
+        this.templatesLoading = false;
+      }
     },
 
     openTemplateModal() { this.showTemplateModal = true; this.loadTemplates(); },
@@ -1549,8 +1565,15 @@ document.addEventListener('alpine:init', () => {
         const text = await res.text();
         if (text.trim().startsWith('<!')) { this.errorMessage='Session expired.'; return; }
         const r = JSON.parse(text);
-        if (r.success) { this.showSaveModal=false; this.saveForm={name:'',description:'',isGlobal:false}; this.successMessage='Template saved!'; this.loadTemplates(); }
-        else this.errorMessage = r.error||'Save failed';
+        if (r.success) {
+          this.showSaveModal = false;
+          this.saveForm = {name:'',description:'',isGlobal:false};
+          this.successMessage = 'Template saved!';
+          this.showTemplateModal = true;
+          await this.loadTemplates();
+        } else {
+          this.errorMessage = r.error || 'Save failed';
+        }
       } catch(e) { this.errorMessage='Save failed: '+e.message; }
     },
 
