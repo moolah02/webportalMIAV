@@ -43,34 +43,67 @@
     .ticket-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
     .technician-avatar { width: 24px; height: 24px; border-radius: 50%; background: #1a3a5c; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
 
+    /* ── Toast container ───────────────────────────── */
+    #notificationContainer {
+        position: fixed; top: 20px; right: 20px;
+        display: flex; flex-direction: column; gap: 10px;
+        z-index: 99999; max-width: min(360px, calc(100vw - 24px));
+        pointer-events: none;
+    }
     .notification-toast {
         pointer-events: auto;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 12px;
-        padding: 14px 16px;
-        border-radius: 12px;
-        background: white;
+        padding: 14px 14px 14px 16px;
+        border-radius: 14px;
+        background: #fff;
         border: 1px solid #e5e7eb;
-        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
+        border-left: 4px solid #e5e7eb;
+        box-shadow: 0 8px 32px rgba(15, 23, 42, 0.13), 0 1px 4px rgba(15,23,42,.05);
         color: #111827;
         font-size: 13px;
-        line-height: 1.4;
+        line-height: 1.5;
         opacity: 0;
-        transform: translateY(-10px);
-        transition: opacity 0.25s ease, transform 0.25s ease;
-        border-left-width: 4px;
+        transform: translateX(16px);
+        transition: opacity 0.22s ease, transform 0.22s ease;
+        position: relative;
+        overflow: hidden;
     }
+    .notification-toast::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; height: 3px;
+        background: currentColor; opacity: 0.2;
+        animation: toast-timer 5s linear forwards;
+        width: 100%;
+    }
+    @keyframes toast-timer { from { width: 100%; } to { width: 0%; } }
     .notification-toast.visible {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(0);
     }
-    .notification-toast.success { border-color: #10b981; }
-    .notification-toast.error { border-color: #ef4444; }
-    .notification-icon { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; background: #f3f4f6; color: #111827; font-weight: 700; }
+    .notification-toast.success { border-left-color: #10b981; }
+    .notification-toast.error   { border-left-color: #ef4444; }
+    .notification-toast.info    { border-left-color: #3b82f6; }
+    .notification-icon {
+        width: 30px; height: 30px; border-radius: 999px;
+        display: grid; place-items: center;
+        background: #f3f4f6; color: #111827;
+        font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
     .notification-toast.success .notification-icon { background: #dcfce7; color: #047857; }
-    .notification-toast.error .notification-icon { background: #fee2e2; color: #b91c1c; }
-    .notification-message { flex: 1; }
+    .notification-toast.error   .notification-icon { background: #fee2e2; color: #b91c1c; }
+    .notification-toast.info    .notification-icon { background: #dbeafe; color: #1d4ed8; }
+    .notification-body { flex: 1; min-width: 0; }
+    .notification-title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+    .notification-message { font-size: 12.5px; color: #374151; word-break: break-word; }
+    .notification-close {
+        background: none; border: none; cursor: pointer;
+        color: #9ca3af; font-size: 17px; line-height: 1;
+        padding: 0; flex-shrink: 0; margin-top: 1px;
+    }
+    .notification-close:hover { color: #4b5563; }
 </style>
 @endpush
 
@@ -222,7 +255,7 @@
                             <button class="btn-secondary btn-sm" onclick="viewTicketDetails({{ $ticket->id }})">&#x1F441; View</button>
                             <button class="btn-primary btn-sm" onclick="editTicketFromTable({{ $ticket->id }})">&#x270F; Edit</button>
                             @if($ticket->status === 'open')
-                                <button class="btn-success btn-sm" onclick="updateTicketStatus({{ $ticket->id }}, 'resolved')">&#x2705; Resolve</button>
+                                <button class="btn-success btn-sm" onclick="updateTicketStatus({{ $ticket->id }}, 'resolved', this)">&#x2705; Resolve</button>
                             @endif
                         </div>
                     </td>
@@ -636,12 +669,14 @@
         }
     }
 
-    async function updateTicketStatus(ticketId, newStatus) {
+    async function updateTicketStatus(ticketId, newStatus, btn) {
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
         try {
             const response = await fetch(routes.updateStatus(ticketId), {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({ status: newStatus })
@@ -649,54 +684,54 @@
 
             const text = await response.text();
             let data = null;
-            let message = `Error updating ticket status (HTTP ${response.status})`;
-
-            if (text) {
-                try {
-                    data = JSON.parse(text);
-                } catch (_) {
-                    data = null;
-                }
-            }
+            try { data = JSON.parse(text); } catch (_) {}
 
             if (response.ok) {
-                window.location.reload(); // Refresh page to show updated data
+                showNotification('success', data?.message || 'Ticket status updated successfully');
+                setTimeout(() => window.location.reload(), 900);
                 return;
             }
 
-            if (data?.message || data?.error) {
-                message = data.message || data.error;
-            } else if (text.trim()) {
-                message = `${message}: ${text.trim()}`;
-            }
-
+            const message = data?.message || data?.error
+                || `Could not update ticket status (HTTP ${response.status})`;
             showNotification('error', message);
         } catch (error) {
             console.error('Error:', error);
-            showNotification('error', `Error updating ticket status: ${error.message}`);
+            showNotification('error', 'Could not update ticket status. Please try again.');
+        } finally {
+            if (btn) { btn.disabled = false; btn.style.opacity = ''; }
         }
     }
 
-    function showNotification(type, message) {
-        const container = document.getElementById('notificationContainer') || createNotificationContainer();
+    function showNotification(type, message, title) {
+        let container = document.getElementById('notificationContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notificationContainer';
+            document.body.appendChild(container);
+        }
+
+        const icons = { success: '✓', error: '✕', info: 'ℹ' };
+        const titles = { success: 'Success', error: 'Error', info: 'Info' };
         const el = document.createElement('div');
         el.className = `notification-toast ${type}`;
-        el.innerHTML = `<div class="notification-icon">${type === 'success' ? '✓' : '⚠'}</div><div class="notification-message">${message}</div>`;
+        el.innerHTML = `
+            <div class="notification-icon">${icons[type] || '!'}</div>
+            <div class="notification-body">
+                <div class="notification-title">${title || titles[type] || 'Notice'}</div>
+                <div class="notification-message">${message}</div>
+            </div>
+            <button class="notification-close" title="Dismiss">&times;</button>`;
         container.appendChild(el);
 
-        setTimeout(() => el.classList.add('visible'), 50);
-        setTimeout(() => {
+        const close = () => {
             el.classList.remove('visible');
             setTimeout(() => el.remove(), 300);
-        }, 5000);
-    }
+        };
+        el.querySelector('.notification-close').addEventListener('click', close);
 
-    function createNotificationContainer() {
-        const container = document.createElement('div');
-        container.id = 'notificationContainer';
-        container.style.cssText = 'position:fixed;top:20px;right:20px;display:flex;flex-direction:column;gap:10px;z-index:99999;max-width:340px;pointer-events:none;';
-        document.body.appendChild(container);
-        return container;
+        requestAnimationFrame(() => el.classList.add('visible'));
+        setTimeout(close, 5000);
     }
 
     function viewTicketDetails(ticketId) {
