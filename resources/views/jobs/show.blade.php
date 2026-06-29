@@ -38,8 +38,23 @@ $pBadge = [
                     </div>
                 </div>
                 <div class="flex-shrink-0">
-                    @if(auth()->user()->can('update', $assignment) || auth()->user()->hasPermission('manage_jobs') || auth()->user()->hasPermission('all') || (auth()->user()->id == $assignment->technician_id))
-                    <div class="flex gap-3 items-center">
+                    <div class="flex gap-3 items-center flex-wrap">
+                        {{-- Register Terminal (always available to managers/technicians on this job) --}}
+                        @if(auth()->user()->hasPermission('manage_terminals') || auth()->user()->hasPermission('all') || auth()->user()->hasPermission('manage_jobs') || (auth()->user()->id == $assignment->technician_id))
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('registerTerminalModal').classList.remove('hidden')" style="border-color:#6366f1;color:#6366f1;">
+                            &#x2B; Register Terminal
+                        </button>
+                        @endif
+
+                        {{-- Transfer button (only when transferrable) --}}
+                        @if(!in_array($assignment->status, ['completed','cancelled','reassigned']) && (auth()->user()->hasPermission('manage_jobs') || auth()->user()->hasPermission('all') || auth()->user()->id == $assignment->technician_id))
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('transferModal').classList.remove('hidden')" style="border-color:#f59e0b;color:#b45309;">
+                            &#8644; Transfer
+                        </button>
+                        @endif
+
+                        {{-- Status action --}}
+                        @if(auth()->user()->can('update', $assignment) || auth()->user()->hasPermission('manage_jobs') || auth()->user()->hasPermission('all') || (auth()->user()->id == $assignment->technician_id))
                         @if($assignment->status === 'assigned')
                             <button type="button" class="btn-primary" onclick="updateStatus({{ $assignment->id }}, 'in_progress', this)">
                                 &#x25B6; Start Assignment
@@ -53,8 +68,8 @@ $pBadge = [
                                 &#x2705; Assignment Completed
                             </span>
                         @endif
+                        @endif
                     </div>
-                    @endif
                 </div>
             </div>
 
@@ -211,7 +226,101 @@ $pBadge = [
     </div>
     @endif
 
-    {{-- Transfer History (populated when a job is transferred via mobile) --}}
+    {{-- ======================================================== --}}
+    {{-- TRANSFER MODAL --}}
+    {{-- ======================================================== --}}
+    <div id="transferModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.5);">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h3 class="text-base font-semibold text-gray-800">&#8644; Transfer Assignment</h3>
+                <button onclick="document.getElementById('transferModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+                <div>
+                    <label class="ui-label">Transfer to <span class="text-red-500">*</span></label>
+                    <select id="transferTechnicianId" class="ui-select">
+                        <option value="">— Select technician —</option>
+                        @foreach($technicians as $tech)
+                            @if($tech->id !== $assignment->technician_id)
+                            <option value="{{ $tech->id }}">{{ $tech->name }}</option>
+                            @endif
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="ui-label">Reason <span class="text-red-500">*</span></label>
+                    <textarea id="transferReason" rows="3" class="ui-input resize-y" placeholder="Why is this job being transferred?"></textarea>
+                </div>
+                <div>
+                    <label class="ui-label">Notes for receiving technician</label>
+                    <textarea id="transferNotes" rows="2" class="ui-input resize-y" placeholder="Any additional handover notes…"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
+                <button onclick="document.getElementById('transferModal').classList.add('hidden')" class="btn-secondary">Cancel</button>
+                <button id="transferSubmitBtn" onclick="submitTransfer()" class="btn-primary" style="background:#f59e0b;border-color:#f59e0b;">Transfer Job</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- ======================================================== --}}
+    {{-- REGISTER TERMINAL MODAL --}}
+    {{-- ======================================================== --}}
+    <div id="registerTerminalModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.5);">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4" style="max-height:90vh;overflow-y:auto;">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+                <h3 class="text-base font-semibold text-gray-800">&#x2B; Register On-Site Terminal</h3>
+                <button onclick="document.getElementById('registerTerminalModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="ui-label">Terminal ID (TID) <span class="text-red-500">*</span></label>
+                        <input type="text" id="regTerminalId" class="ui-input" placeholder="e.g. TID-00123">
+                    </div>
+                    <div>
+                        <label class="ui-label">Merchant Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="regMerchantName" class="ui-input" placeholder="e.g. Joe's Butchery">
+                    </div>
+                    <div>
+                        <label class="ui-label">Contact Person</label>
+                        <input type="text" id="regContactPerson" class="ui-input" placeholder="e.g. Joe Moyo">
+                    </div>
+                    <div>
+                        <label class="ui-label">Phone</label>
+                        <input type="text" id="regPhone" class="ui-input" placeholder="e.g. 0771234567">
+                    </div>
+                    <div>
+                        <label class="ui-label">City</label>
+                        <input type="text" id="regCity" class="ui-input" placeholder="e.g. Harare">
+                    </div>
+                    <div>
+                        <label class="ui-label">Client / Bank</label>
+                        <select id="regClientId" class="ui-select">
+                            <option value="">— Select client —</option>
+                            @foreach($clients as $client)
+                            <option value="{{ $client->id }}">{{ $client->company_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="ui-label">Physical Address</label>
+                    <input type="text" id="regAddress" class="ui-input" placeholder="Street address">
+                </div>
+                <div>
+                    <label class="ui-label">Field Notes</label>
+                    <textarea id="regNotes" rows="2" class="ui-input resize-y" placeholder="Any observations about this terminal…"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 sticky bottom-0 bg-white">
+                <button onclick="document.getElementById('registerTerminalModal').classList.add('hidden')" class="btn-secondary">Cancel</button>
+                <button id="regSubmitBtn" onclick="submitRegisterTerminal()" class="btn-primary" style="background:#6366f1;border-color:#6366f1;">Register Terminal</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Transfer History (populated when a job is transferred) --}}
     @php $history = $assignment->assignment_history ?? []; @endphp
     @if(count($history) > 0)
     <div class="ui-card" style="border-left:3px solid #f59e0b;">
@@ -286,6 +395,113 @@ document.addEventListener('DOMContentLoaded', function() {
             if (noResults) noResults.classList.toggle('hidden', visible > 0 || term === '');
         });
     }
+});
+
+// ==============================
+// Transfer Assignment
+// ==============================
+async function submitTransfer() {
+    const technicianId = document.getElementById('transferTechnicianId').value;
+    const reason       = document.getElementById('transferReason').value.trim();
+    const notes        = document.getElementById('transferNotes').value.trim();
+
+    if (!technicianId) { showNotification('error', 'Please select a technician.'); return; }
+    if (!reason)        { showNotification('error', 'Please enter a reason for the transfer.'); return; }
+
+    const btn = document.getElementById('transferSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Transferring…';
+
+    try {
+        const res = await fetch(`/api/jobs/{{ $assignment->id }}/transfer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ to_technician_id: parseInt(technicianId), reason, notes: notes || undefined })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('transferModal').classList.add('hidden');
+            showNotification('success', data.message || 'Job transferred successfully.');
+            setTimeout(() => window.location.reload(), 1200);
+        } else {
+            showNotification('error', data.message || `Transfer failed (HTTP ${res.status})`);
+        }
+    } catch (e) {
+        showNotification('error', 'Network error — could not complete transfer.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Transfer Job';
+    }
+}
+
+// ==============================
+// Register On-Site Terminal
+// ==============================
+async function submitRegisterTerminal() {
+    const terminalId   = document.getElementById('regTerminalId').value.trim();
+    const merchantName = document.getElementById('regMerchantName').value.trim();
+
+    if (!terminalId)   { showNotification('error', 'Terminal ID is required.'); return; }
+    if (!merchantName) { showNotification('error', 'Merchant name is required.'); return; }
+
+    const btn = document.getElementById('regSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Registering…';
+
+    const payload = { terminal_id: terminalId, merchant_name: merchantName };
+    const contactPerson = document.getElementById('regContactPerson').value.trim();
+    const phone         = document.getElementById('regPhone').value.trim();
+    const city          = document.getElementById('regCity').value.trim();
+    const address       = document.getElementById('regAddress').value.trim();
+    const clientId      = document.getElementById('regClientId').value;
+    const notes         = document.getElementById('regNotes').value.trim();
+    if (contactPerson) payload.merchant_contact_person = contactPerson;
+    if (phone)         payload.merchant_phone = phone;
+    if (city)          payload.city = city;
+    if (address)       payload.physical_address = address;
+    if (clientId)      payload.client_id = parseInt(clientId);
+    if (notes)         payload.notes = notes;
+
+    try {
+        const res = await fetch('/api/pos-terminals', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('registerTerminalModal').classList.add('hidden');
+            showNotification('success', `Terminal ${terminalId} registered successfully.`);
+            // Clear the form
+            ['regTerminalId','regMerchantName','regContactPerson','regPhone','regCity','regAddress','regNotes'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('regClientId').value = '';
+        } else {
+            const firstError = data.errors ? Object.values(data.errors)[0]?.[0] : null;
+            showNotification('error', firstError || data.message || `Registration failed (HTTP ${res.status})`);
+        }
+    } catch (e) {
+        showNotification('error', 'Network error — could not register terminal.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Register Terminal';
+    }
+}
+
+// Close modals on backdrop click
+['transferModal','registerTerminalModal'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.add('hidden');
+    });
 });
 
 // ==============================

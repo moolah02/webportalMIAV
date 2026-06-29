@@ -696,7 +696,15 @@ public function showPage($assignmentId)
         ->orderBy('merchant_name')
         ->get();
 
-    return view('jobs.show', compact('assignment', 'terminals'));
+    $technicians = Employee::active()
+        ->select('id', 'first_name', 'last_name')
+        ->orderBy('first_name')
+        ->get()
+        ->map(fn($e) => tap($e, fn($e) => $e->name = $e->first_name . ' ' . $e->last_name));
+
+    $clients = Client::orderBy('company_name')->select('id', 'company_name')->get();
+
+    return view('jobs.show', compact('assignment', 'terminals', 'technicians', 'clients'));
 }
 
 
