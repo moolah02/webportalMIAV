@@ -621,18 +621,21 @@
             if (response.ok) {
                 window.location.reload(); // Refresh page to show updated data
             } else {
-                let message = 'Error updating ticket status';
+                let message = `Error updating ticket status (HTTP ${response.status})`;
                 try {
                     const errorData = await response.json();
-                    message = errorData.message || message;
+                    message = errorData.message || errorData.error || message;
                 } catch (_) {
-                    message = await response.text();
+                    const text = await response.text();
+                    if (text) {
+                        message = `${message}: ${text}`;
+                    }
                 }
                 alert(message);
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error updating ticket status. Please try again.');
+            alert(`Error updating ticket status: ${error.message}`);
         }
     }
 
