@@ -395,14 +395,14 @@
 
     const routes = {
         store: '{{ route("tickets.store") }}',
-        update: (id) => `{{ route("tickets.update", ":id") }}`.replace(':id', id),
-        show: (id) => `{{ route("tickets.show", ":id") }}`.replace(':id', id),
-        updateStatus: (id) => `{{ route("tickets.updateStatus", ":id") }}`.replace(':id', id),
-        addStep: (id) => `{{ route("tickets.addStep", ":id") }}`.replace(':id', id),
-        completeStep: (id, stepId) => `{{ route("tickets.completeStep", [":id", ":step"]) }}`.replace(':id', id).replace(':step', stepId),
-        transferStep: (id, stepId) => `{{ route("tickets.transferStep", [":id", ":step"]) }}`.replace(':id', id).replace(':step', stepId),
-        resolveTicket: (id) => `{{ route("tickets.resolve", ":id") }}`.replace(':id', id),
-        auditTrail: (id) => `{{ route("tickets.auditTrail", ":id") }}`.replace(':id', id)
+        update: (id) => `{{ route("tickets.update", ["TICKET_ID_PLACEHOLDER"]) }}`.replace('TICKET_ID_PLACEHOLDER', id),
+        show: (id) => `{{ route("tickets.show", ["TICKET_ID_PLACEHOLDER"]) }}`.replace('TICKET_ID_PLACEHOLDER', id),
+        updateStatus: (id) => `{{ route("tickets.updateStatus", ["TICKET_ID_PLACEHOLDER"]) }}`.replace('TICKET_ID_PLACEHOLDER', id),
+        addStep: (id) => `{{ route("tickets.addStep", ["TICKET_ID_PLACEHOLDER"]) }}`.replace('TICKET_ID_PLACEHOLDER', id),
+        completeStep: (id, stepId) => `{{ route("tickets.completeStep", ["TICKET_ID_PLACEHOLDER", "STEP_ID_PLACEHOLDER"]) }}`.replace('TICKET_ID_PLACEHOLDER', id).replace('STEP_ID_PLACEHOLDER', stepId),
+        transferStep: (id, stepId) => `{{ route("tickets.transferStep", ["TICKET_ID_PLACEHOLDER", "STEP_ID_PLACEHOLDER"]) }}`.replace('TICKET_ID_PLACEHOLDER', id).replace('STEP_ID_PLACEHOLDER', stepId),
+        resolveTicket: (id) => `{{ route("tickets.resolve", ["TICKET_ID_PLACEHOLDER"]) }}`.replace('TICKET_ID_PLACEHOLDER', id),
+        auditTrail: (id) => `{{ route("tickets.auditTrail", ["TICKET_ID_PLACEHOLDER"]) }}`.replace('TICKET_ID_PLACEHOLDER', id)
     };
 
     let currentEditingTicket = null;
@@ -621,7 +621,14 @@
             if (response.ok) {
                 window.location.reload(); // Refresh page to show updated data
             } else {
-                alert('Error updating ticket status');
+                let message = 'Error updating ticket status';
+                try {
+                    const errorData = await response.json();
+                    message = errorData.message || message;
+                } catch (_) {
+                    message = await response.text();
+                }
+                alert(message);
             }
         } catch (error) {
             console.error('Error:', error);
