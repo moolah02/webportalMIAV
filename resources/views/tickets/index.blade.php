@@ -42,6 +42,35 @@
     .ticket-description { color: #6b7280; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .ticket-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
     .technician-avatar { width: 24px; height: 24px; border-radius: 50%; background: #1a3a5c; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+
+    .notification-toast {
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
+        color: #111827;
+        font-size: 13px;
+        line-height: 1.4;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        border-left-width: 4px;
+    }
+    .notification-toast.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .notification-toast.success { border-color: #10b981; }
+    .notification-toast.error { border-color: #ef4444; }
+    .notification-icon { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; background: #f3f4f6; color: #111827; font-weight: 700; }
+    .notification-toast.success .notification-icon { background: #dcfce7; color: #047857; }
+    .notification-toast.error .notification-icon { background: #fee2e2; color: #b91c1c; }
+    .notification-message { flex: 1; }
 </style>
 @endpush
 
@@ -618,25 +647,56 @@
                 body: JSON.stringify({ status: newStatus })
             });
 
+            const text = await response.text();
+            let data = null;
+            let message = `Error updating ticket status (HTTP ${response.status})`;
+
+            if (text) {
+                try {
+                    data = JSON.parse(text);
+                } catch (_) {
+                    data = null;
+                }
+            }
+
             if (response.ok) {
                 window.location.reload(); // Refresh page to show updated data
-            } else {
-                let message = `Error updating ticket status (HTTP ${response.status})`;
-                try {
-                    const errorData = await response.json();
-                    message = errorData.message || errorData.error || message;
-                } catch (_) {
-                    const text = await response.text();
-                    if (text) {
-                        message = `${message}: ${text}`;
-                    }
-                }
-                alert(message);
+                return;
             }
+
+            if (data?.message || data?.error) {
+                message = data.message || data.error;
+            } else if (text.trim()) {
+                message = `${message}: ${text.trim()}`;
+            }
+
+            showNotification('error', message);
         } catch (error) {
             console.error('Error:', error);
-            alert(`Error updating ticket status: ${error.message}`);
+            showNotification('error', `Error updating ticket status: ${error.message}`);
         }
+    }
+
+    function showNotification(type, message) {
+        const container = document.getElementById('notificationContainer') || createNotificationContainer();
+        const el = document.createElement('div');
+        el.className = `notification-toast ${type}`;
+        el.innerHTML = `<div class="notification-icon">${type === 'success' ? '✓' : '⚠'}</div><div class="notification-message">${message}</div>`;
+        container.appendChild(el);
+
+        setTimeout(() => el.classList.add('visible'), 50);
+        setTimeout(() => {
+            el.classList.remove('visible');
+            setTimeout(() => el.remove(), 300);
+        }, 5000);
+    }
+
+    function createNotificationContainer() {
+        const container = document.createElement('div');
+        container.id = 'notificationContainer';
+        container.style.cssText = 'position:fixed;top:20px;right:20px;display:flex;flex-direction:column;gap:10px;z-index:99999;max-width:340px;pointer-events:none;';
+        document.body.appendChild(container);
+        return container;
     }
 
     function viewTicketDetails(ticketId) {
