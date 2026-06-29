@@ -192,6 +192,10 @@ Route::middleware('auth:sanctum')->prefix('jobs')->group(function () {
         Route::patch('/{assignment}/status', [JobAssignmentController::class, 'updateStatus']);
         Route::post('/{assignment}/cancel', [JobAssignmentController::class, 'cancel']);
 
+        // Transfer job to another technician
+        Route::post('/{assignment}/transfer', [JobAssignmentController::class, 'transfer'])
+            ->name('api.assignments.transfer');
+
         // Additional mobile/API specific routes (ensure these methods exist)
         Route::post('/{assignment}/start', [JobAssignmentController::class, 'startJob']);
         Route::post('/{assignment}/complete', [JobAssignmentController::class, 'completeJob']);

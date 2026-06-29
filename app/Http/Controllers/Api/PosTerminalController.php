@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\PosTerminal;
 use App\Models\Client;
 use App\Models\Ticket;
+use App\Models\ActivityLog;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 
@@ -200,6 +201,80 @@ public function bulkUpdateByTerminalId(Request $request)
     /**
  * Get list of ALL POS terminals with filtering (no pagination)
  */
+/**
+ * POST /api/pos-terminals
+ * Register a terminal found on-site whose TID is not yet in the system.
+ */
+public function store(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'terminal_id'             => 'required|string|max:191|unique:pos_terminals,terminal_id',
+        'merchant_name'           => 'required|string|max:255',
+        'merchant_contact_person' => 'nullable|string|max:255',
+        'merchant_phone'          => 'nullable|string|max:50',
+        'merchant_email'          => 'nullable|email|max:255',
+        'physical_address'        => 'nullable|string|max:500',
+        'city'                    => 'nullable|string|max:191',
+        'province'                => 'nullable|string|max:191',
+        'area'                    => 'nullable|string|max:191',
+        'region'                  => 'nullable|string|max:191',
+        'region_id'               => 'nullable|integer|exists:regions,id',
+        'business_type'           => 'nullable|string|max:191',
+        'terminal_model'          => 'nullable|string|max:191',
+        'serial_number'           => 'nullable|string|max:191',
+        'client_id'               => 'nullable|integer|exists:clients,id',
+        'current_status'          => 'nullable|string|max:100',
+        'coordinates'             => 'nullable|array',
+        'coordinates.latitude'    => 'nullable|numeric|between:-90,90',
+        'coordinates.longitude'   => 'nullable|numeric|between:-180,180',
+        'notes'                   => 'nullable|string|max:1000',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors'  => $validator->errors(),
+        ], 422);
+    }
+
+    $user = $request->user();
+    $data = $validator->validated();
+
+    // Remove helper keys not on the model
+    $notes = $data['notes'] ?? null;
+    unset($data['notes']);
+
+    $data['status']         = 'active';
+    $data['current_status'] = $data['current_status'] ?? 'operational';
+
+    $terminal = PosTerminal::create($data);
+
+    try {
+        ActivityLog::log(
+            'created',
+            "Terminal {$terminal->terminal_id} registered on-site by {$user->first_name} {$user->last_name}" .
+            ($notes ? " — {$notes}" : ''),
+            $terminal
+        );
+    } catch (\Throwable $e) {
+        // Never block the response due to logging failure
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Terminal registered successfully',
+        'data'    => [
+            'id'          => $terminal->id,
+            'terminal_id' => $terminal->terminal_id,
+            'merchant_name' => $terminal->merchant_name,
+            'status'        => $terminal->status,
+            'current_status' => $terminal->current_status,
+            'created_at'    => $terminal->created_at,
+        ],
+    ], 201);
+}
+
 public function index(Request $request)
 {
     $query = PosTerminal::with(['client:id,company_name,contact_person,phone']);

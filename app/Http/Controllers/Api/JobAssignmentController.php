@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Models\JobAssignment;
 use App\Models\PosTerminal;
+use App\Models\Employee;
+use App\Models\ActivityLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -964,5 +966,142 @@ public function getPhotos($id)
                 'results' => $results
             ]
         ]);
+    }
+
+    /**
+     * POST /api/assignments/{assignment}/transfer
+     *
+     * Transfer a job to a different technician.
+     * Marks the original assignment as "reassigned", records the history,
+     * and creates a fresh assignment for the receiving technician.
+     */
+    public function transfer(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'to_technician_id' => 'required|integer|exists:employees,id',
+            'reason'           => 'required|string|max:500',
+            'notes'            => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $original = JobAssignment::findOrFail($id);
+        $requester = $request->user();
+
+        // Only the assigned technician or a manager can transfer
+        $canTransfer = $requester->hasPermission('manage_team')
+            || $requester->hasPermission('all')
+            || $original->technician_id === $requester->id;
+
+        if (!$canTransfer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorised to transfer this assignment.',
+            ], 403);
+        }
+
+        // Cannot transfer a completed or cancelled assignment
+        if (in_array($original->status, ['completed', 'cancelled', 'reassigned'])) {
+            return response()->json([
+                'success' => false,
+                'message' => "Cannot transfer an assignment with status '{$original->status}'.",
+            ], 422);
+        }
+
+        $newTechnician = Employee::findOrFail($request->to_technician_id);
+
+        // Cannot transfer to the same technician
+        if ($newTechnician->id === $original->technician_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The new technician is already assigned to this job.',
+            ], 422);
+        }
+
+        // Build history entry
+        $fromTechnician = Employee::find($original->technician_id);
+        $historyEntry = [
+            'from_technician_id'   => $original->technician_id,
+            'from_technician_name' => $fromTechnician
+                ? "{$fromTechnician->first_name} {$fromTechnician->last_name}"
+                : 'Unknown',
+            'to_technician_id'     => $newTechnician->id,
+            'to_technician_name'   => "{$newTechnician->first_name} {$newTechnician->last_name}",
+            'reason'               => $request->reason,
+            'notes'                => $request->notes,
+            'transferred_by_id'    => $requester->id,
+            'transferred_by_name'  => "{$requester->first_name} {$requester->last_name}",
+            'transferred_at'       => now()->toIso8601String(),
+            'original_assignment_id' => $original->id,
+        ];
+
+        // Mark original as reassigned and append history
+        $history = $original->assignment_history ?? [];
+        $history[] = $historyEntry;
+
+        $original->update([
+            'status'             => 'reassigned',
+            'assignment_history' => $history,
+        ]);
+
+        // Create a new assignment for the receiving technician
+        $newAssignmentId = 'ASN-' . strtoupper(Str::random(6));
+
+        $newAssignment = JobAssignment::create([
+            'assignment_id'     => $newAssignmentId,
+            'technician_id'     => $newTechnician->id,
+            'region_id'         => $original->region_id,
+            'pos_terminals'     => $original->pos_terminals,
+            'client_id'         => $original->client_id,
+            'project_id'        => $original->project_id,
+            'scheduled_date'    => $original->scheduled_date,
+            'service_type'      => $original->service_type,
+            'priority'          => $original->priority,
+            'status'            => 'assigned',
+            'notes'             => $request->notes
+                ?? "Transferred from {$fromTechnician?->first_name} {$fromTechnician?->last_name}. Reason: {$request->reason}",
+            'created_by'        => $requester->id,
+            'assignment_history' => [$historyEntry],
+        ]);
+
+        try {
+            ActivityLog::log(
+                'transferred',
+                "Assignment {$original->assignment_id} transferred to {$newTechnician->first_name} {$newTechnician->last_name}. Reason: {$request->reason}",
+                $original
+            );
+        } catch (\Throwable $e) {
+            // Logging failure must not block the response
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Job transferred to {$newTechnician->first_name} {$newTechnician->last_name} successfully.",
+            'data' => [
+                'original_assignment' => [
+                    'id'            => $original->id,
+                    'assignment_id' => $original->assignment_id,
+                    'status'        => $original->status,
+                ],
+                'new_assignment' => [
+                    'id'            => $newAssignment->id,
+                    'assignment_id' => $newAssignment->assignment_id,
+                    'technician_id' => $newAssignment->technician_id,
+                    'technician'    => [
+                        'id'   => $newTechnician->id,
+                        'name' => "{$newTechnician->first_name} {$newTechnician->last_name}",
+                    ],
+                    'status'        => $newAssignment->status,
+                    'scheduled_date' => $newAssignment->scheduled_date,
+                ],
+                'transfer_record' => $historyEntry,
+            ],
+        ], 201);
     }
 }

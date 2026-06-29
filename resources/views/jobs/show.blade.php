@@ -210,6 +210,43 @@ $pBadge = [
         </div>
     </div>
     @endif
+
+    {{-- Transfer History (populated when a job is transferred via mobile) --}}
+    @php $history = $assignment->assignment_history ?? []; @endphp
+    @if(count($history) > 0)
+    <div class="ui-card" style="border-left:3px solid #f59e0b;">
+        <div class="ui-card-header" style="background:#fffbeb;">
+            <h6 class="text-sm font-semibold m-0" style="color:#92400e;">
+                &#8644; Transfer History
+                <span style="margin-left:8px;background:#f59e0b;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;">{{ count($history) }}</span>
+            </h6>
+        </div>
+        <div class="ui-card-body" style="padding:0;">
+            @foreach($history as $i => $entry)
+            <div style="padding:14px 18px;{{ !$loop->last ? 'border-bottom:1px solid #fef3c7;' : '' }}display:flex;gap:14px;align-items:flex-start;">
+                <div style="width:30px;height:30px;border-radius:50%;background:#fef3c7;color:#92400e;display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0;">{{ $i+1 }}</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:4px;">
+                        {{ $entry['from_technician_name'] ?? '—' }}
+                        <span style="color:#9ca3af;font-weight:400;margin:0 6px;">&#8594;</span>
+                        {{ $entry['to_technician_name'] ?? '—' }}
+                    </div>
+                    <div style="font-size:12px;color:#374151;margin-bottom:3px;">
+                        <strong>Reason:</strong> {{ $entry['reason'] ?? '—' }}
+                    </div>
+                    @if(!empty($entry['notes']))
+                    <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">{{ $entry['notes'] }}</div>
+                    @endif
+                    <div style="font-size:11px;color:#9ca3af;margin-top:4px;display:flex;gap:12px;flex-wrap:wrap;">
+                        <span>By: {{ $entry['transferred_by_name'] ?? '—' }}</span>
+                        <span>{{ isset($entry['transferred_at']) ? \Carbon\Carbon::parse($entry['transferred_at'])->format('M j, Y H:i') : '' }}</span>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 </div>
 @endsection
 
