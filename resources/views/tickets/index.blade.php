@@ -890,7 +890,7 @@
         const notes = document.getElementById('transferNotes').value;
 
         if (!transferTo || !reason.trim()) {
-            alert('Please select an employee and provide a reason');
+            showNotification('error', 'Please select an employee and provide a reason');
             return;
         }
 

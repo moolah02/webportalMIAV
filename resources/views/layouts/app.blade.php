@@ -567,6 +567,46 @@
       }
     });
 
+    function createSystemToastContainer() {
+      const existing = document.getElementById('systemToastContainer');
+      if (existing) return existing;
+      const container = document.createElement('div');
+      container.id = 'systemToastContainer';
+      container.style.cssText = 'position:fixed;top:20px;right:20px;display:flex;flex-direction:column;gap:12px;z-index:99999;pointer-events:none;max-width:min(380px,calc(100vw-24px));';
+      document.body.appendChild(container);
+      return container;
+    }
+
+    function showNotification(type, message, duration = 5000) {
+      const container = createSystemToastContainer();
+      const toast = document.createElement('div');
+      toast.className = `system-toast ${type}`;
+      toast.innerHTML = `
+        <div class="system-toast-icon">${type === 'success' ? '✓' : type === 'error' ? '⚠' : 'i'}</div>
+        <div class="system-toast-message">${message}</div>
+        <button type="button" class="system-toast-close" aria-label="Dismiss">×</button>
+      `;
+
+      const closeBtn = toast.querySelector('.system-toast-close');
+      closeBtn.addEventListener('click', () => removeNotification(toast));
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('visible'));
+      let timeoutId = setTimeout(() => removeNotification(toast), duration);
+
+      toast.addEventListener('mouseenter', () => clearTimeout(timeoutId));
+      toast.addEventListener('mouseleave', () => {
+        timeoutId = setTimeout(() => removeNotification(toast), 2000);
+      });
+    }
+
+    function removeNotification(toast) {
+      if (!toast || toast.dataset.closing) return;
+      toast.dataset.closing = 'true';
+      toast.classList.remove('visible');
+      setTimeout(() => toast.remove(), 220);
+    }
+
     function fetchUnreadCount() {
       fetch('{{ route("notifications.unread-count") }}')
         .then(r => r.json())
