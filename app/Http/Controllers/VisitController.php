@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class VisitController extends Controller
 {
@@ -85,13 +86,39 @@ public function posTerminal()
 
     public function update(Request $request, Visit $visit)
     {
-        $validated = $request->validate([
-            'visit_summary' => ['nullable', 'string', 'max:2000'],
-            'action_points' => ['nullable', 'string', 'in:Resolved,No action needed,To collect device,Follow-up needed,Replacement needed'],
-            'completed_at'  => ['nullable', 'date'],
+        $request->validate([
+            'visit_summary'   => ['nullable', 'string', 'max:2000'],
+            'action_points'   => ['nullable', 'string', 'in:Resolved,No action needed,To collect device,Follow-up needed,Replacement needed'],
+            'completed_at'    => ['nullable', 'date'],
+            'new_evidence'    => ['nullable', 'array'],
+            'new_evidence.*'  => ['file', 'max:5120', 'mimes:jpeg,jpg,png,gif,webp,pdf,doc,docx'],
+            'remove_evidence' => ['nullable', 'array'],
         ]);
 
-        $visit->update($validated);
+        // Build updated evidence array
+        $evidence = is_array($visit->evidence) ? $visit->evidence : [];
+
+        // Remove checked items (process in reverse to keep indexes stable)
+        $toRemove = array_map('intval', $request->input('remove_evidence', []));
+        foreach (array_reverse($toRemove) as $idx) {
+            unset($evidence[$idx]);
+        }
+        $evidence = array_values($evidence);
+
+        // Append newly uploaded files
+        if ($request->hasFile('new_evidence')) {
+            foreach ($request->file('new_evidence') as $file) {
+                $path = $file->store("visits/{$visit->id}", 'public');
+                $evidence[] = Storage::url($path);
+            }
+        }
+
+        $visit->update([
+            'visit_summary' => $request->input('visit_summary'),
+            'action_points' => $request->input('action_points') ?: null,
+            'completed_at'  => $request->input('completed_at') ?: null,
+            'evidence'      => $evidence,
+        ]);
 
         return redirect()->route('visits.show', $visit)->with('success', 'Visit updated successfully.');
     }

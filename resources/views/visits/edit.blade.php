@@ -33,7 +33,7 @@
                 <div><span class="text-gray-500">Created:</span> <span class="font-medium">{{ $visit->created_at?->format('M j, Y') }}</span></div>
             </div>
 
-            <form method="POST" action="{{ route('visits.update', $visit) }}" class="space-y-5">
+            <form method="POST" action="{{ route('visits.update', $visit) }}" class="space-y-5" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -64,6 +64,38 @@
                            value="{{ old('completed_at', $visit->completed_at?->format('Y-m-d\TH:i')) }}"
                            class="ui-input">
                     @error('completed_at')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                {{-- Existing evidence --}}
+                @php $evidence = is_array($visit->evidence) ? $visit->evidence : []; @endphp
+                @if(count($evidence))
+                <div>
+                    <label class="ui-label">Existing Evidence</label>
+                    <div class="space-y-2">
+                        @foreach($evidence as $i => $url)
+                        <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                            @if(\Illuminate\Support\Str::startsWith($url, ['http://','https://','/storage/']))
+                                <a href="{{ $url }}" target="_blank" rel="noopener" class="text-indigo-600 hover:underline flex-1 truncate">&#128206; {{ basename($url) }}</a>
+                            @else
+                                <span class="flex-1 truncate text-gray-600">&#128206; {{ $url }}</span>
+                            @endif
+                            <label class="flex items-center gap-1.5 text-red-600 cursor-pointer whitespace-nowrap">
+                                <input type="checkbox" name="remove_evidence[]" value="{{ $i }}" class="rounded border-gray-300">
+                                Remove
+                            </label>
+                        </div>
+                        @endforeach
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Check "Remove" then save to delete a file.</p>
+                </div>
+                @endif
+
+                {{-- Upload new evidence --}}
+                <div>
+                    <label class="ui-label">Add Evidence <span class="text-gray-400 normal-case font-normal">(photos, documents — max 5MB each)</span></label>
+                    <input type="file" name="new_evidence[]" multiple accept="image/*,.pdf,.doc,.docx"
+                           class="block w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50 cursor-pointer border border-gray-300 rounded-lg p-1">
+                    @error('new_evidence.*')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
