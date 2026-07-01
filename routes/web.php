@@ -583,6 +583,10 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         Route::patch('/{employee}/status', [EmployeeController::class, 'toggleStatus'])
             ->middleware('permission:manage_employees,all')
             ->name('toggle-status');
+
+        Route::post('/{employee}/reset-password', [EmployeeController::class, 'resetPassword'])
+            ->middleware('permission:manage_employees,all')
+            ->name('reset-password');
     });
 
     // ==============================================
@@ -1074,6 +1078,14 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
             ->middleware('permission:view_visits,all')
             ->name('index');
 
+        Route::get('/{visit}/edit', [VisitController::class, 'edit'])
+            ->middleware('permission:view_visits,all')
+            ->name('edit');
+
+        Route::put('/{visit}', [VisitController::class, 'update'])
+            ->middleware('permission:view_visits,all')
+            ->name('update');
+
         Route::get('/{visit}', [VisitController::class, 'show'])
             ->middleware('permission:view_visits,all')
             ->name('show');
@@ -1251,6 +1263,20 @@ Route::prefix('projects')->name('projects.')->middleware('permission:manage_proj
 
     // GENERIC {project} ROUTE MUST BE LAST!!!
     Route::get('/{project}', [App\Http\Controllers\ProjectController::class, 'show'])->name('show');
+});
+
+// ==============================================
+// WEB AJAX ENDPOINTS (session auth — no Bearer token needed)
+// Used by browser modals to call API controller logic without Sanctum token.
+// ==============================================
+Route::middleware(['auth'])->group(function () {
+    Route::post('/web/pos-terminals/register', [\App\Http\Controllers\Api\PosTerminalController::class, 'store'])
+        ->middleware('permission:manage_terminals,manage_jobs,all')
+        ->name('web.pos-terminals.register');
+
+    Route::post('/web/assignments/{assignment}/transfer', [\App\Http\Controllers\Api\JobAssignmentController::class, 'transfer'])
+        ->middleware('permission:manage_jobs,assign_jobs,all')
+        ->name('web.assignments.transfer');
 });
 });
 

@@ -207,11 +207,48 @@
     </form>
 </div>
 
+{{-- Temp password reveal modal --}}
+<div id="tempPasswordModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.5);">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 text-center">
+        <div class="text-4xl mb-3">🔑</div>
+        <h3 class="text-base font-semibold text-gray-800 mb-1">Password Reset</h3>
+        <p class="text-sm text-gray-500 mb-4">Share this temporary password with <strong id="resetEmpName"></strong>. It is only shown once.</p>
+        <div class="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 font-mono text-lg font-bold tracking-widest text-gray-800 mb-4 select-all" id="tempPasswordDisplay"></div>
+        <button onclick="copyTempPassword()" class="btn-secondary w-full mb-2">Copy Password</button>
+        <button onclick="document.getElementById('tempPasswordModal').classList.add('hidden')" class="btn-primary w-full">Done</button>
+    </div>
+</div>
+
 <script>
-function resetPassword() {
-    if (confirm('Reset this employee\'s password?')) {
-        alert('Password reset functionality will be implemented soon.');
+async function resetPassword() {
+    if (!confirm("Reset this employee's password? A new temporary password will be generated.")) return;
+    try {
+        const res = await fetch("{{ route('employees.reset-password', $employee) }}", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('tempPasswordDisplay').textContent = data.temp_password;
+            document.getElementById('resetEmpName').textContent = data.employee_name;
+            document.getElementById('tempPasswordModal').classList.remove('hidden');
+        } else {
+            alert(data.message || 'Failed to reset password.');
+        }
+    } catch (e) {
+        alert('Error resetting password. Please try again.');
     }
+}
+function copyTempPassword() {
+    const pwd = document.getElementById('tempPasswordDisplay').textContent;
+    navigator.clipboard.writeText(pwd).then(() => {
+        const btn = event.target;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy Password', 2000);
+    });
 }
 let formDirty = false;
 document.getElementById('editForm').addEventListener('change', function() { formDirty = true; });

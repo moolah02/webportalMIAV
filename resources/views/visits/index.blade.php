@@ -160,7 +160,10 @@
                             @endif
                         </td>
                         <td class="text-center">
-                            <a href="{{ route('visits.show', $v) }}" class="btn-secondary btn-sm">&#x1F441; View</a>
+                            <div class="flex gap-1.5 justify-center">
+                                <a href="{{ route('visits.show', $v) }}" class="btn-secondary btn-sm">&#x1F441; View</a>
+                                <a href="{{ route('visits.edit', $v) }}" class="btn-secondary btn-sm" style="border-color:#6366f1;color:#6366f1;">&#x270E; Edit</a>
+                            </div>
                         </td>
                     </tr>
                 @endforeach

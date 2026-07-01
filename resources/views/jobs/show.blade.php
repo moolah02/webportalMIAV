@@ -413,7 +413,7 @@ async function submitTransfer() {
     btn.textContent = 'Transferring…';
 
     try {
-        const res = await fetch(`/api/jobs/{{ $assignment->id }}/transfer`, {
+        const res = await fetch(`/web/assignments/{{ $assignment->id }}/transfer`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -468,7 +468,7 @@ async function submitRegisterTerminal() {
     if (notes)         payload.notes = notes;
 
     try {
-        const res = await fetch('/api/pos-terminals', {
+        const res = await fetch('/web/pos-terminals/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

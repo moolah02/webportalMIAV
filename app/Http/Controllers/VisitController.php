@@ -77,6 +77,25 @@ public function posTerminal()
 }
 
 
+    public function edit(Visit $visit)
+    {
+        $visit->load('employee');
+        return view('visits.edit', compact('visit'));
+    }
+
+    public function update(Request $request, Visit $visit)
+    {
+        $validated = $request->validate([
+            'visit_summary' => ['nullable', 'string', 'max:2000'],
+            'action_points' => ['nullable', 'string', 'in:Resolved,No action needed,To collect device,Follow-up needed,Replacement needed'],
+            'completed_at'  => ['nullable', 'date'],
+        ]);
+
+        $visit->update($validated);
+
+        return redirect()->route('visits.show', $visit)->with('success', 'Visit updated successfully.');
+    }
+
     public function show(Visit $visit)
     {
         // Load the employee relationship

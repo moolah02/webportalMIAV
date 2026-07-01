@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Models\ActivityLog;
+use Illuminate\Support\Str;
 
 
 
@@ -475,5 +476,23 @@ public function update(Request $request, Employee $employee)
 
         return redirect()->route('employee.profile')
                         ->with('success', 'Password updated successfully!');
+    }
+
+    public function resetPassword(Employee $employee)
+    {
+        $tempPassword = Str::random(10);
+        $employee->update(['password' => Hash::make($tempPassword)]);
+
+        ActivityLog::log(
+            'password_reset',
+            "Admin reset password for: {$employee->first_name} {$employee->last_name}",
+            auth()->user()
+        );
+
+        return response()->json([
+            'success'       => true,
+            'temp_password' => $tempPassword,
+            'employee_name' => $employee->first_name . ' ' . $employee->last_name,
+        ]);
     }
 }

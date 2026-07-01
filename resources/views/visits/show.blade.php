@@ -7,6 +7,7 @@
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
         <a href="{{ route('visits.index') }}" class="btn-secondary">&#x2190; All Visits</a>
+        <a href="{{ route('visits.edit', $visit) }}" class="btn-secondary" style="border-color:#6366f1;color:#6366f1;">&#x270E; Edit Visit</a>
     </div>
 
     <div class="ui-card overflow-hidden">
