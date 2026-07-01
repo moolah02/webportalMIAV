@@ -161,30 +161,22 @@ body > .ts-dropdown .ts-no-results{padding:0.5rem 0.75rem;color:#9ca3af;font-sty
                 </div>
                 <div>
                     <label class="ui-label">Issues Found</label>
-                    <div class="flex flex-wrap gap-1 mb-1.5" id="issues-templates">
-                        @foreach(['No issues','Missing Device','Device relocated','Merchant Closed','Merchant Relocated','Technical Update Failure','Returned to HQ'] as $tpl)
-                            <button type="button"
-                                    class="template-chip text-xs px-2 py-0.5 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c] transition-colors"
-                                    data-target="issues_found"
-                                    data-value="{{ $tpl }}">{{ $tpl }}</button>
+                    <select name="issues_found" id="issues_found" class="ui-select">
+                        <option value="">— Select issue —</option>
+                        @foreach(['No issues','Not In Use','Denied access','Missing Device','Technical Issues','Device relocated','Merchant Closed','Merchant Relocated','Merchant Not Located','Returned to HQ','Returned to Bank'] as $opt)
+                            <option value="{{ $opt }}" {{ old('issues_found') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                         @endforeach
-                    </div>
-                    <textarea name="issues_found" id="issues_found" rows="3" class="ui-textarea"
-                              placeholder="List any issues discovered…">{{ old('issues_found') }}</textarea>
+                    </select>
                     @error('issues_found')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="ui-label">Corrective Action Taken</label>
-                    <div class="flex flex-wrap gap-1 mb-1.5" id="corrective-templates">
-                        @foreach(['No Action needed','Follow up needed','Replacement needed','Escalate to Merchant HQ'] as $tpl)
-                            <button type="button"
-                                    class="template-chip text-xs px-2 py-0.5 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c] transition-colors"
-                                    data-target="corrective_action"
-                                    data-value="{{ $tpl }}">{{ $tpl }}</button>
+                    <select name="corrective_action" id="corrective_action" class="ui-select">
+                        <option value="">— Select action —</option>
+                        @foreach(['Resolved','No action needed','To collect device','Follow-up needed','Replacement needed'] as $opt)
+                            <option value="{{ $opt }}" {{ old('corrective_action') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                         @endforeach
-                    </div>
-                    <textarea name="corrective_action" id="corrective_action" rows="3" class="ui-textarea"
-                              placeholder="What was done to fix or escalate…">{{ old('corrective_action') }}</textarea>
+                    </select>
                     @error('corrective_action')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
@@ -227,24 +219,8 @@ document.addEventListener('DOMContentLoaded', function () {
             dd.style.width = rect.width  + 'px';
         };
     }
-    ['technician_id', 'pos_terminal_id', 'job_assignment_id', 'terminal_status', 'terminal_condition'].forEach(function (name) {
+    ['technician_id', 'pos_terminal_id', 'job_assignment_id', 'terminal_status', 'terminal_condition', 'issues_found', 'corrective_action'].forEach(function (name) {
         makeTomSelect(document.querySelector('select[name="' + name + '"]'));
-    });
-
-    // Template chip click — append value to target textarea
-    document.querySelectorAll('.template-chip').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const textarea = document.getElementById(btn.dataset.target);
-            if (!textarea) return;
-            const val = btn.dataset.value;
-            textarea.value = textarea.value.trim()
-                ? textarea.value.trim() + '\n' + val
-                : val;
-            textarea.dispatchEvent(new Event('input'));
-            // Visual feedback: highlight chip briefly
-            btn.classList.add('bg-[#1a3a5c]', 'text-white', 'border-[#1a3a5c]');
-            setTimeout(() => btn.classList.remove('bg-[#1a3a5c]', 'text-white', 'border-[#1a3a5c]'), 600);
-        });
     });
 });
 </script>
