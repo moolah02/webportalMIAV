@@ -1325,10 +1325,14 @@ document.addEventListener('alpine:init', () => {
                 callbacks: {
                   title(items) { return items[0]?.label || ''; },
                   label(ctx) {
-                    const val   = ctx.parsed.y ?? ctx.parsed;
-                    const total = ctx.dataset.data.reduce((s,v) => s + (Number(v)||0), 0);
-                    const pct   = (isPie && total) ? ` (${((val/total)*100).toFixed(1)}%)` : '';
-                    return `  ${val}${pct}`;
+                    const val    = ctx.parsed.y ?? ctx.parsed;
+                    const total  = ctx.dataset.data.reduce((s,v) => s + (Number(v)||0), 0);
+                    const pct    = (isPie && total) ? ` (${((val/total)*100).toFixed(1)}%)` : '';
+                    if (isPie) return `  ${val}${pct}`;
+                    const metric = ctx.dataset.label === 'Count'
+                      ? 'Count'
+                      : ctx.dataset.label.replace(/\s*\([^)]*\)/g, '').trim() || ctx.dataset.label;
+                    return `  ${metric}: ${val}`;
                   }
                 }
               },
