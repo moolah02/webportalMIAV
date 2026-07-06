@@ -1568,8 +1568,7 @@ document.addEventListener('alpine:init', () => {
         if (r.success) {
           this.showSaveModal = false;
           this.saveForm = {name:'',description:'',isGlobal:false};
-          this.successMessage = 'Template saved!';
-          this.showTemplateModal = true;
+          this.successMessage = 'Template saved! Click "Templates" to load it in a future session.';
           await this.loadTemplates();
         } else {
           this.errorMessage = r.error || 'Save failed';
