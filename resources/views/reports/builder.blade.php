@@ -1328,7 +1328,9 @@ document.addEventListener('alpine:init', () => {
                     const val   = ctx.parsed.y ?? ctx.parsed;
                     const total = ctx.dataset.data.reduce((s,v) => s + (Number(v)||0), 0);
                     const pct   = (isPie && total) ? ` (${((val/total)*100).toFixed(1)}%)` : '';
-                    return `  ${ctx.dataset.label}: ${val}${pct}`;
+                    if (isPie) return `  ${val}${pct}`;
+                    const cleanLabel = ctx.dataset.label.replace(/\s*\([^)]*(?:FK|PK|ID)[^)]*\)/gi, '').trim() || ctx.dataset.label;
+                    return `  ${cleanLabel}: ${val}`;
                   }
                 }
               },
