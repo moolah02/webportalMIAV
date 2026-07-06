@@ -401,8 +401,9 @@
     box-shadow:0 20px 60px rgba(0,0,0,.2);
     padding:24px;
     width:580px; max-width:92vw;
-    max-height:78vh;
+    max-height:85vh;
     display:flex; flex-direction:column;
+    overflow:hidden;
 }
 .rb-modal h3 { margin:0 0 18px; font-size:16px; font-weight:700; color:var(--rb-text); }
 .rb-label { font-size:10px; font-weight:700; color:var(--rb-sub); text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; display:block; }
@@ -944,8 +945,8 @@
             <h3>&#128193; Templates</h3>
 
             {{-- ── Built-in Presets ── --}}
-            <div style="margin-bottom:18px;">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rb-sub);margin-bottom:10px;">&#9889; Built-in Presets</div>
+            <div style="margin-bottom:18px;flex-shrink:0;max-height:260px;overflow-y:auto;">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rb-sub);margin-bottom:10px;position:sticky;top:0;background:var(--rb-surface);padding-bottom:4px;">&#9889; Built-in Presets</div>
                 <div class="rb-preset-grid">
                     <template x-for="preset in presets" :key="preset.id">
                         <button class="rb-preset-card" @click="applyPreset(preset)">
@@ -963,7 +964,7 @@
             </div>
 
             {{-- ── Divider ── --}}
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-shrink:0;">
                 <div style="flex:1;height:1px;background:var(--rb-border);"></div>
                 <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rb-sub);">Saved Templates</span>
                 <div style="flex:1;height:1px;background:var(--rb-border);"></div>
@@ -995,7 +996,7 @@
                 </template>
             </div>
 
-            <div style="display:flex;justify-content:flex-end;">
+            <div style="display:flex;justify-content:flex-end;flex-shrink:0;padding-top:12px;border-top:1px solid var(--rb-border);">
                 <button @click="showTemplateModal=false" class="rb-btn rb-btn-outline">Close</button>
             </div>
         </div>
