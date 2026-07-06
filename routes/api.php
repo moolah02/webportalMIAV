@@ -594,8 +594,8 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
     Route::post('/visits/{visit}/evidence', [ApiVisitController::class, 'uploadEvidence']);
 });
 Route::middleware(['auth'])->group(function () {
-    Route::get('/visits', [VisitController::class, 'index'])->name('visits.index');
-    Route::get('/visits/{visit}', [VisitController::class, 'show'])->name('visits.show');
+    Route::get('/visits', [VisitController::class, 'index'])->name('api.visits.index');
+    Route::get('/visits/{visit}', [VisitController::class, 'show'])->name('api.visits.show');
 });
 
 //reports routes
