@@ -812,7 +812,7 @@
                             </span>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                            <div style="display:flex;align-items:center;gap:6px;" x-show="reportColumns.length > 1">
+                            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;" x-show="reportColumns.length > 0">
                                 <span style="font-size:11px;color:#94a3b8;">Label</span>
                                 <select x-model="chartLabelCol" @change="renderChart()" class="rb-chart-select" title="Label / X-axis column">
                                     <template x-for="col in reportColumns" :key="col">
@@ -822,11 +822,15 @@
                                 <span style="font-size:13px;color:#64748b;">&#8594;</span>
                                 <span style="font-size:11px;color:#94a3b8;">Value</span>
                                 <select x-model="chartValueCol" @change="renderChart()" class="rb-chart-select" title="Value / Y-axis column">
-                                    <template x-for="col in reportColumns" :key="col">
+                                    <option value="__count__">Count rows</option>
+                                    <template x-for="col in chartNumCols" :key="col">
                                         <option :value="col" x-text="col"></option>
                                     </template>
                                 </select>
                             </div>
+                            <div x-show="chartHint"
+                                 style="width:100%;font-size:11px;color:#f59e0b;padding:4px 0 0 0;"
+                                 x-text="chartHint"></div>
                             <div class="rb-chart-type-group">
                                 <button @click="chartType='bar';renderChart()"      :class="{'rb-chart-type-active':chartType==='bar'}"      class="rb-chart-type-btn">Bar</button>
                                 <button @click="chartType='line';renderChart()"     :class="{'rb-chart-type-active':chartType==='line'}"     class="rb-chart-type-btn">Line</button>
@@ -1066,6 +1070,8 @@ document.addEventListener('alpine:init', () => {
     chartInstance: null,
     chartLabelCol: '',
     chartValueCol: '',
+    chartNumCols:  [],
+    chartHint:     '',
 
     init() {
       // Load a run payload from history page (via Re-run button)
@@ -1174,10 +1180,11 @@ document.addEventListener('alpine:init', () => {
         return vals.length > 0 && vals.every(v => !isNaN(parseFloat(v)) && isFinite(v));
       });
       const labelCols = this.reportColumns.filter(col => !numCols.includes(col));
+      this.chartNumCols = numCols;
       if (!this.chartLabelCol || !this.reportColumns.includes(this.chartLabelCol))
         this.chartLabelCol = labelCols[0] || this.reportColumns[0] || '';
-      if (!this.chartValueCol || !this.reportColumns.includes(this.chartValueCol))
-        this.chartValueCol = numCols[0] || this.reportColumns[this.reportColumns.length - 1] || '';
+      if (!this.chartValueCol || (this.chartValueCol !== '__count__' && !this.reportColumns.includes(this.chartValueCol)))
+        this.chartValueCol = numCols[0] || '__count__';
     },
 
     destroyChart() {
@@ -1196,8 +1203,9 @@ document.addEventListener('alpine:init', () => {
         const pal   = ['#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6',
                         '#ec4899','#14b8a6','#f97316','#6366f1','#0ea5e9','#84cc16','#a855f7','#1a3a5c'];
 
-        // Detect if value column has real numeric data
+        // Detect if value column has real numeric data (explicit __count__ forces count mode)
         const hasNumericValues = this.chartValueCol &&
+          this.chartValueCol !== '__count__' &&
           this.chartValueCol !== this.chartLabelCol &&
           this.reportData.some(r => {
             const v = r[this.chartValueCol];
@@ -1255,6 +1263,17 @@ document.addEventListener('alpine:init', () => {
         // Show/hide count mode badge
         const badge = document.getElementById('rb-chart-mode-badge');
         if (badge) badge.style.display = hasNumericValues ? 'none' : 'inline';
+
+        // Soft hint line beneath the controls
+        if (!hasNumericValues) {
+          this.chartHint = `Counting rows grouped by "${this.chartLabelCol}"`;
+        } else if (values.every(v => v === 0)) {
+          this.chartHint = 'All values are zero — the chart may not be informative.';
+        } else if (isPie && this.reportData.length > PIE_MAX) {
+          this.chartHint = `${this.reportData.length} categories → top ${PIE_MAX} shown, rest grouped as "Others".`;
+        } else {
+          this.chartHint = '';
+        }
 
         const manyLabels = isPie && labels.length > 6;
 
@@ -1458,8 +1477,8 @@ document.addEventListener('alpine:init', () => {
       this.fields = preset.fields.map(f => ({ ...f, aggregate: '' }));
       this.config = { baseTable: preset.baseTable, regionId: '', clientId: '', dateColumn: preset.dateColumn || '', dateFrom: '', dateTo: '', limit: 100 };
       this.reportData = null; this.reportColumns = [];
-      this.showPresetsModal = false;
-      this.successMessage = `"${preset.name}" loaded — set any filters then click Run Report.`;
+      this.showTemplateModal = false;
+      this.runReport();
     },
 
     presets: [
@@ -1544,14 +1563,16 @@ document.addEventListener('alpine:init', () => {
     ],
 
     applyTemplate(tpl) {
+      this.showTemplateModal = false;
       try {
-        const p = tpl.payload;
-        if (!p) { this.errorMessage='Template has no payload.'; return; }
+        const raw = tpl.payload;
+        if (!raw) { this.errorMessage='Template has no payload.'; return; }
+        const p = (typeof raw === 'string') ? JSON.parse(raw) : raw;
         this.fields = Array.isArray(p.fields) ? p.fields : [];
         this.config = { baseTable:p.baseTable||'pos_terminals', regionId:p.regionId||'', clientId:p.clientId||'', dateColumn:p.dateColumn||'', dateFrom:p.dateFrom||'', dateTo:p.dateTo||'', limit:p.limit||100 };
+        this.having = Array.isArray(p.having) ? p.having : [];
         this.reportData = null; this.reportColumns = [];
-        this.showTemplateModal = false;
-        this.successMessage = `"${tpl.name}" loaded — click Run Report.`;
+        this.runReport();
       } catch(e) { this.errorMessage='Failed to load template: '+e.message; }
     },
 
