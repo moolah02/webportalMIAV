@@ -833,7 +833,9 @@
                                  x-text="chartHint"></div>
                             <div class="rb-chart-type-group">
                                 <button @click="chartType='bar';renderChart()"      :class="{'rb-chart-type-active':chartType==='bar'}"      class="rb-chart-type-btn">Bar</button>
+                                <button @click="chartType='h-bar';renderChart()"    :class="{'rb-chart-type-active':chartType==='h-bar'}"    class="rb-chart-type-btn">H-Bar</button>
                                 <button @click="chartType='line';renderChart()"     :class="{'rb-chart-type-active':chartType==='line'}"     class="rb-chart-type-btn">Line</button>
+                                <button @click="chartType='area';renderChart()"     :class="{'rb-chart-type-active':chartType==='area'}"     class="rb-chart-type-btn">Area</button>
                                 <button @click="chartType='pie';renderChart()"      :class="{'rb-chart-type-active':chartType==='pie'}"      class="rb-chart-type-btn">Pie</button>
                                 <button @click="chartType='doughnut';renderChart()" :class="{'rb-chart-type-active':chartType==='doughnut'}" class="rb-chart-type-btn">Ring</button>
                             </div>
@@ -1199,7 +1201,10 @@ document.addEventListener('alpine:init', () => {
         const canvas = document.getElementById('rb-chart-canvas');
         if (!canvas || !window.Chart) return;
 
-        const isPie = (this.chartType === 'pie' || this.chartType === 'doughnut');
+        const isPie  = (this.chartType === 'pie' || this.chartType === 'doughnut');
+        const isHBar = (this.chartType === 'h-bar');
+        const isArea = (this.chartType === 'area');
+        const chartJsType = isHBar ? 'bar' : isArea ? 'line' : this.chartType;
         const pal   = ['#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6',
                         '#ec4899','#14b8a6','#f97316','#6366f1','#0ea5e9','#84cc16','#a855f7','#1a3a5c'];
 
@@ -1278,7 +1283,7 @@ document.addEventListener('alpine:init', () => {
         const manyLabels = isPie && labels.length > 6;
 
         this.chartInstance = new Chart(canvas.getContext('2d'), {
-          type: this.chartType,
+          type: chartJsType,
           data: {
             labels,
             datasets: [{
@@ -1286,16 +1291,25 @@ document.addEventListener('alpine:init', () => {
               data:            values,
               backgroundColor: isPie
                 ? labels.map((_,i) => pal[i % pal.length] + 'dd')
-                : labels.map((_,i) => pal[i % pal.length] + 'aa'),
-              borderColor:     isPie ? labels.map((_,i) => pal[i % pal.length]) : labels.map((_,i) => pal[i % pal.length]),
+                : isArea
+                  ? pal[0] + '33'
+                  : labels.map((_,i) => pal[i % pal.length] + 'aa'),
+              borderColor:     isPie
+                ? labels.map((_,i) => pal[i % pal.length])
+                : isArea
+                  ? pal[0]
+                  : labels.map((_,i) => pal[i % pal.length]),
               borderWidth:     isPie ? 2 : 1.5,
-              borderRadius:    isPie ? 0 : 5,
+              borderRadius:    (isPie || isArea) ? 0 : 5,
               tension:         0.35,
+              fill:            isArea,
+              pointRadius:     isArea ? 3 : undefined,
             }]
           },
           options: {
             responsive:          true,
             maintainAspectRatio: false,
+            indexAxis:           isHBar ? 'y' : 'x',
             plugins: {
               legend: isPie ? {
                 display:  true,
@@ -1325,7 +1339,7 @@ document.addEventListener('alpine:init', () => {
                 callbacks: {
                   title(items) { return items[0]?.label || ''; },
                   label(ctx) {
-                    const val    = ctx.parsed.y ?? ctx.parsed;
+                    const val    = isHBar ? ctx.parsed.x : (ctx.parsed.y ?? ctx.parsed);
                     const total  = ctx.dataset.data.reduce((s,v) => s + (Number(v)||0), 0);
                     const pct    = (isPie && total) ? ` (${((val/total)*100).toFixed(1)}%)` : '';
                     if (isPie) return `  ${val}${pct}`;
@@ -1337,7 +1351,17 @@ document.addEventListener('alpine:init', () => {
                 }
               },
             },
-            scales: isPie ? {} : {
+            scales: isPie ? {} : isHBar ? {
+              x: {
+                ticks: { font: { size: 11 }, color: '#94a3b8' },
+                grid:  { color: 'rgba(255,255,255,.07)' },
+                beginAtZero: true,
+              },
+              y: {
+                ticks: { font: { size: 11 }, color: '#94a3b8', maxTicksLimit: 20 },
+                grid:  { color: 'rgba(255,255,255,.05)' },
+              },
+            } : {
               x: {
                 ticks: { maxRotation: 40, font: { size: 11 }, color: '#94a3b8' },
                 grid:  { color: 'rgba(255,255,255,.05)' },
