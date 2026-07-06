@@ -606,12 +606,14 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
 {
     $hierarchy = [];
 
-    // Get assigned terminal IDs for status checking
+    // Get assigned terminal IDs for status checking (as integers for reliable in_array comparison)
     $assignedTerminalIds = JobAssignment::where('status', '!=', 'cancelled')
+        ->whereJsonLength('pos_terminals', '>', 0)
         ->get()
         ->pluck('pos_terminals')
         ->flatten()
         ->filter()
+        ->map(fn($id) => (int) $id)
         ->unique()
         ->toArray();
 
@@ -934,8 +936,8 @@ public function createAssignment(Request $request)
     DB::beginTransaction();
 
     try {
-        // ensure unique ids
-        $terminalIds = array_values(array_unique($request->selected_terminals));
+        // ensure unique integer ids
+        $terminalIds = array_values(array_unique(array_map('intval', $request->selected_terminals)));
 
         // Check for existing assignments and track history
         $existingAssignments = JobAssignment::where('status', '!=', 'cancelled')
@@ -1027,15 +1029,22 @@ public function createAssignment(Request $request)
 /**
  * Get list of assigned terminal IDs
  */
-public function getAssignedTerminals()
+public function getAssignedTerminals(Request $request)
 {
     try {
-        $assignedTerminalIds = JobAssignment::where('status', '!=', 'cancelled')
-            ->whereJsonLength('pos_terminals', '>', 0)
-            ->get()
+        $query = JobAssignment::where('status', '!=', 'cancelled')
+            ->whereJsonLength('pos_terminals', '>', 0);
+
+        // If a project_id is provided, scope to that project only
+        if ($request->filled('project_id')) {
+            $query->where('project_id', $request->project_id);
+        }
+
+        $assignedTerminalIds = $query->get()
             ->pluck('pos_terminals')
             ->flatten()
             ->filter()
+            ->map(fn($id) => (int) $id)
             ->unique()
             ->values()
             ->toArray();

@@ -2738,7 +2738,16 @@ function buildTerminalMap(hierarchy) {
 }
 
 function refreshAssignedTerminals() {
-    return fetch('{{ route("deployment.assigned-terminals") }}', {
+    // Scope to the currently selected project so only project-relevant assignments affect the display
+    const projectId = deploymentState.selectedProjects.size > 0
+        ? Array.from(deploymentState.selectedProjects)[0]
+        : null;
+
+    const url = projectId
+        ? `{{ route("deployment.assigned-terminals") }}?project_id=${encodeURIComponent(projectId)}`
+        : '{{ route("deployment.assigned-terminals") }}';
+
+    return fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -2748,7 +2757,15 @@ function refreshAssignedTerminals() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            deploymentState.assignedTerminalIds = new Set(data.assigned_terminal_ids || []);
+            // Normalize to strings and filter to only terminals in the current project view
+            const currentTerminalIds = new Set(
+                Array.from(deploymentState.allTerminals.keys()).map(String)
+            );
+            deploymentState.assignedTerminalIds = new Set(
+                (data.assigned_terminal_ids || [])
+                    .map(String)
+                    .filter(id => currentTerminalIds.size === 0 || currentTerminalIds.has(id))
+            );
         }
     })
     .catch(error => {
