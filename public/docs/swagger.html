@@ -239,6 +239,87 @@ function initSwagger(){
             status: { type: 'string' },
             created_at: { type: 'string', format: 'date-time' }
           }
+        },
+        ReportTemplate: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            name: { type: 'string', example: 'Monthly Terminal Report' },
+            description: { type: 'string', nullable: true },
+            is_global: { type: 'boolean', description: 'Visible to all users when true; own templates only when false' },
+            payload: {
+              type: 'object',
+              description: 'Stored report configuration',
+              properties: {
+                fields: { type: 'array', items: { type: 'object', properties: { label: { type: 'string' }, expression: { type: 'string' }, aggregate: { type: 'string' } } } },
+                baseTable: { type: 'string', example: 'pos_terminals' },
+                regionId: { type: 'string', nullable: true },
+                clientId: { type: 'string', nullable: true },
+                dateColumn: { type: 'string', nullable: true },
+                dateFrom: { type: 'string', format: 'date', nullable: true },
+                dateTo: { type: 'string', format: 'date', nullable: true },
+                limit: { type: 'integer', example: 100 }
+              }
+            },
+            created_by: { type: 'integer' },
+            creator: { type: 'object', properties: { id: { type: 'integer' }, first_name: { type: 'string' }, last_name: { type: 'string' } } },
+            created_at: { type: 'string', format: 'date-time' }
+          }
+        },
+        ReportQueryPayload: {
+          type: 'object',
+          required: ['base', 'select'],
+          description: 'Payload used by both /api/report/preview and /api/report/export',
+          properties: {
+            base: {
+              type: 'object',
+              required: ['table'],
+              properties: {
+                table: { type: 'string', example: 'pos_terminals', description: 'One of: pos_terminals, clients, regions, visits, technician_visits, visit_terminals, tickets, job_assignments, projects' }
+              }
+            },
+            select: {
+              type: 'array',
+              description: 'Columns to include. Use dot-notation for cross-table fields.',
+              items: {
+                type: 'object',
+                required: ['expr', 'as'],
+                properties: {
+                  expr: { type: 'string', example: 'pos_terminals.merchant_name' },
+                  as: { type: 'string', example: 'Merchant Name' },
+                  aggregate: { type: 'string', enum: ['COUNT','SUM','AVG','MIN','MAX'], nullable: true }
+                }
+              }
+            },
+            where: {
+              type: 'array',
+              description: 'Optional filter conditions',
+              items: {
+                type: 'object',
+                properties: {
+                  column: { type: 'string', example: 'pos_terminals.region' },
+                  operator: { type: 'string', enum: ['=','!=','<','>','<=','>=','like','not like','between_dates','in'], example: '=' },
+                  value: { description: 'String, number, or {from, to} object for between_dates' }
+                }
+              }
+            },
+            group_by: { type: 'array', items: { type: 'string' }, description: 'Required when any select field has an aggregate' },
+            having: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  column: { type: 'string', example: 'COUNT(pos_terminals.id)' },
+                  operator: { type: 'string', example: '>=' },
+                  value: { type: 'number', example: 5 }
+                }
+              }
+            },
+            limit: { type: 'integer', example: 100, description: 'Max rows returned (ignored for export when download_all=true)' },
+            format: { type: 'string', enum: ['csv', 'pdf'], description: 'Export only — omit for preview' },
+            filename: { type: 'string', example: 'report_2026-07-06', description: 'Export only — base filename without extension' },
+            download_all: { type: 'boolean', description: 'Export only — removes the row limit' }
+          }
         }
       }
     },
@@ -1351,59 +1432,121 @@ function initSwagger(){
           responses: { 200: { description: 'File download' } }
         }
       },
-      '/api/report/templates': {
-        get: { tags: ['Reports'], summary: 'List report templates', responses: { 200: { description: 'Templates' } } },
-        post: {
-          tags: ['Reports'], summary: 'Create a report template',
-          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['name'], properties: {
-            name: { type: 'string' }, description: { type: 'string' }, config: { type: 'object' }
-          }}}}},
-          responses: { 201: { description: 'Template created' } }
-        }
-      },
-      '/api/report/templates/{id}': {
-        get: {
-          tags: ['Reports'], summary: 'Get a report template',
-          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-          responses: { 200: { description: 'Template' } }
-        },
-        put: {
-          tags: ['Reports'], summary: 'Update a report template',
-          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' }}}},
-          responses: { 200: { description: 'Updated' } }
-        },
-        delete: {
-          tags: ['Reports'], summary: 'Delete a report template',
-          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-          responses: { 200: { description: 'Deleted' } }
-        }
-      },
-      '/api/report/templates/{id}/duplicate': {
-        post: {
-          tags: ['Reports'], summary: 'Duplicate a report template',
-          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-          responses: { 201: { description: 'Duplicated' } }
-        }
-      },
-      '/api/report/templates/tags/list': {
-        get: { tags: ['Reports'], summary: 'List all template tags', responses: { 200: { description: 'Tag list' } } }
-      },
       '/api/report/fields': {
-        get: { tags: ['Reports'], summary: 'Get available fields for report builder', responses: { 200: { description: 'Field list' } } }
+        get: {
+          tags: ['Reports'],
+          summary: 'Get all available tables and fields for the Report Builder',
+          description: 'Returns every allowlisted table with its columns, human-readable labels, and data types. Use the returned expressions in /api/report/preview select payloads.',
+          responses: {
+            200: { description: 'Available fields keyed by table name', content: { 'application/json': { schema: { type: 'object', properties: {
+              success: { type: 'boolean', example: true },
+              fields: { type: 'object', description: 'Keys are table names; values contain label and fields array' }
+            }}}}}
+          }
+        }
       },
       '/api/report/preview': {
         post: {
-          tags: ['Reports'], summary: 'Preview a report',
-          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' }}}},
-          responses: { 200: { description: 'Preview data' } }
+          tags: ['Reports'],
+          summary: 'Preview a report — returns up to `limit` rows as JSON',
+          description: 'Runs the query described by the payload and returns results as a JSON array. Auto-detects required JOINs from the column expressions. Supports aggregates, GROUP BY, WHERE filters, and HAVING clauses.',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ReportQueryPayload' } } }
+          },
+          responses: {
+            200: { description: 'Report preview', content: { 'application/json': { schema: { type: 'object', properties: {
+              success: { type: 'boolean', example: true },
+              data: { type: 'array', items: { type: 'object' }, description: 'Result rows — keys are the "as" labels from the select array' }
+            }}}}},
+            400: { description: 'Query validation error (invalid table, column not allowlisted, etc.)' },
+            401: { description: 'Unauthenticated' }
+          }
         }
       },
       '/api/report/export': {
         post: {
-          tags: ['Reports'], summary: 'Export a report (POST with body)',
-          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' }}}},
-          responses: { 200: { description: 'Export file' } }
+          tags: ['Reports'],
+          summary: 'Export a report as CSV or PDF',
+          description: 'Same query payload as /preview but adds `format`, `filename`, and `download_all`. Returns a binary file download. PDF export is capped at 2 000 rows; use CSV for larger datasets.',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/ReportQueryPayload' } } }
+          },
+          responses: {
+            200: { description: 'File download (text/csv or application/pdf)' },
+            400: { description: 'Validation or query error' }
+          }
+        }
+      },
+      '/api/report/templates': {
+        get: {
+          tags: ['Reports'],
+          summary: 'List report templates visible to the authenticated user',
+          description: 'Returns global templates and the user\'s own private templates. Managers with `manage-report-templates` permission see all templates. Ordered newest first.',
+          responses: {
+            200: { description: 'Template list', content: { 'application/json': { schema: { type: 'object', properties: {
+              success: { type: 'boolean', example: true },
+              data: { type: 'array', items: { $ref: '#/components/schemas/ReportTemplate' } }
+            }}}}}
+          }
+        },
+        post: {
+          tags: ['Reports'],
+          summary: 'Save the current report configuration as a named template',
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { type: 'object', required: ['name', 'payload'], properties: {
+              name: { type: 'string', example: 'Monthly Terminal Report' },
+              description: { type: 'string', nullable: true },
+              is_global: { type: 'boolean', description: 'Share with all users. Requires manage-report-templates permission.', default: false },
+              payload: { $ref: '#/components/schemas/ReportQueryPayload' }
+            }}}}
+          },
+          responses: {
+            201: { description: 'Template created', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { $ref: '#/components/schemas/ReportTemplate' } }}}}},
+            403: { description: 'Insufficient permissions to create global template' },
+            422: { description: 'Validation error' }
+          }
+        }
+      },
+      '/api/report/templates/tags/list': {
+        get: {
+          tags: ['Reports'],
+          summary: 'List all unique tags across visible templates',
+          responses: { 200: { description: 'Tag array', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { type: 'array', items: { type: 'string' } } }}}}}}
+        }
+      },
+      '/api/report/templates/{id}': {
+        get: {
+          tags: ['Reports'], summary: 'Get a single report template by ID',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: {
+            200: { description: 'Template', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { $ref: '#/components/schemas/ReportTemplate' } }}}}},
+            403: { description: 'Access denied (private template belonging to another user)' },
+            404: { description: 'Template not found' }
+          }
+        },
+        put: {
+          tags: ['Reports'], summary: 'Update a report template',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['name','payload'], properties: {
+            name: { type: 'string' }, description: { type: 'string', nullable: true },
+            is_global: { type: 'boolean' }, payload: { $ref: '#/components/schemas/ReportQueryPayload' }
+          }}}}},
+          responses: { 200: { description: 'Updated template' }, 403: { description: 'Access denied' }, 404: { description: 'Not found' } }
+        },
+        delete: {
+          tags: ['Reports'], summary: 'Delete a report template',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 200: { description: 'Deleted successfully' }, 403: { description: 'Access denied' }, 404: { description: 'Not found' } }
+        }
+      },
+      '/api/report/templates/{id}/duplicate': {
+        post: {
+          tags: ['Reports'], summary: 'Duplicate a template — creates a private copy owned by the current user',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+          responses: { 201: { description: 'New template (copy)', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, data: { $ref: '#/components/schemas/ReportTemplate' } }}}}}}
         }
       },
 
