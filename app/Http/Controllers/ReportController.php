@@ -157,14 +157,20 @@ class ReportController extends Controller
 
     private function exportPdf($results, string $filename, array $config)
     {
-        $columns = $results->isNotEmpty() ? array_keys((array) $results->first()) : [];
+        ini_set('memory_limit', '512M');
+
+        $PDF_ROW_LIMIT = 2000;
+        $truncated = $results->count() > $PDF_ROW_LIMIT;
+        $results   = $truncated ? $results->take($PDF_ROW_LIMIT) : $results;
+        $columns   = $results->isNotEmpty() ? array_keys((array) $results->first()) : [];
 
         $pdf = Pdf::loadView('reports.builder-pdf', [
-            'results'   => $results,
-            'columns'   => $columns,
-            'filename'  => $filename,
-            'baseTable' => $config['base']['table'] ?? '',
-            'rowCount'  => $results->count(),
+            'results'    => $results,
+            'columns'    => $columns,
+            'filename'   => $filename,
+            'baseTable'  => $config['base']['table'] ?? '',
+            'rowCount'   => $results->count(),
+            'truncated'  => $truncated,
             'generatedAt' => now()->format('d M Y, H:i'),
         ])->setPaper('a4', 'landscape');
 

@@ -1183,8 +1183,20 @@ document.addEventListener('alpine:init', () => {
       });
       const labelCols = this.reportColumns.filter(col => !numCols.includes(col));
       this.chartNumCols = numCols;
-      if (!this.chartLabelCol || !this.reportColumns.includes(this.chartLabelCol))
-        this.chartLabelCol = labelCols[0] || this.reportColumns[0] || '';
+
+      if (!this.chartLabelCol || !this.reportColumns.includes(this.chartLabelCol)) {
+        // Prefer low-cardinality text columns (2–20 unique values) — they make
+        // the most useful group-by labels for count charts (Status, Type, Priority…)
+        const scored = labelCols.map(col => {
+          const unique = new Set(this.reportData.map(r => r[col])).size;
+          return { col, unique };
+        });
+        const best = scored
+          .filter(s => s.unique >= 2 && s.unique <= 20)
+          .sort((a, b) => a.unique - b.unique)[0];
+        this.chartLabelCol = best ? best.col : (labelCols[0] || this.reportColumns[0] || '');
+      }
+
       if (!this.chartValueCol || (this.chartValueCol !== '__count__' && !this.reportColumns.includes(this.chartValueCol)))
         this.chartValueCol = numCols[0] || '__count__';
     },
