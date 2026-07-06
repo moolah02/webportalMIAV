@@ -31,8 +31,7 @@ class ReportTemplateController extends Controller
                 });
             }
 
-            $templates = $query->orderBy('is_global', 'desc')
-                              ->orderBy('name')
+            $templates = $query->orderBy('created_at', 'desc')
                               ->get();
 
             return response()->json([
