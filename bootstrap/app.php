@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->appendToGroup('web', \App\Http\Middleware\ForcePasswordChange::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Ensure API consumers (mobile apps) consistently receive JSON for auth failures

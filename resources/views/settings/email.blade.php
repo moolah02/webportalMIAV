@@ -108,6 +108,36 @@
 
     <hr class="section-divider">
 
+    <h3 style="font-size:14px;font-weight:700;color:#1a3a5c;margin:0 0 14px;">👤 New Employee Welcome Email</h3>
+    <form method="POST" action="{{ route('settings.email.update') }}">
+        @csrf
+        <div style="display:flex;flex-direction:column;gap:14px;">
+            <label style="display:flex;align-items:center;justify-content:space-between;gap:24px;">
+                <div>
+                    <div style="font-size:13.5px;font-weight:600;color:#111827;">Send welcome email when employee is created</div>
+                    <div style="font-size:12px;color:#9ca3af;margin-top:2px;">Emails login credentials to the new employee (requires SMTP above)</div>
+                </div>
+                <input type="hidden" name="welcome_email_enabled" value="0">
+                <input type="checkbox" name="welcome_email_enabled" value="1" style="width:18px;height:18px;accent-color:#1a3a5c;"
+                    {{ \App\Models\SystemSetting::get('welcome_email_enabled') ? 'checked' : '' }}>
+            </label>
+            <label style="display:flex;align-items:center;justify-content:space-between;gap:24px;">
+                <div>
+                    <div style="font-size:13.5px;font-weight:600;color:#111827;">Require password change on first login</div>
+                    <div style="font-size:12px;color:#9ca3af;margin-top:2px;">Employee must set a new password immediately after their first login</div>
+                </div>
+                <input type="hidden" name="welcome_email_force_reset" value="0">
+                <input type="checkbox" name="welcome_email_force_reset" value="1" style="width:18px;height:18px;accent-color:#1a3a5c;"
+                    {{ \App\Models\SystemSetting::get('welcome_email_force_reset') ? 'checked' : '' }}>
+            </label>
+        </div>
+        <div style="margin-top:16px;">
+            <button type="submit" class="btn-primary">💾 Save</button>
+        </div>
+    </form>
+
+    <hr class="section-divider">
+
     <h3 style="font-size:14px;font-weight:700;color:#1a3a5c;margin:0 0 14px;">🔬 Send Test Email</h3>
     <form method="POST" action="{{ route('settings.email.test') }}" style="display:flex;gap:12px;align-items:flex-end;">
         @csrf

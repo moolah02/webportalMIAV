@@ -47,6 +47,7 @@ class Employee extends Authenticatable
         'emergency_contact_phone',
         'notes',
         'last_login_at',
+        'must_change_password',
     ];
 
     protected $hidden = [
@@ -57,7 +58,8 @@ class Employee extends Authenticatable
     protected $casts = [
         'hire_date'          => 'date',
         'last_login_at'      => 'datetime',
-        'two_factor_enabled' => 'boolean',
+        'two_factor_enabled'  => 'boolean',
+        'must_change_password'=> 'boolean',
         'salary'             => 'decimal:2',
     ];
 

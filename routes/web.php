@@ -544,6 +544,10 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         ->middleware('permission:all,approve_requests')
         ->name('audit-trail.index');
 
+    Route::get('/audit-trail/export-analysis', [AuditTrailController::class, 'exportAnalysis'])
+        ->middleware('permission:all,approve_requests')
+        ->name('audit-trail.export-analysis');
+
     // ==============================================
     // EMPLOYEE MANAGEMENT ROUTES - UPDATED PERMISSIONS
     // ==============================================

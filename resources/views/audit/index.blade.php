@@ -9,6 +9,12 @@
             <h1 class="m-0 text-gray-900 text-2xl font-semibold">&#x1F50D; Audit Trail</h1>
             <p class="text-gray-500 text-sm mt-1">Complete history of all system actions, categorised by area</p>
         </div>
+        <div>
+            <a href="{{ route('audit-trail.export-analysis', request()->only(['date_from','date_to'])) }}"
+               style="display:inline-flex;align-items:center;gap:6px;background:#1a3a5c;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">
+                📊 Export Analysis PDF
+            </a>
+        </div>
     </div>
 
     {{-- Top stats --}}

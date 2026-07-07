@@ -239,10 +239,39 @@ public function store(Request $request)
         ]);
 
         ActivityLog::log('created', "Employee '{$employee->first_name} {$employee->last_name}' ({$employeeNumber}) created", $employee);
+
+        // Welcome email
+        $this->sendWelcomeEmail($employee, $validatedData['password']);
+
         return redirect()
             ->route('employees.index')
             ->with('success', "Employee created successfully! Employee Number: {$employeeNumber}");
     });
+}
+
+private function sendWelcomeEmail(\App\Models\Employee $employee, string $plainPassword): void
+{
+    if (!\App\Models\SystemSetting::get('welcome_email_enabled', false)) return;
+    if (!\App\Models\SystemSetting::get('mail_from_address')) return;
+    if (!filter_var($employee->email, FILTER_VALIDATE_EMAIL)) return;
+
+    $forceReset = (bool) \App\Models\SystemSetting::get('welcome_email_force_reset', true);
+    if ($forceReset) {
+        $employee->update(['must_change_password' => true]);
+    }
+
+    $resetNote = $forceReset
+        ? "\nFor security, you will be asked to change your password on your first login.\n"
+        : '';
+
+    try {
+        \Illuminate\Support\Facades\Mail::raw(
+            "Dear {$employee->first_name},\n\nYour Revival Technologies account has been created.\n\nLogin URL: " . url('/login') . "\nEmail: {$employee->email}\nPassword: {$plainPassword}{$resetNote}\nEmployee Number: {$employee->employee_number}\n\nPlease keep your credentials secure.\n\nRevival Technologies",
+            fn($m) => $m->to($employee->email)->subject('Welcome to Revival Technologies – Your Account Details')
+        );
+    } catch (\Throwable) {
+        // Email failure must never block employee creation
+    }
 }
 
 
