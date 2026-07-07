@@ -15,6 +15,8 @@ use App\Http\Controllers\BusinessLicenseController;
 use App\Http\Controllers\JobAssignmentController;
 use App\Http\Controllers\TechnicianReportsController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SystemSettingController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\AssetCategoryFieldController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TicketController;
@@ -967,6 +969,22 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::delete('/asset-category-fields/{field}', [AssetCategoryFieldController::class, 'destroy'])->name('asset-category-fields.destroy');
         Route::post('/asset-categories/{category}/fields/reorder', [AssetCategoryFieldController::class, 'reorder'])->name('asset-category-fields.reorder');
         Route::put('/asset-categories/{category}/settings', [AssetCategoryFieldController::class, 'updateCategory'])->name('asset-category-fields.update-category');
+
+        // Email Settings
+        Route::get('/email',         [SystemSettingController::class, 'emailIndex'])->name('email');
+        Route::post('/email',        [SystemSettingController::class, 'emailUpdate'])->name('email.update');
+        Route::post('/email/test',   [SystemSettingController::class, 'emailTest'])->name('email.test');
+
+        // Notification Settings
+        Route::get('/notifications',  [SystemSettingController::class, 'notificationsIndex'])->name('notifications');
+        Route::post('/notifications', [SystemSettingController::class, 'notificationsUpdate'])->name('notifications.update');
+
+        // Backup
+        Route::get('/backups',              [BackupController::class, 'index'])->name('backups');
+        Route::post('/backups',             [BackupController::class, 'store'])->name('backups.store');
+        Route::post('/backups/settings',    [BackupController::class, 'updateSettings'])->name('backups.settings');
+        Route::get('/backups/{file}',       [BackupController::class, 'download'])->name('backups.download');
+        Route::delete('/backups/{file}',    [BackupController::class, 'destroy'])->name('backups.destroy');
     });
 
     // API route for getting category fields (accessible from asset create/edit forms)

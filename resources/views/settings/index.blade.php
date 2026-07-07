@@ -381,17 +381,17 @@
             <div class="settings-header">⚙️ General Settings</div>
             <div class="settings-desc">Email, notifications and backup configuration</div>
             <ul class="settings-list">
-                <li><a href="#" onclick="alert('Coming Soon!')">
+                <li><a href="{{ route('settings.email') }}">
                     <span>📧 Email Settings</span>
-                    <span class="badge-soon">Soon</span>
+                    <span class="badge-manage">Configure</span>
                 </a></li>
-                <li><a href="#" onclick="alert('Coming Soon!')">
+                <li><a href="{{ route('settings.notifications') }}">
                     <span>🔔 Notification Rules</span>
-                    <span class="badge-soon">Soon</span>
+                    <span class="badge-manage">Configure</span>
                 </a></li>
-                <li><a href="#" onclick="alert('Coming Soon!')">
-                    <span>💾 Backup Settings</span>
-                    <span class="badge-soon">Soon</span>
+                <li><a href="{{ route('settings.backups') }}">
+                    <span>💾 Database Backups</span>
+                    <span class="badge-manage">Manage</span>
                 </a></li>
             </ul>
         </div>

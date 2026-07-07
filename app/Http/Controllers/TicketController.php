@@ -10,7 +10,9 @@ use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ActivityLog;
+use App\Models\SystemSetting;
 use App\Notifications\SystemNotification;
+use Illuminate\Support\Facades\Mail;
 
 class TicketController extends Controller
 {
@@ -158,6 +160,25 @@ class TicketController extends Controller
             }
         }
 
+        // Email notifications for new ticket
+        if (SystemSetting::get('notify_new_ticket', true) && SystemSetting::get('mail_from_address')) {
+            try {
+                $adminRoles = collect(explode(',', SystemSetting::get('notify_admin_roles', 'admin,manager')))->map(fn($r) => trim($r))->filter();
+                $recipients = Employee::whereHas('roles', fn($q) => $q->whereIn('name', $adminRoles))->where('status', 'active')->get();
+                if (!empty($validated['assigned_to'])) {
+                    $assignee = Employee::find($validated['assigned_to']);
+                    if ($assignee && !$recipients->contains('id', $assignee->id)) $recipients->push($assignee);
+                }
+                foreach ($recipients as $recipient) {
+                    if (!filter_var($recipient->email, FILTER_VALIDATE_EMAIL)) continue;
+                    Mail::raw(
+                        "Dear {$recipient->name},\n\nA new support ticket has been opened:\n\nTicket ID: #{$ticket->ticket_id}\nTitle: {$ticket->title}\nPriority: " . ucfirst($ticket->priority) . "\nCreated by: " . (Auth::user()->name ?? 'System') . "\n\nPlease log in to review and action this ticket.",
+                        fn($m) => $m->to($recipient->email)->subject("New Ticket #{$ticket->ticket_id}: {$ticket->title}")
+                    );
+                }
+            } catch (\Throwable) {}
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Ticket created successfully',
@@ -297,6 +318,20 @@ class TicketController extends Controller
             }
         } catch (\Throwable $e) {
             // Notification failure should not block status update
+        }
+
+        // Email notification for status change
+        if (SystemSetting::get('notify_ticket_status', true) && SystemSetting::get('mail_from_address')) {
+            try {
+                $creator = $ticket->technician;
+                if ($creator && $creator->id !== auth()->id() && filter_var($creator->email, FILTER_VALIDATE_EMAIL)) {
+                    $newStatus = ucfirst(str_replace('_', ' ', $validated['status']));
+                    Mail::raw(
+                        "Dear {$creator->name},\n\nThe status of your ticket has been updated:\n\nTicket ID: #{$ticket->ticket_id}\nTitle: {$ticket->title}\nNew Status: {$newStatus}\n\nPlease log in to view the details.",
+                        fn($m) => $m->to($creator->email)->subject("Ticket #{$ticket->ticket_id} Status Updated: {$newStatus}")
+                    );
+                }
+            } catch (\Throwable) {}
         }
 
         if ($request->expectsJson()) {
