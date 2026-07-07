@@ -210,7 +210,7 @@ class TicketController extends Controller
             'assigned_to' => 'nullable|exists:employees,id',
             'estimated_resolution_days' => 'nullable|integer|min:1',
             'resolution' => 'nullable|string',
-            'status' => 'nullable|in:open,in_progress,resolved,closed,cancelled',
+            'status' => 'nullable|in:open,in_progress,on_hold,resolved,closed,cancelled',
         ]);
 
         // Validation rules based on ticket_type and assignment_type
@@ -270,7 +270,7 @@ class TicketController extends Controller
     public function updateStatus(Request $request, Ticket $ticket)
     {
         $validated = $request->validate([
-            'status' => 'required|in:open,in_progress,resolved,closed,cancelled',
+            'status' => 'required|in:open,in_progress,on_hold,resolved,closed,cancelled',
             'resolution' => 'nullable|string'
         ]);
 

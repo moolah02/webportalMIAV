@@ -264,8 +264,9 @@
                             <button class="btn-primary btn-sm" onclick="editTicketFromTable({{ $ticket->id }})">&#x270F; Edit</button>
                             @php
                                 $transitions = [
-                                    'open'        => ['in_progress'=>'Mark In Progress','resolved'=>'Resolve','cancelled'=>'Cancel'],
-                                    'in_progress' => ['resolved'=>'Resolve','open'=>'Back to Open','cancelled'=>'Cancel'],
+                                    'open'        => ['in_progress'=>'Mark In Progress','on_hold'=>'Put On Hold','resolved'=>'Resolve','cancelled'=>'Cancel'],
+                                    'in_progress' => ['on_hold'=>'Put On Hold','resolved'=>'Resolve','open'=>'Back to Open','cancelled'=>'Cancel'],
+                                    'on_hold'     => ['in_progress'=>'Resume','open'=>'Back to Open','cancelled'=>'Cancel'],
                                     'resolved'    => ['open'=>'Re-open','closed'=>'Close'],
                                 ];
                                 $nextStatuses = $transitions[$ticket->status] ?? [];
