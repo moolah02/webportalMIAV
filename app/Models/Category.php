@@ -28,18 +28,32 @@ class Category extends Model
     ];
 
     // Category types constants
-    const TYPE_ASSET_CATEGORY = 'asset_category';
-    const TYPE_ASSET_STATUS = 'asset_status';
-    const TYPE_TERMINAL_STATUS = 'terminal_status';
-    const TYPE_SERVICE_TYPE = 'service_type';
+    const TYPE_ASSET_CATEGORY    = 'asset_category';
+    const TYPE_ASSET_STATUS      = 'asset_status';
+    const TYPE_TERMINAL_STATUS   = 'terminal_status';
+    const TYPE_TERMINAL_MODEL    = 'terminal_model';
+    const TYPE_SERVICE_TYPE      = 'service_type';
+    const TYPE_TICKET_ISSUE_TYPE = 'ticket_issue_type';
+    const TYPE_EMPLOYEE_POSITION = 'employee_position';
+    const TYPE_CLIENT_INDUSTRY   = 'client_industry';
+    const TYPE_PROJECT_TYPE      = 'project_type';
+    const TYPE_VISIT_PURPOSE     = 'visit_purpose';
+    const TYPE_BUSINESS_TYPE     = 'business_type';
 
     public static function getTypes()
     {
         return [
-            self::TYPE_ASSET_CATEGORY => 'Asset Categories',
-            self::TYPE_ASSET_STATUS => 'Asset Status',
-            self::TYPE_TERMINAL_STATUS => 'POS Terminal Status',
-            self::TYPE_SERVICE_TYPE => 'Service Types',
+            self::TYPE_ASSET_CATEGORY    => 'Asset Categories',
+            self::TYPE_ASSET_STATUS      => 'Asset Status',
+            self::TYPE_TERMINAL_STATUS   => 'POS Terminal Status',
+            self::TYPE_TERMINAL_MODEL    => 'Terminal Models / Brands',
+            self::TYPE_SERVICE_TYPE      => 'Service Types',
+            self::TYPE_TICKET_ISSUE_TYPE => 'Ticket Issue Types',
+            self::TYPE_EMPLOYEE_POSITION => 'Employee Positions',
+            self::TYPE_CLIENT_INDUSTRY   => 'Client Industries',
+            self::TYPE_PROJECT_TYPE      => 'Project Types',
+            self::TYPE_VISIT_PURPOSE     => 'Visit Purposes',
+            self::TYPE_BUSINESS_TYPE     => 'Business / Merchant Types',
         ];
     }
 
