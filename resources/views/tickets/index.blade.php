@@ -43,6 +43,14 @@
     .ticket-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
     .technician-avatar { width: 24px; height: 24px; border-radius: 50%; background: #1a3a5c; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
 
+    /* ── Status change dropdown ────────────────────── */
+    .status-drop { position: relative; display: inline-block; }
+    .status-drop-menu { display: none; position: absolute; right: 0; top: calc(100% + 4px); background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.12); z-index: 200; min-width: 145px; padding: 4px 0; }
+    .status-drop-menu button { display: block; width: 100%; padding: 8px 14px; text-align: left; background: none; border: none; cursor: pointer; font-size: 12px; color: #374151; white-space: nowrap; }
+    .status-drop-menu button:hover { background: #f3f4f6; }
+    .status-drop-menu .sdm-divider { height: 1px; background: #e5e7eb; margin: 3px 0; }
+    .status-drop.open .status-drop-menu { display: block; }
+
     /* ── Toast container ───────────────────────────── */
     #notificationContainer {
         position: fixed; top: 20px; right: 20px;
@@ -254,8 +262,27 @@
                         <div class="flex gap-1.5 flex-wrap">
                             <button class="btn-secondary btn-sm" onclick="viewTicketDetails({{ $ticket->id }})">&#x1F441; View</button>
                             <button class="btn-primary btn-sm" onclick="editTicketFromTable({{ $ticket->id }})">&#x270F; Edit</button>
-                            @if($ticket->status === 'open')
-                                <button class="btn-success btn-sm" onclick="updateTicketStatus({{ $ticket->id }}, 'resolved', this)">&#x2705; Resolve</button>
+                            @php
+                                $transitions = [
+                                    'open'        => ['in_progress'=>'Mark In Progress','resolved'=>'Resolve','cancelled'=>'Cancel'],
+                                    'in_progress' => ['resolved'=>'Resolve','open'=>'Back to Open','cancelled'=>'Cancel'],
+                                    'resolved'    => ['open'=>'Re-open','closed'=>'Close'],
+                                ];
+                                $nextStatuses = $transitions[$ticket->status] ?? [];
+                            @endphp
+                            @if(!empty($nextStatuses))
+                            <div class="status-drop" id="sdrop-{{ $ticket->id }}">
+                                <button class="btn-secondary btn-sm" onclick="toggleStatusDrop({{ $ticket->id }})">
+                                    &#x21BB; Status &#x25BE;
+                                </button>
+                                <div class="status-drop-menu">
+                                    @foreach($nextStatuses as $status => $label)
+                                        <button onclick="updateTicketStatus({{ $ticket->id }},'{{ $status }}',this);closeAllStatusDrops()">
+                                            {{ $label }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
                             @endif
                         </div>
                     </td>
@@ -668,6 +695,22 @@
             showNotification('error', 'Error saving ticket. Please try again.');
         }
     }
+
+    function toggleStatusDrop(ticketId) {
+        const el = document.getElementById('sdrop-' + ticketId);
+        if (!el) return;
+        const isOpen = el.classList.contains('open');
+        closeAllStatusDrops();
+        if (!isOpen) el.classList.add('open');
+    }
+
+    function closeAllStatusDrops() {
+        document.querySelectorAll('.status-drop.open').forEach(el => el.classList.remove('open'));
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.status-drop')) closeAllStatusDrops();
+    });
 
     async function updateTicketStatus(ticketId, newStatus, btn) {
         if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
