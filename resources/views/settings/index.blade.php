@@ -1,6 +1,95 @@
 @extends('layouts.app')
 @section('title', 'System Settings')
 
+@push('styles')
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px 24px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-left: 4px solid #1a3a5c;
+    }
+    .stat-number {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1a3a5c;
+        line-height: 1;
+    }
+    .stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 6px;
+    }
+    .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    .settings-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 22px 24px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .settings-header {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a3a5c;
+        margin-bottom: 6px;
+    }
+    .settings-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .settings-list li {
+        border-top: 1px solid #f1f5f9;
+    }
+    .settings-list li:first-child {
+        border-top: none;
+    }
+    .settings-list li a {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        color: #374151;
+        text-decoration: none;
+        font-size: 13.5px;
+        transition: color .15s;
+    }
+    .settings-list li a:hover {
+        color: #1a3a5c;
+    }
+    .badge {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .badge-gray {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    @media (max-width: 1100px) {
+        .stats-grid   { grid-template-columns: repeat(2, 1fr); }
+        .settings-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+        .stats-grid   { grid-template-columns: 1fr; }
+        .settings-grid { grid-template-columns: 1fr; }
+    }
+</style>
+@endpush
+
 @section('content')
 
 <div class="">
