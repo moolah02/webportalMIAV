@@ -436,63 +436,105 @@ public function store(Request $request)
 
 
     /**
-     * Download project closure report with improved error handling
+     * Download project closure report, regenerating on the fly if the file is missing.
      */
     public function downloadReport(Project $project)
     {
         try {
-            // Check if report path exists in database
-            if (!$project->report_path) {
-                Log::warning('Report path not found in database', ['project_id' => $project->id]);
-                return back()->with('error', 'Report has not been generated yet. Please close the project first.');
+            $diskPath = $project->report_path ? 'public/' . $project->report_path : null;
+            $absPath  = $diskPath ? storage_path('app/' . $diskPath) : null;
+
+            // File exists — serve it directly
+            if ($absPath && file_exists($absPath)) {
+                $extension = pathinfo($project->report_path, PATHINFO_EXTENSION);
+                $mimeType  = match($extension) {
+                    'pdf'   => 'application/pdf',
+                    'txt'   => 'text/plain',
+                    default => 'application/octet-stream',
+                };
+                $fileName = $project->project_code . '_closure_report_' . now()->format('Ymd') . '.' . $extension;
+                Log::info('Serving existing closure report', ['project_id' => $project->id]);
+                return response()->download($absPath, $fileName, ['Content-Type' => $mimeType]);
             }
 
-            // Check if file exists in storage
-            $fullPath = 'public/' . $project->report_path;
-            if (!Storage::exists($fullPath)) {
-                Log::error('Report file not found in storage', [
-                    'project_id' => $project->id,
-                    'report_path' => $project->report_path,
-                    'full_path' => $fullPath,
-                    'storage_path' => storage_path('app/' . $fullPath)
-                ]);
-
-                return back()->with('error', 'Report file not found in storage. The report may need to be regenerated.');
-            }
-
-            // Determine file extension and mime type
-            $extension = pathinfo($project->report_path, PATHINFO_EXTENSION);
-            $mimeType = match($extension) {
-                'pdf' => 'application/pdf',
-                'txt' => 'text/plain',
-                default => 'application/octet-stream'
-            };
-
-            // Generate appropriate filename
-            $fileName = $project->project_code . '_closure_report_' . now()->format('Ymd') . '.' . $extension;
-
-            Log::info('Report download initiated', [
-                'project_id' => $project->id,
-                'file_name' => $fileName,
-                'mime_type' => $mimeType
+            // File missing or never generated — regenerate from stored closure data
+            Log::warning('Closure report file missing, regenerating', [
+                'project_id'  => $project->id,
+                'report_path' => $project->report_path,
             ]);
-
-            // Download the file
-            return response()->download(
-                storage_path('app/' . $fullPath),
-                $fileName,
-                ['Content-Type' => $mimeType]
-            );
+            return $this->regenerateAndDownload($project);
 
         } catch (\Exception $e) {
-            Log::error('Report download failed', [
-                'project_id' => $project->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
+            Log::error('Report download failed', ['project_id' => $project->id, 'error' => $e->getMessage()]);
             return back()->with('error', 'Failed to download report: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Regenerate the closure PDF from stored project_completions data and return as download.
+     */
+    private function regenerateAndDownload(Project $project)
+    {
+        $project->load(['client', 'projectManager', 'jobAssignments.technician', 'projectTerminals']);
+
+        $totalTerminals = $project->projectTerminals()->count();
+        $completedJobs  = $project->jobAssignments()->where('status', 'completed')->count();
+        $totalJobs      = $project->jobAssignments()->count();
+        $completionRate = $totalJobs > 0 ? round(($completedJobs / $totalJobs) * 100, 1) : 0;
+        $duration       = ($project->start_date && $project->closed_at)
+            ? $project->start_date->diffInDays($project->closed_at) : 0;
+
+        $closure = DB::table('project_completions')->where('project_id', $project->id)->first();
+
+        $reportData = [
+            'project'        => $project,
+            'client'         => $project->client,
+            'projectManager' => $project->projectManager,
+            'metrics' => [
+                'total_terminals' => $totalTerminals,
+                'total_jobs'      => $totalJobs,
+                'completed_jobs'  => $completedJobs,
+                'completion_rate' => $completionRate,
+                'duration_days'   => $duration,
+                'budget'          => $project->budget,
+            ],
+            'closure_data' => [
+                'executive_summary'   => $closure->executive_summary   ?? 'Project completed successfully.',
+                'key_achievements'    => $closure->key_achievements    ?? 'All project objectives met.',
+                'challenges_overcome' => $closure->challenges_overcome ?? 'N/A',
+                'lessons_learned'     => $closure->lessons_learned     ?? 'N/A',
+                'issues_found'        => $closure->issues_found        ?? 'None reported',
+                'recommendations'     => $closure->recommendations     ?? 'N/A',
+                'additional_notes'    => $closure->additional_notes    ?? 'N/A',
+                'closure_reason'      => ucfirst(str_replace('_', ' ',
+                    $closure->closure_reason ?? $project->closure_reason ?? 'completed')),
+                'closed_by'  => $project->projectManager?->full_name ?? Auth::user()?->full_name ?? 'System',
+                'closed_at'  => ($project->closed_at ?? now())->format('F j, Y g:i A'),
+            ],
+            'job_assignments' => $project->jobAssignments()->with('technician')->get(),
+        ];
+
+        $pdf = Pdf::loadView('projects.reports.closure-pdf', $reportData);
+        $pdf->setPaper('A4', 'portrait');
+
+        $fileName = 'project_closure_' . $project->project_code . '_' . date('Ymd_His') . '.pdf';
+        $filePath = 'reports/projects/' . $fileName;
+
+        Storage::makeDirectory('public/reports/projects');
+        Storage::put('public/' . $filePath, $pdf->output());
+
+        DB::table('projects')->where('id', $project->id)->update([
+            'report_path'         => $filePath,
+            'report_generated_at' => now(),
+        ]);
+
+        Log::info('Closure report regenerated', ['project_id' => $project->id, 'path' => $filePath]);
+
+        return response()->download(
+            storage_path('app/public/' . $filePath),
+            $project->project_code . '_closure_report_' . now()->format('Ymd') . '.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
     }
 
     /**

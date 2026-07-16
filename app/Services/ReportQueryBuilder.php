@@ -58,6 +58,8 @@ class ReportQueryBuilder
         'visit_terminals.terminal_id = pos_terminals.id',
         'visits.assignment_id = job_assignments.id',
         'technician_visits.visit_id = visits.id',
+        'technician_visits.pos_terminal_id = pos_terminals.id',
+        'technician_visits.job_assignment_id = job_assignments.id',
         'tickets.pos_terminal_id = pos_terminals.id',
         'tickets.client_id = clients.id',
         'job_assignments.project_id = projects.id',
@@ -596,7 +598,7 @@ class ReportQueryBuilder
                 'this_month'   => 'This Month',
                 'custom'       => 'Custom Range'
             ],
-            'regions' => DB::table('regions')->where('is_active', 1)->pluck('name', 'name'),
+            'regions' => DB::table('regions')->pluck('name', 'name'),
             'clients' => DB::table('clients')->where('status', 'active')->pluck('company_name', 'id'),
             'projects' => DB::table('projects')->where('status', 'active')->pluck('project_name', 'id')
         ];
