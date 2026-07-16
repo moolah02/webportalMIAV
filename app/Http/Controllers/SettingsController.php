@@ -132,20 +132,26 @@ class SettingsController extends Controller
     {
         $available = array_keys((new \App\Http\Controllers\RoleController())->getAllAvailablePermissions());
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name',
-            'display_name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'permissions' => 'nullable|array',
+            'name'          => 'required|string|max:255|unique:roles,name',
+            'display_name'  => 'nullable|string|max:255',
+            'description'   => 'nullable|string',
+            'permissions'   => 'nullable|array',
             'permissions.*' => 'string|in:'.implode(',', $available),
         ]);
 
-        \App\Models\Role::create([
-            'name' => $validated['name'],
+        $permNames = $validated['permissions'] ?? [];
+
+        $role = \App\Models\Role::create([
+            'name'         => $validated['name'],
             'display_name' => $validated['display_name'] ?? $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'permissions' => $validated['permissions'] ?? [],
-            'is_active' => true,
+            'description'  => $validated['description'] ?? null,
+            'permissions'  => $permNames,
+            'is_active'    => true,
         ]);
+
+        // Sync to pivot table so hasPermission() reflects the new permissions immediately
+        $permIds = \App\Models\Permission::whereIn('name', $permNames)->pluck('id')->toArray();
+        $role->rolePermissions()->sync($permIds);
 
         return redirect()->route('settings.roles.manage')->with('success', 'Role created successfully.');
     }
@@ -154,21 +160,27 @@ class SettingsController extends Controller
     {
         $available = array_keys((new \App\Http\Controllers\RoleController())->getAllAvailablePermissions());
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
-            'display_name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'permissions' => 'nullable|array',
+            'name'          => 'required|string|max:255|unique:roles,name,'.$role->id,
+            'display_name'  => 'nullable|string|max:255',
+            'description'   => 'nullable|string',
+            'permissions'   => 'nullable|array',
             'permissions.*' => 'string|in:'.implode(',', $available),
-            'is_active' => 'nullable|boolean',
+            'is_active'     => 'nullable|boolean',
         ]);
 
+        $permNames = $validated['permissions'] ?? [];
+
         $role->update([
-            'name' => $validated['name'],
+            'name'         => $validated['name'],
             'display_name' => $validated['display_name'] ?? $role->display_name,
-            'description' => $validated['description'] ?? $role->description,
-            'permissions' => $validated['permissions'] ?? $role->permissions,
-            'is_active' => isset($validated['is_active']) ? (bool)$validated['is_active'] : $role->is_active,
+            'description'  => $validated['description'] ?? $role->description,
+            'permissions'  => $permNames,
+            'is_active'    => isset($validated['is_active']) ? (bool)$validated['is_active'] : $role->is_active,
         ]);
+
+        // Sync to pivot table so hasPermission() reflects the updated permissions immediately
+        $permIds = \App\Models\Permission::whereIn('name', $permNames)->pluck('id')->toArray();
+        $role->rolePermissions()->sync($permIds);
 
         return redirect()->route('settings.roles.manage')->with('success', 'Role updated successfully.');
     }

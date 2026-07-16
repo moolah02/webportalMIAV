@@ -20,7 +20,8 @@ class Role extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active'   => 'boolean',
+        'permissions' => 'array',
     ];
 
     // Relationships
@@ -99,13 +100,23 @@ class Role extends Model
         }
     }
 
-    // Check if role has specific permission (using pivot table)
+    // Check if role has specific permission (pivot table first, JSON column as fallback)
     public function hasPermission(string $permission): bool
     {
+        // Primary: pivot table (role_permissions)
         if ($this->rolePermissions()->where('name', 'all')->exists()) {
             return true;
         }
-        return $this->rolePermissions()->where('name', $permission)->exists();
+        if ($this->rolePermissions()->where('name', $permission)->exists()) {
+            return true;
+        }
+
+        // Fallback: JSON column (populated by SettingsController)
+        $jsonPerms = $this->permissions ?? [];
+        if (in_array('all', $jsonPerms)) {
+            return true;
+        }
+        return in_array($permission, $jsonPerms);
     }
 
     // Get display name or fallback to formatted name
