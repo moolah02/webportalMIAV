@@ -747,18 +747,22 @@ class SiteVisitController extends Controller
     }
 
     public function editTerminal(Request $request)
-{
-    $assignmentId = $request->assignment_id;
-    $terminalId = $request->terminal_id;
+    {
+        $assignmentId = $request->assignment_id;
+        $terminalId   = $request->terminal_id;
 
-    $assignment = JobAssignment::with(['technician', 'client', 'project'])->find($assignmentId);
-    $terminal = PosTerminal::find($terminalId);
+        $assignment = $assignmentId
+            ? JobAssignment::with(['technician', 'client', 'project'])->find($assignmentId)
+            : null;
 
-    // Get existing visit data if any
-    $existingVisit = TechnicianVisit::where('job_assignment_id', $assignmentId)
-        ->where('pos_terminal_id', $terminalId)
-        ->first();
+        $terminal = $terminalId ? PosTerminal::find($terminalId) : null;
 
-    return view('site_visits.edit_terminal', compact('assignment', 'terminal', 'existingVisit'));
-}
+        // Most recent visit for this terminal on this assignment
+        $existingVisit = TechnicianVisit::where('pos_terminal_id', $terminalId)
+            ->when($assignmentId, fn($q) => $q->where('job_assignment_id', $assignmentId))
+            ->latest('started_at')
+            ->first();
+
+        return view('site_visits.edit_terminal', compact('assignment', 'terminal', 'existingVisit'));
+    }
 }
