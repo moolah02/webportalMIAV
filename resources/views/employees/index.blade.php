@@ -160,6 +160,7 @@
                             <button onclick="location.href='{{ route('employees.show', $employee) }}'" class="btn-secondary btn-sm" title="View">&#x1F441;</button>
                             <button onclick="location.href='{{ route('employees.edit', $employee) }}'" class="btn-secondary btn-sm" title="Edit">&#x270F;</button>
                             <button onclick="quickActions({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}', '{{ $employee->email }}')" class="btn-secondary btn-sm" title="More Actions">&#x2699;&#xFE0F;</button>
+                            <button onclick="confirmDelete({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}')" class="btn-sm" title="Delete" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;padding:4px 8px;cursor:pointer;">&#x1F5D1;</button>
                         </div>
                     </td>
                 </tr>
@@ -203,9 +204,19 @@
                 <span class="text-xl">&#x1F4E7;</span>
                 <div><div class="text-sm font-semibold">Send Email</div><div class="text-xs opacity-75">Contact this employee</div></div>
             </button>
+            <button id="deleteEmployeeBtn" class="flex items-center gap-3 p-4 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition text-left w-full">
+                <span class="text-xl">&#x1F5D1;</span>
+                <div><div class="text-sm font-semibold">Delete Employee</div><div class="text-xs opacity-75">Permanently remove this employee</div></div>
+            </button>
         </div>
     </div>
 </div>
+
+{{-- Hidden delete form --}}
+<form id="deleteEmployeeForm" method="POST" style="display:none;">
+    @csrf
+    @method('DELETE')
+</form>
 <script>
 let currentEmployeeId = null;
 let currentEmployeeEmail = null;
@@ -225,6 +236,11 @@ function quickActions(employeeId, employeeName, employeeEmail) {
     document.getElementById('editEmployeeBtn').onclick = () => {
         closeQuickActions();
         window.location.href = `/employees/${employeeId}/edit`;
+    };
+
+    document.getElementById('deleteEmployeeBtn').onclick = () => {
+        closeQuickActions();
+        confirmDelete(employeeId, employeeName);
     };
 
     document.getElementById('quickActionsModal').style.display = 'flex';
@@ -263,6 +279,13 @@ function sendEmail() {
     } else {
         alert('Email address not available');
     }
+}
+
+function confirmDelete(employeeId, employeeName) {
+    if (!confirm(`Delete "${employeeName}"?\n\nThis action cannot be undone.`)) return;
+    const form = document.getElementById('deleteEmployeeForm');
+    form.action = `/employees/${employeeId}`;
+    form.submit();
 }
 
 // Select All functionality

@@ -233,6 +233,16 @@
         ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+        /*  PRINT / PDF  */
+        @media print {
+            .top-nav, .docs-sidebar, footer { display: none !important; }
+            .page-body { display: block; }
+            .docs-main { max-width: 100%; padding: 20px; }
+            body { background: #fff; }
+            a { color: inherit; text-decoration: none; }
+            .docs-main pre { white-space: pre-wrap; word-break: break-all; }
+        }
     </style>
 </head>
 <body>
@@ -250,6 +260,7 @@
         <a href="{{ url('/docs') }}" class="{{ request()->is('docs') ? 'active' : '' }}">Home</a>
         <a href="{{ url('/docs/system') }}" class="{{ request()->is('docs/system') ? 'active' : '' }}">System Manual</a>
         <a href="{{ url('/docs/srs') }}" class="{{ request()->is('docs/srs') ? 'active' : '' }}">SRS</a>
+        <button onclick="window.print()" class="app-link" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;">&#128438; Download PDF</button>
         <a href="{{ url('/login') }}" class="app-link">&#8592; App</a>
         @auth
             @if(auth()->user()->roles->whereIn('name', ['super_admin', 'administrator'])->isNotEmpty())

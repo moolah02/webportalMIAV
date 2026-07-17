@@ -130,7 +130,7 @@ class CategorySeeder extends Seeder
             [
                 'type' => 'service_type',
                 'name' => 'Maintenance',
-                'slug' => 'maintenance',
+                'slug' => 'service-maintenance',
                 'description' => 'Regular maintenance',
                 'color' => '#4CAF50',
                 'icon' => 'check',
@@ -140,7 +140,7 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            Category::create($category);
+            Category::firstOrCreate(['slug' => $category['slug']], $category);
         }
     }
 }

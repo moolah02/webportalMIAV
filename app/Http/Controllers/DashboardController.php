@@ -296,7 +296,7 @@ class DashboardController extends Controller
                 'icon' => '🖥️',
                 'color' => '#4caf50',
                 'title' => 'New Terminal Added',
-                'description' => "Terminal {$terminal->terminal_id} added for {$terminal->client->company_name}",
+                'description' => 'Terminal ' . $terminal->terminal_id . ' added for ' . (optional($terminal->client)->company_name ?? 'Unknown Client'),
                 'time' => $terminal->created_at->diffForHumans(),
                 'action' => [
                     'url' => route('pos-terminals.show', $terminal),

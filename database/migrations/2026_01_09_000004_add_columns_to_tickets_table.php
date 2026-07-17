@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Skip entirely if these columns already exist (created by create_tickets_table migration)
+        if (Schema::hasColumn('tickets', 'ticket_id')) {
+            return;
+        }
         Schema::table('tickets', function (Blueprint $table) {
             $table->string('ticket_id')->nullable()->after('id');
             $table->boolean('mobile_created')->default(false)->after('ticket_id');

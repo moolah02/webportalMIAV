@@ -13,9 +13,12 @@ return new class extends Migration
     {
         // Change estimated_resolution_time to store days instead of minutes
         Schema::table('tickets', function (Blueprint $table) {
-            // Drop the old column and add new one with comment
-            $table->dropColumn('estimated_resolution_time');
-            $table->integer('estimated_resolution_days')->nullable()->after('assignment_type')->comment('Estimated resolution time in days');
+            if (Schema::hasColumn('tickets', 'estimated_resolution_time')) {
+                $table->dropColumn('estimated_resolution_time');
+            }
+            if (!Schema::hasColumn('tickets', 'estimated_resolution_days')) {
+                $table->integer('estimated_resolution_days')->nullable()->comment('Estimated resolution time in days');
+            }
         });
 
         // Create ticket_steps table for tracking staged resolution

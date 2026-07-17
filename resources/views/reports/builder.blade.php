@@ -587,12 +587,6 @@
                     &#128200;&nbsp;Chart
                 </button>
 
-                @if($canManageTemplates)
-                <button @click="showSaveModal=true" :disabled="fields.length===0" class="rb-btn rb-btn-outline">
-                    &#128190;&nbsp;Save
-                </button>
-                @endif
-
                 <button @click="openTemplateModal()" class="rb-btn rb-btn-outline">
                     &#128193;&nbsp;Templates
                 </button>
@@ -967,39 +961,6 @@
                         </button>
                     </template>
                 </div>
-            </div>
-
-            {{-- ── Divider ── --}}
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-shrink:0;">
-                <div style="flex:1;height:1px;background:var(--rb-border);"></div>
-                <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rb-sub);">Saved Templates</span>
-                <div style="flex:1;height:1px;background:var(--rb-border);"></div>
-            </div>
-
-            {{-- ── Saved templates ── --}}
-            <div x-show="templatesLoading" style="text-align:center;padding:20px;">
-                <div class="rb-spinner"></div>
-                <p style="color:var(--rb-sub);font-size:13px;margin:0;">Loading…</p>
-            </div>
-
-            <div x-show="!templatesLoading && availableTemplates.length===0"
-                 style="text-align:center;padding:24px;color:#94a3b8;background:var(--rb-muted);border-radius:10px;">
-                <p style="font-size:13px;margin:0;">No saved templates yet. Use <strong>Save</strong> to store your own report configurations.</p>
-            </div>
-
-            <div x-show="!templatesLoading && availableTemplates.length > 0"
-                 style="flex:1;overflow-y:auto;margin-bottom:14px;">
-                <template x-for="tpl in availableTemplates" :key="tpl.id">
-                    <div class="rb-tpl" @click="applyTemplate(tpl)">
-                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
-                            <span class="rb-tpl-name" x-text="tpl.name"></span>
-                            <span x-show="tpl.is_global" class="rb-badge-global">Global</span>
-                        </div>
-                        <div class="rb-tpl-desc" x-text="tpl.description || 'No description'"></div>
-                        <div class="rb-tpl-meta"
-                             x-text="'Created by ' + (tpl.creator?.first_name || 'Unknown') + ' ' + (tpl.creator?.last_name || '')"></div>
-                    </div>
-                </template>
             </div>
 
             <div style="display:flex;justify-content:flex-end;flex-shrink:0;padding-top:12px;border-top:1px solid var(--rb-border);">

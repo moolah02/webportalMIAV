@@ -21,41 +21,34 @@ class SystemReportsController extends Controller
 {
     public function index()
     {
-        // System Overview Data
-        $systemOverview = $this->getSystemOverview();
-
-        // Client Analytics
+        $systemOverview  = $this->getSystemOverview();
         $clientAnalytics = $this->getClientAnalytics();
-
-        // Terminal Management
-        $terminalData = $this->getTerminalData();
-
-        // Service Activity
+        $terminalData    = $this->getTerminalData();
         $serviceActivity = $this->getServiceActivity();
-
-        // Asset Management
-        $assetData = $this->getAssetData();
-
-        // Employee Performance
-        $employeeData = $this->getEmployeeData();
-
-        // Project Management
-        $projectData = $this->getProjectData();
-
-        // Regional Analysis
-        $regionalData = $this->getRegionalData();
+        $assetData       = $this->getAssetData();
+        $employeeData    = $this->getEmployeeData();
+        $projectData     = $this->getProjectData();
+        $regionalData    = $this->getRegionalData();
+        $alerts          = $this->getAlerts();
+        $ticketTrend     = $this->getTicketTrend();
+        $visitsTrend     = $this->getVisitsTrend();
+        $recentTickets   = $this->getRecentTickets();
 
         return view('reports.system-dashboard', [
-            'title' => 'System Analytics Dashboard',
+            'title'          => 'System Analytics Dashboard',
             'systemOverview' => $systemOverview,
-            'clientAnalytics' => $clientAnalytics,
-            'terminalData' => $terminalData,
-            'serviceActivity' => $serviceActivity,
-            'assetData' => $assetData,
-            'employeeData' => $employeeData,
-            'projectData' => $projectData,
-            'regionalData' => $regionalData,
-            'generatedAt' => now(),
+            'clientAnalytics'=> $clientAnalytics,
+            'terminalData'   => $terminalData,
+            'serviceActivity'=> $serviceActivity,
+            'assetData'      => $assetData,
+            'employeeData'   => $employeeData,
+            'projectData'    => $projectData,
+            'regionalData'   => $regionalData,
+            'alerts'         => $alerts,
+            'ticketTrend'    => $ticketTrend,
+            'visitsTrend'    => $visitsTrend,
+            'recentTickets'  => $recentTickets,
+            'generatedAt'    => now(),
         ]);
     }
 
@@ -78,7 +71,7 @@ class SystemReportsController extends Controller
             'total_visits_this_month' => TechnicianVisit::where('visit_date', '>=', $currentMonth)->count(),
             'total_visits_last_month' => TechnicianVisit::where('visit_date', '>=', $lastMonth)
                 ->where('visit_date', '<', $currentMonth)->count(),
-            'total_assets' => Asset::where('status', 'asset-active')->count(),
+            'total_assets' => Asset::count(),
             'assigned_assets' => AssetAssignment::where('status', 'assigned')->count(),
             'revenue_impact' => $this->calculateRevenueImpact(),
             'system_health_score' => $this->calculateSystemHealthScore(),
@@ -180,21 +173,25 @@ class SystemReportsController extends Controller
 
     private function getAssetData()
     {
+        $totalStock    = Asset::sum('stock_quantity');
+        $assignedStock = Asset::sum('assigned_quantity');
+
         return [
-            'total_assets' => Asset::where('status', 'asset-active')->count(),
-            'assets_by_category' => Asset::where('status', 'asset-active')
-                ->select('category', DB::raw('count(*) as count'))
+            'total_assets' => Asset::count(),
+            'assets_by_category' => Asset::select('category', DB::raw('count(*) as count'))
                 ->groupBy('category')
                 ->pluck('count', 'category')
                 ->toArray(),
+            'assets_by_status' => Asset::select('status', DB::raw('count(*) as count'))
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->toArray(),
             'assignment_status' => [
-                'assigned' => AssetAssignment::where('status', 'assigned')->count(),
-                'available' => Asset::where('status', 'asset-active')->sum(DB::raw('stock_quantity - assigned_quantity')),
-                'total_stock' => Asset::where('status', 'asset-active')->sum('stock_quantity'),
+                'assigned'    => $assignedStock,
+                'available'   => max(0, $totalStock - $assignedStock),
+                'total_stock' => $totalStock,
             ],
-            'low_stock_alerts' => Asset::where('status', 'asset-active')
-                ->whereColumn(DB::raw('stock_quantity - assigned_quantity'), '<=', 'min_stock_level')
-                ->count(),
+            'low_stock_alerts' => Asset::whereRaw('(stock_quantity - assigned_quantity) <= min_stock_level')->count(),
             'asset_utilization' => $this->calculateAssetUtilization(),
             'top_requested_assets' => $this->getTopRequestedAssets(),
             'asset_value_distribution' => $this->getAssetValueDistribution(),
@@ -392,8 +389,8 @@ class SystemReportsController extends Controller
 
     private function calculateAssetUtilization()
     {
-        $totalAssets = Asset::where('status', 'asset-active')->sum('stock_quantity');
-        $assignedAssets = Asset::where('status', 'asset-active')->sum('assigned_quantity');
+        $totalAssets    = Asset::sum('stock_quantity');
+        $assignedAssets = Asset::sum('assigned_quantity');
 
         if ($totalAssets === 0) return 0;
         return round(($assignedAssets / $totalAssets) * 100, 2);
@@ -497,10 +494,11 @@ class SystemReportsController extends Controller
 
     private function getAssetAvailabilityRate()
     {
-        $totalAssets = Asset::where('status', 'asset-active')->sum('stock_quantity');
+        $totalAssets = Asset::sum('stock_quantity');
         if ($totalAssets === 0) return 100;
 
-        $availableAssets = Asset::where('status', 'asset-active')->sum(DB::raw('stock_quantity - assigned_quantity'));
+        $assignedAssets   = Asset::sum('assigned_quantity');
+        $availableAssets  = max(0, $totalAssets - $assignedAssets);
         return round(($availableAssets / $totalAssets) * 100, 2);
     }
 
@@ -514,6 +512,131 @@ class SystemReportsController extends Controller
             ->count();
 
         return round(($workingEmployees / $activeEmployees) * 100, 2);
+    }
+
+    private function getAlerts(): array
+    {
+        $alerts = [];
+
+        $faultyTerminals = PosTerminal::whereIn('current_status', ['maintenance', 'faulty'])->count();
+        if ($faultyTerminals > 0) {
+            $alerts[] = [
+                'type'    => 'danger',
+                'icon'    => '⚠️',
+                'title'   => "{$faultyTerminals} Terminal(s) Need Attention",
+                'desc'    => 'Terminals in maintenance or faulty state require service.',
+                'link'    => route('pos-terminals.index'),
+                'label'   => 'View Terminals',
+            ];
+        }
+
+        $overdueTickets = Ticket::whereIn('status', ['open', 'in_progress'])
+            ->where('created_at', '<=', Carbon::now()->subHours(48))
+            ->count();
+        if ($overdueTickets > 0) {
+            $alerts[] = [
+                'type'    => 'warning',
+                'icon'    => '🎫',
+                'title'   => "{$overdueTickets} Overdue Ticket(s)",
+                'desc'    => 'Open tickets older than 48 hours need follow-up.',
+                'link'    => route('tickets.index'),
+                'label'   => 'View Tickets',
+            ];
+        }
+
+        $lowStock = Asset::whereRaw('(stock_quantity - assigned_quantity) <= min_stock_level')->count();
+        if ($lowStock > 0) {
+            $alerts[] = [
+                'type'    => 'warning',
+                'icon'    => '📦',
+                'title'   => "{$lowStock} Asset(s) Low on Stock",
+                'desc'    => 'Some assets are at or below their minimum stock level.',
+                'link'    => route('assets.index'),
+                'label'   => 'View Assets',
+            ];
+        }
+
+        $expiringLicenses = \App\Models\BusinessLicense::where('expiry_date', '<=', Carbon::now()->addDays(30))
+            ->where('expiry_date', '>=', Carbon::now())
+            ->count();
+        if ($expiringLicenses > 0) {
+            $alerts[] = [
+                'type'    => 'warning',
+                'icon'    => '📄',
+                'title'   => "{$expiringLicenses} License(s) Expiring Soon",
+                'desc'    => 'Business licenses expiring within 30 days.',
+                'link'    => route('business-licenses.index'),
+                'label'   => 'View Licenses',
+            ];
+        }
+
+        $overdueProjects = Project::where('end_date', '<', Carbon::now())
+            ->whereIn('status', ['active'])
+            ->count();
+        if ($overdueProjects > 0) {
+            $alerts[] = [
+                'type'    => 'danger',
+                'icon'    => '📋',
+                'title'   => "{$overdueProjects} Overdue Project(s)",
+                'desc'    => 'Active projects past their end date.',
+                'link'    => route('projects.index'),
+                'label'   => 'View Projects',
+            ];
+        }
+
+        return $alerts;
+    }
+
+    private function getTicketTrend(): array
+    {
+        $months = collect();
+        for ($i = 5; $i >= 0; $i--) {
+            $months->push(Carbon::now()->subMonths($i)->format('Y-m'));
+        }
+
+        $created = Ticket::select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"), DB::raw('count(*) as total'))
+            ->where('created_at', '>=', Carbon::now()->subMonths(6)->startOfMonth())
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $resolved = Ticket::select(DB::raw("DATE_FORMAT(resolved_at, '%Y-%m') as month"), DB::raw('count(*) as total'))
+            ->where('status', 'resolved')
+            ->whereNotNull('resolved_at')
+            ->where('resolved_at', '>=', Carbon::now()->subMonths(6)->startOfMonth())
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        return [
+            'labels'   => $months->map(fn($m) => Carbon::createFromFormat('Y-m', $m)->format('M Y'))->values()->toArray(),
+            'created'  => $months->map(fn($m) => $created->get($m, 0))->values()->toArray(),
+            'resolved' => $months->map(fn($m) => $resolved->get($m, 0))->values()->toArray(),
+        ];
+    }
+
+    private function getVisitsTrend(): array
+    {
+        $months = collect();
+        for ($i = 5; $i >= 0; $i--) {
+            $months->push(Carbon::now()->subMonths($i)->format('Y-m'));
+        }
+
+        $visits = TechnicianVisit::select(DB::raw("DATE_FORMAT(visit_date, '%Y-%m') as month"), DB::raw('count(*) as total'))
+            ->where('visit_date', '>=', Carbon::now()->subMonths(6)->startOfMonth())
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        return [
+            'labels' => $months->map(fn($m) => Carbon::createFromFormat('Y-m', $m)->format('M Y'))->values()->toArray(),
+            'visits' => $months->map(fn($m) => $visits->get($m, 0))->values()->toArray(),
+        ];
+    }
+
+    private function getRecentTickets()
+    {
+        return Ticket::with(['assignedTo:id,first_name,last_name', 'client:id,company_name'])
+            ->latest()
+            ->limit(10)
+            ->get(['id', 'title', 'status', 'priority', 'created_at', 'assigned_to', 'client_id']);
     }
 
     // Export Methods

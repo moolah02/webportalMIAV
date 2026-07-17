@@ -60,8 +60,11 @@ class RoleSeeder extends Seeder
             if (!isset($role['display_name'])) {
                 $role['display_name'] = $role['name'];
             }
+            if (is_array($role['permissions'])) {
+                $role['permissions'] = json_encode($role['permissions']);
+            }
 
-            Role::create($role);
+            Role::firstOrCreate(['name' => $role['name']], $role);
         }
     }
 }

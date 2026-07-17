@@ -23,8 +23,8 @@ class EmployeeFactory extends Factory
             'email_verified_at' => now(),
             'password' => Hash::make('password'), // Default password
             'phone' => $this->faker->phoneNumber(),
-            'department_id' => Department::factory(),
-            'role_id' => Role::factory(),
+            'department_id' => Department::inRandomOrder()->value('id') ?? 1,
+            'role_id' => Role::inRandomOrder()->value('id') ?? 1,
             'manager_id' => null, // Will be set later in seeder
             'time_zone' => $this->faker->randomElement(['UTC', 'Africa/Harare', 'Africa/Johannesburg']),
             'language' => $this->faker->randomElement(['en', 'fr', 'es']),
@@ -66,56 +66,5 @@ class EmployeeFactory extends Factory
                 'email_verified_at' => null,
             ];
         });
-    }
-}
-
-// ==============================================
-// 7. DEPARTMENT SEEDER
-// File: database/seeders/DepartmentSeeder.php
-// ==============================================
-
-namespace Database\Seeders;
-
-use Illuminate\Database\Seeder;
-use App\Models\Department;
-
-class DepartmentSeeder extends Seeder
-{
-    public function run(): void
-    {
-        $departments = [
-            [
-                'name' => 'Information Technology',
-                'description' => 'Manages all technology infrastructure, software development, and technical support'
-            ],
-            [
-                'name' => 'Finance & Accounting',
-                'description' => 'Handles financial planning, accounting, budgeting, and financial reporting'
-            ],
-            [
-                'name' => 'Human Resources',
-                'description' => 'Manages employee relations, recruitment, training, and HR policies'
-            ],
-            [
-                'name' => 'Operations',
-                'description' => 'Oversees daily business operations, process improvement, and operational efficiency'
-            ],
-            [
-                'name' => 'Marketing & Sales',
-                'description' => 'Responsible for marketing strategies, sales operations, and customer acquisition'
-            ],
-            [
-                'name' => 'Customer Service',
-                'description' => 'Provides customer support, handles inquiries, and maintains customer satisfaction'
-            ],
-            [
-                'name' => 'Quality Assurance',
-                'description' => 'Ensures quality standards, conducts testing, and maintains compliance'
-            ],
-        ];
-
-        foreach ($departments as $department) {
-            Department::create($department);
-        }
     }
 }

@@ -551,6 +551,87 @@
         </div>
     </div>
 
+    {{-- Alerts / Action Items --}}
+    @if(count($alerts) > 0)
+    <div class="ui-card p-6" style="border-left: 4px solid #ef4444;">
+        <h3 style="margin:0 0 16px;font-size:16px;font-weight:700;color:#111827;">⚡ Action Items <span style="font-size:13px;font-weight:500;color:#6b7280;margin-left:8px;">{{ count($alerts) }} item(s) need attention</span></h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
+            @foreach($alerts as $alert)
+            <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:10px;border:1px solid {{ $alert['type'] === 'danger' ? '#fecaca' : '#fed7aa' }};background:{{ $alert['type'] === 'danger' ? '#fef2f2' : '#fff7ed' }};">
+                <span style="font-size:20px;line-height:1.3;">{{ $alert['icon'] }}</span>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:13.5px;font-weight:700;color:#111827;margin-bottom:3px;">{{ $alert['title'] }}</div>
+                    <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">{{ $alert['desc'] }}</div>
+                    <a href="{{ $alert['link'] }}" style="font-size:12px;font-weight:600;color:{{ $alert['type'] === 'danger' ? '#dc2626' : '#d97706' }};text-decoration:none;">{{ $alert['label'] }} →</a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    {{-- Ticket Trend + Visits Trend --}}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="ui-card p-6">
+            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#111827;">🎫 Ticket Trend (6 Months)</h3>
+            <canvas id="ticketTrendChart" style="width:100%;height:220px;max-height:220px;"></canvas>
+        </div>
+        <div class="ui-card p-6">
+            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#111827;">🔧 Service Visits (6 Months)</h3>
+            <canvas id="visitsTrendChart" style="width:100%;height:220px;max-height:220px;"></canvas>
+        </div>
+    </div>
+
+    {{-- Recent Tickets --}}
+    <div class="ui-card p-6">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 style="margin:0;font-size:15px;font-weight:700;color:#111827;">🎫 Recent Tickets</h3>
+            <a href="{{ route('tickets.index') }}" style="font-size:13px;color:#1a3a5c;font-weight:600;text-decoration:none;">View All →</a>
+        </div>
+        <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+                <tr style="background:#f8fafc;">
+                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">#</th>
+                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Title</th>
+                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Client</th>
+                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Assigned To</th>
+                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Priority</th>
+                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Status</th>
+                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($recentTickets as $ticket)
+                @php
+                    $statusColors = ['open'=>'#dbeafe:#1d4ed8','in_progress'=>'#fef3c7:#92400e','on_hold'=>'#f3e8ff:#7e22ce','resolved'=>'#dcfce7:#166534','closed'=>'#f1f5f9:#475569','cancelled'=>'#fee2e2:#991b1b'];
+                    [$sBg,$sFg] = explode(':', $statusColors[$ticket->status] ?? '#f1f5f9:#374151');
+                    $priorityColors = ['low'=>'#dcfce7:#166534','medium'=>'#fef3c7:#92400e','high'=>'#fee2e2:#991b1b','urgent'=>'#fce7f3:#9d174d'];
+                    [$pBg,$pFg] = explode(':', $priorityColors[$ticket->priority] ?? '#f1f5f9:#374151');
+                @endphp
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:9px 12px;color:#6b7280;">#{{ $ticket->id }}</td>
+                    <td style="padding:9px 12px;font-weight:600;color:#111827;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        <a href="{{ route('tickets.show', $ticket->id) }}" style="color:#1a3a5c;text-decoration:none;">{{ Str::limit($ticket->title, 45) }}</a>
+                    </td>
+                    <td style="padding:9px 12px;color:#374151;">{{ optional($ticket->client)->company_name ?? '—' }}</td>
+                    <td style="padding:9px 12px;color:#374151;">{{ $ticket->assignedTo ? $ticket->assignedTo->first_name . ' ' . $ticket->assignedTo->last_name : '—' }}</td>
+                    <td style="padding:9px 12px;">
+                        <span style="padding:3px 8px;border-radius:99px;font-size:11px;font-weight:700;background:{{ $pBg }};color:{{ $pFg }};">{{ ucfirst($ticket->priority ?? 'normal') }}</span>
+                    </td>
+                    <td style="padding:9px 12px;">
+                        <span style="padding:3px 8px;border-radius:99px;font-size:11px;font-weight:700;background:{{ $sBg }};color:{{ $sFg }};">{{ ucfirst(str_replace('_',' ',$ticket->status)) }}</span>
+                    </td>
+                    <td style="padding:9px 12px;color:#6b7280;white-space:nowrap;">{{ $ticket->created_at->format('d M Y') }}</td>
+                </tr>
+                @empty
+                <tr><td colspan="7" style="padding:24px;text-align:center;color:#6b7280;">No tickets found.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+        </div>
+    </div>
+
     <!-- Tabbed Content -->
     <div class="ui-card p-6">
         <!-- Tab Navigation -->
@@ -1428,11 +1509,72 @@ function printDashboard() {
     window.print();
 }
 
+function initTrendCharts() {
+    // Ticket Trend Chart
+    const ticketCtx = document.getElementById('ticketTrendChart');
+    if (ticketCtx) {
+        const trendData = @json($ticketTrend);
+        new Chart(ticketCtx, {
+            type: 'bar',
+            data: {
+                labels: trendData.labels,
+                datasets: [
+                    {
+                        label: 'Created',
+                        data: trendData.created,
+                        backgroundColor: 'rgba(239,68,68,0.7)',
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Resolved',
+                        data: trendData.resolved,
+                        backgroundColor: 'rgba(34,197,94,0.7)',
+                        borderRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { font: { size: 12 } } } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+
+    // Visits Trend Chart
+    const visitsCtx = document.getElementById('visitsTrendChart');
+    if (visitsCtx) {
+        const visitsData = @json($visitsTrend);
+        new Chart(visitsCtx, {
+            type: 'line',
+            data: {
+                labels: visitsData.labels,
+                datasets: [{
+                    label: 'Visits',
+                    data: visitsData.visits,
+                    borderColor: '#1a3a5c',
+                    backgroundColor: 'rgba(26,58,92,0.08)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#1a3a5c',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize overview charts by default
     initOverviewCharts();
-    console.log('System dashboard initialized');
+    initTrendCharts();
 });
 </script>
 @endsection

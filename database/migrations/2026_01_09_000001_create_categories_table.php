@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('categories')) {
+            return;
+        }
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('type'); // asset_category, asset_status, terminal_status, service_type

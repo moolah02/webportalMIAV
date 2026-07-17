@@ -8,6 +8,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use App\Models\Permission;
 use App\Models\Role;
 
@@ -63,7 +64,7 @@ class PermissionRoleSeeder extends Seeder
                 'name' => 'admin',
                 'display_name' => 'Administrator',
                 'description' => 'Administrative access',
-                'permissions' => ['view_dashboard', 'manage_assets', 'manage_clients', 'manage_team', 'view_reports', 'approve_requests']
+                'permissions' => ['all']
             ],
             [
                 'name' => 'manager',
@@ -86,17 +87,25 @@ class PermissionRoleSeeder extends Seeder
         ];
 
         foreach ($roles as $roleData) {
-            $role = Role::updateOrCreate(
-                ['name' => $roleData['name']], 
+            $role = Role::firstOrCreate(
+                ['name' => $roleData['name']],
                 [
                     'display_name' => $roleData['display_name'],
-                    'description' => $roleData['description']
+                    'description'  => $roleData['description'] ?? null,
                 ]
             );
 
-            // Attach permissions to role
+            // Attach permissions via direct DB insert to avoid attribute/method conflict
             $permissionIds = Permission::whereIn('name', $roleData['permissions'])->pluck('id');
-            $role->permissions()->sync($permissionIds);
+            DB::table('role_permissions')->where('role_id', $role->id)->delete();
+            foreach ($permissionIds as $permId) {
+                DB::table('role_permissions')->insert([
+                    'role_id'       => $role->id,
+                    'permission_id' => $permId,
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ]);
+            }
         }
     }
 }

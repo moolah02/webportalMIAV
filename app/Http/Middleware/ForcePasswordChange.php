@@ -9,8 +9,10 @@ use Symfony\Component\HttpFoundation\Response;
 class ForcePasswordChange
 {
     private array $allowedRoutes = [
-        'profile.show',
-        'profile.password',
+        'employee.profile',
+        'employee.edit-profile',
+        'employee.update-profile',
+        'employee.update-password',
         'logout',
     ];
 
@@ -24,7 +26,7 @@ class ForcePasswordChange
             !$request->routeIs(...$this->allowedRoutes) &&
             !$request->is('api/*', 'logout')
         ) {
-            return redirect()->route('profile.show')
+            return redirect()->route('employee.profile')
                 ->with('warning', 'You must change your password before continuing.');
         }
 

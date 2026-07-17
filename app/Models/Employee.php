@@ -201,7 +201,11 @@ class Employee extends Authenticatable
      */
     public function hasPermission(string $permission): bool
     {
-        // Check all roles - if ANY role has the permission, return true
+        // Check primary role (role_id FK)
+        if ($this->role && $this->role->hasPermission($permission)) {
+            return true;
+        }
+        // Check many-to-many roles (pivot table)
         foreach ($this->roles as $role) {
             if ($role->hasPermission($permission)) {
                 return true;

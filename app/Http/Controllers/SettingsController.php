@@ -149,8 +149,15 @@ class SettingsController extends Controller
             'is_active'    => true,
         ]);
 
-        // Sync to pivot table so hasPermission() reflects the new permissions immediately
-        $permIds = \App\Models\Permission::whereIn('name', $permNames)->pluck('id')->toArray();
+        // Ensure all selected permissions exist in the permissions table, then sync the pivot
+        $permIds = [];
+        foreach ($permNames as $permName) {
+            $perm = \App\Models\Permission::firstOrCreate(
+                ['name' => $permName],
+                ['display_name' => ucwords(str_replace('_', ' ', $permName)), 'category' => 'general']
+            );
+            $permIds[] = $perm->id;
+        }
         $role->rolePermissions()->sync($permIds);
 
         return redirect()->route('settings.roles.manage')->with('success', 'Role created successfully.');
@@ -178,8 +185,15 @@ class SettingsController extends Controller
             'is_active'    => isset($validated['is_active']) ? (bool)$validated['is_active'] : $role->is_active,
         ]);
 
-        // Sync to pivot table so hasPermission() reflects the updated permissions immediately
-        $permIds = \App\Models\Permission::whereIn('name', $permNames)->pluck('id')->toArray();
+        // Ensure all selected permissions exist in the permissions table, then sync the pivot
+        $permIds = [];
+        foreach ($permNames as $permName) {
+            $perm = \App\Models\Permission::firstOrCreate(
+                ['name' => $permName],
+                ['display_name' => ucwords(str_replace('_', ' ', $permName)), 'category' => 'general']
+            );
+            $permIds[] = $perm->id;
+        }
         $role->rolePermissions()->sync($permIds);
 
         return redirect()->route('settings.roles.manage')->with('success', 'Role updated successfully.');
