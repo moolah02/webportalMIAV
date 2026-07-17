@@ -69,7 +69,7 @@ File: resources/views/roles/create.blade.php
                     </div>
 
                     @php
-                        $groupedPermissions = collect($allPermissions)->groupBy('category');
+                        $groupedPermissions = collect($allPermissions)->groupBy('category', true);
                         $categoryConfig = [
                             'admin' => ['name' => 'System Administration', 'icon' => '⚡', 'color' => '#f44336'],
                             'dashboard' => ['name' => 'Dashboard Access', 'icon' => '📊', 'color' => '#2196f3'],

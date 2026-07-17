@@ -82,7 +82,7 @@ File: resources/views/roles/edit.blade.php
                     </div>
 
                     @php
-                        $groupedPermissions = collect($allPermissions)->groupBy('category');
+                        $groupedPermissions = collect($allPermissions)->groupBy('category', true);
 
                         // Make sure we have permissions array
                         $currentPermissions = $currentPermissions ?? [];
