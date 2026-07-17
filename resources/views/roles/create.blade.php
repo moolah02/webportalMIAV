@@ -39,6 +39,23 @@ File: resources/views/roles/create.blade.php
                     </div>
                 </div>
 
+                @if($errors->any())
+                <div style="margin-bottom: 16px; padding: 12px 16px; background: #ffebee; border: 1px solid #f44336; border-radius: 8px; color: #c62828; font-size: 13px;">
+                    <strong>Could not save role:</strong>
+                    <ul style="margin: 6px 0 0 16px;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
+                @if(session('error'))
+                <div style="margin-bottom: 16px; padding: 12px 16px; background: #ffebee; border: 1px solid #f44336; border-radius: 8px; color: #c62828; font-size: 13px;">
+                    {{ session('error') }}
+                </div>
+                @endif
+
                 <!-- Permissions Section -->
                 <div class="ui-card p-6">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">

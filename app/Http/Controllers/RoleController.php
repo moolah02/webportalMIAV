@@ -55,26 +55,42 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name',
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'string|in:' . implode(',', array_keys($this->getAllAvailablePermissions())),
+        $available = array_keys($this->getAllAvailablePermissions());
+        $submitted = $request->input('permissions', []);
+        $invalid   = array_diff($submitted, $available);
+
+        Log::info('Role store attempt', [
+            'name'              => $request->name,
+            'permissions_count' => count($submitted),
+            'invalid_perms'     => array_values($invalid),
         ]);
 
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'name'          => 'required|string|max:255|unique:roles,name',
+            'permissions'   => 'nullable|array',
+            'permissions.*' => 'string|in:' . implode(',', $available),
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning('Role store validation failed', ['errors' => $validator->errors()->toArray()]);
+            return back()->withErrors($validator)->withInput();
+        }
+
         try {
-            // Create role
             $role = Role::create([
                 'name'         => $request->name,
                 'display_name' => $request->input('display_name', ucwords(str_replace('_', ' ', $request->name))),
             ]);
 
-            // Sync permissions to pivot table
-            $this->syncPermissionsToPivot($role, $request->permissions ?? []);
+            $this->syncPermissionsToPivot($role, $submitted);
+
+            Log::info('Role created successfully', ['role_id' => $role->id, 'name' => $role->name]);
 
             return redirect()->route('roles.index')
                 ->with('success', 'Role created successfully!');
 
         } catch (\Exception $e) {
+            Log::error('Role store exception', ['error' => $e->getMessage()]);
             return back()
                 ->with('error', 'Failed to create role: ' . $e->getMessage())
                 ->withInput();
