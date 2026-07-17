@@ -178,6 +178,7 @@ File: resources/views/roles/edit.blade.php
                                                    value="{{ $key }}"
                                                    {{ $isChecked ? 'checked' : '' }}
                                                    onchange="updatePermissionCard(this)"
+                                                   onclick="event.stopPropagation()"
                                                    style="margin-top: 3px;">
                                             <div style="flex: 1;">
                                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">

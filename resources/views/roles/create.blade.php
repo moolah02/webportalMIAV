@@ -135,6 +135,7 @@ File: resources/views/roles/create.blade.php
                                                    value="{{ $key }}"
                                                    {{ in_array($key, old('permissions', [])) ? 'checked' : '' }}
                                                    onchange="updatePermissionCard(this)"
+                                                   onclick="event.stopPropagation()"
                                                    style="margin-top: 3px;">
                                             <div style="flex: 1;">
                                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
@@ -324,7 +325,7 @@ function collapseAllCategories() {
 
 // Permission management
 function selectAllInCategory(category) {
-    document.querySelectorAll(`input[value][data-category="${category}"]`).forEach(checkbox => {
+    document.querySelectorAll(`.permission-item[data-category="${category}"] input[name="permissions[]"]`).forEach(checkbox => {
         checkbox.checked = true;
         updatePermissionCard(checkbox);
     });

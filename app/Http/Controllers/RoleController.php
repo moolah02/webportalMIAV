@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use Illuminate\Http\Request;
-use App\Models\Employee;
+use Illuminate\Support\Facades\Log;
 
 class RoleController extends Controller
 {
@@ -64,7 +64,8 @@ class RoleController extends Controller
         try {
             // Create role
             $role = Role::create([
-                'name' => $request->name,
+                'name'         => $request->name,
+                'display_name' => $request->input('display_name', ucwords(str_replace('_', ' ', $request->name))),
             ]);
 
             // Sync permissions to pivot table
