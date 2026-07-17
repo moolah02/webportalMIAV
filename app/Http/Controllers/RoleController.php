@@ -220,10 +220,17 @@ class RoleController extends Controller
      */
     private function syncPermissionsToPivot(Role $role, array $permissionNames)
     {
-        // Get permission IDs from permission names
-        $permissionIds = \App\Models\Permission::whereIn('name', $permissionNames)->pluck('id')->toArray();
-
-        // Sync to pivot table (this will add new ones and remove old ones)
+        // Ensure every selected permission exists in the permissions table first,
+        // then sync — prevents sync([]) wiping pivot when permissions exist in the
+        // UI dropdown but not yet as rows in the permissions table
+        $permissionIds = [];
+        foreach ($permissionNames as $permName) {
+            $perm = \App\Models\Permission::firstOrCreate(
+                ['name' => $permName],
+                ['display_name' => ucwords(str_replace('_', ' ', $permName)), 'category' => 'general']
+            );
+            $permissionIds[] = $perm->id;
+        }
         $role->rolePermissions()->sync($permissionIds);
     }
 
