@@ -520,8 +520,8 @@ public function store(Request $request)
         $fileName = 'project_closure_' . $project->project_code . '_' . date('Ymd_His') . '.pdf';
         $filePath = 'reports/projects/' . $fileName;
 
-        Storage::makeDirectory('public/reports/projects');
-        Storage::put('public/' . $filePath, $pdf->output());
+        Storage::disk('public')->makeDirectory('reports/projects');
+        Storage::disk('public')->put($filePath,$pdf->output());
 
         DB::table('projects')->where('id', $project->id)->update([
             'report_path'         => $filePath,
@@ -735,7 +735,7 @@ public function store(Request $request)
         $fileName = 'project_completion_' . $project->project_code . '_' . date('Y-m-d') . '.pdf';
         $filePath = 'reports/projects/' . $fileName;
 
-        Storage::put('public/' . $filePath, $pdf->output());
+        Storage::disk('public')->put($filePath,$pdf->output());
 
         return $filePath;
     }
@@ -915,7 +915,7 @@ private function generateComprehensiveReport($project, $completionData, $reportT
         $filePath = "reports/projects/{$fileName}";
 
         Log::info("Saving PDF to: {$filePath}");
-        Storage::put('public/' . $filePath, $pdf->output());
+        Storage::disk('public')->put($filePath,$pdf->output());
 
         Log::info("Successfully generated report: {$filePath}");
         return $filePath;
@@ -1081,8 +1081,8 @@ private function generateSimpleReport($project, $request)
         $fileName = 'project_completion_' . $project->project_code . '_' . date('Y-m-d') . '.txt';
         $filePath = 'reports/projects/' . $fileName;
 
-        Storage::makeDirectory('public/reports/projects');
-        Storage::put('public/' . $filePath, $content);
+        Storage::disk('public')->makeDirectory('reports/projects');
+        Storage::disk('public')->put($filePath,$content);
 
         $project->update(['report_path' => $filePath]);
 
@@ -1611,7 +1611,7 @@ private function saveReportToFile($project, $content)
             mkdir($directory, 0755, true);
         }
 
-        Storage::put('public/' . $filePath, $content);
+        Storage::disk('public')->put($filePath,$content);
 
         return $filePath;
     } catch (\Exception $e) {
@@ -1966,8 +1966,8 @@ private function generateSpecificReportForManual($project, $reportType, $request
         $fileName = "project_{$reportType}_report_{$project->project_code}_" . date('Y-m-d_H-i-s') . '.txt';
         $filePath = 'reports/projects/' . $fileName;
 
-        Storage::makeDirectory('public/reports/projects');
-        Storage::put('public/' . $filePath, $content);
+        Storage::disk('public')->makeDirectory('reports/projects');
+        Storage::disk('public')->put($filePath,$content);
 
         return $filePath;
 
@@ -2072,8 +2072,8 @@ private function generateTextReport($project, $request)
         $fileName = 'project_simple_report_' . $project->project_code . '_' . date('Y-m-d_H-i-s') . '.txt';
         $filePath = 'reports/projects/' . $fileName;
 
-        Storage::makeDirectory('public/reports/projects');
-        Storage::put('public/' . $filePath, $content);
+        Storage::disk('public')->makeDirectory('reports/projects');
+        Storage::disk('public')->put($filePath,$content);
 
         return $filePath;
 
@@ -2123,8 +2123,8 @@ private function generatePDFReport($project, $reportType, $request)
         $fileName = "project_{$reportType}_report_{$project->project_code}_" . date('Y-m-d_H-i-s') . '.pdf';
         $filePath = 'reports/projects/' . $fileName;
 
-        Storage::makeDirectory('public/reports/projects');
-        Storage::put('public/' . $filePath, $pdf->output());
+        Storage::disk('public')->makeDirectory('reports/projects');
+        Storage::disk('public')->put($filePath,$pdf->output());
 
         Log::info("Successfully generated PDF: {$filePath}");
         return $filePath;
@@ -2310,8 +2310,8 @@ private function generateClosureReport($project, $request)
         $fileName = 'project_closure_' . $project->project_code . '_' . date('Ymd_His') . '.pdf';
         $filePath = 'reports/projects/' . $fileName;
 
-        Storage::makeDirectory('public/reports/projects');
-        Storage::put('public/' . $filePath, $pdf->output());
+        Storage::disk('public')->makeDirectory('reports/projects');
+        Storage::disk('public')->put($filePath,$pdf->output());
 
         // Update project with report path
         DB::table('projects')->where('id', $project->id)->update([
@@ -2346,8 +2346,8 @@ private function generateClosureReport($project, $request)
 
             $fileName = 'project_closure_' . $project->project_code . '_' . date('Ymd_His') . '.txt';
             $filePath = 'reports/projects/' . $fileName;
-            Storage::makeDirectory('public/reports/projects');
-            Storage::put('public/' . $filePath, $content);
+            Storage::disk('public')->makeDirectory('reports/projects');
+            Storage::disk('public')->put($filePath,$content);
 
             DB::table('projects')->where('id', $project->id)->update([
                 'report_path' => $filePath,
