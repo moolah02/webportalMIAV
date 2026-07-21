@@ -108,7 +108,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
                         <div>
                             <label class="ui-label">Region</label>
-                            <select name="region" class="ui-select">
+                            <select name="region" class="ui-select" onchange="document.getElementById('create_province').value=this.value">
                                 <option value="">Select Region</option>
                                 @foreach($regions as $reg)
                                     <option value="{{ $reg }}" {{ old('region') == $reg ? 'selected' : '' }}>{{ $reg }}</option>
@@ -123,7 +123,7 @@
                         </div>
                         <div>
                             <label class="ui-label">Province</label>
-                            <input type="text" name="province" value="{{ old('province') }}" placeholder="e.g., Harare Province" class="ui-input">
+                            <input type="text" name="province" id="create_province" value="{{ old('province') }}" placeholder="e.g., Harare Province" class="ui-input">
                             @error('province')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
