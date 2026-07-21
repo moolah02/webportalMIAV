@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Visit;
 use App\Models\VisitTerminal;
+use App\Models\TechnicianVisit;
+use App\Models\PosTerminal;
+use App\Models\JobAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -185,6 +188,9 @@ class VisitController extends Controller
 
             $visit->load('visitTerminal');
 
+            // Mirror to technician_visits so the report builder has data
+            $this->mirrorToTechnicianVisit($visit, $t, $data);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Visit recorded successfully.',
@@ -193,6 +199,69 @@ class VisitController extends Controller
         });
     }
 
+
+    private function mirrorToTechnicianVisit(Visit $visit, array $terminal, array $data): void
+    {
+        try {
+            $statusMap = [
+                'working' => 'active', 'Working' => 'active',
+                'not working' => 'inactive', 'Not Working' => 'inactive',
+                'not_working' => 'inactive',
+                'not found' => 'not_found', 'Not Found' => 'not_found',
+                'not_found' => 'not_found',
+                'relocated' => 'relocated', 'Relocated' => 'relocated',
+                'replaced'  => 'replaced',  'Replaced'  => 'replaced',
+                'active' => 'active', 'inactive' => 'inactive',
+            ];
+            $condMap = [
+                'good' => 'good', 'Good' => 'good',
+                'fair' => 'fair', 'Fair' => 'fair',
+                'bad'  => 'poor', 'Bad'  => 'poor',
+                'poor' => 'poor', 'Poor' => 'poor',
+                'damaged' => 'damaged', 'Damaged' => 'damaged',
+            ];
+
+            // Resolve pos_terminal_id — mobile sends pos_terminals.id as terminal_id
+            $posTerminalId = null;
+            if (!empty($terminal['terminal_id'])) {
+                $pt = PosTerminal::find((int) $terminal['terminal_id'])
+                    ?? PosTerminal::where('terminal_id', (string) $terminal['terminal_id'])->first();
+                $posTerminalId = $pt?->id;
+            }
+
+            // Resolve job_assignment FK
+            $jobAssignmentId = null;
+            if (!empty($data['assignment_id'])) {
+                $ja = JobAssignment::find((int) $data['assignment_id'])
+                    ?? JobAssignment::where('assignment_id', (string) $data['assignment_id'])->first();
+                $jobAssignmentId = $ja?->id;
+            }
+
+            TechnicianVisit::create([
+                'visit_id'                     => $visit->id,
+                'technician_id'                => $data['employee_id'],
+                'pos_terminal_id'              => $posTerminalId,
+                'job_assignment_id'            => $jobAssignmentId,
+                'started_at'                   => $data['completed_at'],
+                'ended_at'                     => $data['completed_at'],
+                'status'                       => 'closed',
+                'outcome'                      => 'completed',
+                'terminal_status_during_visit' => $statusMap[$terminal['status'] ?? ''] ?? null,
+                'terminal_condition'           => $condMap[$terminal['condition'] ?? ''] ?? null,
+                'issues_found'                 => $data['action_points'] ?? null,
+                'visit_summary'                => $data['visit_summary'] ?? null,
+                'other_terminals_found'        => $data['other_terminals_found'] ?? null,
+                'serial_snapshot'              => $terminal['serial_number'] ?? null,
+                'device_type_snapshot'         => $terminal['terminal_model'] ?? null,
+            ]);
+        } catch (\Throwable $e) {
+            // Non-fatal — Visit was already saved; log and continue
+            \Illuminate\Support\Facades\Log::warning('Failed to mirror visit to technician_visits', [
+                'visit_id' => $visit->id,
+                'error'    => $e->getMessage(),
+            ]);
+        }
+    }
 
     /**
      * Filter visits based on request parameters
