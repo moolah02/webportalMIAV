@@ -10,6 +10,7 @@ use App\Models\ProjectTerminal;
 use App\Models\JobAssignment;
 use App\Models\Visit;
 use App\Models\ProjectCompletion;
+use App\Models\TechnicianVisit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -475,7 +476,7 @@ public function store(Request $request)
      */
     private function regenerateAndDownload(Project $project)
     {
-        $project->load(['client', 'projectManager', 'jobAssignments.technician', 'projectTerminals']);
+        $project->load(['client', 'projectManager', 'jobAssignments.technician', 'projectTerminals.posTerminal']);
 
         $totalTerminals = $project->projectTerminals()->count();
         $completedJobs  = $project->jobAssignments()->where('status', 'completed')->count();
@@ -485,6 +486,12 @@ public function store(Request $request)
             ? $project->start_date->diffInDays($project->closed_at) : 0;
 
         $closure = DB::table('project_completions')->where('project_id', $project->id)->first();
+
+        $assignmentIds  = $project->jobAssignments()->pluck('id');
+        $visitHistory   = TechnicianVisit::whereIn('job_assignment_id', $assignmentIds)
+            ->with(['technician', 'posTerminal'])
+            ->latest('started_at')
+            ->get();
 
         $reportData = [
             'project'        => $project,
@@ -511,7 +518,9 @@ public function store(Request $request)
                 'closed_by'  => $project->projectManager?->full_name ?? Auth::user()?->full_name ?? 'System',
                 'closed_at'  => ($project->closed_at ?? now())->format('F j, Y g:i A'),
             ],
-            'job_assignments' => $project->jobAssignments()->with('technician')->get(),
+            'job_assignments'  => $project->jobAssignments()->with('technician')->get(),
+            'project_terminals' => $project->projectTerminals,
+            'visit_history'    => $visitHistory,
         ];
 
         $pdf = Pdf::loadView('projects.reports.closure-pdf', $reportData);
@@ -2262,7 +2271,7 @@ private function generateClosureReport($project, $request)
         Log::info('Generating closure report PDF', ['project_id' => $project->id]);
 
         // Refresh project to get latest data
-        $project->load(['client', 'projectManager', 'jobAssignments.technician', 'projectTerminals']);
+        $project->load(['client', 'projectManager', 'jobAssignments.technician', 'projectTerminals.posTerminal']);
 
         // Calculate project metrics
         $totalTerminals = $project->projectTerminals()->count();
@@ -2273,6 +2282,12 @@ private function generateClosureReport($project, $request)
         $duration = $project->start_date && $project->closed_at
             ? $project->start_date->diffInDays($project->closed_at)
             : 0;
+
+        $assignmentIds = $project->jobAssignments()->pluck('id');
+        $visitHistory  = TechnicianVisit::whereIn('job_assignment_id', $assignmentIds)
+            ->with(['technician', 'posTerminal'])
+            ->latest('started_at')
+            ->get();
 
         // Prepare data for PDF
         $reportData = [
@@ -2299,7 +2314,9 @@ private function generateClosureReport($project, $request)
                 'closed_by' => Auth::user()->full_name ?? 'System',
                 'closed_at' => now()->format('F j, Y g:i A'),
             ],
-            'job_assignments' => $project->jobAssignments()->with('technician')->get(),
+            'job_assignments'   => $project->jobAssignments()->with('technician')->get(),
+            'project_terminals' => $project->projectTerminals,
+            'visit_history'     => $visitHistory,
         ];
 
         // Generate PDF
