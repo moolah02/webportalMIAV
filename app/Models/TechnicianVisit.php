@@ -95,18 +95,21 @@ class TechnicianVisit extends Model
         'photos_count'            => 'integer',
     ];
 
-    /* Flatten arrays to a comma-separated string on save.
-     * Handles both the batch endpoint (sends ['Technical Issues']) and manual form (sends string). */
+    /* issues_found is a MySQL JSON column — must always store valid JSON.
+     * Arrays are flattened to a comma-separated string first, then JSON-encoded. */
     public function setIssuesFoundAttribute($value): void
     {
-        if (is_array($value)) {
-            $this->attributes['issues_found'] = implode(', ', array_filter($value)) ?: null;
+        if (is_null($value)) {
+            $this->attributes['issues_found'] = null;
+        } elseif (is_array($value)) {
+            $str = implode(', ', array_filter($value)) ?: null;
+            $this->attributes['issues_found'] = is_null($str) ? null : json_encode($str);
         } else {
-            $this->attributes['issues_found'] = $value;
+            $this->attributes['issues_found'] = json_encode($value);
         }
     }
 
-    /* Decode issues_found gracefully whether stored as plain string or legacy JSON. */
+    /* Return the human-readable string (not the JSON wrapper) for display/forms. */
     public function getIssuesFoundAttribute($value): mixed
     {
         if (is_null($value)) {
@@ -114,10 +117,10 @@ class TechnicianVisit extends Model
         }
         $decoded = json_decode($value, true);
         if (json_last_error() === JSON_ERROR_NONE) {
-            // Legacy JSON array → return as array; JSON string → return decoded string
-            return $decoded;
+            // JSON string → plain string; JSON array → comma-joined string
+            return is_array($decoded) ? implode(', ', $decoded) : $decoded;
         }
-        return $value; // already a plain string
+        return $value;
     }
 
     /* =========================
