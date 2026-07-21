@@ -437,34 +437,12 @@ public function store(Request $request)
 
 
     /**
-     * Download project closure report, regenerating on the fly if the file is missing.
+     * Download project closure report — always regenerates to reflect latest data and template.
      */
     public function downloadReport(Project $project)
     {
         try {
-            $diskPath = $project->report_path ? 'public/' . $project->report_path : null;
-            $absPath  = $diskPath ? storage_path('app/' . $diskPath) : null;
-
-            // File exists — serve it directly
-            if ($absPath && file_exists($absPath)) {
-                $extension = pathinfo($project->report_path, PATHINFO_EXTENSION);
-                $mimeType  = match($extension) {
-                    'pdf'   => 'application/pdf',
-                    'txt'   => 'text/plain',
-                    default => 'application/octet-stream',
-                };
-                $fileName = $project->project_code . '_closure_report_' . now()->format('Ymd') . '.' . $extension;
-                Log::info('Serving existing closure report', ['project_id' => $project->id]);
-                return response()->download($absPath, $fileName, ['Content-Type' => $mimeType]);
-            }
-
-            // File missing or never generated — regenerate from stored closure data
-            Log::warning('Closure report file missing, regenerating', [
-                'project_id'  => $project->id,
-                'report_path' => $project->report_path,
-            ]);
             return $this->regenerateAndDownload($project);
-
         } catch (\Exception $e) {
             Log::error('Report download failed', ['project_id' => $project->id, 'error' => $e->getMessage()]);
             return back()->with('error', 'Failed to download report: ' . $e->getMessage());
