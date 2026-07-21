@@ -90,7 +90,7 @@
                                     <span class="summary-label">Duration:</span>
                                     <span class="summary-value">
                                         @if($project->start_date && $project->completed_at)
-                                            {{ $project->start_date->diffInDays($project->completed_at) }} days
+                                            {{ (int) $project->start_date->diffInDays($project->completed_at) }} days
                                         @else
                                             N/A
                                         @endif

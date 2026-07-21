@@ -185,7 +185,7 @@
                                 </td>
                                 <td>
                                     @if($project->start_date && $project->closed_at)
-                                        {{ $project->start_date->diffInDays($project->closed_at) }} days
+                                        {{ (int) $project->start_date->diffInDays($project->closed_at) }} days
                                     @else
                                         N/A
                                     @endif

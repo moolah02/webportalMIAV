@@ -289,7 +289,7 @@ class Project extends Model
         }
 
         $endDate = $this->closed_at ?: ($this->completed_at ?: ($this->end_date ?: now()));
-        return $this->start_date->diffInDays($endDate);
+        return (int) $this->start_date->diffInDays($endDate);
     }
 
     /**

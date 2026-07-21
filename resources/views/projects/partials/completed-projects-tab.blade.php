@@ -83,7 +83,7 @@
                                         data-completion="{{ json_encode($project->completion) }}"
                                         data-project-code="{{ $project->project_code }}"
                                         data-completed-at="{{ $project->completed_at?->format('F j, Y g:i A') ?? 'N/A' }}"
-                                        data-duration="{{ $project->start_date && $project->completed_at ? $project->start_date->diffInDays($project->completed_at) : 'N/A' }}"
+                                        data-duration="{{ $project->start_date && $project->completed_at ? (int) $project->start_date->diffInDays($project->completed_at) : 'N/A' }}"
                                         data-terminals="{{ $project->actual_terminals_count ?? 0 }}"
                                         data-completion-rate="{{ $project->completion_percentage ?? 100 }}"
                                         data-report-path="{{ $project->report_path ?? '' }}"

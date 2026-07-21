@@ -217,7 +217,7 @@
             <div class="metric-card">
                 <div class="metric-number">
                     @if($project->start_date && $project->completed_at)
-                        {{ $project->start_date->diffInDays($project->completed_at) }}
+                        {{ (int) $project->start_date->diffInDays($project->completed_at) }}
                     @else
                         On Time
                     @endif

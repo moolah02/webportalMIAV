@@ -461,7 +461,7 @@ public function store(Request $request)
         $totalJobs      = $project->jobAssignments()->count();
         $completionRate = $totalJobs > 0 ? round(($completedJobs / $totalJobs) * 100, 1) : 0;
         $duration       = ($project->start_date && $project->closed_at)
-            ? $project->start_date->diffInDays($project->closed_at) : 0;
+            ? (int) $project->start_date->diffInDays($project->closed_at) : 0;
 
         $closure = DB::table('project_completions')->where('project_id', $project->id)->first();
 
@@ -701,7 +701,7 @@ public function store(Request $request)
 
         return array_merge($progress, [
             'project_duration_days' => $project->start_date ?
-                Carbon::parse($project->start_date)->diffInDays(now()) : null,
+                (int) Carbon::parse($project->start_date)->diffInDays(now()) : null,
             'avg_visit_duration_minutes' => round($avgVisitDuration, 2),
             'total_issues_found' => $totalIssuesFound,
             'completion_date' => now()->format('Y-m-d H:i:s'),
@@ -1108,7 +1108,7 @@ public function completionSuccess(Project $project)
         'performance_metrics' => [
             'total_terminals' => $project->actual_terminals_count ?? 0,
             'completion_percentage' => $project->completion_percentage ?? 100,
-            'project_duration_days' => $project->start_date ? $project->start_date->diffInDays($project->completed_at) : null,
+            'project_duration_days' => $project->start_date ? (int) $project->start_date->diffInDays($project->completed_at) : null,
 
         ],
         'technical_analysis' => [
@@ -1554,7 +1554,7 @@ private function generateSimpleReportContent($project, $completion)
     $content .= "Client: {$project->client->company_name}\n";
     $content .= "Project Code: {$project->project_code}\n";
     $content .= "Completed: " . $project->completed_at->format('F j, Y g:i A') . "\n";
-    $content .= "Duration: " . ($project->start_date ? $project->start_date->diffInDays($project->completed_at) : 'N/A') . " days\n\n";
+    $content .= "Duration: " . ($project->start_date ? (int) $project->start_date->diffInDays($project->completed_at) : 'N/A') . " days\n\n";
 
     $content .= "EXECUTIVE SUMMARY\n";
     $content .= "-----------------\n";
@@ -2258,7 +2258,7 @@ private function generateClosureReport($project, $request)
         $completionRate = $totalJobs > 0 ? round(($completedJobs / $totalJobs) * 100, 1) : 0;
 
         $duration = $project->start_date && $project->closed_at
-            ? $project->start_date->diffInDays($project->closed_at)
+            ? (int) $project->start_date->diffInDays($project->closed_at)
             : 0;
 
         $assignmentIds = $project->jobAssignments()->pluck('id');

@@ -409,7 +409,7 @@
                         <div class="ui-card-body">
                             <div class="metric-item">
                                 <span class="metric-label">Project Duration</span>
-                                <span class="metric-value">{{ $project->start_date ? $project->start_date->diffInDays(now()) : 'N/A' }} days</span>
+                                <span class="metric-value">{{ $project->start_date ? (int) $project->start_date->diffInDays(now()) : 'N/A' }} days</span>
                             </div>
                             <div class="metric-item">
                                 <span class="metric-label">Total Terminals Processed</span>
