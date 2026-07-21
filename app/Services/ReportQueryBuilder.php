@@ -450,6 +450,9 @@ class ReportQueryBuilder
         }
     }
 
+    // MySQL JSON columns that store plain text values — must be unwrapped for display
+    private const JSON_TEXT_COLUMNS = ['technician_visits.issues_found'];
+
     private function buildSelectField(array $field): string
     {
         // Backtick-quote table.column so reserved words (condition, status, etc.) never break
@@ -458,7 +461,10 @@ class ReportQueryBuilder
         if (!empty($field['aggregate'])) {
             $expr = strtoupper($field['aggregate']) . '(' . $quotedExpr . ')';
         } else {
-            $expr = $quotedExpr;
+            // Unwrap JSON text columns so report shows plain string, not "\"value\""
+            $expr = in_array($field['expr'], self::JSON_TEXT_COLUMNS)
+                ? 'JSON_UNQUOTE(' . $quotedExpr . ')'
+                : $quotedExpr;
         }
 
         if (isset($field['as'])) {
