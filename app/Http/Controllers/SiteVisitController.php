@@ -392,7 +392,7 @@ class SiteVisitController extends Controller
             $visitRecord
         );
 
-        return redirect()->route('visits.index')
+        return redirect()->route('site_visits.show', $techVisit)
             ->with('success', 'Site visit logged successfully.');
     }
 

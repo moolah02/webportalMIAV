@@ -108,16 +108,37 @@
                 @php
                     $ts = $visit->terminal_status_during_visit ?? $visit->terminal_status;
                     $tsMap = [
+                        'active'            => ['badge-green',  'Active'],
+                        'inactive'          => ['badge-red',    'Inactive'],
+                        'not_found'         => ['badge-gray',   'Not Found'],
+                        'relocated'         => ['badge-blue',   'Relocated'],
+                        'replaced'          => ['badge-yellow', 'Replaced'],
                         'working'           => ['badge-green',  'Working'],
                         'not_working'       => ['badge-red',    'Not Working'],
                         'needs_maintenance' => ['badge-yellow', 'Needs Maintenance'],
-                        'not_found'         => ['badge-gray',   'Not Found'],
                     ];
                     [$tsCls, $tsLbl] = $tsMap[$ts] ?? ['badge-gray', ucwords(str_replace('_',' ',$ts ?? 'Unknown'))];
+
+                    $tcMap = [
+                        'good'    => ['badge-green',  'Good'],
+                        'fair'    => ['badge-yellow', 'Fair'],
+                        'poor'    => ['badge-red',    'Poor'],
+                        'damaged' => ['badge-red',    'Damaged'],
+                    ];
+                    $tc = $visit->terminal_condition;
+                    [$tcCls, $tcLbl] = $tc ? ($tcMap[$tc] ?? ['badge-gray', ucwords($tc)]) : [null, null];
                 @endphp
-                <div class="mb-4">
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Status During Visit</div>
-                    <span class="badge {{ $tsCls }} text-sm px-3 py-1">{{ $tsLbl }}</span>
+                <div class="mb-4 flex gap-6 flex-wrap">
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Status During Visit</div>
+                        <span class="badge {{ $tsCls }} text-sm px-3 py-1">{{ $tsLbl }}</span>
+                    </div>
+                    @if($tc)
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Terminal Condition</div>
+                        <span class="badge {{ $tcCls }} text-sm px-3 py-1">{{ $tcLbl }}</span>
+                    </div>
+                    @endif
                 </div>
 
                 @if($visit->condition_notes)
@@ -142,7 +163,7 @@
 
                 @if($visit->corrective_action)
                 <div class="mb-4">
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Corrective Action Taken</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Corrective Action</div>
                     <p class="text-sm text-gray-700 leading-relaxed">{{ $visit->corrective_action }}</p>
                 </div>
                 @endif
@@ -230,10 +251,14 @@
                         @php
                             $hts = $h->terminal_status_during_visit ?? $h->terminal_status;
                             $htsMap = [
+                                'active'            => ['badge-green',  'Active'],
+                                'inactive'          => ['badge-red',    'Inactive'],
+                                'not_found'         => ['badge-gray',   'Not Found'],
+                                'relocated'         => ['badge-blue',   'Relocated'],
+                                'replaced'          => ['badge-yellow', 'Replaced'],
                                 'working'           => ['badge-green',  'Working'],
                                 'not_working'       => ['badge-red',    'Not Working'],
                                 'needs_maintenance' => ['badge-yellow', 'Needs Maint.'],
-                                'not_found'         => ['badge-gray',   'Not Found'],
                             ];
                             [$htsCls, $htsLbl] = $htsMap[$hts] ?? ['badge-gray', '—'];
                         @endphp

@@ -86,7 +86,7 @@ class TechnicianVisit extends Model
         'scheduled_at'            => 'datetime',
         'started_at'              => 'datetime',
         'ended_at'                => 'datetime',
-        'issues_found'            => 'array',
+        // issues_found stored as plain string (single dropdown value)
         'photos'                  => 'array',   // legacy support
         'other_terminals_found'   => 'array',
         'latitude'                => 'decimal:8',
@@ -94,6 +94,31 @@ class TechnicianVisit extends Model
         'gps_accuracy_m'          => 'integer',
         'photos_count'            => 'integer',
     ];
+
+    /* Flatten arrays to a comma-separated string on save.
+     * Handles both the batch endpoint (sends ['Technical Issues']) and manual form (sends string). */
+    public function setIssuesFoundAttribute($value): void
+    {
+        if (is_array($value)) {
+            $this->attributes['issues_found'] = implode(', ', array_filter($value)) ?: null;
+        } else {
+            $this->attributes['issues_found'] = $value;
+        }
+    }
+
+    /* Decode issues_found gracefully whether stored as plain string or legacy JSON. */
+    public function getIssuesFoundAttribute($value): mixed
+    {
+        if (is_null($value)) {
+            return null;
+        }
+        $decoded = json_decode($value, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            // Legacy JSON array → return as array; JSON string → return decoded string
+            return $decoded;
+        }
+        return $value; // already a plain string
+    }
 
     /* =========================
      * Relationships

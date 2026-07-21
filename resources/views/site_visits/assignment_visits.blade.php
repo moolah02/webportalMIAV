@@ -71,10 +71,11 @@
                         @if($visit->terminal_status_during_visit)
                             @php
                                 $tsClass = match($visit->terminal_status_during_visit) {
-                                    'working'           => 'badge-green',
-                                    'not_working'       => 'badge-red',
-                                    'needs_maintenance' => 'badge-yellow',
-                                    default             => 'badge-gray',
+                                    'active', 'working'                   => 'badge-green',
+                                    'inactive', 'not_working'             => 'badge-red',
+                                    'replaced', 'needs_maintenance'       => 'badge-yellow',
+                                    'relocated'                           => 'badge-blue',
+                                    default                               => 'badge-gray',
                                 };
                             @endphp
                             <span class="badge {{ $tsClass }}">{{ ucwords(str_replace('_', ' ', $visit->terminal_status_during_visit)) }}</span>
