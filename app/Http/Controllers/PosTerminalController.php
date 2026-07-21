@@ -20,7 +20,7 @@ class PosTerminalController extends Controller
     public function create()
     {
         $clients = Client::orderBy('company_name')->get();
-        $regions = PosTerminal::distinct()->pluck('region')->filter()->sort();
+        $regions = Region::orderBy('name')->pluck('name');
 
         // Get options - handle if Category model doesn't exist
         $statusOptions = collect(['active', 'offline', 'faulty', 'maintenance']);
@@ -67,6 +67,14 @@ class PosTerminalController extends Controller
         // Set default status if not provided
         $validated['status'] = $validated['status'] ?? 'active';
         $validated['current_status'] = $validated['status']; // Sync both status fields
+
+        // Sync region_id FK from region name
+        if (!empty($validated['region'])) {
+            $regionRecord = Region::where('name', $validated['region'])->first();
+            if ($regionRecord) {
+                $validated['region_id'] = $regionRecord->id;
+            }
+        }
 
         PosTerminal::create($validated);
 
@@ -171,7 +179,7 @@ public function getFilteredStats(Request $request)
     public function edit(PosTerminal $posTerminal)
     {
         $clients = Client::orderBy('company_name')->get();
-        $regions = PosTerminal::distinct()->pluck('region')->filter()->sort();
+        $regions = Region::orderBy('name')->pluck('name');
 
         // Get options - handle if Category model doesn't exist
         $statusOptions = collect(['active', 'offline', 'faulty', 'maintenance']);
@@ -221,6 +229,14 @@ public function getFilteredStats(Request $request)
         // Sync both status fields
         if (isset($validated['status'])) {
             $validated['current_status'] = $validated['status'];
+        }
+
+        // Sync region_id FK from region name
+        if (!empty($validated['region'])) {
+            $regionRecord = Region::where('name', $validated['region'])->first();
+            if ($regionRecord) {
+                $validated['region_id'] = $regionRecord->id;
+            }
         }
 
         $posTerminal->update($validated);
@@ -521,7 +537,7 @@ public function storeColumnMapping(Request $request)
 
         // Get filter options
         $clients = Client::orderBy('company_name')->get();
-        $regions = PosTerminal::distinct()->pluck('region')->filter()->sort();
+        $regions = Region::orderBy('name')->pluck('name');
         $cities = PosTerminal::distinct()->pluck('city')->filter()->sort();
         $provinces = PosTerminal::distinct()->pluck('province')->filter()->sort();
 
