@@ -105,22 +105,26 @@
                 {{-- Location Information --}}
                 <div class="mb-8 pb-6 border-b border-gray-100">
                     <h3 class="text-base font-semibold text-gray-700 mb-4">&#x1F4CD; Location Information</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
                         <div>
-                            <label class="ui-label">Province</label>
-                            <select name="region" id="province_select" class="ui-select" onchange="document.getElementById('province_hidden').value=this.value">
-                                <option value="">Select Province</option>
+                            <label class="ui-label">Region</label>
+                            <select name="region" class="ui-select">
+                                <option value="">Select Region</option>
                                 @foreach($regions as $reg)
                                     <option value="{{ $reg }}" {{ old('region') == $reg ? 'selected' : '' }}>{{ $reg }}</option>
                                 @endforeach
                             </select>
-                            <input type="hidden" name="province" id="province_hidden" value="{{ old('province', old('region')) }}">
                             @error('region')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="ui-label">City</label>
                             <input type="text" name="city" value="{{ old('city') }}" placeholder="e.g., Harare" class="ui-input">
                             @error('city')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="ui-label">Province</label>
+                            <input type="text" name="province" value="{{ old('province') }}" placeholder="e.g., Harare Province" class="ui-input">
+                            @error('province')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
                     <div>
