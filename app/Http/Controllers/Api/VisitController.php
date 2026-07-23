@@ -249,6 +249,7 @@ class VisitController extends Controller
                 'terminal_status_during_visit' => $statusMap[$terminal['status'] ?? ''] ?? null,
                 'terminal_condition'           => $condMap[$terminal['condition'] ?? ''] ?? null,
                 'issues_found'                 => $data['action_points'] ?? null,
+                'corrective_action'            => $data['action_points'] ?? null,
                 'visit_summary'                => $data['visit_summary'] ?? null,
                 'other_terminals_found'        => $data['other_terminals_found'] ?? null,
                 'serial_snapshot'              => $terminal['serial_number'] ?? null,
