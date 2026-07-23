@@ -496,19 +496,25 @@ class ReportQueryBuilder
             $tableFields = [];
 
             foreach ($columns as $column) {
-                $type = $this->getColumnType($column);
+                $type   = $this->getColumnType($column);
+                $hidden = $column === 'id'
+                    || str_ends_with($column, '_id')
+                    || in_array($column, ['created_by', 'assigned_to', 'merchant_id']);
+
                 $tableFields[] = [
-                    'name'       => $column,
-                    'expression' => "{$table}.{$column}",
-                    'type'       => $type,
-                    'category'   => $this->getFieldCategory($type),
-                    'label'      => $this->humanizeColumnName($column, $table)
+                    'name'        => $column,
+                    'expression'  => "{$table}.{$column}",
+                    'type'        => $type,
+                    'category'    => $this->getFieldCategory($type),
+                    'label'       => $this->humanizeColumnName($column, $table),
+                    'description' => $this->getFieldDescription($column, $table),
+                    'hidden'      => $hidden,
                 ];
             }
 
             $fields[$table] = [
                 'label'  => $this->humanizeTableName($table),
-                'fields' => $tableFields
+                'fields' => $tableFields,
             ];
         }
 
@@ -598,6 +604,88 @@ class ReportQueryBuilder
         }
 
         return ucwords(str_replace('_', ' ', $column));
+    }
+
+    private function getFieldDescription(string $column, string $table): string
+    {
+        $descriptions = [
+            'pos_terminals' => [
+                'terminal_id'        => 'The unique code identifying this terminal (e.g. 77202614)',
+                'merchant_name'      => 'Name of the business where the terminal is installed',
+                'merchant_contact_person' => 'Main contact person at the merchant',
+                'merchant_phone'     => 'Phone number for the merchant',
+                'physical_address'   => 'Street address where the terminal is located',
+                'region'             => 'Region or province the terminal is in',
+                'city'               => 'City where the terminal is located',
+                'province'           => 'Province the terminal is in',
+                'area'               => 'Area or district within the city',
+                'business_type'      => 'Type of business (e.g. Retail, Restaurant)',
+                'installation_date'  => 'Date the terminal was first installed',
+                'terminal_model'     => 'The make/model of the terminal hardware',
+                'serial_number'      => 'Hardware serial number of the terminal',
+                'status'             => 'Current operational status (active, offline, etc.)',
+                'current_status'     => 'Latest known status of the terminal',
+                'last_service_date'  => 'Date of the most recent service visit',
+            ],
+            'technician_visits' => [
+                'started_at'                   => 'Date and time the technician arrived at the site',
+                'ended_at'                     => 'Date and time the technician left the site',
+                'terminal_status_during_visit' => 'Condition of the terminal when the technician visited (active, inactive, not found, etc.)',
+                'terminal_condition'           => 'Physical condition of the terminal (good, fair, poor, damaged)',
+                'issues_found'                 => 'Problem or issue recorded during the visit',
+                'corrective_action'            => 'Action taken to resolve the issue',
+                'visit_summary'                => 'Free-text notes the technician wrote about the visit',
+                'condition_notes'              => 'Additional notes about the terminal condition',
+            ],
+            'visit_terminals' => [
+                'status'         => 'Status of the terminal as recorded during the visit',
+                'condition'      => 'Physical condition noted during the visit',
+                'serial_number'  => 'Serial number recorded at time of visit',
+                'terminal_model' => 'Model of the terminal recorded at time of visit',
+                'device_type'    => 'Type of device',
+                'comments'       => 'Any additional comments from the technician',
+            ],
+            'job_assignments' => [
+                'assignment_id'  => 'Unique reference code for this job assignment',
+                'status'         => 'Current status of the assignment (pending, in progress, completed)',
+                'priority'       => 'Priority level assigned to this job',
+                'service_type'   => 'Type of service being performed',
+                'scheduled_date' => 'Date the job is scheduled for',
+            ],
+            'tickets' => [
+                'ticket_id'   => 'Unique reference number for this support ticket',
+                'title'       => 'Short description of the issue',
+                'description' => 'Full details of the reported problem',
+                'priority'    => 'Urgency level of the ticket',
+                'status'      => 'Current status (open, in progress, resolved)',
+                'issue_type'  => 'Category of issue reported',
+                'resolved_at' => 'Date and time the ticket was closed/resolved',
+            ],
+            'clients' => [
+                'company_name'        => 'Name of the client company',
+                'email'               => 'Client contact email address',
+                'phone'               => 'Client contact phone number',
+                'address'             => 'Client company address',
+                'city'                => 'City where the client is based',
+                'region'              => 'Region where the client is based',
+                'contract_start_date' => 'Date the service contract began',
+                'contract_end_date'   => 'Date the service contract expires',
+                'status'              => 'Whether the client account is active',
+                'priority'            => 'Client priority tier',
+            ],
+            'projects' => [
+                'project_code' => 'Unique reference code for this project',
+                'project_name' => 'Name of the project',
+                'project_type' => 'Type of project (installation, maintenance, etc.)',
+                'description'  => 'Project description and scope',
+                'start_date'   => 'Date the project started',
+                'end_date'     => 'Date the project is scheduled to end',
+                'status'       => 'Current project status',
+                'priority'     => 'Project priority level',
+            ],
+        ];
+
+        return $descriptions[$table][$column] ?? '';
     }
 
     private function humanizeTableName(string $table): string

@@ -718,7 +718,7 @@
             {{-- ─── LEFT: Field browser ─────────────────── --}}
             <div class="rb-fields-panel">
                 <div class="rb-fields-head">
-                    <h4>Available Fields</h4>
+                    <h4>Report Fields</h4>
                     <input type="text" class="rb-search" x-model="fieldSearch" placeholder="&#128269;  Search fields…">
                 </div>
                 <div class="rb-fields-body">
@@ -731,7 +731,7 @@
                                         draggable="true"
                                         @dragstart="startDrag($event, field)"
                                         @dblclick="addField(field)"
-                                        :title="'Double-click or drag to add'"
+                                        :title="field.description || 'Double-click or drag to add to report'"
                                         x-text="field.label">
                                 </button>
                             </template>
@@ -740,11 +740,16 @@
                 </div>
                 <div class="rb-legend">
                     <span style="color:var(--rb-dim-fg);">
-                        <span class="rb-dot rb-dot-dim"></span> Dimension
+                        <span class="rb-dot rb-dot-dim"></span> Text
                     </span>
                     <span style="color:var(--rb-mes-fg);">
-                        <span class="rb-dot rb-dot-mes"></span> Measure
+                        <span class="rb-dot rb-dot-mes"></span> Number
                     </span>
+                    <button type="button"
+                        @click="showHiddenFields = !showHiddenFields"
+                        style="margin-left:auto; font-size:0.75rem; color:var(--rb-sub); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;"
+                        x-text="showHiddenFields ? 'Hide technical fields' : 'Show technical fields'">
+                    </button>
                 </div>
             </div>
 
@@ -767,9 +772,20 @@
                              @dragleave="draggingOver=false"
                              @drop="onDrop($event)">
 
-                            <span x-show="fields.length===0" class="rb-dz-hint">
-                                &#8592; Drag columns here, or double-click them in the panel
-                            </span>
+                            <div x-show="fields.length===0" style="text-align:center; padding:18px 12px;">
+                                <div style="font-size:1.6rem; margin-bottom:8px;">📋</div>
+                                <div style="font-weight:600; color:var(--rb-text); margin-bottom:4px;">No columns selected yet</div>
+                                <div style="font-size:0.82rem; color:var(--rb-sub); margin-bottom:12px;">
+                                    Not sure where to start? Pick a preset — it fills in the columns for you.
+                                </div>
+                                <button type="button" @click="showTemplateModal=true"
+                                    style="font-size:0.82rem; padding:6px 14px; background:var(--rb-accent); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
+                                    ⚡ Choose a Preset
+                                </button>
+                                <div style="font-size:0.78rem; color:var(--rb-sub); margin-top:10px;">
+                                    Or double-click any field on the left to add it manually.
+                                </div>
+                            </div>
 
                             <template x-for="(field, i) in fields" :key="i">
                                 <div class="rb-pill" :class="field.category==='measures' ? 'rb-pill-mes' : 'rb-pill-dim'">
@@ -998,6 +1014,7 @@ document.addEventListener('alpine:init', () => {
     loading:            false,
     templatesLoading:   false,
     fieldSearch:        '',
+    showHiddenFields:   false,
     draggingOver:       false,
     errorMessage:       '',
     successMessage:     '',
@@ -1066,12 +1083,15 @@ document.addEventListener('alpine:init', () => {
     },
 
     tableVisible(table) {
-      if (!this.fieldSearch) return true;
       return table.fields.some(f => this.fieldVisible(f));
     },
     fieldVisible(field) {
+      // Hide technical FK/PK columns unless user toggled them on
+      if (field.hidden && !this.showHiddenFields) return false;
       if (!this.fieldSearch) return true;
-      return field.label.toLowerCase().includes(this.fieldSearch.toLowerCase());
+      const q = this.fieldSearch.toLowerCase();
+      return field.label.toLowerCase().includes(q)
+          || (field.description || '').toLowerCase().includes(q);
     },
 
     addField(field) {
