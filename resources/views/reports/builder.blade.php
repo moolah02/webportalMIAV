@@ -1506,7 +1506,7 @@ document.addEventListener('alpine:init', () => {
         baseTable: 'technician_visits',
         dateColumn: 'technician_visits.started_at',
         fields: [
-          { label: 'POS Terminal PK (FK)',   expression: 'technician_visits.pos_terminal_id',              category: 'measures'   },
+          { label: 'Terminal (link)',         expression: 'technician_visits.pos_terminal_id',              category: 'measures'   },
           { label: 'Terminal Condition',     expression: 'technician_visits.terminal_condition',            category: 'dimensions' },
           { label: 'Terminal Status',        expression: 'technician_visits.terminal_status_during_visit',  category: 'dimensions' },
           { label: 'Issues Found',           expression: 'technician_visits.issues_found',                  category: 'dimensions' },

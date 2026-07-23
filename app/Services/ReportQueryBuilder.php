@@ -551,22 +551,45 @@ class ReportQueryBuilder
 
     private function humanizeColumnName(string $column, string $table = ''): string
     {
-        // Table-specific label overrides to avoid ambiguous duplicate names across tables.
-        // e.g. visit_terminals.terminal_id is a FK integer (→ pos_terminals.id),
-        //      NOT the human-readable terminal code string (pos_terminals.terminal_id).
         $tableColumnLabels = [
-            'visit_terminals' => [
-                'terminal_id' => 'POS Terminal (FK → Terminal Code)',
-                'visit_id'    => 'Visit ID (FK)',
-                'id'          => 'Visit Terminal Record ID',
-            ],
             'pos_terminals' => [
+                'id'          => 'Terminal Record ID',
                 'terminal_id' => 'Terminal Code',
-                'id'          => 'POS Terminal PK',
+                'client_id'   => 'Client (link)',
             ],
             'technician_visits' => [
-                'visit_id'    => 'Visit ID (FK)',
-                'id'          => 'Tech Visit Record ID',
+                'id'                => 'Visit Record ID',
+                'visit_id'          => 'Visit (link)',
+                'technician_id'     => 'Technician (link)',
+                'pos_terminal_id'   => 'Terminal (link)',
+                'job_assignment_id' => 'Assignment (link)',
+            ],
+            'visit_terminals' => [
+                'id'          => 'Visit Terminal Record ID',
+                'terminal_id' => 'Terminal (link)',
+                'visit_id'    => 'Visit (link)',
+            ],
+            'tickets' => [
+                'pos_terminal_id' => 'Terminal (link)',
+                'client_id'       => 'Client (link)',
+                'visit_id'        => 'Visit (link)',
+                'technician_id'   => 'Technician (link)',
+                'assigned_to'     => 'Assigned To (link)',
+            ],
+            'job_assignments' => [
+                'technician_id' => 'Technician (link)',
+                'region_id'     => 'Region (link)',
+                'client_id'     => 'Client (link)',
+                'project_id'    => 'Project (link)',
+            ],
+            'visits' => [
+                'merchant_id'   => 'Merchant (link)',
+                'employee_id'   => 'Technician (link)',
+                'assignment_id' => 'Assignment (link)',
+            ],
+            'projects' => [
+                'client_id'  => 'Client (link)',
+                'created_by' => 'Created By (link)',
             ],
         ];
 
