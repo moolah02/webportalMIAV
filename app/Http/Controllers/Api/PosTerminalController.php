@@ -227,6 +227,7 @@ public function store(Request $request)
         'coordinates'             => 'nullable|array',
         'coordinates.latitude'    => 'nullable|numeric|between:-90,90',
         'coordinates.longitude'   => 'nullable|numeric|between:-180,180',
+        'source'                  => 'nullable|string|max:50',
         'notes'                   => 'nullable|string|max:1000',
     ]);
 
@@ -247,6 +248,7 @@ public function store(Request $request)
 
     $data['status']         = 'active';
     $data['current_status'] = $data['current_status'] ?? 'operational';
+    $data['source']         = $data['source'] ?? 'field_discovery';
 
     $terminal = PosTerminal::create($data);
 
@@ -265,12 +267,13 @@ public function store(Request $request)
         'success' => true,
         'message' => 'Terminal registered successfully',
         'data'    => [
-            'id'          => $terminal->id,
-            'terminal_id' => $terminal->terminal_id,
-            'merchant_name' => $terminal->merchant_name,
-            'status'        => $terminal->status,
+            'id'             => $terminal->id,
+            'terminal_id'    => $terminal->terminal_id,
+            'merchant_name'  => $terminal->merchant_name,
+            'status'         => $terminal->status,
             'current_status' => $terminal->current_status,
-            'created_at'    => $terminal->created_at,
+            'source'         => $terminal->source,
+            'created_at'     => $terminal->created_at,
         ],
     ], 201);
 }

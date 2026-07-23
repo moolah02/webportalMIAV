@@ -30,6 +30,7 @@ class PosTerminal extends Model
         'contract_details',
         'status',
         'current_status',
+        'source',
         'last_service_date',
         'next_service_due',
         'status_info',

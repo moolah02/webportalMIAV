@@ -127,6 +127,16 @@ class VisitController extends Controller
     // POST /api/visits
     public function store(Request $request)
     {
+        // Accept field name aliases from mobile app
+        $input = $request->all();
+        if (!isset($input['merchant_contact_person']) && isset($input['contact_person'])) {
+            $input['merchant_contact_person'] = $input['contact_person'];
+        }
+        if (!isset($input['merchant_phone']) && isset($input['phone_number'])) {
+            $input['merchant_phone'] = $input['phone_number'];
+        }
+        $request->replace($input);
+
         $data = $request->validate([
             'merchant_id'              => ['required'],   // string "12" is fine; cast in DB if needed
             'merchant_name'            => ['required','string','max:255'],
@@ -136,6 +146,10 @@ class VisitController extends Controller
 
             'merchant_contact_person'  => ['nullable','string','max:255'],
             'merchant_phone'           => ['nullable','string','max:50'],
+
+            'new_contact_person'       => ['nullable','string','max:255'],
+            'new_phone_number'         => ['nullable','string','max:50'],
+            'new_physical_address'     => ['nullable','string','max:500'],
 
             'terminal'                        => ['required','array'],
             'terminal.terminal_id'            => ['required'], // int or string
@@ -164,6 +178,10 @@ class VisitController extends Controller
 
                 'contact_person'         => $data['merchant_contact_person'] ?? null,
                 'phone_number'           => $data['merchant_phone'] ?? null,
+
+                'new_contact_person'     => $data['new_contact_person'] ?? null,
+                'new_phone_number'       => $data['new_phone_number'] ?? null,
+                'new_physical_address'   => $data['new_physical_address'] ?? null,
 
                 'visit_summary'          => $data['visit_summary'] ?? null,
                 'action_points'          => $data['action_points'] ?? null,
