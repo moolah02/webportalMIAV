@@ -497,9 +497,15 @@ class ReportQueryBuilder
 
             foreach ($columns as $column) {
                 $type   = $this->getColumnType($column);
-                $hidden = $column === 'id'
-                    || str_ends_with($column, '_id')
-                    || in_array($column, ['created_by', 'assigned_to', 'merchant_id']);
+                // Business-key columns that look like FKs but are real values users want to see
+                $businessKeys = ['terminal_id', 'assignment_id', 'ticket_id', 'client_code', 'project_code'];
+
+                $hidden = !in_array($column, $businessKeys)
+                    && (
+                        $column === 'id'
+                        || str_ends_with($column, '_id')
+                        || in_array($column, ['created_by', 'assigned_to', 'merchant_id'])
+                    );
 
                 $tableFields[] = [
                     'name'        => $column,
