@@ -491,7 +491,45 @@ public function storeColumnMapping(Request $request)
 
     public function index(Request $request)
     {
-        $query = PosTerminal::with(['client']);
+        // Count field-discovered terminals for the tab badge (always, regardless of active tab)
+        $fieldDiscoveryCount = PosTerminal::where('source', 'field_discovery')->count();
+
+        // Field discoveries tab — show only terminals found by technicians on-site
+        if ($request->get('tab') === 'discoveries') {
+            $query = PosTerminal::with(['client'])->where('source', 'field_discovery');
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('pos_terminals.terminal_id', 'like', "%{$search}%")
+                      ->orWhere('pos_terminals.merchant_name', 'like', "%{$search}%");
+                });
+            }
+
+            $discoveries = $query->orderByDesc('created_at')->paginate(20);
+
+            $clients      = Client::orderBy('company_name')->get();
+            $regions      = Region::orderBy('name')->pluck('name');
+            $cities       = PosTerminal::distinct()->pluck('city')->filter()->sort();
+            $provinces    = PosTerminal::distinct()->pluck('province')->filter()->sort();
+            $statusOptions = ['active' => 'Active', 'offline' => 'Offline', 'faulty' => 'Faulty', 'maintenance' => 'Maintenance'];
+            $mappings     = collect();
+            $terminals    = $discoveries; // satisfies compact; view uses $discoveries directly
+            $stats        = $this->calculateFilteredStats(PosTerminal::query()->where(function ($q) {
+                $q->where('source', '!=', 'field_discovery')->orWhereNull('source');
+            }));
+
+            return view('pos-terminals.index', compact(
+                'discoveries', 'terminals', 'clients', 'regions', 'cities',
+                'provinces', 'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount'
+            ));
+        }
+
+        // Default — Terminal Inventory (exclude field discoveries)
+        $query = PosTerminal::with(['client'])
+            ->where(function ($q) {
+                $q->where('source', '!=', 'field_discovery')->orWhereNull('source');
+            });
 
         // Apply filters with proper column qualification
         if ($request->filled('search')) {
@@ -508,10 +546,8 @@ public function storeColumnMapping(Request $request)
         }
 
         if ($request->filled('status')) {
-            // ENSURE we only accept valid status values
             $validStatuses = ['active', 'offline', 'faulty', 'maintenance'];
             $status = $request->status;
-
             if (in_array($status, $validStatuses)) {
                 $query->where('pos_terminals.status', $status);
             }
@@ -529,27 +565,16 @@ public function storeColumnMapping(Request $request)
             $query->where('pos_terminals.province', $request->province);
         }
 
-        // FIXED: Calculate filtered statistics BEFORE pagination
-        $stats = $this->calculateFilteredStats(clone $query);
-
-        // Then paginate
+        $stats     = $this->calculateFilteredStats(clone $query);
         $terminals = $query->paginate(20);
 
-        // Get filter options
-        $clients = Client::orderBy('company_name')->get();
-        $regions = Region::orderBy('name')->pluck('name');
-        $cities = PosTerminal::distinct()->pluck('city')->filter()->sort();
-        $provinces = PosTerminal::distinct()->pluck('province')->filter()->sort();
+        $clients      = Client::orderBy('company_name')->get();
+        $regions      = Region::orderBy('name')->pluck('name');
+        $cities       = PosTerminal::distinct()->pluck('city')->filter()->sort();
+        $provinces    = PosTerminal::distinct()->pluck('province')->filter()->sort();
+        $statusOptions = ['active' => 'Active', 'offline' => 'Offline', 'faulty' => 'Faulty', 'maintenance' => 'Maintenance'];
+        $discoveries  = collect(); // empty for default tab
 
-        // FIXED: Proper status options format
-        $statusOptions = [
-            'active' => 'Active',
-            'offline' => 'Offline',
-            'faulty' => 'Faulty',
-            'maintenance' => 'Maintenance'
-        ];
-
-        // Get mappings for import tab
         $mappings = collect();
         try {
             if (class_exists('App\Models\ImportMapping')) {
@@ -559,20 +584,13 @@ public function storeColumnMapping(Request $request)
             Log::warning('ImportMapping model not available: ' . $e->getMessage());
         }
 
-        // Handle AJAX requests
         if ($request->ajax() || $request->has('ajax')) {
             return $this->handleAjaxRequest($request, clone $query, $stats);
         }
 
         return view('pos-terminals.index', compact(
-            'terminals',
-            'clients',
-            'regions',
-            'cities',
-            'provinces',
-            'statusOptions',
-            'mappings',
-            'stats'
+            'terminals', 'discoveries', 'clients', 'regions', 'cities',
+            'provinces', 'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount'
         ));
     }
 

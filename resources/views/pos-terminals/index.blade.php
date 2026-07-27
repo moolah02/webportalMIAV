@@ -37,17 +37,149 @@
 
 {{-- ── Tab Navigation ──────────────────────────────────────── --}}
 <div class="tab-nav mb-5">
-    <button class="tab-btn active" onclick="switchTab('overview', this)">
+    <a href="{{ route('pos-terminals.index') }}" class="tab-btn {{ request('tab') !== 'discoveries' ? 'active' : '' }}">
         💳 Terminal Overview
-    </button>
+    </a>
+    <a href="{{ route('pos-terminals.index', ['tab' => 'discoveries']) }}" class="tab-btn {{ request('tab') === 'discoveries' ? 'active' : '' }}">
+        🔍 Field Discoveries
+        @if(($fieldDiscoveryCount ?? 0) > 0)
+            <span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">{{ $fieldDiscoveryCount }}</span>
+        @endif
+    </a>
     <button class="tab-btn" onclick="switchTab('import', this)">
         📤 Smart Import
     </button>
 </div>
 
 {{-- ═══════════════════════════════════════════════════════════
-     TAB 1 — TERMINAL OVERVIEW
+     TAB 1 — TERMINAL OVERVIEW  |  TAB 2 — FIELD DISCOVERIES
+     (server-rendered based on ?tab= URL param)
 ════════════════════════════════════════════════════════════ --}}
+@if(request('tab') === 'discoveries')
+{{-- FIELD DISCOVERIES TAB --}}
+<div>
+    <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+        These terminals were found by technicians during site visits and are not yet in the main inventory. Review each one and promote to the main list once verified.
+    </div>
+
+    {{-- Search bar --}}
+    <form method="GET" action="{{ route('pos-terminals.index') }}" class="filter-bar mb-4">
+        <input type="hidden" name="tab" value="discoveries">
+        <div class="filter-group">
+            <label class="ui-label">Search</label>
+            <input type="text" name="search" placeholder="Search discovered terminals…"
+                   value="{{ request('search') }}" class="ui-input"
+                   onkeydown="if(event.key==='Enter'){this.form.submit();}">
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Apply</button>
+            <a href="{{ route('pos-terminals.index', ['tab' => 'discoveries']) }}" class="btn-secondary">Reset</a>
+        </div>
+    </form>
+
+    <div class="ui-card overflow-hidden">
+        <div class="ui-card-header">
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold text-gray-800">Discovered on Site</span>
+                <span class="badge badge-gray">{{ $discoveries->total() }} terminals</span>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="ui-table">
+                <thead>
+                    <tr>
+                        <th>Terminal ID</th>
+                        <th>Merchant</th>
+                        <th>Contact</th>
+                        <th>Location</th>
+                        <th>Model / Serial</th>
+                        <th>Status</th>
+                        <th>Discovered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($discoveries as $terminal)
+                    <tr>
+                        <td><span class="code-chip">{{ $terminal->terminal_id }}</span></td>
+                        <td>
+                            <div class="cell-primary">{{ $terminal->merchant_name }}</div>
+                            @if($terminal->business_type)
+                            <div class="cell-sub">{{ $terminal->business_type }}</div>
+                            @endif
+                        </td>
+                        <td>
+                            @if($terminal->merchant_contact_person)
+                            <div class="cell-primary">{{ $terminal->merchant_contact_person }}</div>
+                            @endif
+                            @if($terminal->merchant_phone)
+                            <div class="cell-sub">{{ $terminal->merchant_phone }}</div>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="cell-primary">{{ $terminal->region ?: '—' }}</div>
+                            @if($terminal->city)
+                            <div class="cell-sub">{{ $terminal->city }}</div>
+                            @endif
+                        </td>
+                        <td>
+                            @if($terminal->terminal_model)
+                            <div class="cell-primary">{{ $terminal->terminal_model }}</div>
+                            @endif
+                            @if($terminal->serial_number)
+                            <div class="cell-sub">{{ $terminal->serial_number }}</div>
+                            @endif
+                        </td>
+                        <td>
+                            @php
+                                $statusClass = match($terminal->status) {
+                                    'active'      => 'badge-green',
+                                    'offline'     => 'badge-yellow',
+                                    'maintenance' => 'badge-blue',
+                                    'faulty'      => 'badge-red',
+                                    default       => 'badge-gray',
+                                };
+                            @endphp
+                            <span class="status-badge {{ $statusClass }}">{{ ucfirst($terminal->status) }}</span>
+                        </td>
+                        <td>
+                            <div class="cell-sub">{{ $terminal->created_at->diffForHumans() }}</div>
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <a href="{{ route('pos-terminals.show', $terminal) }}" class="action-btn action-view" title="View">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </a>
+                                <a href="{{ route('pos-terminals.edit', $terminal) }}" class="action-btn action-edit" title="Edit / Promote">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8" class="py-16 text-center text-gray-400">
+                            <div class="text-4xl mb-3">🔍</div>
+                            <p class="text-sm">No field-discovered terminals yet.</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($discoveries->hasPages())
+        <div class="ui-card-footer justify-between">
+            <span class="text-xs text-gray-500">
+                Showing {{ $discoveries->firstItem() ?? 0 }}–{{ $discoveries->lastItem() ?? 0 }}
+                of {{ $discoveries->total() }} terminals
+            </span>
+            {{ $discoveries->appends(request()->query())->links() }}
+        </div>
+        @endif
+    </div>
+</div>
+@else
+{{-- TERMINAL OVERVIEW TAB --}}
 <div id="overview-tab" class="tab-content">
 
     {{-- Filter bar --}}
@@ -221,9 +353,10 @@
         @endif
     </div>
 </div>
+@endif
 
 {{-- ═══════════════════════════════════════════════════════════
-     TAB 2 — SMART IMPORT
+     TAB 3 — SMART IMPORT
 ════════════════════════════════════════════════════════════ --}}
 <div id="import-tab" class="tab-content hidden">
 
