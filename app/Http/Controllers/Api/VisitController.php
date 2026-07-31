@@ -160,6 +160,7 @@ class VisitController extends Controller
 
             'visit_summary'            => ['nullable','string'],
             'action_points'            => ['nullable','string'],
+            'corrective_action'        => ['nullable','string','max:500'],
             'evidence'                 => ['nullable','array'],
             'evidence.*'               => ['nullable','string'],
             'signature'                => ['required','string'],
@@ -267,7 +268,7 @@ class VisitController extends Controller
                 'terminal_status_during_visit' => $statusMap[$terminal['status'] ?? ''] ?? null,
                 'terminal_condition'           => $condMap[$terminal['condition'] ?? ''] ?? null,
                 'issues_found'                 => $data['action_points'] ?? null,
-                'corrective_action'            => null, // mobile app has no separate corrective action field
+                'corrective_action'            => $data['corrective_action'] ?? null,
                 'visit_summary'                => $data['visit_summary'] ?? null,
                 'other_terminals_found'        => $data['other_terminals_found'] ?? null,
                 'serial_snapshot'              => $terminal['serial_number'] ?? null,
