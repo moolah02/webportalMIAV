@@ -26,7 +26,7 @@
                     <th>Technician</th>
                     <th>Started</th>
                     <th>Status</th>
-                    <th>Terminal Status</th>
+                    <th>State</th>
                     <th>Actions</th>
                 </tr>
             </thead>

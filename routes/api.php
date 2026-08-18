@@ -161,8 +161,10 @@ Route::middleware('auth:sanctum')->get('/visit-templates', [VisitController::cla
 
 Route::middleware('auth:sanctum')->prefix('visits')->group(function () {
     Route::get('/all', [VisitController::class, 'index']);     // ?assignmentId=&employeeId=&merchantId=&dateFrom=&dateTo=
-    Route::post('/', [VisitController::class, 'store']);    // POST your payload
+    Route::post('/', [VisitController::class, 'store']);
     Route::get('/{visit}', [VisitController::class, 'show']);
+    Route::put('/{visit}', [VisitController::class, 'update']);
+    Route::patch('/{visit}', [VisitController::class, 'update']);
 });
 
 // Convenience: visits nested under jobs/assignments (same auth)

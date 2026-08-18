@@ -1528,7 +1528,7 @@ document.addEventListener('alpine:init', () => {
         fields: [
           { label: 'Terminal (link)',         expression: 'technician_visits.pos_terminal_id',              category: 'measures'   },
           { label: 'Terminal Condition',     expression: 'technician_visits.terminal_condition',            category: 'dimensions' },
-          { label: 'Terminal Status',        expression: 'technician_visits.terminal_status_during_visit',  category: 'dimensions' },
+          { label: 'State',                  expression: 'technician_visits.terminal_status_during_visit',  category: 'dimensions' },
           { label: 'Issues Found',           expression: 'technician_visits.issues_found',                  category: 'dimensions' },
           { label: 'Corrective Action',      expression: 'technician_visits.corrective_action',             category: 'dimensions' },
           { label: 'Visit Start',            expression: 'technician_visits.started_at',                    category: 'dimensions' },

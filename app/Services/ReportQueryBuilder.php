@@ -636,7 +636,7 @@ class ReportQueryBuilder
             'technician_visits' => [
                 'started_at'                   => 'Date and time the technician arrived at the site',
                 'ended_at'                     => 'Date and time the technician left the site',
-                'terminal_status_during_visit' => 'Condition of the terminal when the technician visited (active, inactive, not found, etc.)',
+                'terminal_status_during_visit' => 'STATE — terminal state recorded by the mobile app during the visit (active, inactive, not found, etc.)',
                 'terminal_condition'           => 'Physical condition of the terminal (good, fair, poor, damaged)',
                 'issues_found'                 => 'ISSUES FOUND — what the technician found wrong (e.g. "Missing Device", "Not Working", "No issues")',
                 'corrective_action'            => 'CORRECTIVE ACTION — the fix or next step taken by the technician (e.g. "Replacement scheduled", "Follow up needed")',

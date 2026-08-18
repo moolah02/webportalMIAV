@@ -154,6 +154,7 @@ class VisitController extends Controller
             'terminal'                        => ['required','array'],
             'terminal.terminal_id'            => ['required'], // int or string
             'terminal.status'                 => ['required','string','max:100'],
+            'terminal.state'                  => ['nullable','string','max:50'],
             'terminal.condition'              => ['required','string','max:100'],
             'terminal.serial_number'          => ['nullable','string','max:191'],
             'terminal.terminal_model'         => ['nullable','string','max:191'],
@@ -200,6 +201,7 @@ class VisitController extends Controller
                 'visit_id'       => $visit->id,
                 'terminal_id'    => (string) ($t['terminal_id']), // store as string to be safe
                 'status'         => $t['status'],
+                'state'          => $t['state'] ?? null,
                 'condition'      => $t['condition'],
                 'serial_number'  => $t['serial_number'] ?? null,
                 'terminal_model' => $t['terminal_model'] ?? null,
@@ -218,6 +220,144 @@ class VisitController extends Controller
         });
     }
 
+
+    // PUT /api/visits/{visit}
+    public function update(Request $request, Visit $visit)
+    {
+        // Accept field name aliases from mobile app
+        $input = $request->all();
+        if (!isset($input['merchant_contact_person']) && isset($input['contact_person'])) {
+            $input['merchant_contact_person'] = $input['contact_person'];
+        }
+        if (!isset($input['merchant_phone']) && isset($input['phone_number'])) {
+            $input['merchant_phone'] = $input['phone_number'];
+        }
+        $request->replace($input);
+
+        $data = $request->validate([
+            'merchant_contact_person'  => ['sometimes','nullable','string','max:255'],
+            'merchant_phone'           => ['sometimes','nullable','string','max:50'],
+
+            'new_contact_person'       => ['sometimes','nullable','string','max:255'],
+            'new_phone_number'         => ['sometimes','nullable','string','max:50'],
+            'new_physical_address'     => ['sometimes','nullable','string','max:500'],
+
+            'terminal'                     => ['sometimes','array'],
+            'terminal.status'              => ['sometimes','string','max:100'],
+            'terminal.state'               => ['sometimes','nullable','string','max:50'],
+            'terminal.condition'           => ['sometimes','string','max:100'],
+            'terminal.serial_number'       => ['sometimes','nullable','string','max:191'],
+            'terminal.terminal_model'      => ['sometimes','nullable','string','max:191'],
+
+            'visit_summary'    => ['sometimes','nullable','string'],
+            'action_points'    => ['sometimes','nullable','string'],
+            'corrective_action'=> ['sometimes','nullable','string','max:500'],
+            'evidence'         => ['sometimes','nullable','array'],
+            'evidence.*'       => ['nullable','string'],
+            'signature'        => ['sometimes','nullable','string'],
+        ]);
+
+        return DB::transaction(function () use ($visit, $data) {
+
+            // Collect only the fields that were explicitly sent
+            $visitUpdates = [];
+            if (array_key_exists('merchant_contact_person', $data)) {
+                $visitUpdates['contact_person'] = $data['merchant_contact_person'];
+            }
+            if (array_key_exists('merchant_phone', $data)) {
+                $visitUpdates['phone_number'] = $data['merchant_phone'];
+            }
+            foreach (['new_contact_person','new_phone_number','new_physical_address','visit_summary','action_points','evidence','signature'] as $field) {
+                if (array_key_exists($field, $data)) {
+                    $visitUpdates[$field] = $data[$field];
+                }
+            }
+            if (!empty($visitUpdates)) {
+                $visit->update($visitUpdates);
+            }
+
+            // Update the VisitTerminal record if terminal data provided
+            if (!empty($data['terminal'])) {
+                $t = $data['terminal'];
+                $visitTerminal = $visit->visitTerminal;
+                if ($visitTerminal) {
+                    $terminalUpdates = [];
+                    if (isset($t['status']))                       $terminalUpdates['status']         = $t['status'];
+                    if (array_key_exists('state', $t))             $terminalUpdates['state']          = $t['state'];
+                    if (isset($t['condition']))                    $terminalUpdates['condition']      = $t['condition'];
+                    if (array_key_exists('serial_number', $t))    $terminalUpdates['serial_number']  = $t['serial_number'];
+                    if (array_key_exists('terminal_model', $t))   $terminalUpdates['terminal_model'] = $t['terminal_model'];
+                    if (!empty($terminalUpdates)) {
+                        $visitTerminal->update($terminalUpdates);
+                    }
+                }
+                // Keep terminal JSON snapshot in sync
+                $visit->update(['terminal' => array_merge($visit->terminal ?? [], $t)]);
+            }
+
+            $this->updateMirroredTechnicianVisit($visit, $data);
+
+            $visit->load('visitTerminals');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Visit updated successfully.',
+                'data'    => $visit,
+            ]);
+        });
+    }
+
+    private function updateMirroredTechnicianVisit(Visit $visit, array $data): void
+    {
+        try {
+            $tv = TechnicianVisit::where('visit_id', $visit->id)->first();
+            if (!$tv) return;
+
+            $statusMap = [
+                'working' => 'active',      'Working' => 'active',
+                'not working' => 'inactive','Not Working' => 'inactive',
+                'not_working' => 'inactive',
+                'not found' => 'not_found', 'Not Found' => 'not_found',
+                'not_found' => 'not_found',
+                'relocated' => 'relocated', 'Relocated' => 'relocated',
+                'replaced'  => 'replaced',  'Replaced'  => 'replaced',
+                'active' => 'active',       'inactive' => 'inactive',
+            ];
+            $condMap = [
+                'good' => 'good',    'Good' => 'good',
+                'fair' => 'fair',    'Fair' => 'fair',
+                'bad'  => 'poor',    'Bad'  => 'poor',
+                'poor' => 'poor',    'Poor' => 'poor',
+                'damaged' => 'damaged', 'Damaged' => 'damaged',
+            ];
+
+            $updates = [];
+            if (!empty($data['terminal']['status'])) {
+                $updates['terminal_status_during_visit'] = $statusMap[$data['terminal']['status']] ?? null;
+            }
+            if (!empty($data['terminal']['condition'])) {
+                $updates['terminal_condition'] = $condMap[$data['terminal']['condition']] ?? null;
+            }
+            if (array_key_exists('action_points', $data)) {
+                $updates['issues_found'] = $data['action_points'];
+            }
+            if (array_key_exists('corrective_action', $data)) {
+                $updates['corrective_action'] = $data['corrective_action'];
+            }
+            if (array_key_exists('visit_summary', $data)) {
+                $updates['visit_summary'] = $data['visit_summary'];
+            }
+
+            if (!empty($updates)) {
+                $tv->update($updates);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to update mirrored technician_visit', [
+                'visit_id' => $visit->id,
+                'error'    => $e->getMessage(),
+            ]);
+        }
+    }
 
     private function mirrorToTechnicianVisit(Visit $visit, array $terminal, array $data): void
     {
@@ -265,7 +405,9 @@ class VisitController extends Controller
                 'ended_at'                     => $data['completed_at'],
                 'status'                       => 'closed',
                 'outcome'                      => 'completed',
-                'terminal_status_during_visit' => $statusMap[$terminal['status'] ?? ''] ?? null,
+                'terminal_status_during_visit' => !empty($terminal['state'])
+                    ? strtolower($terminal['state'])
+                    : ($statusMap[$terminal['status'] ?? ''] ?? null),
                 'terminal_condition'           => $condMap[$terminal['condition'] ?? ''] ?? null,
                 'issues_found'                 => $data['action_points'] ?? null,
                 'corrective_action'            => $data['corrective_action'] ?? null,

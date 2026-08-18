@@ -81,7 +81,7 @@
         <div class="p-5 space-y-3">
             <div class="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Terminal Status</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">State</div>
                     @php
                         $ts = $existingVisit->terminal_status_during_visit;
                         $tsMap = ['active'=>'badge-green','inactive'=>'badge-red','not_found'=>'badge-gray','relocated'=>'badge-yellow','replaced'=>'badge-yellow'];
@@ -124,7 +124,7 @@
             <div id="updateMsg" class="hidden mb-3 text-sm rounded px-3 py-2"></div>
             <div class="space-y-4">
                 <div>
-                    <label class="ui-label">Terminal Status</label>
+                    <label class="ui-label">State</label>
                     <select id="upd_terminal_status" class="ui-select">
                         <option value="">— No change —</option>
                         @foreach(['active'=>'Active','inactive'=>'Inactive','not_found'=>'Not Found','relocated'=>'Relocated','replaced'=>'Replaced'] as $val => $lbl)
@@ -155,6 +155,11 @@
                     <textarea id="upd_visit_summary" rows="3" class="ui-textarea"
                               placeholder="Add or update summary…">{{ $existingVisit->visit_summary }}</textarea>
                 </div>
+                <div>
+                    <label class="ui-label">Condition Notes</label>
+                    <textarea id="upd_condition_notes" rows="3" class="ui-textarea"
+                              placeholder="General condition of the terminal…">{{ $existingVisit->condition_notes }}</textarea>
+                </div>
                 <div class="flex gap-3">
                     <button id="btnUpdate" onclick="saveUpdate()" class="btn-primary flex-1">Save Changes</button>
                     <a href="{{ route('site_visits.show', $existingVisit) }}" class="btn-secondary">View Full Details</a>
@@ -174,14 +179,16 @@ async function saveUpdate() {
     msg.className = 'hidden mb-3 text-sm rounded px-3 py-2';
 
     const payload = {};
-    const ts = document.getElementById('upd_terminal_status').value;
+    const ts  = document.getElementById('upd_terminal_status').value;
     const iss = document.getElementById('upd_issues_found').value;
     const ca  = document.getElementById('upd_corrective_action').value;
     const vs  = document.getElementById('upd_visit_summary').value.trim();
+    const cn  = document.getElementById('upd_condition_notes').value.trim();
     if (ts)  payload.terminal_status_during_visit = ts;
     if (iss) payload.issues_found = [iss];
     if (ca)  payload.corrective_action = ca;
     if (vs)  payload.visit_summary = vs;
+    payload.condition_notes = cn.length > 0 ? cn : null;
 
     try {
         const res = await fetch("{{ route('site_visits.update', $existingVisit) }}", {

@@ -130,7 +130,7 @@
                 @endphp
                 <div class="mb-4 flex gap-6 flex-wrap">
                     <div>
-                        <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Status During Visit</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">State</div>
                         <span class="badge {{ $tsCls }} text-sm px-3 py-1">{{ $tsLbl }}</span>
                     </div>
                     @if($tc)

@@ -73,7 +73,7 @@ return [
       ['key'=>'technician_visits.job_assignment_id','label'=>'Assignment ID','type'=>'number'],
       ['key'=>'technician_visits.started_at','label'=>'Visit Start','type'=>'datetime'],
       ['key'=>'technician_visits.ended_at','label'=>'Visit End','type'=>'datetime'],
-      ['key'=>'technician_visits.terminal_status_during_visit','label'=>'Terminal Status','type'=>'string'],
+      ['key'=>'technician_visits.terminal_status_during_visit','label'=>'State','type'=>'string'],
       ['key'=>'technician_visits.terminal_condition','label'=>'Terminal Condition','type'=>'string'],
       ['key'=>'technician_visits.condition_notes','label'=>'Condition Notes','type'=>'string'],
       ['key'=>'technician_visits.issues_found','label'=>'Issues Raised','type'=>'string'],

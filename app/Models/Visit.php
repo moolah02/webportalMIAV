@@ -82,19 +82,23 @@ public function getTerminalId(): ?string
     }
 
     // --- JSON accessors (singular) ---
+    // Guard against double-decode: $casts runs before accessor in toArray(), passing an already-decoded array.
     public function getTerminalAttribute($value)
     {
-        return $value ? json_decode($value, true) : [];
+        if (is_array($value)) return $value;
+        return $value ? json_decode($value, true) ?? [] : [];
     }
 
     public function getEvidenceAttribute($value)
     {
-        return $value ? json_decode($value, true) : [];
+        if (is_array($value)) return $value;
+        return $value ? json_decode($value, true) ?? [] : [];
     }
 
     public function getOtherTerminalsFoundAttribute($value)
     {
-        return $value ? json_decode($value, true) : [];
+        if (is_array($value)) return $value;
+        return $value ? json_decode($value, true) ?? [] : [];
     }
 
     public function employee()
