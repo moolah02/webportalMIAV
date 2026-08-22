@@ -21,6 +21,7 @@ class Visit extends Model
         'new_physical_address',
         'visit_summary',
         'action_points',
+        'terminal_comments', // corrective action (mobile sends this key)
         'evidence',
         'signature',
         'other_terminals_found',

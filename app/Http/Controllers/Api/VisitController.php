@@ -162,6 +162,7 @@ class VisitController extends Controller
             'visit_summary'            => ['nullable','string'],
             'action_points'            => ['nullable','string'],
             'corrective_action'        => ['nullable','string','max:500'],
+            'terminal_comments'        => ['nullable','string','max:500'], // corrective action key sent by mobile
             'evidence'                 => ['nullable','array'],
             'evidence.*'               => ['nullable','string'],
             'signature'                => ['required','string'],
@@ -187,6 +188,7 @@ class VisitController extends Controller
 
                 'visit_summary'          => $data['visit_summary'] ?? null,
                 'action_points'          => $data['action_points'] ?? null,
+                'terminal_comments'      => $data['terminal_comments'] ?? ($data['corrective_action'] ?? null),
                 'evidence'               => $data['evidence'] ?? null,
                 'signature'              => $data['signature'],
                 'other_terminals_found'  => $data['other_terminals_found'] ?? null,
@@ -252,10 +254,16 @@ class VisitController extends Controller
             'visit_summary'    => ['sometimes','nullable','string'],
             'action_points'    => ['sometimes','nullable','string'],
             'corrective_action'=> ['sometimes','nullable','string','max:500'],
+            'terminal_comments'=> ['sometimes','nullable','string','max:500'], // corrective action key sent by mobile
             'evidence'         => ['sometimes','nullable','array'],
             'evidence.*'       => ['nullable','string'],
             'signature'        => ['sometimes','nullable','string'],
         ]);
+
+        // Mobile sends the corrective action as terminal_comments; accept corrective_action as an alias.
+        if (!array_key_exists('terminal_comments', $data) && array_key_exists('corrective_action', $data)) {
+            $data['terminal_comments'] = $data['corrective_action'];
+        }
 
         return DB::transaction(function () use ($visit, $data) {
 
@@ -267,7 +275,7 @@ class VisitController extends Controller
             if (array_key_exists('merchant_phone', $data)) {
                 $visitUpdates['phone_number'] = $data['merchant_phone'];
             }
-            foreach (['new_contact_person','new_phone_number','new_physical_address','visit_summary','action_points','evidence','signature'] as $field) {
+            foreach (['new_contact_person','new_phone_number','new_physical_address','visit_summary','action_points','terminal_comments','evidence','signature'] as $field) {
                 if (array_key_exists($field, $data)) {
                     $visitUpdates[$field] = $data[$field];
                 }
