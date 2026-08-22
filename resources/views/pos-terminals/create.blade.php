@@ -59,12 +59,8 @@
                         </div>
                         <div>
                             <label class="ui-label">Status</label>
-                            <select name="status" class="ui-select">
-                                <option value="active"       {{ old('status','active') == 'active'       ? 'selected' : '' }}>Active</option>
-                                <option value="offline"      {{ old('status') == 'offline'               ? 'selected' : '' }}>Offline</option>
-                                <option value="maintenance"  {{ old('status') == 'maintenance'           ? 'selected' : '' }}>Under Maintenance</option>
-                                <option value="faulty"       {{ old('status') == 'faulty'                ? 'selected' : '' }}>Faulty</option>
-                            </select>
+                            <div class="ui-input bg-gray-50 text-gray-500 cursor-not-allowed">Set by field visits</div>
+                            <p class="text-xs text-gray-400 mt-1">Terminal status is recorded by technicians on the mobile app and cannot be set here.</p>
                         </div>
                     </div>
                 </div>

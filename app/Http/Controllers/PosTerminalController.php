@@ -61,12 +61,11 @@ class PosTerminalController extends Controller
             'serial_number' => 'nullable|string',
             'installation_date' => 'nullable|date',
             'contract_details' => 'nullable|string',
-            'status' => 'nullable|string',
         ]);
 
-        // Set default status if not provided
-        $validated['status'] = $validated['status'] ?? 'active';
-        $validated['current_status'] = $validated['status']; // Sync both status fields
+        // Terminal status is owned by field visits (mobile app) — the web must
+        // never set or default it. Ignore any status sent from the web form.
+        unset($validated['status'], $validated['current_status']);
 
         // Sync region_id FK from region name
         if (!empty($validated['region'])) {
@@ -223,13 +222,11 @@ public function getFilteredStats(Request $request)
             'last_service_date' => 'nullable|date',
             'next_service_due' => 'nullable|date',
             'contract_details' => 'nullable|string',
-            'status' => 'nullable|string',
         ]);
 
-        // Sync both status fields
-        if (isset($validated['status'])) {
-            $validated['current_status'] = $validated['status'];
-        }
+        // Terminal status is owned by field visits (mobile app) — the web must
+        // never change it. Ignore any status sent from the web form.
+        unset($validated['status'], $validated['current_status']);
 
         // Sync region_id FK from region name
         if (!empty($validated['region'])) {

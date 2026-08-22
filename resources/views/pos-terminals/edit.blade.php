@@ -43,11 +43,8 @@
                         </div>
                         <div>
                             <label class="ui-label">Status</label>
-                            <select name="status" class="ui-select">
-                                @foreach(['active'=>'Active','offline'=>'Offline','maintenance'=>'Under Maintenance','faulty'=>'Faulty','decommissioned'=>'Decommissioned'] as $val=>$lbl)
-                                    <option value="{{ $val }}" {{ old('status', $posTerminal->status) == $val ? 'selected' : '' }}>{{ $lbl }}</option>
-                                @endforeach
-                            </select>
+                            <div class="ui-input bg-gray-50 text-gray-500 cursor-not-allowed">{{ $posTerminal->current_status ?? $posTerminal->status ?? 'Not yet visited' }}</div>
+                            <p class="text-xs text-gray-400 mt-1">Set by field visits on the mobile app — not editable here.</p>
                         </div>
                         <div>
                             <label class="ui-label">Terminal Model</label>
