@@ -158,6 +158,7 @@ class VisitController extends Controller
             'terminal.condition'              => ['required','string','max:100'],
             'terminal.serial_number'          => ['nullable','string','max:191'],
             'terminal.terminal_model'         => ['nullable','string','max:191'],
+            'terminal.device_type'            => ['nullable','string','max:191'], // mobile sends the model as device_type
 
             'visit_summary'            => ['nullable','string'],
             'action_points'            => ['nullable','string'],
@@ -206,7 +207,9 @@ class VisitController extends Controller
                 'state'          => $t['state'] ?? null,
                 'condition'      => $t['condition'],
                 'serial_number'  => $t['serial_number'] ?? null,
-                'terminal_model' => $t['terminal_model'] ?? null,
+                // Mobile sends the model as device_type; keep both columns in sync.
+                'terminal_model' => $t['terminal_model'] ?? ($t['device_type'] ?? null),
+                'device_type'    => $t['device_type'] ?? ($t['terminal_model'] ?? null),
             ]);
 
             $visit->load('visitTerminal');
@@ -250,6 +253,7 @@ class VisitController extends Controller
             'terminal.condition'           => ['sometimes','string','max:100'],
             'terminal.serial_number'       => ['sometimes','nullable','string','max:191'],
             'terminal.terminal_model'      => ['sometimes','nullable','string','max:191'],
+            'terminal.device_type'         => ['sometimes','nullable','string','max:191'], // mobile sends model as device_type
 
             'visit_summary'    => ['sometimes','nullable','string'],
             'action_points'    => ['sometimes','nullable','string'],
@@ -294,7 +298,12 @@ class VisitController extends Controller
                     if (array_key_exists('state', $t))             $terminalUpdates['state']          = $t['state'];
                     if (isset($t['condition']))                    $terminalUpdates['condition']      = $t['condition'];
                     if (array_key_exists('serial_number', $t))    $terminalUpdates['serial_number']  = $t['serial_number'];
-                    if (array_key_exists('terminal_model', $t))   $terminalUpdates['terminal_model'] = $t['terminal_model'];
+                    // Model: mobile sends device_type; accept either and keep both columns in sync.
+                    $modelVal = $t['terminal_model'] ?? ($t['device_type'] ?? null);
+                    if (array_key_exists('terminal_model', $t) || array_key_exists('device_type', $t)) {
+                        $terminalUpdates['terminal_model'] = $modelVal;
+                        $terminalUpdates['device_type']    = $modelVal;
+                    }
                     if (!empty($terminalUpdates)) {
                         $visitTerminal->update($terminalUpdates);
                     }
