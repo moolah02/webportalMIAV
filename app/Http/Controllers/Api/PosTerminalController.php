@@ -339,6 +339,7 @@ public function index(Request $request)
             'serial_number' => $terminal->serial_number,
             'status' => $terminal->status,
             'current_status' => $terminal->current_status,
+            'source' => $terminal->source ?? 'office', // field_discovery = found on site
             'installation_date' => $terminal->installation_date,
             'last_service_date' => $terminal->last_service_date,
             'next_service_due' => $terminal->next_service_due,
@@ -449,6 +450,7 @@ public function index(Request $request)
             'serial_number' => $terminal->serial_number,
             'status' => $terminal->status,
             'current_status' => $terminal->current_status,
+            'source' => $terminal->source ?? 'office', // field_discovery = found on site
             'installation_date' => $terminal->installation_date,
             'last_service_date' => $terminal->last_service_date,
             'next_service_due' => $terminal->next_service_due,

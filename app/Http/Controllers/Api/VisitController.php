@@ -641,4 +641,41 @@ class VisitController extends Controller
 
         return Response::stream($callback, 200, $headers);
     }
+
+    /**
+     * Store a visit evidence photo on the MIAV server (replaces Firebase Storage).
+     *
+     * Two modes:
+     *  - POST /api/uploads/evidence          -> standalone; returns the URL so the
+     *                                           mobile app can include it in evidence[]
+     *                                           when it creates/updates the visit.
+     *  - POST /api/visits/{visit}/evidence   -> also appends the URL to that visit.
+     */
+    public function uploadEvidence(Request $request, Visit $visit = null)
+    {
+        $request->validate([
+            'photo' => 'required|file|mimes:jpg,jpeg,png,webp,heic|max:12288', // 12MB
+        ]);
+
+        $file = $request->file('photo');
+        $ext  = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        $name = 'visit_' . ($visit->id ?? 'new') . '_' . now()->format('Ymd_His') . '_'
+              . substr(bin2hex(random_bytes(4)), 0, 8) . '.' . $ext;
+
+        // storage/app/public/visit_evidence/... served via the /storage symlink
+        $path = $file->storeAs('visit_evidence', $name, 'public');
+        $url  = url('storage/' . $path);
+
+        if ($visit) {
+            $evidence   = $visit->evidence ?? [];
+            $evidence[] = $url;
+            $visit->update(['evidence' => $evidence]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'url'     => $url,
+            'path'    => $path,
+        ], 201);
+    }
 }

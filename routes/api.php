@@ -594,6 +594,10 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
 
     // Optional evidence upload
     Route::post('/visits/{visit}/evidence', [ApiVisitController::class, 'uploadEvidence']);
+
+    // Standalone evidence upload (mobile uploads the photo BEFORE the visit exists,
+    // then sends the returned URL in evidence[]). Replaces Firebase Storage.
+    Route::post('/uploads/evidence', [ApiVisitController::class, 'uploadEvidence']);
 });
 Route::middleware(['auth'])->group(function () {
     Route::get('/visits', [VisitController::class, 'index'])->name('api.visits.index');

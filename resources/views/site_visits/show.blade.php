@@ -369,6 +369,22 @@
                     @endif
                 </div>
                 @endif
+
+                {{-- Updated contact details captured on this visit (from the mobile app) --}}
+                @if(($visit->new_contact_person ?? false) || ($visit->new_phone_number ?? false) || ($visit->new_physical_address ?? false))
+                <div>
+                    <div class="text-xs text-gray-400 mb-0.5">New / Updated Contact</div>
+                    @if($visit->new_contact_person ?? false)
+                    <div class="text-sm">{{ $visit->new_contact_person }}</div>
+                    @endif
+                    @if($visit->new_phone_number ?? false)
+                    <div class="text-xs text-gray-500">{{ $visit->new_phone_number }}</div>
+                    @endif
+                    @if($visit->new_physical_address ?? false)
+                    <div class="text-xs text-gray-500">{{ $visit->new_physical_address }}</div>
+                    @endif
+                </div>
+                @endif
                 @else
                 <p class="text-sm text-gray-400 italic">No terminal linked.</p>
                 @endif
