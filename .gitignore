@@ -22,3 +22,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# local scratch / auth cookie jars
+cookies.txt
+c[0-9].txt
+*.cookies
