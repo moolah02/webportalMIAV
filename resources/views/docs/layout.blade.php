@@ -3,315 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revival Technologies  {{ $pageTitle ?? 'Documentation Hub' }}</title>
+    <title>{{ $pageTitle ?? 'Documentation' }} · MIAV</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('logo/revival-logo.jpeg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:         #f6f8fa;
-            --surface:    #ffffff;
-            --surface2:   #f0f4f8;
-            --border:     #d0d7de;
-            --text:       #24292f;
-            --heading:    #0d1117;
-            --muted:      #57606a;
-            --accent:     #0969da;
-            --accent2:    #1a7f37;
-            --brand:      #1a3a5c;
-            --sidebar-w:  264px;
+            --ground: #F3F5F8; --surface: #FFFFFF; --surface-2: #F7F9FB;
+            --line: #E1E6EC; --line-strong: #CBD3DD;
+            --ink: #16202C; --ink-2: #445162; --muted: #6A7686;
+            --accent: #2B64A8; --accent-ink: #1F4F87; --accent-soft: #E9F0F9;
+            --good: #1D7F46; --good-soft: #E4F3E9; --warn: #9A6412; --warn-soft: #FBF1DE; --crit: #B83232; --crit-soft: #FBE8E7;
+            --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+            --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+            --side-w: 256px;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+        body { font-family: var(--sans); background: var(--ground); color: var(--ink); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+        .i { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        html { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 
-        /*  TOP NAV  */
-        .top-nav {
-            background: var(--brand);
-            border-bottom: 1px solid rgba(0,0,0,.12);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 32px;
-            height: 60px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .top-nav .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            color: inherit;
-        }
-        .top-nav .brand img { height: 34px; border-radius: 6px; }
-        .top-nav .brand-text { font-weight: 700; font-size: 15px; color: #fff; }
-        .top-nav .brand-sub  { font-size: 10px; font-weight: 600; opacity: .65; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.8); }
-        .top-nav .hub-label {
-            font-size: 10px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 1.4px; color: rgba(255,255,255,.75);
-            background: rgba(255,255,255,.12);
-            border: 1px solid rgba(255,255,255,.18);
-            border-radius: 6px; padding: 4px 10px;
-        }
-        .top-nav .nav-links { display: flex; gap: 4px; align-items: center; }
-        .top-nav .nav-links a {
-            color: rgba(255,255,255,.75);
-            text-decoration: none;
-            font-size: 13px;
-            padding: 6px 12px;
-            border-radius: 6px;
-            transition: background .15s, color .15s;
-        }
-        .top-nav .nav-links a:hover, .top-nav .nav-links a.active {
-            background: rgba(255,255,255,.15);
-            color: #fff;
-        }
-        .top-nav .nav-links a.app-link {
-            border: 1px solid rgba(255,255,255,.3);
-            margin-left: 6px;
-        }
+        /* Top bar */
+        .top { position: sticky; top: 0; z-index: 100; height: 60px; display: flex; align-items: center; gap: 18px; padding: 0 28px; background: var(--surface); border-bottom: 1px solid var(--line); }
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+        .brand-mark { width: 34px; height: 34px; border-radius: 7px; overflow: hidden; border: 1px solid var(--line); display: flex; align-items: center; padding-left: 2px; background: #fff; }
+        .brand-mark img { height: 30px; width: auto; max-width: none; display: block; }
+        .brand strong { display: block; font-size: 14px; font-weight: 600; line-height: 1.2; }
+        .brand span { display: block; font-size: 11.5px; color: var(--muted); line-height: 1.2; }
+        .top-nav { display: flex; gap: 2px; margin-left: 12px; }
+        .top-nav a { font-size: 13.5px; color: var(--ink-2); text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+        .top-nav a:hover { background: var(--surface-2); color: var(--ink); }
+        .top-nav a.active { background: var(--accent-soft); color: var(--accent-ink); font-weight: 500; }
+        .top-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font: 500 13px var(--sans); text-decoration: none; cursor: pointer; }
+        .btn:hover { background: var(--surface-2); }
+        .btn .i { width: 15px; height: 15px; }
 
-        /*  LAYOUT BODY  */
+        /* Body */
         .page-body { display: flex; flex: 1; }
+        .side { width: var(--side-w); flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--line); padding: 18px 10px; position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; }
+        .side-sec + .side-sec { margin-top: 14px; }
+        .side-title { font-size: 11px; font-weight: 500; letter-spacing: .04em; color: var(--muted); padding: 0 10px 4px; }
+        .side a { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; font-size: 13.5px; color: var(--ink-2); text-decoration: none; }
+        .side a .i { color: var(--muted); }
+        .side a:hover { background: var(--surface-2); color: var(--ink); }
+        .side a.active { background: var(--accent-soft); color: var(--accent-ink); font-weight: 500; }
+        .side a.active .i { color: var(--accent-ink); }
 
-        /*  SIDEBAR  */
-        .docs-sidebar {
-            width: var(--sidebar-w);
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            padding: 20px 0;
-            position: sticky;
-            top: 60px;
-            height: calc(100vh - 60px);
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-        .sidebar-section { margin-bottom: 8px; }
-        .sidebar-section-title {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: var(--muted);
-            padding: 8px 18px 4px;
-        }
-        .docs-sidebar a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 7px 18px;
-            font-size: 13px;
-            color: var(--text);
-            text-decoration: none;
-            border-left: 3px solid transparent;
-            transition: background .12s, border-color .12s, color .12s;
-        }
-        .docs-sidebar a:hover { background: var(--surface2); color: var(--heading); }
-        .docs-sidebar a.active {
-            background: #dbeafe;
-            border-left-color: var(--accent);
-            color: var(--accent);
-            font-weight: 600;
-        }
-        .docs-sidebar a .icon { font-size: 14px; flex-shrink: 0; }
-        .sidebar-divider { height: 1px; background: var(--border); margin: 8px 18px; }
+        .main { flex: 1; min-width: 0; padding: 36px 48px 64px; }
+        .doc { max-width: 860px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 36px 44px; }
 
-        /*  MAIN CONTENT  */
-        .docs-main {
-            flex: 1;
-            padding: 40px 52px;
-            max-width: 980px;
-        }
-
-        /*  BREADCRUMB  */
-        .breadcrumb {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 20px;
-        }
-        .breadcrumb a { color: var(--accent); text-decoration: none; }
+        /* Content typography */
+        .breadcrumb { font-size: 12.5px; color: var(--muted); margin-bottom: 18px; }
+        .breadcrumb a { color: var(--accent-ink); text-decoration: none; }
         .breadcrumb a:hover { text-decoration: underline; }
         .breadcrumb span { margin: 0 5px; }
+        .doc h1 { font-size: 24px; font-weight: 600; letter-spacing: -.015em; color: var(--ink); margin-bottom: 6px; text-wrap: balance; }
+        .doc .subtitle { font-size: 14.5px; color: var(--muted); margin-bottom: 26px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+        .doc h2 { font-size: 17px; font-weight: 600; color: var(--ink); margin: 32px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+        .doc h3 { font-size: 14.5px; font-weight: 600; color: var(--ink); margin: 22px 0 8px; }
+        .doc p { margin-bottom: 14px; font-size: 14px; color: var(--ink-2); max-width: 72ch; }
+        .doc ul, .doc ol { padding-left: 20px; margin-bottom: 14px; }
+        .doc li { margin-bottom: 6px; font-size: 14px; color: var(--ink-2); }
+        .doc strong { color: var(--ink); font-weight: 600; }
+        .doc a { color: var(--accent-ink); }
+        .doc code { background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+        .doc pre { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 18px; overflow-x: auto; margin: 14px 0; font-size: 13px; line-height: 1.65; }
+        .doc pre code { background: none; border: none; padding: 0; }
 
-        /*  TYPOGRAPHY  */
-        .docs-main h1 { font-size: 26px; font-weight: 800; color: var(--heading); margin-bottom: 8px; }
-        .docs-main .subtitle {
-            font-size: 14.5px; color: var(--muted); margin-bottom: 28px;
-            padding-bottom: 20px; border-bottom: 1px solid var(--border);
-        }
-        .docs-main h2 {
-            font-size: 17px; font-weight: 700; color: var(--heading);
-            margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
-        }
-        .docs-main h3 { font-size: 14.5px; font-weight: 600; color: var(--heading); margin: 22px 0 8px; }
-        .docs-main p  { margin-bottom: 14px; font-size: 14px; color: var(--text); }
-        .docs-main ul, .docs-main ol { padding-left: 20px; margin-bottom: 14px; }
-        .docs-main li { margin-bottom: 6px; font-size: 14px; color: var(--text); }
-        .docs-main strong { color: var(--heading); }
-        .docs-main code {
-            background: #f6f8fa; border: 1px solid var(--border);
-            border-radius: 4px; padding: 2px 6px;
-            font-family: 'Courier New', monospace; font-size: 12.5px; color: #953800;
-        }
-        .docs-main pre {
-            background: #f6f8fa; border: 1px solid var(--border);
-            border-radius: 8px; padding: 20px; overflow-x: auto;
-            margin: 14px 0; font-size: 13px; line-height: 1.65;
-        }
-        .docs-main pre code { background: none; border: none; color: #24292f; padding: 0; }
+        .doc .callout { border: 1px solid #C9D9EE; background: var(--accent-soft); padding: 12px 16px; border-radius: 8px; margin: 14px 0; font-size: 13.5px; color: var(--ink-2); }
+        .doc .callout.warning { border-color: #F0DDB6; background: var(--warn-soft); }
+        .doc .callout.danger  { border-color: #F2CACA; background: var(--crit-soft); }
+        .doc .callout.success { border-color: #C6E6D2; background: var(--good-soft); }
 
-        /*  CALLOUTS  */
-        .docs-main .callout {
-            border-left: 4px solid var(--accent);
-            background: #dbeafe;
-            padding: 13px 16px; border-radius: 0 8px 8px 0;
-            margin: 14px 0; font-size: 13.5px; color: var(--text);
-        }
-        .docs-main .callout.warning  { border-left-color: #d97706; background: #fef3c7; }
-        .docs-main .callout.danger   { border-left-color: #dc2626; background: #fee2e2; }
-        .docs-main .callout.success  { border-left-color: #16a34a; background: #dcfce7; }
-        .docs-main .callout strong { color: var(--heading); }
+        .doc table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; display: block; overflow-x: auto; }
+        .doc table th { background: var(--surface-2); color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 9px 14px; text-align: left; border-bottom: 1px solid var(--line); }
+        .doc table td { padding: 9px 14px; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; }
 
-        /*  TABLES  */
-        .docs-main table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; }
-        .docs-main table th {
-            background: #f0f4f8; color: var(--heading);
-            padding: 9px 14px; text-align: left; font-weight: 600;
-            border-bottom: 2px solid var(--border);
-        }
-        .docs-main table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
-        .docs-main table tr:hover td { background: #f8fafc; }
+        .badge { display: inline-block; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+        .badge-blue, .badge-purple { background: var(--accent-soft); color: var(--accent-ink); }
+        .badge-green  { background: var(--good-soft); color: var(--good); }
+        .badge-yellow { background: var(--warn-soft); color: var(--warn); }
+        .badge-red    { background: var(--crit-soft); color: var(--crit); }
+        .badge-gray   { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
 
-        /*  BADGES  */
-        .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; letter-spacing: .3px; }
-        .badge-blue   { background: #dbeafe; color: #1d4ed8; }
-        .badge-green  { background: #dcfce7; color: #16a34a; }
-        .badge-yellow { background: #fef9c3; color: #a16207; }
-        .badge-red    { background: #fee2e2; color: #dc2626; }
-        .badge-purple { background: #ede9fe; color: #7c3aed; }
-        .badge-gray   { background: #f1f5f9; color: #475569; }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font-size: 12px; font-weight: 600; flex-shrink: 0; margin-right: 8px; }
 
-        /*  STEP NUMBERS  */
-        .step-number {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 24px; height: 24px; border-radius: 50%;
-            background: var(--accent); color: #fff;
-            font-size: 12px; font-weight: 700; flex-shrink: 0; margin-right: 8px;
+        footer { border-top: 1px solid var(--line); background: var(--surface); color: var(--muted); padding: 14px 28px; font-size: 12.5px; display: flex; gap: 16px; flex-wrap: wrap; }
+        footer a { color: var(--ink-2); text-decoration: none; }
+        footer a:hover { color: var(--accent-ink); }
+        footer span:last-child { margin-left: auto; }
+
+        @media (max-width: 900px) {
+            .side { display: none; }
+            .top-nav { display: none; }
+            .main { padding: 18px 16px 40px; }
+            .doc { padding: 22px 18px; }
+            .top { padding: 0 16px; }
         }
 
-        /*  FOOTER  */
-        footer {
-            background: var(--brand);
-            color: rgba(255,255,255,.7);
-            text-align: center;
-            padding: 16px 32px;
-            font-size: 12px;
-        }
-        footer a { color: rgba(255,255,255,.75); text-decoration: none; }
-        footer a:hover { color: #fff; }
-
-        /*  RESPONSIVE  */
-        @media (max-width: 768px) {
-            .docs-sidebar { display: none; }
-            .docs-main { padding: 24px 18px; }
-            .top-nav .nav-links { display: none; }
-            .top-nav .hub-label { display: none; }
-        }
-
-        /*  SCROLLBAR  */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-        /*  PRINT / PDF  */
         @media print {
-            .top-nav, .docs-sidebar, footer { display: none !important; }
+            .top, .side, footer { display: none !important; }
             .page-body { display: block; }
-            .docs-main { max-width: 100%; padding: 20px; }
+            .main { padding: 0; }
+            .doc { max-width: 100%; border: 0; padding: 0; }
             body { background: #fff; }
             a { color: inherit; text-decoration: none; }
-            .docs-main pre { white-space: pre-wrap; word-break: break-all; }
+            .doc pre { white-space: pre-wrap; word-break: break-all; }
         }
     </style>
 </head>
 <body>
+@include('layouts.partials.icons')
 
-<nav class="top-nav">
+<header class="top">
     <a href="{{ url('/docs') }}" class="brand">
-        <img src="{{ asset('logo/revival logo.jpeg') }}" alt="Revival Technologies">
-        <div>
-            <div class="brand-text">Revival Technologies</div>
-            <div class="brand-sub">MIAV Dashboard</div>
-        </div>
+        <span class="brand-mark"><img src="{{ asset('logo/revival-logo.jpeg') }}" alt="Revival Technologies"></span>
+        <span><strong>MIAV</strong><span>Documentation</span></span>
     </a>
-    <span class="hub-label">DOCUMENTATION HUB</span>
-    <div class="nav-links">
+    <nav class="top-nav" aria-label="Documentation">
         <a href="{{ url('/docs') }}" class="{{ request()->is('docs') ? 'active' : '' }}">Home</a>
         <a href="{{ url('/docs/system') }}" class="{{ request()->is('docs/system') ? 'active' : '' }}">System Manual</a>
         <a href="{{ url('/docs/srs') }}" class="{{ request()->is('docs/srs') ? 'active' : '' }}">SRS</a>
-        <button onclick="window.print()" class="app-link" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;">Download PDF</button>
-        <a href="{{ url('/login') }}" class="app-link">&#8592; App</a>
+    </nav>
+    <div class="top-actions">
         @auth
             @if(auth()->user()->roles->whereIn('name', ['super_admin', 'administrator'])->isNotEmpty())
                 @if(!request()->is('docs'))
-                    <a href="{{ url('/admin/docs/' . basename(request()->path()) . '/edit') }}" class="app-link" style="background:#fff3cd;color:#856404;border-color:#ffc107;">Edit Page</a>
+                    <a href="{{ url('/admin/docs/' . basename(request()->path()) . '/edit') }}" class="btn"><svg class="i"><use href="#i-edit"/></svg>Edit Page</a>
                 @endif
-                <a href="{{ url('/admin/docs') }}" class="app-link" style="background:#d1ecf1;color:#0c5460;border-color:#bee5eb;">Manage Docs</a>
+                <a href="{{ url('/admin/docs') }}" class="btn"><svg class="i"><use href="#i-settings"/></svg>Manage Docs</a>
             @endif
         @endauth
+        <button type="button" onclick="window.print()" class="btn"><svg class="i"><use href="#i-download"/></svg>Download PDF</button>
+        <a href="{{ url('/login') }}" class="btn"><svg class="i"><use href="#i-arrow-left"/></svg>Back to MIAV</a>
     </div>
-</nav>
+</header>
 
 <div class="page-body">
-    <aside class="docs-sidebar">
-        <div class="sidebar-section">
-            <div class="sidebar-section-title">User Manuals</div>
-            <a href="{{ url('/docs/system') }}" class="{{ request()->is('docs/system') ? 'active' : '' }}">
-                <span class="icon"></span> System Manual
-            </a>
-            <a href="{{ url('/docs/mobile') }}" class="{{ request()->is('docs/mobile') ? 'active' : '' }}">
-                <span class="icon"></span> Mobile App Guide
-            </a>
-            <a href="{{ url('/docs/reports') }}" class="{{ request()->is('docs/reports') ? 'active' : '' }}">
-                <span class="icon"></span> Reports Manual
-            </a>
-            <a href="{{ url('/docs/projects') }}" class="{{ request()->is('docs/projects') ? 'active' : '' }}">
-                <span class="icon"></span> Project Flow Guide
-            </a>
+    <aside class="side">
+        <div class="side-sec">
+            <div class="side-title">User Manuals</div>
+            <a href="{{ url('/docs/system') }}" class="{{ request()->is('docs/system') ? 'active' : '' }}"><svg class="i"><use href="#i-book"/></svg>System Manual</a>
+            <a href="{{ url('/docs/mobile') }}" class="{{ request()->is('docs/mobile') ? 'active' : '' }}"><svg class="i"><use href="#i-phone"/></svg>Mobile App Guide</a>
+            <a href="{{ url('/docs/reports') }}" class="{{ request()->is('docs/reports') ? 'active' : '' }}"><svg class="i"><use href="#i-chart"/></svg>Reports Manual</a>
+            <a href="{{ url('/docs/projects') }}" class="{{ request()->is('docs/projects') ? 'active' : '' }}"><svg class="i"><use href="#i-folder"/></svg>Project Flow Guide</a>
         </div>
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-title">Reference</div>
-            <a href="{{ url('/docs/srs') }}" class="{{ request()->is('docs/srs') ? 'active' : '' }}">
-                <span class="icon"></span> SRS Document
-            </a>
-            <a href="{{ url('/docs/overview') }}" class="{{ request()->is('docs/overview') ? 'active' : '' }}">
-                <span class="icon"></span> Business Overview
-            </a>
+        <div class="side-sec">
+            <div class="side-title">Reference</div>
+            <a href="{{ url('/docs/srs') }}" class="{{ request()->is('docs/srs') ? 'active' : '' }}"><svg class="i"><use href="#i-file"/></svg>SRS Document</a>
+            <a href="{{ url('/docs/overview') }}" class="{{ request()->is('docs/overview') ? 'active' : '' }}"><svg class="i"><use href="#i-briefcase"/></svg>Business Overview</a>
         </div>
     </aside>
 
-    <main class="docs-main">
-        @yield('content')
+    <main class="main">
+        <div class="doc">
+            @yield('content')
+        </div>
     </main>
 </div>
 
 <footer>
-    Revival Technologies &mdash; MIAV Dashboard &nbsp;|&nbsp;
-    <a href="{{ url('/docs') }}">Docs Hub</a> &nbsp;|&nbsp;
-    <a href="{{ url('/login') }}">App Login</a>
-    &nbsp;&nbsp;&copy; {{ date('Y') }}
+    <span>Revival Technologies · MIAV</span>
+    <a href="{{ url('/docs') }}">Documentation home</a>
+    <a href="{{ url('/login') }}">Sign in to MIAV</a>
+    <span>&copy; {{ date('Y') }}</span>
 </footer>
 
 </body>
