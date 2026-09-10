@@ -52,13 +52,16 @@ Artisan::command('miav:sync-technician-visits {--dry-run : Show what would chang
 })->purpose('Sync technician_visits report rows from mobile visits');
 
 // Publish a new Android APK for download on the portal's Mobile App page.
-// Usage: php artisan miav:publish-apk /tmp/app.apk 1.4.7 19 --notes="What changed" --notes="..."
-Artisan::command('miav:publish-apk {path} {version} {build} {--notes=* : Release note lines}', function () {
+// Usage: php artisan miav:publish-apk /tmp/app.apk 1.4.7 19 [--channel=new-design] --notes="What changed" --notes="..."
+// Channels: current (the "MIAV" app) and new-design (separate "MIAV New Design" app).
+Artisan::command('miav:publish-apk {path} {version} {build} {--channel=current : current or new-design} {--notes=* : Release note lines}', function () {
     $src = $this->argument('path');
     if (!is_file($src)) { $this->error("File not found: $src"); return 1; }
+    $channel = (string) $this->option('channel');
+    if (!array_key_exists($channel, \App\Services\MobileAppRelease::CHANNELS)) { $this->error("Unknown channel: $channel (use current or new-design)"); return 1; }
     $dir = \App\Services\MobileAppRelease::dir();
     if (!is_dir($dir) && !mkdir($dir, 0775, true)) { $this->error("Cannot create $dir"); return 1; }
-    $file = 'man-in-a-van-v' . $this->argument('version') . '+' . $this->argument('build') . '.apk';
+    $file = 'man-in-a-van-' . ($channel === 'new-design' ? 'newdesign-' : '') . 'v' . $this->argument('version') . '+' . $this->argument('build') . '.apk';
     if (!copy($src, "$dir/$file")) { $this->error('Copy failed'); return 1; }
     $meta = [
         'version'     => $this->argument('version'),
@@ -68,8 +71,9 @@ Artisan::command('miav:publish-apk {path} {version} {build} {--notes=* : Release
         'sha256'      => hash_file('sha256', "$dir/$file"),
         'released_at' => now()->toDateTimeString(),
         'notes'       => array_values(array_filter($this->option('notes'))),
+        'channel'     => $channel,
     ];
-    file_put_contents("$dir/latest.json", json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-    $this->info("Published v{$meta['version']} ({$meta['build']}): {$meta['size']} bytes, sha256 {$meta['sha256']}");
+    file_put_contents(\App\Services\MobileAppRelease::metaFile($channel), json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    $this->info("Published [$channel] v{$meta['version']} ({$meta['build']}): {$meta['size']} bytes, sha256 {$meta['sha256']}");
     return 0;
 })->purpose('Publish an Android APK for download on the Mobile App page');

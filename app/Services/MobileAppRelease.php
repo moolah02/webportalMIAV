@@ -3,29 +3,42 @@
 namespace App\Services;
 
 /**
- * The latest published MIAV Android app (APK), described by
- * storage/app/mobile-app/latest.json — written by `php artisan miav:publish-apk`.
- * The APK itself lives next to it and is only served to logged-in users.
+ * Published MIAV Android apps (APKs), described by JSON files in
+ * storage/app/mobile-app/ — written by `php artisan miav:publish-apk`.
+ * The APKs live next to them and are only served to logged-in users.
+ *
+ * Channels:
+ *  - current     → the app technicians use today ("MIAV")
+ *  - new-design  → the redesigned app, installed as a separate app
+ *                  ("MIAV New Design") so both can be tried side by side
  */
 class MobileAppRelease
 {
     public const DIR = 'mobile-app';
 
-    private static ?array $cache = null;
-    private static bool $loaded = false;
+    public const CHANNELS = [
+        'current'    => 'latest.json',
+        'new-design' => 'latest-new-design.json',
+    ];
 
-    /** ['version','build','file','size','sha256','released_at','notes'] or null */
-    public static function latest(): ?array
+    private static array $cache = [];
+
+    /** ['version','build','file','size','sha256','released_at','notes','channel'] or null */
+    public static function latest(string $channel = 'current'): ?array
     {
-        if (!self::$loaded) {
-            self::$loaded = true;
-            $meta = self::dir() . '/latest.json';
-            $data = is_file($meta) ? json_decode((string) file_get_contents($meta), true) : null;
-            self::$cache = (is_array($data) && !empty($data['file']) && is_file(self::path($data['file'])))
+        if (!array_key_exists($channel, self::$cache)) {
+            $meta = isset(self::CHANNELS[$channel]) ? self::metaFile($channel) : null;
+            $data = ($meta && is_file($meta)) ? json_decode((string) file_get_contents($meta), true) : null;
+            self::$cache[$channel] = (is_array($data) && !empty($data['file']) && is_file(self::path($data['file'])))
                 ? $data
                 : null;
         }
-        return self::$cache;
+        return self::$cache[$channel];
+    }
+
+    public static function metaFile(string $channel): string
+    {
+        return self::dir() . '/' . (self::CHANNELS[$channel] ?? self::CHANNELS['current']);
     }
 
     public static function dir(): string
