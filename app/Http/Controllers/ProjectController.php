@@ -530,7 +530,7 @@ public function store(Request $request)
     public function getAvailableTerminals(Request $request, $clientId)
     {
         $terminals = PosTerminal::where('client_id', $clientId)
-            ->where('deployment_status', 'deployed')
+            ->where('status', '!=', 'decommissioned')
             ->with('client')
             ->get()
             ->map(function($terminal) {
@@ -566,7 +566,7 @@ public function store(Request $request)
         switch ($request->terminal_selection_method) {
             case 'all':
                 $terminalIds = PosTerminal::where('client_id', $project->client_id)
-                    ->where('deployment_status', 'deployed')
+                    ->where('status', '!=', 'decommissioned')
                     ->pluck('id')
                     ->toArray();
                 break;
@@ -574,7 +574,7 @@ public function store(Request $request)
             case 'status_based':
                 if ($request->terminal_status_filter) {
                     $terminalIds = PosTerminal::where('client_id', $project->client_id)
-                        ->where('deployment_status', 'deployed')
+                        ->where('status', '!=', 'decommissioned')
                         ->whereIn('current_status', $request->terminal_status_filter)
                         ->pluck('id')
                         ->toArray();

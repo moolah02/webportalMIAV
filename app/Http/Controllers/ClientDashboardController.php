@@ -429,10 +429,8 @@ public function viewTerminal(Client $client, PosTerminal $terminal)
     // Create new project
     public function createProject(Client $client)
     {
-        return view('projects.create', [
-            'client' => $client,
-            'title' => 'Create Project for ' . $client->company_name
-        ]);
+        // One project form for the whole portal: open it with this client preselected.
+        return redirect()->route('projects.create', ['client_id' => $client->id]);
     }
 
     // Store new project

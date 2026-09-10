@@ -3,43 +3,72 @@
 
 @section('title', 'Employee Management')
 
-@section('content')
-{{-- Actions --}}
-<div class="flex justify-end items-center mb-6">
-    <a href="{{ route('employees.create') }}" class="btn-primary">+ Onboard New Employee</a>
-</div>
+@section('header-actions')
+<a href="{{ route('employees.create') }}" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-user-plus"/></svg> Onboard New Employee</a>
+@endsection
 
-{{-- Stats --}}
+@push('styles')
+<style>
+.em-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 900px) { .em-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.em-muted { color: var(--mv-muted); font-size: 12.5px; }
+.em-person { display: flex; align-items: center; gap: 10px; }
+.em-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--mv-surface-2); border: 1px solid var(--mv-line); color: var(--mv-ink-2); display: inline-flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 600; flex-shrink: 0; letter-spacing: .02em; }
+.em-name { font-weight: 500; color: var(--mv-ink); font-size: 13.5px; }
+.em-id { font-family: var(--mv-mono); font-size: 11.5px; color: var(--mv-muted); }
+.em-link { color: var(--mv-accent-ink); text-decoration: none; }
+.em-link:hover { text-decoration: underline; }
+.em-roles { display: flex; flex-wrap: wrap; gap: 4px; }
+.em-role { font-size: 11.5px; padding: 2px 7px; border-radius: 5px; background: var(--mv-surface-2); border: 1px solid var(--mv-line); color: var(--mv-ink-2); white-space: nowrap; }
+
+.em-modal { display: none; position: fixed; inset: 0; background: rgba(22, 32, 44, .45); z-index: 1000; justify-content: center; align-items: center; }
+.em-modal-box { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; width: 92%; max-width: 380px; box-shadow: 0 16px 40px rgba(22, 32, 44, .18); overflow: hidden; }
+.em-modal-head { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--mv-line); }
+.em-modal-head span { font-size: 14.5px; font-weight: 600; color: var(--mv-ink); flex: 1; }
+.em-modal-close { background: none; border: 0; color: var(--mv-muted); cursor: pointer; padding: 4px; border-radius: 6px; display: inline-flex; }
+.em-modal-close:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.em-modal-body { padding: 8px; display: grid; gap: 2px; }
+.em-action { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 0; border-radius: 8px; padding: 10px 12px; cursor: pointer; color: var(--mv-ink); }
+.em-action:hover { background: var(--mv-surface-2); }
+.em-action .mv-i { color: var(--mv-ink-2); }
+.em-action .t { font-size: 13.5px; font-weight: 500; }
+.em-action .d { font-size: 12px; color: var(--mv-muted); }
+.em-action.is-danger, .em-action.is-danger .mv-i { color: var(--mv-crit); }
+.em-action.is-danger:hover { background: var(--mv-crit-soft); }
+</style>
+@endpush
+
+@section('content')
 @php
     try { $totalEmployees = \App\Models\Employee::count(); } catch (\Exception $e) { $totalEmployees = 0; }
     try { $activeEmployees = \App\Models\Employee::where('status','active')->count(); } catch (\Exception $e) { $activeEmployees = 0; }
     try { $newThisMonth = \App\Models\Employee::whereMonth('hire_date', now()->month)->count(); } catch (\Exception $e) { $newThisMonth = 0; }
     try { $pendingOnboarding = \App\Models\Employee::where('status','pending')->count(); } catch (\Exception $e) { $pendingOnboarding = 0; }
 @endphp
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+<div class="em-stats">
     <div class="stat-card">
-        <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-users"/></svg></div>
         <div>
             <div class="stat-number">{{ $totalEmployees }}</div>
             <div class="stat-label">Total Employees</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
+        <div class="stat-icon stat-icon-green"><svg class="mv-i" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div>
             <div class="stat-number">{{ $activeEmployees }}</div>
             <div class="stat-label">Active Employees</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-orange"></div>
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-calendar"/></svg></div>
         <div>
             <div class="stat-number">{{ $newThisMonth }}</div>
             <div class="stat-label">New This Month</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-purple"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg></div>
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-hourglass"/></svg></div>
         <div>
             <div class="stat-number">{{ $pendingOnboarding }}</div>
             <div class="stat-label">Pending Onboarding</div>
@@ -47,31 +76,30 @@
     </div>
 </div>
 
-{{-- Filters --}}
 <form method="GET" class="filter-bar">
-    <div>
+    <div class="filter-group" style="flex:1;min-width:200px">
         <label class="ui-label">Search</label>
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search employees..." class="ui-input w-52">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search employees..." class="ui-input" style="width:100%">
     </div>
-    <div>
+    <div class="filter-group">
         <label class="ui-label">Department</label>
-        <select name="department_id" class="ui-select w-44">
+        <select name="department_id" class="ui-select">
             <option value="">All Departments</option>
             @foreach($departments as $dept)
                 <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
             @endforeach
         </select>
     </div>
-    <div>
+    <div class="filter-group">
         <label class="ui-label">Status</label>
-        <select name="status" class="ui-select w-36">
+        <select name="status" class="ui-select">
             <option value="">All Status</option>
             <option value="active"   {{ request('status') == 'active'   ? 'selected' : '' }}>Active</option>
             <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
             <option value="pending"  {{ request('status') == 'pending'  ? 'selected' : '' }}>Pending</option>
         </select>
     </div>
-    <div class="flex items-end gap-2">
+    <div class="filter-actions">
         <button type="submit" class="btn-primary">Filter</button>
         @if(request()->hasAny(['search','status','department_id']))
             <a href="{{ route('employees.index') }}" class="btn-secondary">Clear</a>
@@ -79,7 +107,6 @@
     </div>
 </form>
 
-{{-- Table --}}
 @php
     try {
         if (!isset($employees)) { $employees = \App\Models\Employee::latest()->get(); }
@@ -87,80 +114,66 @@
 @endphp
 <div class="ui-card overflow-hidden">
     <div class="ui-card-header">
-        <span class="text-sm font-semibold text-gray-800">Employees</span>
-        <span class="badge badge-gray">{{ $employees->count() }}</span>
+        <h3>Employees</h3>
+        <span class="em-muted">{{ $employees->count() }} shown</span>
     </div>
     @if($employees->count() > 0)
     <div class="overflow-x-auto">
         <table class="ui-table w-full">
             <thead>
                 <tr>
-                    <th class="w-10"><input type="checkbox" id="selectAll" class="cursor-pointer rounded"></th>
+                    <th style="width:40px"><input type="checkbox" id="selectAll" style="cursor:pointer"></th>
                     <th>Employee</th>
                     <th>Department</th>
                     <th>Status</th>
                     <th>Role</th>
                     <th>Hire Date</th>
                     <th>Contact</th>
-                    <th>Actions</th>
+                    <th style="width:150px">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($employees as $employee)
                 <tr>
-                    <td><input type="checkbox" name="employee_ids[]" value="{{ $employee->id }}" class="cursor-pointer rounded"></td>
+                    <td><input type="checkbox" name="employee_ids[]" value="{{ $employee->id }}" style="cursor:pointer"></td>
                     <td>
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                                {{ substr($employee->first_name ?? 'N', 0, 1) }}{{ substr($employee->last_name ?? 'A', 0, 1) }}
-                            </div>
+                        <div class="em-person">
+                            <span class="em-avatar">{{ substr($employee->first_name ?? 'N', 0, 1) }}{{ substr($employee->last_name ?? 'A', 0, 1) }}</span>
                             <div>
-                                <div class="text-sm font-medium text-gray-900">{{ $employee->first_name ?? 'Unknown' }} {{ $employee->last_name ?? 'User' }}</div>
-                                <div class="text-xs text-gray-400">ID: {{ $employee->employee_number ?? $employee->id }}</div>
+                                <div class="em-name">{{ $employee->first_name ?? 'Unknown' }} {{ $employee->last_name ?? 'User' }}</div>
+                                <div class="em-id">{{ $employee->employee_number ?? $employee->id }}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="text-sm text-gray-600">
+                    <td>
                         @php try { $department = $employee->department->name ?? 'No Department'; } catch (\Exception $e) { $department = 'No Department'; } @endphp
                         {{ $department }}
                     </td>
                     <td>
-                        @php $sc = ['active'=>'badge badge-green','pending'=>'badge badge-yellow','inactive'=>'badge badge-gray']; @endphp
-                        <span class="{{ $sc[$employee->status ?? 'pending'] ?? 'badge badge-gray' }}">{{ ucfirst($employee->status ?? 'Pending') }}</span>
+                        @php $sc = ['active' => 'badge-green', 'pending' => 'badge-yellow', 'inactive' => 'badge-gray']; @endphp
+                        <span class="badge {{ $sc[$employee->status ?? 'pending'] ?? 'badge-gray' }}">{{ ucfirst($employee->status ?? 'Pending') }}</span>
                     </td>
                     <td>
-                        @php
-                            try { $roles = $employee->roles; } catch (\Exception $e) { $roles = collect(); }
-                            $roleColors = [
-                                'admin'      => ['bg'=>'#E8F5E9','color'=>'#2E7D32'],
-                                'supervisor' => ['bg'=>'#FFF3E0','color'=>'#F57C00'],
-                                'technician' => ['bg'=>'#E3F2FD','color'=>'#1976D2'],
-                                'manager'    => ['bg'=>'#F3E5F5','color'=>'#7B1FA2'],
-                                'default'    => ['bg'=>'#F5F5F5','color'=>'#666'],
-                            ];
-                        @endphp
-                        <div class="flex flex-wrap gap-1">
-                            @if($roles->count() > 0)
-                                @foreach($roles as $role)
-                                    @php $c = $roleColors[strtolower($role->name)] ?? $roleColors['default']; @endphp
-                                    <span class="badge" style="background:{{ $c['bg'] }};color:{{ $c['color'] }};">{{ ucfirst(str_replace('_',' ',$role->name)) }}</span>
-                                @endforeach
-                            @else
+                        @php try { $roles = $employee->roles; } catch (\Exception $e) { $roles = collect(); } @endphp
+                        <div class="em-roles">
+                            @forelse($roles as $role)
+                                <span class="em-role">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</span>
+                            @empty
                                 <span class="badge badge-red">No Role</span>
-                            @endif
+                            @endforelse
                         </div>
                     </td>
-                    <td class="text-sm text-gray-600">{{ $employee->hire_date ? $employee->hire_date->format('M d, Y') : 'N/A' }}</td>
+                    <td style="white-space:nowrap">{{ $employee->hire_date ? $employee->hire_date->format('M d, Y') : 'N/A' }}</td>
                     <td>
-                        <a href="mailto:{{ $employee->email }}" class="text-sm text-[#1a3a5c] hover:underline">{{ $employee->email }}</a>
-                        @if($employee->phone)<div class="text-xs text-gray-500 mt-0.5">{{ $employee->phone }}</div>@endif
+                        <a href="mailto:{{ $employee->email }}" class="em-link">{{ $employee->email }}</a>
+                        @if($employee->phone)<div class="em-muted" style="margin-top:1px">{{ $employee->phone }}</div>@endif
                     </td>
                     <td>
-                        <div class="flex items-center gap-1">
-                            <button onclick="location.href='{{ route('employees.show', $employee) }}'" class="btn-secondary btn-sm" title="View">&#x1F441;</button>
-                            <button onclick="location.href='{{ route('employees.edit', $employee) }}'" class="btn-secondary btn-sm" title="Edit">&#x270F;</button>
-                            <button onclick="quickActions({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}', '{{ $employee->email }}')" class="btn-secondary btn-sm" title="More Actions">&#x2699;&#xFE0F;</button>
-                            <button onclick="confirmDelete({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}')" class="btn-sm" title="Delete" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;padding:4px 8px;cursor:pointer;">&#x1F5D1;</button>
+                        <div class="action-group">
+                            <button type="button" onclick="location.href='{{ route('employees.show', $employee) }}'" class="action-btn" title="View"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg></button>
+                            <button type="button" onclick="location.href='{{ route('employees.edit', $employee) }}'" class="action-btn" title="Edit"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg></button>
+                            <button type="button" onclick="quickActions({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}', '{{ $employee->email }}')" class="action-btn" title="More Actions"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-more"/></svg></button>
+                            <button type="button" onclick="confirmDelete({{ $employee->id }}, '{{ $employee->first_name }} {{ $employee->last_name }}')" class="action-btn action-delete" title="Delete"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-trash"/></svg></button>
                         </div>
                     </td>
                 </tr>
@@ -170,43 +183,43 @@
     </div>
     @else
     <div class="empty-state">
-        <div class="empty-state-icon">&#x1F465;</div>
-        <p class="empty-state-msg">No employees found. <a href="{{ route('employees.create') }}" class="text-[#1a3a5c] underline">Onboard your first employee</a>.</p>
+        <div class="empty-state-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-users"/></svg></div>
+        <p class="empty-state-msg">No employees found.</p>
+        <a href="{{ route('employees.create') }}" class="btn-primary" style="margin-top:12px">Onboard your first employee</a>
     </div>
     @endif
 </div>
 
-{{-- Pagination --}}
 @if(isset($employees) && method_exists($employees,'hasPages') && $employees->hasPages())
 <div class="mt-5 flex justify-center">
     {{ $employees->appends(request()->query())->links() }}
 </div>
 @endif
 
-{{-- Quick Actions Modal (IDs used by JS: quickActionsModal, modalEmployeeName, viewProfileBtn, editEmployeeBtn) --}}
-<div id="quickActionsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-sm relative">
-        <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 rounded-t-xl flex items-center gap-3">
-            <span>&#x2699;&#xFE0F;</span>
-            <span id="modalEmployeeName" class="text-sm font-semibold text-gray-900">Quick Actions</span>
-            <button onclick="closeQuickActions()" class="ml-auto text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+{{-- Quick Actions Modal (IDs used by JS: quickActionsModal, modalEmployeeName, viewProfileBtn, editEmployeeBtn, deleteEmployeeBtn) --}}
+<div id="quickActionsModal" class="em-modal">
+    <div class="em-modal-box">
+        <div class="em-modal-head">
+            <svg class="mv-i mv-i-sm" aria-hidden="true" style="color:var(--mv-muted)"><use href="#i-user"/></svg>
+            <span id="modalEmployeeName">Quick Actions</span>
+            <button type="button" onclick="closeQuickActions()" class="em-modal-close" aria-label="Close"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
-        <div class="p-5 grid gap-3">
-            <button id="viewProfileBtn" class="flex items-center gap-3 p-4 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition text-left w-full">
-                <span class="text-xl">&#x1F464;</span>
-                <div><div class="text-sm font-semibold">View Profile</div><div class="text-xs opacity-75">See complete employee details</div></div>
+        <div class="em-modal-body">
+            <button type="button" id="viewProfileBtn" class="em-action">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-user"/></svg>
+                <div><div class="t">View Profile</div><div class="d">See complete employee details</div></div>
             </button>
-            <button id="editEmployeeBtn" class="flex items-center gap-3 p-4 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition text-left w-full">
-                <span class="text-xl">&#x270F;</span>
-                <div><div class="text-sm font-semibold">Edit Employee</div><div class="text-xs opacity-75">Update employee information</div></div>
+            <button type="button" id="editEmployeeBtn" class="em-action">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-edit"/></svg>
+                <div><div class="t">Edit Employee</div><div class="d">Update employee information</div></div>
             </button>
-            <button onclick="sendEmail()" class="flex items-center gap-3 p-4 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 transition text-left w-full">
-                <span class="text-xl">&#x1F4E7;</span>
-                <div><div class="text-sm font-semibold">Send Email</div><div class="text-xs opacity-75">Contact this employee</div></div>
+            <button type="button" onclick="sendEmail()" class="em-action">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-mail"/></svg>
+                <div><div class="t">Send Email</div><div class="d">Contact this employee</div></div>
             </button>
-            <button id="deleteEmployeeBtn" class="flex items-center gap-3 p-4 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition text-left w-full">
-                <span class="text-xl">&#x1F5D1;</span>
-                <div><div class="text-sm font-semibold">Delete Employee</div><div class="text-xs opacity-75">Permanently remove this employee</div></div>
+            <button type="button" id="deleteEmployeeBtn" class="em-action is-danger">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-trash"/></svg>
+                <div><div class="t">Delete Employee</div><div class="d">Permanently remove this employee</div></div>
             </button>
         </div>
     </div>
@@ -227,7 +240,6 @@ function quickActions(employeeId, employeeName, employeeEmail) {
 
     document.getElementById('modalEmployeeName').textContent = `Actions for ${employeeName}`;
 
-    // Update button actions
     document.getElementById('viewProfileBtn').onclick = () => {
         closeQuickActions();
         window.location.href = `/employees/${employeeId}`;
@@ -288,19 +300,16 @@ function confirmDelete(employeeId, employeeName) {
     form.submit();
 }
 
-// Select All functionality
 document.addEventListener('DOMContentLoaded', function() {
     const selectAll = document.getElementById('selectAll');
     if (selectAll) {
         selectAll.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('input[name="employee_ids[]"]');
-            checkboxes.forEach(checkbox => {
+            document.querySelectorAll('input[name="employee_ids[]"]').forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
         });
     }
 
-    // Close modal when clicking outside
     document.addEventListener('click', function(event) {
         const modal = document.getElementById('quickActionsModal');
         if (event.target === modal) {
@@ -308,7 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Close modal with Escape key
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeQuickActions();
