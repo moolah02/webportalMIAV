@@ -2,56 +2,83 @@
 @section('title', 'Bulk Import Assets')
 
 @section('header-actions')
-<a href="{{ route('assets.index') }}" class="btn-secondary btn-sm">← Back to Assets</a>
+<a href="{{ route('assets.index') }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Back to Assets</a>
 @endsection
 
-@section('content')
-<div class="max-w-2xl mx-auto space-y-5">
+@push('styles')
+<style>
+.mv-header-actions a { text-decoration: none !important; }
+.as-import a[class*="btn-"] { text-decoration: none !important; }
+.as-import { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; max-width: 1200px; }
+@media (max-width: 1100px) { .as-import { grid-template-columns: minmax(0, 1fr); } }
+.as-import .ui-card-body { padding: 16px 18px 18px; }
+.as-import .as-lead { margin: 0 0 12px; font-size: 13.5px; line-height: 1.55; color: var(--mv-ink-2); }
+.as-import .as-lead strong { font-weight: 600; color: var(--mv-ink); }
+.as-import .as-cols { border: 1px solid var(--mv-line); border-radius: 8px; overflow-x: auto; }
+.as-import .as-cols .ui-table thead th { padding: 8px 12px; }
+.as-import .as-cols .ui-table tbody td { padding: 7px 12px; font-size: 13px; }
+.as-import .as-cols .ui-table tbody tr:first-child td { border-top: 0; }
+.as-import .as-cols .mv-mono { font-size: 12.5px; color: var(--mv-ink); }
+.as-import .as-no { color: var(--mv-muted); }
+.as-import .as-tpl { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; font-size: 12.5px; color: var(--mv-muted); }
+.as-import .ui-label { margin-bottom: 5px; }
+.as-import .as-req { color: var(--mv-crit); }
+.as-import .as-file {
+  display: block; width: 100%; padding: 10px; font-size: 13px; color: var(--mv-ink-2); cursor: pointer;
+  background: var(--mv-surface-2); border: 1px dashed var(--mv-line-strong); border-radius: 8px;
+}
+.as-import .as-file:hover { border-color: var(--mv-accent); }
+.as-import .as-file::file-selector-button {
+  margin-right: 12px; padding: 6px 12px; cursor: pointer; font: inherit; font-weight: 500;
+  color: var(--mv-ink); background: var(--mv-surface); border: 1px solid var(--mv-line-strong); border-radius: 7px;
+}
+.as-import .as-hint { margin: 6px 0 0; font-size: 12px; color: var(--mv-muted); }
+.as-import .as-err { margin: 4px 0 0; font-size: 12px; color: var(--mv-crit); }
+.as-import .as-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--mv-line); }
+</style>
+@endpush
 
-    @if(session('success'))
-    <div class="flash-success"><span>&#x2705;</span> {{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-    <div class="flash-error"><span>&#x274C;</span> {{ session('error') }}</div>
-    @endif
+@section('content')
+<div class="as-import">
 
     {{-- Instructions --}}
     <div class="ui-card">
         <div class="ui-card-header">
-            <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F4C2; Bulk Import Assets via Excel</h3>
+            <h3>Bulk Import Assets via Excel</h3>
         </div>
-        <div class="ui-card-body space-y-3 text-sm text-gray-600">
-            <p>Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file. The first row must be the header row with these column names:</p>
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs border border-gray-200 rounded">
-                    <thead class="bg-gray-50">
+        <div class="ui-card-body">
+            <p class="as-lead">Upload an <strong>.xlsx</strong>, <strong>.xls</strong>, or <strong>.csv</strong> file. The first row must be the header row with these column names:</p>
+            <div class="as-cols">
+                <table class="ui-table">
+                    <thead>
                         <tr>
-                            <th class="px-3 py-2 text-left font-semibold text-gray-600 border-b">Column</th>
-                            <th class="px-3 py-2 text-left font-semibold text-gray-600 border-b">Required</th>
-                            <th class="px-3 py-2 text-left font-semibold text-gray-600 border-b">Notes</th>
+                            <th>Column</th>
+                            <th>Required</th>
+                            <th>Notes</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        <tr><td class="px-3 py-1.5 font-mono">name</td><td class="px-3 py-1.5 text-red-500">Yes</td><td class="px-3 py-1.5">Asset name</td></tr>
-                        <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">description</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Short description</td></tr>
-                        <tr><td class="px-3 py-1.5 font-mono">category</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">e.g. IT Equipment, Furniture</td></tr>
-                        <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">brand</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Manufacturer / brand</td></tr>
-                        <tr><td class="px-3 py-1.5 font-mono">model</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Model name or number</td></tr>
-                        <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">sku</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Internal SKU code</td></tr>
-                        <tr><td class="px-3 py-1.5 font-mono">barcode</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Barcode / serial</td></tr>
-                        <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">unit_price</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Numeric, e.g. 1200.00</td></tr>
-                        <tr><td class="px-3 py-1.5 font-mono">currency</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Default: USD</td></tr>
-                        <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">stock_quantity</td><td class="px-3 py-1.5 text-red-500">Yes</td><td class="px-3 py-1.5">Integer, e.g. 10</td></tr>
-                        <tr><td class="px-3 py-1.5 font-mono">min_stock_level</td><td class="px-3 py-1.5 text-red-500">Yes</td><td class="px-3 py-1.5">Low-stock alert threshold</td></tr>
-                        <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">status</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Default: active</td></tr>
-                        <tr><td class="px-3 py-1.5 font-mono">is_requestable</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">1 = yes, 0 = no</td></tr>
-                        <tr class="bg-gray-50"><td class="px-3 py-1.5 font-mono">requires_approval</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">1 = yes, 0 = no</td></tr>
-                        <tr><td class="px-3 py-1.5 font-mono">notes</td><td class="px-3 py-1.5 text-gray-400">No</td><td class="px-3 py-1.5">Any extra notes</td></tr>
+                    <tbody>
+                        <tr><td class="mv-mono">name</td><td><span class="badge badge-blue">Yes</span></td><td>Asset name</td></tr>
+                        <tr><td class="mv-mono">description</td><td class="as-no">No</td><td>Short description</td></tr>
+                        <tr><td class="mv-mono">category</td><td class="as-no">No</td><td>e.g. IT Equipment, Furniture</td></tr>
+                        <tr><td class="mv-mono">brand</td><td class="as-no">No</td><td>Manufacturer / brand</td></tr>
+                        <tr><td class="mv-mono">model</td><td class="as-no">No</td><td>Model name or number</td></tr>
+                        <tr><td class="mv-mono">sku</td><td class="as-no">No</td><td>Internal SKU code</td></tr>
+                        <tr><td class="mv-mono">barcode</td><td class="as-no">No</td><td>Barcode / serial</td></tr>
+                        <tr><td class="mv-mono">unit_price</td><td class="as-no">No</td><td>Numeric, e.g. 1200.00</td></tr>
+                        <tr><td class="mv-mono">currency</td><td class="as-no">No</td><td>Default: USD</td></tr>
+                        <tr><td class="mv-mono">stock_quantity</td><td><span class="badge badge-blue">Yes</span></td><td>Integer, e.g. 10</td></tr>
+                        <tr><td class="mv-mono">min_stock_level</td><td><span class="badge badge-blue">Yes</span></td><td>Low-stock alert threshold</td></tr>
+                        <tr><td class="mv-mono">status</td><td class="as-no">No</td><td>Default: active</td></tr>
+                        <tr><td class="mv-mono">is_requestable</td><td class="as-no">No</td><td>1 = yes, 0 = no</td></tr>
+                        <tr><td class="mv-mono">requires_approval</td><td class="as-no">No</td><td>1 = yes, 0 = no</td></tr>
+                        <tr><td class="mv-mono">notes</td><td class="as-no">No</td><td>Any extra notes</td></tr>
                     </tbody>
                 </table>
             </div>
-            <div class="pt-1">
-                <a href="{{ route('assets.import-template') }}" class="btn-secondary btn-sm">&#x2B07;&#xFE0F; Download Template (.xlsx)</a>
+            <div class="as-tpl">
+                <span>Start from the template to get the headers right.</span>
+                <a href="{{ route('assets.import-template') }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg> Download Template (.xlsx)</a>
             </div>
         </div>
     </div>
@@ -59,21 +86,20 @@
     {{-- Upload Form --}}
     <div class="ui-card">
         <div class="ui-card-header">
-            <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F4E4; Upload File</h3>
+            <h3>Upload File</h3>
         </div>
         <div class="ui-card-body">
-            <form method="POST" action="{{ route('assets.import') }}" enctype="multipart/form-data" class="space-y-4">
+            <form method="POST" action="{{ route('assets.import') }}" enctype="multipart/form-data">
                 @csrf
                 <div>
-                    <label class="ui-label">File <span class="text-red-500">*</span></label>
-                    <input type="file" name="file" accept=".xlsx,.xls,.csv" required
-                           class="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#1a3a5c] file:text-white hover:file:bg-[#15304d] cursor-pointer border border-gray-200 rounded-lg p-1">
-                    @error('file')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-                    <p class="text-xs text-gray-400 mt-1">Accepted: .xlsx, .xls, .csv &mdash; max 5 MB</p>
+                    <label class="ui-label" for="import_file">File <span class="as-req">*</span></label>
+                    <input type="file" name="file" id="import_file" accept=".xlsx,.xls,.csv" required class="as-file">
+                    @error('file')<p class="as-err">{{ $message }}</p>@enderror
+                    <p class="as-hint">Accepted: .xlsx, .xls, .csv &mdash; max 5 MB</p>
                 </div>
-                <div class="flex gap-3 pt-1">
-                    <button type="submit" class="btn-primary">&#x1F4E5; Import Assets</button>
+                <div class="as-actions">
                     <a href="{{ route('assets.index') }}" class="btn-secondary">Cancel</a>
+                    <button type="submit" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-upload"/></svg> Import Assets</button>
                 </div>
             </form>
         </div>

@@ -1,12 +1,15 @@
+{{-- Assign Assets tab (styles live in assets/index.blade.php) --}}
+
 {{-- Quick Assignment Card --}}
-<div class="ui-card mb-5">
+<div class="ui-card mb-4">
     <div class="ui-card-header">
-        <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F3AF; Quick Asset Assignment</h3>
+        <h3 class="as-card-title">Quick Asset Assignment</h3>
     </div>
     <div class="ui-card-body">
         @if(isset($fromRequest))
-        <div class="flash-info mb-4">
-            &#x1F4E6; Assigning assets from <strong>Approved Request #{{ $fromRequest }}</strong>. Employee has been pre-selected.
+        <div class="flash-info as-banner mb-4">
+            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-info"/></svg>
+            <span>Assigning assets from <strong>Approved Request #{{ $fromRequest }}</strong>. Employee has been pre-selected.</span>
         </div>
         @endif
 
@@ -14,9 +17,9 @@
             @csrf
             <input type="hidden" name="assignment_date" value="{{ now()->format('Y-m-d') }}">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div class="as-grid is-4">
                 <div>
-                    <label class="ui-label">Asset <span class="text-red-500">*</span></label>
+                    <label class="ui-label" for="quick_asset_select">Asset <span class="as-req">*</span></label>
                     <select name="asset_id" id="quick_asset_select" required class="ui-select">
                         <option value="">Choose an asset…</option>
                         @foreach($availableAssets as $asset)
@@ -28,7 +31,7 @@
                 </div>
 
                 <div>
-                    <label class="ui-label">Employee <span class="text-red-500">*</span></label>
+                    <label class="ui-label" for="quick_employee_select">Employee <span class="as-req">*</span></label>
                     <select name="employee_id" id="quick_employee_select" required class="ui-select">
                         <option value="">Choose an employee…</option>
                         @foreach($employees as $emp)
@@ -41,12 +44,12 @@
                 </div>
 
                 <div>
-                    <label class="ui-label">Qty <span class="text-red-500">*</span></label>
+                    <label class="ui-label" for="quick_quantity">Qty <span class="as-req">*</span></label>
                     <input type="number" name="quantity" id="quick_quantity" min="1" value="1" required class="ui-input">
                 </div>
 
                 <div>
-                    <label class="ui-label">Condition <span class="text-red-500">*</span></label>
+                    <label class="ui-label">Condition <span class="as-req">*</span></label>
                     <select name="condition_when_assigned" required class="ui-select">
                         @foreach($conditionOptions as $value => $label)
                             <option value="{{ $value }}" {{ $value === 'good' ? 'selected' : '' }}>{{ $label }}</option>
@@ -55,9 +58,9 @@
                 </div>
             </div>
 
-            <div class="flex justify-end">
+            <div class="as-form-actions">
                 <button type="button" onclick="openDetailedAssignModal()" class="btn-primary">
-                    &#x1F3AF; Assign Asset
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-user-plus"/></svg> Assign Asset
                 </button>
             </div>
         </form>
@@ -65,94 +68,95 @@
 </div>
 
 {{-- Available Assets Table --}}
-<div class="ui-card">
+<div class="ui-card overflow-hidden">
     <div class="ui-card-header">
-        <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F4E6; Available Assets for Assignment</h3>
-        <span class="badge badge-blue">{{ $availableAssets->count() }} assets</span>
+        <div class="as-card-head">
+            <h3 class="as-card-title">Available Assets for Assignment</h3>
+            <span class="as-card-meta">{{ $availableAssets->count() }} assets</span>
+        </div>
     </div>
-    <div class="ui-card-body p-0">
-        @if($availableAssets->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="shared-table">
-                <thead>
-                    <tr>
-                        <th>Asset</th>
-                        <th>Category</th>
-                        <th>Unit Price</th>
-                        <th>Stock</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($availableAssets as $asset)
-                    <tr>
-                        <td>
-                            <div class="font-semibold text-gray-800 text-sm">{{ $asset->name }}</div>
-                            @if($asset->brand || $asset->model)
-                            <div class="text-xs text-gray-400">{{ trim($asset->brand . ' ' . $asset->model) }}</div>
-                            @endif
-                            @if($asset->sku)
-                            <div class="text-xs text-gray-400">SKU: {{ $asset->sku }}</div>
-                            @endif
-                        </td>
-                        <td>
-                            <span class="badge badge-gray">{{ $asset->category ?? '—' }}</span>
-                        </td>
-                        <td class="text-sm text-gray-700">
-                            {{ $asset->currency ?? 'USD' }} {{ number_format($asset->unit_price ?? 0, 2) }}
-                        </td>
-                        <td>
-                            @php $avail = $asset->available_quantity ?? $asset->stock_quantity; @endphp
-                            <div class="text-sm font-semibold text-gray-800">{{ $avail }} available</div>
-                            <div class="text-xs text-gray-400">of {{ $asset->stock_quantity }} total</div>
+    @if($availableAssets->count() > 0)
+    <div class="overflow-x-auto">
+        <table class="ui-table shared-table">
+            <thead>
+                <tr>
+                    <th>Asset</th>
+                    <th>Category</th>
+                    <th class="as-right">Unit Price</th>
+                    <th>Stock</th>
+                    <th class="as-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($availableAssets as $asset)
+                <tr>
+                    <td>
+                        <div class="cell-primary">{{ $asset->name }}</div>
+                        <div class="cell-sub">
+                            @if($asset->brand || $asset->model){{ trim($asset->brand . ' ' . $asset->model) }}@endif
+                            @if(($asset->brand || $asset->model) && $asset->sku) &middot; @endif
+                            @if($asset->sku)SKU <span class="mv-mono">{{ $asset->sku }}</span>@endif
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-gray">{{ $asset->category ?? '—' }}</span>
+                    </td>
+                    <td class="as-right">
+                        <span class="as-num">{{ $asset->currency ?? 'USD' }} {{ number_format($asset->unit_price ?? 0, 2) }}</span>
+                    </td>
+                    <td>
+                        @php $avail = $asset->available_quantity ?? $asset->stock_quantity; @endphp
+                        <div class="as-num">{{ $avail }} available</div>
+                        <div class="cell-sub">
+                            of {{ $asset->stock_quantity }} total
                             @if(($asset->assigned_quantity ?? 0) > 0)
-                            <div class="text-xs text-amber-600">{{ $asset->assigned_quantity }} assigned</div>
+                            &middot; {{ $asset->assigned_quantity }} assigned
                             @endif
-                        </td>
-                        <td>
-                            <div class="flex gap-2">
-                                <button onclick="openAssignModal({{ $asset->id }})" class="btn-primary btn-sm">
-                                    &#x1F3AF; Assign Now
-                                </button>
-                                <a href="{{ route('assets.show', $asset->id) }}" class="btn-secondary btn-sm">View</a>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        @if($availableAssets->hasPages())
-        <div class="px-4 py-3 border-t border-gray-100">
-            {{ $availableAssets->links() }}
-        </div>
-        @endif
-
-        @else
-        <div class="empty-state py-16">
-            <div class="empty-state-icon">&#x1F4E6;</div>
-            <div class="empty-state-msg">No assets available for assignment. All requestable assets are out of stock or fully assigned.</div>
-            <a href="{{ route('assets.index', ['tab' => 'assets']) }}" class="btn-primary mt-4">View All Assets</a>
-        </div>
-        @endif
+                        </div>
+                    </td>
+                    <td class="as-right">
+                        <div class="action-group">
+                            <button type="button" onclick="openAssignModal({{ $asset->id }})" class="btn-secondary btn-sm">
+                                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-user-plus"/></svg> Assign Now
+                            </button>
+                            <a href="{{ route('assets.show', $asset->id) }}" class="action-btn" title="View" aria-label="View"><svg class="mv-i" aria-hidden="true"><use href="#i-eye"/></svg></a>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
+
+    @if($availableAssets->hasPages())
+    <div class="ui-card-footer as-pager">
+        {{ $availableAssets->links() }}
+    </div>
+    @endif
+
+    @else
+    <div class="empty-state">
+        <div class="empty-state-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-box"/></svg></div>
+        <p class="empty-state-msg">No assets available for assignment. All requestable assets are out of stock or fully assigned.</p>
+        <a href="{{ route('assets.index', ['tab' => 'assets']) }}" class="btn-secondary btn-sm">View All Assets</a>
+    </div>
+    @endif
 </div>
 
 {{-- Detailed Assignment Modal --}}
-<div id="detailedAssignModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="ui-card w-full max-w-lg">
-        <div class="ui-card-header" style="background:#1a3a5c;">
-            <h3 class="text-sm font-semibold text-white m-0">&#x1F3AF; Asset Assignment Details</h3>
-            <button onclick="closeDetailedAssignModal()" class="text-white/70 hover:text-white text-xl leading-none border-0 bg-transparent cursor-pointer">&times;</button>
+<div id="detailedAssignModal" class="hidden as-overlay flex" role="dialog" aria-modal="true">
+    <div class="as-modal">
+        <div class="as-modal-head">
+            <h3>Asset Assignment Details</h3>
+            <button type="button" onclick="closeDetailedAssignModal()" class="as-x" title="Close" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
-        <div class="ui-card-body">
-            <form id="detailedAssignForm" method="POST" action="{{ route('assets.assign') }}" class="space-y-4">
+        <div class="as-modal-body">
+            <form id="detailedAssignForm" method="POST" action="{{ route('assets.assign') }}">
                 @csrf
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="as-grid">
                     <div>
-                        <label class="ui-label">Asset <span class="text-red-500">*</span></label>
+                        <label class="ui-label" for="detailed_asset_id">Asset <span class="as-req">*</span></label>
                         <select name="asset_id" id="detailed_asset_id" required class="ui-select">
                             <option value="">Select asset…</option>
                             @foreach($availableAssets as $asset)
@@ -163,7 +167,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="ui-label">Employee <span class="text-red-500">*</span></label>
+                        <label class="ui-label" for="detailed_employee_id">Employee <span class="as-req">*</span></label>
                         <select name="employee_id" id="detailed_employee_id" required class="ui-select">
                             <option value="">Select employee…</option>
                             @foreach($employees as $emp)
@@ -171,43 +175,39 @@
                             @endforeach
                         </select>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="ui-label">Quantity <span class="text-red-500">*</span></label>
+                        <label class="ui-label" for="detailed_quantity">Quantity <span class="as-req">*</span></label>
                         <input type="number" name="quantity" id="detailed_quantity" min="1" value="1" required class="ui-input">
                     </div>
                     <div>
-                        <label class="ui-label">Condition <span class="text-red-500">*</span></label>
+                        <label class="ui-label">Condition <span class="as-req">*</span></label>
                         <select name="condition_when_assigned" required class="ui-select">
                             @foreach($conditionOptions as $value => $label)
                                 <option value="{{ $value }}" {{ $value === 'good' ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="ui-label">Assignment Date <span class="text-red-500">*</span></label>
+                        <label class="ui-label">Assignment Date <span class="as-req">*</span></label>
                         <input type="date" name="assignment_date" value="{{ now()->format('Y-m-d') }}" required class="ui-input">
                     </div>
                     <div>
-                        <label class="ui-label">Expected Return <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+                        <label class="ui-label">Expected Return <span class="as-opt">(optional)</span></label>
                         <input type="date" name="expected_return_date" class="ui-input">
+                    </div>
+
+                    <div class="is-full">
+                        <label class="ui-label">Notes <span class="as-opt">(optional)</span></label>
+                        <textarea name="assignment_notes" rows="3" class="ui-textarea"
+                                  placeholder="Purpose, special instructions…"></textarea>
                     </div>
                 </div>
 
-                <div>
-                    <label class="ui-label">Notes <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
-                    <textarea name="assignment_notes" rows="3" class="ui-textarea"
-                              placeholder="Purpose, special instructions…"></textarea>
-                </div>
-
-                <div class="flex gap-3 pt-2">
-                    <button type="submit" class="btn-primary flex-1">&#x1F3AF; Confirm Assignment</button>
+                <div class="as-modal-actions">
                     <button type="button" onclick="closeDetailedAssignModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-check"/></svg> Confirm Assignment</button>
                 </div>
             </form>
         </div>
@@ -243,8 +243,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (fromRequest) {
         const banner = document.createElement('div');
-        banner.className = 'flash-info mb-4';
-        banner.innerHTML = '&#x1F4E6; Assigning assets from <strong>Approved Request #' + fromRequest + '</strong>. Employee has been pre-selected.';
+        banner.className = 'flash-info as-banner mb-4';
+        banner.innerHTML = '<svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-info"/></svg><span>Assigning assets from <strong>Approved Request #' + fromRequest + '</strong>. Employee has been pre-selected.</span>';
         const form = document.getElementById('quickAssignForm');
         if (form) form.parentNode.insertBefore(banner, form);
     }

@@ -1,7 +1,11 @@
-<!-- Dynamic Category Fields Partial -->
-<div id="dynamicFieldsSection" class="content-card" style="margin-block-end: 20px; display: none;">
-    <h4 id="dynamicFieldsTitle" style="margin-block-end: 20px; color: #333;"></h4>
-    <div id="dynamicFieldsContent" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"></div>
+{{-- Dynamic Category Fields Partial (styled by the including page: .as-form in create/edit) --}}
+<div id="dynamicFieldsSection" class="ui-card" style="display: none;">
+    <div class="ui-card-header">
+        <h3 id="dynamicFieldsTitle"></h3>
+    </div>
+    <div class="ui-card-body">
+        <div id="dynamicFieldsContent" class="as-grid"></div>
+    </div>
 </div>
 
 <script>
@@ -76,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderDynamicFields(category, fields) {
         dynamicFieldsContent.innerHTML = '';
-        dynamicFieldsTitle.innerHTML = `<span style="margin-right: 8px;">${getCategoryIcon(category.name)}</span>${category.name} Details`;
+        dynamicFieldsTitle.innerHTML = `${getCategoryIcon(category.name)}${category.name} Details`;
         dynamicFieldsSection.style.display = 'block';
         dynamicFieldsSection.classList.add('category-fields');
 
@@ -105,11 +109,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const wrapper = document.createElement('div');
 
         const label = document.createElement('label');
-        label.style.cssText = 'display: block; margin-block-end: 5px; font-weight: 500;';
+        label.className = 'ui-label';
         label.htmlFor = `spec_${field.name}`;
         label.textContent = field.label;
         if (field.required) {
-            label.innerHTML += ' <span style="color: #f44336;">*</span>';
+            label.innerHTML += ' <span class="as-req">*</span>';
         }
 
         // Get existing value from specifications
@@ -120,7 +124,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let input;
         const fieldId = `spec_${field.name}`;
         const fieldInputName = `specifications[${field.name}]`;
-        const inputStyle = 'inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;';
 
         switch (field.type) {
             case 'text':
@@ -129,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'tel':
                 input = document.createElement('input');
                 input.type = field.type;
-                input.style.cssText = inputStyle;
+                input.className = 'ui-input w-full';
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.placeholder = field.placeholder || '';
@@ -140,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'number':
                 input = document.createElement('input');
                 input.type = 'number';
-                input.style.cssText = inputStyle;
+                input.className = 'ui-input w-full';
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.placeholder = field.placeholder || '';
@@ -151,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'date':
                 input = document.createElement('input');
                 input.type = 'date';
-                input.style.cssText = inputStyle;
+                input.className = 'ui-input w-full';
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.value = existingValue;
@@ -160,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             case 'textarea':
                 input = document.createElement('textarea');
-                input.style.cssText = inputStyle;
+                input.className = 'ui-textarea w-full';
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.placeholder = field.placeholder || '';
@@ -171,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             case 'select':
                 input = document.createElement('select');
-                input.style.cssText = inputStyle;
+                input.className = 'ui-select w-full';
                 input.id = fieldId;
                 input.name = fieldInputName;
                 if (field.required) input.required = true;
@@ -197,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
             default:
                 input = document.createElement('input');
                 input.type = 'text';
-                input.style.cssText = inputStyle;
+                input.className = 'ui-input w-full';
                 input.id = fieldId;
                 input.name = fieldInputName;
                 input.placeholder = field.placeholder || '';
@@ -210,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (field.help) {
             const helpText = document.createElement('div');
-            helpText.style.cssText = 'font-size: 12px; color: #666; margin-block-start: 5px;';
+            helpText.className = 'as-hint';
             helpText.textContent = field.help;
             wrapper.appendChild(helpText);
         }
@@ -226,12 +229,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (requiresIndividualEntry) {
             stockQuantityInput.value = 1;
             stockQuantityInput.readOnly = true;
-            stockQuantityInput.style.backgroundColor = '#f5f5f5';
+            stockQuantityInput.style.backgroundColor = 'var(--mv-surface-2)';
 
             if (!existingNotice) {
                 const notice = document.createElement('div');
                 notice.id = 'individualEntryNotice';
-                notice.style.cssText = 'background: #e3f2fd; color: #1565c0; padding: 10px; border-radius: 4px; margin-block-start: 10px; font-size: 13px;';
+                notice.className = 'as-note';
                 notice.innerHTML = '<strong>Note:</strong> This category requires individual entry. Each item must be added separately with unique identifiers.';
                 stockQuantityInput.parentElement.appendChild(notice);
             }
