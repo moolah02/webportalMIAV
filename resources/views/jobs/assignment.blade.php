@@ -35,6 +35,9 @@
     .ja-control { width: 100%; padding: 8px 11px; border: 1px solid var(--mv-line-strong); border-radius: 8px; background: var(--mv-surface); color: var(--mv-ink); font: inherit; font-size: 13.5px; }
     .ja-control:focus { outline: none; border-color: var(--mv-accent); box-shadow: 0 0 0 3px rgba(43, 100, 168, .15); }
     textarea.ja-control { resize: vertical; }
+    select.ja-control { appearance: none; -webkit-appearance: none; padding-right: 32px; cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236A7686' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 10px center; background-size: 15px; }
     .ja-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .ja-help { font-size: 12px; color: var(--mv-muted); margin-top: 5px; }
     .ja-err { font-size: 12px; color: var(--mv-crit); margin-top: 5px; }

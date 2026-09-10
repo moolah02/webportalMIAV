@@ -69,6 +69,14 @@
         </div>
     </div>
 
+    @php $editable = $assignment->status === 'assigned'; @endphp
+    @unless($editable)
+        <div class="alert-warning" style="border:1px solid; padding:11px 14px; margin-bottom:16px; font-size:13.5px; display:flex; gap:10px; align-items:center;">
+            <svg class="mv-i" aria-hidden="true"><use href="#i-info"/></svg>
+            This assignment is {{ str_replace('_', ' ', $assignment->status) }}. Only assignments that have not started can be edited.
+        </div>
+    @endunless
+
     <form method="POST" action="{{ route('jobs.assignment.update', $assignment->id) }}" class="je-card">
         @csrf
         @method('PUT')
@@ -138,7 +146,7 @@
         </div>
         <div class="je-foot">
             <a href="{{ route('jobs.assignment') }}" class="btn-secondary">Cancel</a>
-            <button type="submit" class="btn-primary">
+            <button type="submit" class="btn-primary" @unless($editable) disabled style="opacity:.55; cursor:not-allowed;" @endunless>
                 <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-save"/></svg> Save Changes
             </button>
         </div>
