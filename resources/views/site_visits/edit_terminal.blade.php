@@ -1,182 +1,242 @@
 @extends('layouts.app')
 @section('title', $existingVisit ? 'Visit Details — '.$terminal?->terminal_id : 'Log Visit — '.$terminal?->terminal_id)
 
+@push('styles')
+<style>
+.et-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.et-stack{display:flex;flex-direction:column;gap:16px}
+.et-stack > .flash-error{margin-bottom:0}
+.et-term{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:14px 24px;margin:0;padding:16px 18px}
+@media (max-width:800px){.et-term{grid-template-columns:1fr}}
+.et-term dt,.et-dl dt{margin:0 0 3px;font-size:12px;font-weight:500;color:var(--mv-muted)}
+.et-term dd,.et-dl dd{margin:0;font-size:13.5px;color:var(--mv-ink);word-break:break-word}
+.et-tid{display:block;font-family:var(--mv-mono);font-size:16px;font-weight:600;letter-spacing:-.01em;color:var(--mv-ink)}
+.et-merchant{display:block;margin-top:4px;font-size:13.5px;color:var(--mv-ink-2)}
+.et-sub{display:block;margin-top:2px;font-size:12px;color:var(--mv-muted)}
+.et-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 16px;font-size:13.5px;color:var(--mv-ink-2);background:var(--mv-surface);border:1px solid var(--mv-line);border-radius:10px}
+.et-status strong{font-weight:600;color:var(--mv-ink)}
+.et-status-time{margin-left:auto;font-size:12.5px;color:var(--mv-muted)}
+.et-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:1000px){.et-cols{grid-template-columns:1fr}}
+.et-dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px;margin:0;padding:16px 18px}
+.et-dl .et-span{grid-column:1/-1}
+.et-dl .et-text{color:var(--mv-ink-2);line-height:1.55}
+.et-none{color:var(--mv-muted)}
+.et-form{display:flex;flex-direction:column;gap:14px;padding:16px 18px}
+.et-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px;padding:16px 18px}
+@media (max-width:700px){.et-grid,.et-dl{grid-template-columns:1fr}}
+.et-field{min-width:0}
+.et-field .ui-label{margin-bottom:5px}
+.et-req{color:var(--mv-crit)}
+.et-opt{font-weight:400;color:var(--mv-muted)}
+.et-hint{margin:4px 0 0;font-size:12px;color:var(--mv-muted)}
+.et-err{margin:4px 0 0;font-size:12px;color:var(--mv-crit)}
+.et-static{display:flex;align-items:center;gap:8px;min-height:38px;padding-top:6px;padding-bottom:6px;background-color:var(--mv-surface-2) !important;color:var(--mv-ink);cursor:default;user-select:none}
+.et-avatar{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:var(--mv-accent-soft);color:var(--mv-accent-ink);font-size:10.5px;font-weight:600;letter-spacing:.02em}
+.et-actions,.et-card-actions{display:flex;justify-content:flex-end;gap:8px}
+.et-card-actions{padding-top:2px}
+.mv-page .badge{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.upd-msg{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:13px;border:1px solid transparent;border-radius:8px}
+.upd-msg.is-good{background:var(--mv-good-soft);color:var(--mv-good);border-color:#C6E6D2}
+.upd-msg.is-bad{background:var(--mv-crit-soft);color:var(--mv-crit);border-color:#F2CACA}
+.et-errors{align-items:flex-start}
+.et-errors ul{margin:4px 0 0;padding-left:18px}
+</style>
+@endpush
+
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-{{-- Back --}}
-<div class="flex justify-between items-center mb-5">
+{{-- Toolbar --}}
+<div class="et-bar">
     <a href="{{ $assignment ? route('site_visits.index', ['assignment_id' => $assignment->id]) : url()->previous() }}"
-       class="btn-secondary btn-sm">&#x2190; Back to Assignment</a>
+       class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>Back to Assignment</a>
     @if($existingVisit)
-        <a href="{{ route('site_visits.show', $existingVisit) }}" class="btn-secondary btn-sm">&#x1F441; Full Visit Details</a>
+        <a href="{{ route('site_visits.show', $existingVisit) }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg>Full Visit Details</a>
     @endif
 </div>
 
-{{-- Terminal info banner --}}
-<div class="ui-card mb-5">
-    <div class="p-5 flex flex-wrap items-start gap-6">
-        <div class="flex-1 min-w-0">
-            <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Terminal</div>
-            <div class="text-lg font-bold text-[#1a3a5c]">{{ $terminal?->terminal_id ?? '—' }}</div>
-            @if($terminal?->merchant_name)
-                <div class="text-sm text-gray-700 mt-1">{{ $terminal->merchant_name }}</div>
-            @endif
-            @if($terminal?->physical_address)
-                <div class="text-xs text-gray-500 mt-0.5">{{ $terminal->physical_address }}</div>
-            @endif
+<div class="et-stack">
+
+{{-- Terminal --}}
+<section class="ui-card">
+    <dl class="et-term">
+        <div>
+            <dt>Terminal</dt>
+            <dd>
+                <span class="et-tid">{{ $terminal?->terminal_id ?? '—' }}</span>
+                @if($terminal?->merchant_name)
+                    <span class="et-merchant">{{ $terminal->merchant_name }}</span>
+                @endif
+                @if($terminal?->physical_address)
+                    <span class="et-sub">{{ $terminal->physical_address }}</span>
+                @endif
+            </dd>
         </div>
         <div>
-            <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Model / Serial</div>
-            <div class="text-sm text-gray-700">{{ $terminal?->terminal_model ?? '—' }}</div>
-            <div class="text-xs text-gray-500 mt-0.5">{{ $terminal?->serial_number ?? '—' }}</div>
+            <dt>Model / Serial</dt>
+            <dd>
+                {{ $terminal?->terminal_model ?? '—' }}
+                <span class="et-sub mv-mono">{{ $terminal?->serial_number ?? '—' }}</span>
+            </dd>
         </div>
         @if($assignment)
         <div>
-            <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Job Assignment</div>
-            <div class="text-sm font-semibold text-gray-800">{{ $assignment->assignment_id }}</div>
-            @if($assignment->project)
-                <div class="text-xs text-gray-500 mt-0.5">{{ $assignment->project->project_name }}</div>
-            @endif
+            <dt>Job Assignment</dt>
+            <dd>
+                <span class="mv-mono">{{ $assignment->assignment_id }}</span>
+                @if($assignment->project)
+                    <span class="et-sub">{{ $assignment->project->project_name }}</span>
+                @endif
+            </dd>
         </div>
         @endif
-    </div>
-</div>
+    </dl>
+</section>
 
 @if($existingVisit)
 {{-- ============================================================
      VISIT ALREADY EXISTS — show captured info + edit form
      ============================================================ --}}
 
-{{-- Status banner --}}
+{{-- Status --}}
 @php
     $visitStatus = $existingVisit->status ?? 'open';
     $bannerMap = [
-        'closed'      => ['bg-green-50 border-green-300', 'text-green-800', '&#x2713; Visit Completed'],
-        'in_progress' => ['bg-yellow-50 border-yellow-300', 'text-yellow-800', '&#x23F3; Visit In Progress'],
-        'open'        => ['bg-blue-50 border-blue-300', 'text-blue-800', '&#x1F4CB; Visit Logged'],
+        'closed'      => ['badge-green',  'check-circle', 'Visit Completed'],
+        'in_progress' => ['badge-yellow', 'hourglass',    'Visit In Progress'],
+        'open'        => ['badge-blue',   'clipboard',    'Visit Logged'],
     ];
-    [$bannerBg, $bannerText, $bannerLabel] = $bannerMap[$visitStatus] ?? ['bg-gray-50 border-gray-300', 'text-gray-700', 'Visit Recorded'];
+    [$bannerCls, $bannerIcon, $bannerLabel] = $bannerMap[$visitStatus] ?? ['badge-gray', 'info', 'Visit Recorded'];
 @endphp
-<div class="rounded-lg border px-5 py-4 mb-5 flex items-center gap-3 {{ $bannerBg }}">
-    <span class="{{ $bannerText }} text-xl">{!! $bannerLabel !!}</span>
-    <span class="text-sm {{ $bannerText }} font-medium">
-        Visit <strong>{{ $existingVisit->visit_id ?? '#'.$existingVisit->id }}</strong>
+<div class="et-status">
+    <span class="badge {{ $bannerCls }}"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-{{ $bannerIcon }}"/></svg>{{ $bannerLabel }}</span>
+    <span>
+        Visit <strong class="mv-mono">{{ $existingVisit->visit_id ?? '#'.$existingVisit->id }}</strong>
         has already been recorded for this terminal.
     </span>
     @if($existingVisit->started_at)
-        <span class="ml-auto text-xs {{ $bannerText }} opacity-75">
-            {{ $existingVisit->started_at->format('M j, Y g:i A') }}
-        </span>
+        <span class="et-status-time">{{ $existingVisit->started_at->format('M j, Y g:i A') }}</span>
     @endif
 </div>
 
-{{-- Captured details (read-only summary) --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+<div class="et-cols">
 
-    <div class="ui-card">
+    {{-- Captured details (read-only summary) --}}
+    <section class="ui-card">
         <div class="ui-card-header">
-            <span class="text-sm font-semibold">Captured Information</span>
+            <h3>Captured Information</h3>
         </div>
-        <div class="p-5 space-y-3">
-            <div class="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">State</div>
-                    @php
-                        $ts = $existingVisit->terminal_status_during_visit;
-                        $tsMap = ['active'=>'badge-green','inactive'=>'badge-red','not_found'=>'badge-gray','relocated'=>'badge-yellow','replaced'=>'badge-yellow'];
-                    @endphp
-                    <span class="badge {{ $tsMap[$ts] ?? 'badge-gray' }}">{{ $ts ? ucwords(str_replace('_',' ',$ts)) : '—' }}</span>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Condition</div>
-                    <span class="text-sm text-gray-700">{{ $existingVisit->terminal_condition ? ucfirst($existingVisit->terminal_condition) : '—' }}</span>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Issues Found</div>
-                    <span class="text-sm text-gray-700">{{ $existingVisit->issues_found ?? '—' }}</span>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Corrective Action</div>
-                    <span class="text-sm text-gray-700">{{ $existingVisit->corrective_action ?? '—' }}</span>
-                </div>
+        @php
+            $ts = $existingVisit->terminal_status_during_visit;
+            $tsMap = ['active'=>'badge-green','inactive'=>'badge-red','not_found'=>'badge-gray','relocated'=>'badge-yellow','replaced'=>'badge-yellow'];
+        @endphp
+        <dl class="et-dl">
+            <div>
+                <dt>State</dt>
+                <dd>
+                    @if($ts)
+                        <span class="badge {{ $tsMap[$ts] ?? 'badge-gray' }}">{{ ucwords(str_replace('_',' ',$ts)) }}</span>
+                    @else
+                        <span class="et-none">—</span>
+                    @endif
+                </dd>
+            </div>
+            <div>
+                <dt>Condition</dt>
+                <dd>{{ $existingVisit->terminal_condition ? ucfirst($existingVisit->terminal_condition) : '—' }}</dd>
+            </div>
+            <div>
+                <dt>Issues Found</dt>
+                <dd>{{ $existingVisit->issues_found ?? '—' }}</dd>
+            </div>
+            <div>
+                <dt>Corrective Action</dt>
+                <dd>{{ $existingVisit->corrective_action ?? '—' }}</dd>
             </div>
             @if($existingVisit->condition_notes)
-            <div>
-                <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Condition Notes</div>
-                <p class="text-sm text-gray-700">{{ $existingVisit->condition_notes }}</p>
+            <div class="et-span">
+                <dt>Condition Notes</dt>
+                <dd class="et-text">{{ $existingVisit->condition_notes }}</dd>
             </div>
             @endif
             @if($existingVisit->visit_summary)
-            <div>
-                <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Visit Summary</div>
-                <p class="text-sm text-gray-700">{{ $existingVisit->visit_summary }}</p>
+            <div class="et-span">
+                <dt>Visit Summary</dt>
+                <dd class="et-text">{{ $existingVisit->visit_summary }}</dd>
             </div>
             @endif
-        </div>
-    </div>
+        </dl>
+    </section>
 
-    <div class="ui-card">
+    {{-- Update --}}
+    <section class="ui-card">
         <div class="ui-card-header">
-            <span class="text-sm font-semibold">Update Visit</span>
+            <h3>Update Visit</h3>
         </div>
-        <div class="p-5">
-            <div id="updateMsg" class="hidden mb-3 text-sm rounded px-3 py-2"></div>
-            <div class="space-y-4">
-                <div>
-                    <label class="ui-label">State</label>
-                    <select id="upd_terminal_status" class="ui-select">
-                        <option value="">— No change —</option>
-                        @foreach(['active'=>'Active','inactive'=>'Inactive','not_found'=>'Not Found','relocated'=>'Relocated','replaced'=>'Replaced'] as $val => $lbl)
-                            <option value="{{ $val }}" {{ $existingVisit->terminal_status_during_visit === $val ? 'selected' : '' }}>{{ $lbl }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="ui-label">Issues Found</label>
-                    <select id="upd_issues_found" class="ui-select">
-                        <option value="">— No change —</option>
-                        @foreach(['No issues','Not In Use','Denied access','Missing Device','Technical Issues','Device relocated','Merchant Closed','Merchant Relocated','Merchant Not Located','Returned to HQ','Returned to Bank'] as $opt)
-                            <option value="{{ $opt }}" {{ $existingVisit->issues_found === $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="ui-label">Corrective Action</label>
-                    <select id="upd_corrective_action" class="ui-select">
-                        <option value="">— No change —</option>
-                        @foreach(['Resolved','No action needed','To collect device','Follow-up needed','Replacement needed'] as $opt)
-                            <option value="{{ $opt }}" {{ $existingVisit->corrective_action === $opt ? 'selected' : '' }}>{{ $opt }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="ui-label">Visit Summary</label>
-                    <textarea id="upd_visit_summary" rows="3" class="ui-textarea"
-                              placeholder="Add or update summary…">{{ $existingVisit->visit_summary }}</textarea>
-                </div>
-                <div>
-                    <label class="ui-label">Condition Notes</label>
-                    <textarea id="upd_condition_notes" rows="3" class="ui-textarea"
-                              placeholder="General condition of the terminal…">{{ $existingVisit->condition_notes }}</textarea>
-                </div>
-                <div class="flex gap-3">
-                    <button id="btnUpdate" onclick="saveUpdate()" class="btn-primary flex-1">Save Changes</button>
-                    <a href="{{ route('site_visits.show', $existingVisit) }}" class="btn-secondary">View Full Details</a>
-                </div>
+        <div class="et-form">
+            <div id="updateMsg" class="upd-msg hidden" role="status" aria-live="polite"></div>
+            <div class="et-field">
+                <label class="ui-label" for="upd_terminal_status">State</label>
+                <select id="upd_terminal_status" class="ui-select">
+                    <option value="">— No change —</option>
+                    @foreach(['active'=>'Active','inactive'=>'Inactive','not_found'=>'Not Found','relocated'=>'Relocated','replaced'=>'Replaced'] as $val => $lbl)
+                        <option value="{{ $val }}" {{ $existingVisit->terminal_status_during_visit === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="et-field">
+                <label class="ui-label" for="upd_issues_found">Issues Found</label>
+                <select id="upd_issues_found" class="ui-select">
+                    <option value="">— No change —</option>
+                    @foreach(['No issues','Not In Use','Denied access','Missing Device','Technical Issues','Device relocated','Merchant Closed','Merchant Relocated','Merchant Not Located','Returned to HQ','Returned to Bank'] as $opt)
+                        <option value="{{ $opt }}" {{ $existingVisit->issues_found === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="et-field">
+                <label class="ui-label" for="upd_corrective_action">Corrective Action</label>
+                <select id="upd_corrective_action" class="ui-select">
+                    <option value="">— No change —</option>
+                    @foreach(['Resolved','No action needed','To collect device','Follow-up needed','Replacement needed'] as $opt)
+                        <option value="{{ $opt }}" {{ $existingVisit->corrective_action === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="et-field">
+                <label class="ui-label" for="upd_visit_summary">Visit Summary</label>
+                <textarea id="upd_visit_summary" rows="3" class="ui-textarea"
+                          placeholder="Add or update summary…">{{ $existingVisit->visit_summary }}</textarea>
+            </div>
+            <div class="et-field">
+                <label class="ui-label" for="upd_condition_notes">Condition Notes</label>
+                <textarea id="upd_condition_notes" rows="3" class="ui-textarea"
+                          placeholder="General condition of the terminal…">{{ $existingVisit->condition_notes }}</textarea>
+            </div>
+            <div class="et-card-actions">
+                <a href="{{ route('site_visits.show', $existingVisit) }}" class="btn-secondary">View Full Details</a>
+                <button id="btnUpdate" onclick="saveUpdate()" class="btn-primary">Save Changes</button>
             </div>
         </div>
-    </div>
+    </section>
 
 </div>
 
 <script>
+function showUpdateMsg(el, kind, text) {
+    el.className = 'upd-msg is-' + kind;
+    el.innerHTML = '<svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-' + (kind === 'good' ? 'check-circle' : 'alert-circle') + '"/></svg>';
+    const span = document.createElement('span');
+    span.textContent = text;
+    el.appendChild(span);
+}
+
 async function saveUpdate() {
     const btn = document.getElementById('btnUpdate');
     const msg = document.getElementById('updateMsg');
     btn.disabled = true;
     btn.textContent = 'Saving…';
-    msg.className = 'hidden mb-3 text-sm rounded px-3 py-2';
+    msg.className = 'upd-msg hidden';
 
     const payload = {};
     const ts  = document.getElementById('upd_terminal_status').value;
@@ -202,14 +262,12 @@ async function saveUpdate() {
         });
         const data = await res.json();
         if (data.success) {
-            msg.className = 'mb-3 text-sm rounded px-3 py-2 bg-green-50 border border-green-300 text-green-800';
-            msg.textContent = '✓ ' + (data.message || 'Visit updated successfully.');
+            showUpdateMsg(msg, 'good', data.message || 'Visit updated successfully.');
         } else {
             throw new Error(data.message || 'Update failed.');
         }
     } catch (err) {
-        msg.className = 'mb-3 text-sm rounded px-3 py-2 bg-red-50 border border-red-300 text-red-800';
-        msg.textContent = '✗ ' + err.message;
+        showUpdateMsg(msg, 'bad', err.message);
     } finally {
         btn.disabled = false;
         btn.textContent = 'Save Changes';
@@ -222,22 +280,19 @@ async function saveUpdate() {
      NO VISIT YET — show create form
      ============================================================ --}}
 
-@if(session('success'))
-<div class="flash-success mb-5"><span class="text-lg">&#x2713;</span> {{ session('success') }}</div>
-@endif
 @if($errors->any())
-<div class="flash-error mb-5">
-    <span class="text-lg shrink-0">&#x274C;</span>
+<div class="flash-error et-errors">
+    <svg class="mv-i" aria-hidden="true"><use href="#i-alert-circle"/></svg>
     <div>
         <strong>Please fix the following:</strong>
-        <ul class="list-disc list-inside mt-1">
+        <ul>
             @foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach
         </ul>
     </div>
 </div>
 @endif
 
-<form method="POST" action="{{ route('site_visits.storeManual') }}" class="space-y-5">
+<form method="POST" action="{{ route('site_visits.storeManual') }}" class="et-stack">
     @csrf
 
     {{-- Hidden fields --}}
@@ -247,38 +302,36 @@ async function saveUpdate() {
     @endif
 
     {{-- Technician + Timing --}}
-    <div class="ui-card">
+    <section class="ui-card">
         <div class="ui-card-header">
-            <h2 class="text-sm font-semibold text-gray-800">Visit Details</h2>
+            <h2>Visit Details</h2>
         </div>
-        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="et-grid">
 
-            <div>
-                <label class="ui-label">Technician <span class="text-red-500">*</span></label>
+            <div class="et-field">
+                <label class="ui-label">Technician <span class="et-req">*</span></label>
                 @php $me = auth()->user(); @endphp
-                <div class="ui-input bg-gray-50 text-gray-700 flex items-center gap-2 cursor-default select-none">
-                    <span class="w-7 h-7 rounded-full bg-[#1a3a5c] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
-                        {{ strtoupper(substr($me->first_name,0,1).substr($me->last_name,0,1)) }}
-                    </span>
-                    {{ $me->first_name }} {{ $me->last_name }}
+                <div class="ui-input et-static">
+                    <span class="et-avatar" aria-hidden="true">{{ strtoupper(substr($me->first_name,0,1).substr($me->last_name,0,1)) }}</span>
+                    <span>{{ $me->first_name }} {{ $me->last_name }}</span>
                 </div>
                 <input type="hidden" name="technician_id" value="{{ $me->id }}">
-                <p class="text-xs text-gray-400 mt-1">Logging as yourself</p>
-                @error('technician_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                <p class="et-hint">Logging as yourself</p>
+                @error('technician_id')<p class="et-err">{{ $message }}</p>@enderror
             </div>
 
-            <div>
-                <label class="ui-label">Terminal Status <span class="text-red-500">*</span></label>
+            <div class="et-field">
+                <label class="ui-label">Terminal Status <span class="et-req">*</span></label>
                 <select name="terminal_status" required class="ui-select">
                     <option value="">— Select outcome —</option>
                     @foreach(['active'=>'Active','inactive'=>'Inactive','not_found'=>'Not Found','relocated'=>'Relocated','replaced'=>'Replaced'] as $val => $lbl)
                         <option value="{{ $val }}" {{ old('terminal_status') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
                     @endforeach
                 </select>
-                @error('terminal_status')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @error('terminal_status')<p class="et-err">{{ $message }}</p>@enderror
             </div>
 
-            <div>
+            <div class="et-field">
                 <label class="ui-label">Terminal Condition</label>
                 <select name="terminal_condition" class="ui-select">
                     <option value="">— Select condition —</option>
@@ -286,32 +339,32 @@ async function saveUpdate() {
                         <option value="{{ $val }}" {{ old('terminal_condition') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
                     @endforeach
                 </select>
-                @error('terminal_condition')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @error('terminal_condition')<p class="et-err">{{ $message }}</p>@enderror
             </div>
 
-            <div>
-                <label class="ui-label">Visit Start <span class="text-red-500">*</span></label>
+            <div class="et-field">
+                <label class="ui-label">Visit Start <span class="et-req">*</span></label>
                 <input type="datetime-local" name="started_at" required
                        value="{{ old('started_at', now()->format('Y-m-d\TH:i')) }}" class="ui-input">
-                @error('started_at')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @error('started_at')<p class="et-err">{{ $message }}</p>@enderror
             </div>
 
-            <div>
-                <label class="ui-label">Visit End <span class="text-gray-400 normal-case font-normal">(optional)</span></label>
+            <div class="et-field">
+                <label class="ui-label">Visit End <span class="et-opt">(optional)</span></label>
                 <input type="datetime-local" name="ended_at" value="{{ old('ended_at') }}" class="ui-input">
-                @error('ended_at')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @error('ended_at')<p class="et-err">{{ $message }}</p>@enderror
             </div>
 
         </div>
-    </div>
+    </section>
 
     {{-- Notes --}}
-    <div class="ui-card">
+    <section class="ui-card">
         <div class="ui-card-header">
-            <h2 class="text-sm font-semibold text-gray-800">Notes &amp; Observations</h2>
+            <h2>Notes &amp; Observations</h2>
         </div>
-        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
+        <div class="et-grid">
+            <div class="et-field">
                 <label class="ui-label">Issues Found</label>
                 <select name="issues_found" class="ui-select">
                     <option value="">— Select issue —</option>
@@ -319,9 +372,9 @@ async function saveUpdate() {
                         <option value="{{ $opt }}" {{ old('issues_found') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
                 </select>
-                @error('issues_found')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @error('issues_found')<p class="et-err">{{ $message }}</p>@enderror
             </div>
-            <div>
+            <div class="et-field">
                 <label class="ui-label">Corrective Action Taken</label>
                 <select name="corrective_action" class="ui-select">
                     <option value="">— Select action —</option>
@@ -329,24 +382,24 @@ async function saveUpdate() {
                         <option value="{{ $opt }}" {{ old('corrective_action') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
                 </select>
-                @error('corrective_action')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @error('corrective_action')<p class="et-err">{{ $message }}</p>@enderror
             </div>
-            <div>
+            <div class="et-field">
                 <label class="ui-label">Condition Notes</label>
                 <textarea name="condition_notes" rows="3" class="ui-textarea"
                           placeholder="General condition of the terminal…">{{ old('condition_notes') }}</textarea>
-                @error('condition_notes')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @error('condition_notes')<p class="et-err">{{ $message }}</p>@enderror
             </div>
-            <div>
+            <div class="et-field">
                 <label class="ui-label">Visit Summary</label>
                 <textarea name="visit_summary" rows="3" class="ui-textarea"
                           placeholder="Overall summary of the visit…">{{ old('visit_summary') }}</textarea>
-                @error('visit_summary')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                @error('visit_summary')<p class="et-err">{{ $message }}</p>@enderror
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="flex justify-end gap-3">
+    <div class="et-actions">
         <a href="{{ $assignment ? route('site_visits.index', ['assignment_id' => $assignment->id]) : url()->previous() }}"
            class="btn-secondary">Cancel</a>
         <button type="submit" class="btn-primary">Save Visit</button>
@@ -355,5 +408,7 @@ async function saveUpdate() {
 </form>
 
 @endif
+
+</div>
 
 @endsection

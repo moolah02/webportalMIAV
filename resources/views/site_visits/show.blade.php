@@ -1,241 +1,286 @@
 @extends('layouts.app')
 @section('title', 'Visit Details')
 
+@push('styles')
+<style>
+.ss-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.ss-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1100px){.ss-layout{grid-template-columns:minmax(0,1fr)}}
+.ss-col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.mv-page .badge{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.ss-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ss-dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px 24px;margin:0;padding:16px 18px}
+.ss-dl .ss-span{grid-column:1/-1}
+.ss-dl dt,.ss-item dt,.ss-pair dt{margin:0 0 3px;font-size:12px;font-weight:500;color:var(--mv-muted)}
+.ss-dl dd,.ss-item dd,.ss-pair dd{margin:0;font-size:13.5px;color:var(--mv-ink);word-break:break-word}
+.ss-body{padding:16px 18px}
+.ss-stack{display:flex;flex-direction:column;gap:14px}
+.ss-item{margin:0}
+.ss-item dd.ss-text{color:var(--mv-ink-2);line-height:1.55}
+.ss-pair{display:flex;flex-wrap:wrap;gap:14px 32px;margin:0}
+.ss-strong{font-weight:500;color:var(--mv-ink)}
+.ss-sub{display:block;margin-top:2px;font-size:12px;color:var(--mv-muted)}
+.ss-muted{color:var(--mv-muted)}
+.ss-none{margin:0;font-size:13px;color:var(--mv-muted)}
+.ss-num{font-variant-numeric:tabular-nums}
+.ss-count{font-size:12px;color:var(--mv-muted);font-variant-numeric:tabular-nums}
+.ss-issues{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;list-style:none}
+.ss-issues li{display:flex;align-items:center;gap:6px;color:var(--mv-ink-2)}
+.ss-issues .mv-i{width:15px;height:15px;color:var(--mv-warn)}
+.ss-issues .mv-i.is-ok{color:var(--mv-muted)}
+.ss-signoff{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.ss-signoff img{max-height:80px;max-width:200px;background:var(--mv-surface);border:1px solid var(--mv-line);border-radius:8px}
+.ss-id{font-size:12.5px;font-weight:500;color:var(--mv-ink)}
+.ss-actions{width:1%;text-align:right}
+.ss-person{display:flex;align-items:center;gap:12px}
+.ss-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:var(--mv-accent-soft);color:var(--mv-accent-ink);font-size:12.5px;font-weight:600;letter-spacing:.02em}
+.ss-name{font-size:13.5px;font-weight:600;color:var(--mv-ink)}
+.ss-contact{display:flex;flex-direction:column;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid var(--mv-line);font-size:12.5px;color:var(--mv-ink-2)}
+.ss-contact div{display:flex;align-items:center;gap:8px;min-width:0}
+.ss-contact span{min-width:0;word-break:break-all}
+.ss-contact .mv-i{width:15px;height:15px;color:var(--mv-muted)}
+.ss-photos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px}
+.ss-photos a{display:block;overflow:hidden;border:1px solid var(--mv-line);border-radius:8px}
+.ss-photos a:hover{border-color:var(--mv-line-strong)}
+.ss-photos img{display:block;width:100%;height:100px;object-fit:cover}
+</style>
+@endpush
+
 @section('content')
 
-{{-- Back nav --}}
-<div class="flex items-center gap-3 mb-6">
-    <a href="{{ url()->previous() }}" class="btn-secondary btn-sm">← Back</a>
-    <div>
-        <h2 class="text-lg font-bold text-gray-800">Visit Details</h2>
-        <p class="text-sm text-gray-500 mt-0.5">{{ $visit->visit_id ?? 'Visit #'.$visit->id }}</p>
-    </div>
-    <div class="ml-auto flex gap-2">
-        @php
-            $statusMap = [
-                'open'        => ['badge-blue',   'Open'],
-                'in_progress' => ['badge-yellow', 'In Progress'],
-                'closed'      => ['badge-green',  'Closed'],
-            ];
-            [$sCls, $sLbl] = $statusMap[$visit->status ?? 'open'] ?? ['badge-gray', ucfirst($visit->status ?? 'open')];
-        @endphp
-        <span class="badge {{ $sCls }} text-sm px-3 py-1">{{ $sLbl }}</span>
-        @if($visit->outcome)
-        @php
-            $outMap = [
-                'completed'             => ['badge-green',  'Completed'],
-                'could_not_access_site' => ['badge-red',    'Could Not Access Site'],
-                'parts_required'        => ['badge-yellow', 'Parts Required'],
-                'reschedule'            => ['badge-yellow', 'Rescheduled'],
-                'terminal_not_found'    => ['badge-gray',   'Terminal Not Found'],
-                'terminal_relocated'    => ['badge-blue',   'Terminal Relocated'],
-            ];
-            [$oCls, $oLbl] = $outMap[$visit->outcome] ?? ['badge-gray', ucwords(str_replace('_',' ',$visit->outcome))];
-        @endphp
-        <span class="badge {{ $oCls }} text-sm px-3 py-1">{{ $oLbl }}</span>
-        @endif
-    </div>
+{{-- Toolbar --}}
+<div class="ss-bar">
+    <a href="{{ url()->previous() }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>Back</a>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+@php
+    $statusMap = [
+        'open'        => ['badge-blue',   'Open'],
+        'in_progress' => ['badge-yellow', 'In Progress'],
+        'closed'      => ['badge-green',  'Closed'],
+    ];
+    [$sCls, $sLbl] = $statusMap[$visit->status ?? 'open'] ?? ['badge-gray', ucfirst($visit->status ?? 'open')];
+@endphp
+
+<div class="ss-layout">
 
     {{-- ====== LEFT / MAIN ====== --}}
-    <div class="lg:col-span-2 flex flex-col gap-6">
+    <div class="ss-col">
 
         {{-- Visit Overview --}}
-        <div class="ui-card">
+        <section class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold">Visit Overview</span>
+                <h3>Visit Overview</h3>
+                <div class="ss-chips">
+                    <span class="badge {{ $sCls }}">{{ $sLbl }}</span>
+                    @if($visit->outcome)
+                    @php
+                        $outMap = [
+                            'completed'             => ['badge-green',  'Completed'],
+                            'could_not_access_site' => ['badge-red',    'Could Not Access Site'],
+                            'parts_required'        => ['badge-yellow', 'Parts Required'],
+                            'reschedule'            => ['badge-yellow', 'Rescheduled'],
+                            'terminal_not_found'    => ['badge-gray',   'Terminal Not Found'],
+                            'terminal_relocated'    => ['badge-blue',   'Terminal Relocated'],
+                        ];
+                        [$oCls, $oLbl] = $outMap[$visit->outcome] ?? ['badge-gray', ucwords(str_replace('_',' ',$visit->outcome))];
+                    @endphp
+                    <span class="badge {{ $oCls }}">{{ $oLbl }}</span>
+                    @endif
+                </div>
             </div>
-            <div class="p-5 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
+            <dl class="ss-dl">
                 <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Visit ID</div>
-                    <div class="text-sm font-mono font-semibold text-navy">{{ $visit->visit_id ?? '#'.$visit->id }}</div>
+                    <dt>Visit ID</dt>
+                    <dd><span class="mv-mono ss-strong">{{ $visit->visit_id ?? '#'.$visit->id }}</span></dd>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Date</div>
-                    <div class="text-sm font-medium">
-                        {{ optional($visit->started_at ?? $visit->visit_date)->format('M j, Y') ?? '—' }}
-                    </div>
+                    <dt>Date</dt>
+                    <dd>{{ optional($visit->started_at ?? $visit->visit_date)->format('M j, Y') ?? '—' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Time</div>
-                    <div class="text-sm">
+                    <dt>Time</dt>
+                    <dd class="ss-num">
                         {{ optional($visit->started_at)->format('g:i A') ?? '—' }}
                         @if($visit->ended_at)
-                            → {{ $visit->ended_at->format('g:i A') }}
+                            – {{ $visit->ended_at->format('g:i A') }}
                         @endif
-                    </div>
+                    </dd>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Duration</div>
-                    <div class="text-sm font-medium">
+                    <dt>Duration</dt>
+                    <dd class="ss-num">
                         @if($visit->duration_minutes)
                             {{ floor($visit->duration_minutes/60) }}h {{ $visit->duration_minutes % 60 }}m
                         @else
                             —
                         @endif
-                    </div>
+                    </dd>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Visit Type</div>
-                    <div class="text-sm">{{ $visit->visit_type ?? 'Site Visit' }}</div>
+                    <dt>Visit Type</dt>
+                    <dd>{{ $visit->visit_type ?? 'Site Visit' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Service Type</div>
-                    <div class="text-sm">{{ $visit->service_type ?? '—' }}</div>
+                    <dt>Service Type</dt>
+                    <dd>{{ $visit->service_type ?? '—' }}</dd>
                 </div>
                 @if($visit->jobAssignment)
-                <div class="col-span-2 sm:col-span-3">
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Job Assignment</div>
-                    <div class="text-sm font-medium">
-                        {{ $visit->jobAssignment->assignment_id }}
+                <div class="ss-span">
+                    <dt>Job Assignment</dt>
+                    <dd>
+                        <span class="mv-mono">{{ $visit->jobAssignment->assignment_id }}</span>
                         @if($visit->jobAssignment->project)
-                            — {{ $visit->jobAssignment->project->project_name }}
+                            <span class="ss-muted">— {{ $visit->jobAssignment->project->project_name }}</span>
                         @endif
-                    </div>
+                    </dd>
                 </div>
                 @endif
-            </div>
-        </div>
+            </dl>
+        </section>
 
         {{-- Terminal Status --}}
-        <div class="ui-card">
+        <section class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold">Terminal Condition</span>
+                <h3>Terminal Condition</h3>
             </div>
-            <div class="p-5">
-                @php
-                    $ts = $visit->terminal_status_during_visit ?? $visit->terminal_status;
-                    $tsMap = [
-                        'active'            => ['badge-green',  'Active'],
-                        'inactive'          => ['badge-red',    'Inactive'],
-                        'not_found'         => ['badge-gray',   'Not Found'],
-                        'relocated'         => ['badge-blue',   'Relocated'],
-                        'replaced'          => ['badge-yellow', 'Replaced'],
-                        'working'           => ['badge-green',  'Working'],
-                        'not_working'       => ['badge-red',    'Not Working'],
-                        'needs_maintenance' => ['badge-yellow', 'Needs Maintenance'],
-                    ];
-                    [$tsCls, $tsLbl] = $tsMap[$ts] ?? ['badge-gray', ucwords(str_replace('_',' ',$ts ?? 'Unknown'))];
+            @php
+                $ts = $visit->terminal_status_during_visit ?? $visit->terminal_status;
+                $tsMap = [
+                    'active'            => ['badge-green',  'Active'],
+                    'inactive'          => ['badge-red',    'Inactive'],
+                    'not_found'         => ['badge-gray',   'Not Found'],
+                    'relocated'         => ['badge-blue',   'Relocated'],
+                    'replaced'          => ['badge-yellow', 'Replaced'],
+                    'working'           => ['badge-green',  'Working'],
+                    'not_working'       => ['badge-red',    'Not Working'],
+                    'needs_maintenance' => ['badge-yellow', 'Needs Maintenance'],
+                ];
+                [$tsCls, $tsLbl] = $tsMap[$ts] ?? ['badge-gray', ucwords(str_replace('_',' ',$ts ?? 'Unknown'))];
 
-                    $tcMap = [
-                        'good'    => ['badge-green',  'Good'],
-                        'fair'    => ['badge-yellow', 'Fair'],
-                        'poor'    => ['badge-red',    'Poor'],
-                        'damaged' => ['badge-red',    'Damaged'],
-                    ];
-                    $tc = $visit->terminal_condition;
-                    [$tcCls, $tcLbl] = $tc ? ($tcMap[$tc] ?? ['badge-gray', ucwords($tc)]) : [null, null];
-                @endphp
-                <div class="mb-4 flex gap-6 flex-wrap">
+                $tcMap = [
+                    'good'    => ['badge-green',  'Good'],
+                    'fair'    => ['badge-yellow', 'Fair'],
+                    'poor'    => ['badge-red',    'Poor'],
+                    'damaged' => ['badge-red',    'Damaged'],
+                ];
+                $tc = $visit->terminal_condition;
+                [$tcCls, $tcLbl] = $tc ? ($tcMap[$tc] ?? ['badge-gray', ucwords($tc)]) : [null, null];
+            @endphp
+            <div class="ss-body ss-stack">
+                <dl class="ss-pair">
                     <div>
-                        <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">State</div>
-                        <span class="badge {{ $tsCls }} text-sm px-3 py-1">{{ $tsLbl }}</span>
+                        <dt>State</dt>
+                        <dd><span class="badge {{ $tsCls }}">{{ $tsLbl }}</span></dd>
                     </div>
                     @if($tc)
                     <div>
-                        <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Terminal Condition</div>
-                        <span class="badge {{ $tcCls }} text-sm px-3 py-1">{{ $tcLbl }}</span>
+                        <dt>Terminal Condition</dt>
+                        <dd><span class="badge {{ $tcCls }}">{{ $tcLbl }}</span></dd>
                     </div>
                     @endif
-                </div>
+                </dl>
 
                 @if($visit->condition_notes)
-                <div class="mb-4">
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Condition Notes</div>
-                    <p class="text-sm text-gray-700 leading-relaxed">{{ $visit->condition_notes }}</p>
-                </div>
+                <dl class="ss-item">
+                    <dt>Condition Notes</dt>
+                    <dd class="ss-text">{{ $visit->condition_notes }}</dd>
+                </dl>
                 @endif
 
                 @if($visit->issues_found && count((array)$visit->issues_found))
-                <div class="mb-4">
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-2">Issues Found</div>
-                    <ul class="space-y-1">
-                        @foreach((array)$visit->issues_found as $issue)
-                        <li class="flex items-start gap-2 text-sm text-gray-700">
-                            <span class="text-red-400 mt-0.5"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span> {{ $issue }}
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
+                <dl class="ss-item">
+                    <dt>Issues Found</dt>
+                    <dd>
+                        <ul class="ss-issues">
+                            @foreach((array)$visit->issues_found as $issue)
+                            @php $noIssue = strcasecmp(trim((string) $issue), 'No issues') === 0; @endphp
+                            <li><svg class="mv-i {{ $noIssue ? 'is-ok' : '' }}" aria-hidden="true"><use href="#i-{{ $noIssue ? 'check' : 'alert-triangle' }}"/></svg>{{ $issue }}</li>
+                            @endforeach
+                        </ul>
+                    </dd>
+                </dl>
                 @endif
 
                 @if($visit->corrective_action)
-                <div class="mb-4">
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Corrective Action</div>
-                    <p class="text-sm text-gray-700 leading-relaxed">{{ $visit->corrective_action }}</p>
-                </div>
+                <dl class="ss-item">
+                    <dt>Corrective Action</dt>
+                    <dd class="ss-text">{{ $visit->corrective_action }}</dd>
+                </dl>
                 @endif
 
                 @if($visit->recommended_next_action)
-                <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Recommended Next Action</div>
-                    <p class="text-sm text-gray-700 leading-relaxed">{{ $visit->recommended_next_action }}</p>
-                </div>
+                <dl class="ss-item">
+                    <dt>Recommended Next Action</dt>
+                    <dd class="ss-text">{{ $visit->recommended_next_action }}</dd>
+                </dl>
                 @endif
 
                 @if(!$visit->condition_notes && !$visit->issues_found && !$visit->corrective_action && !$visit->recommended_next_action)
-                <p class="text-sm text-gray-400 italic">No condition notes recorded.</p>
+                <p class="ss-none">No condition notes recorded.</p>
                 @endif
             </div>
-        </div>
+        </section>
 
         {{-- Summary --}}
         @if($visit->visit_summary || $visit->comments)
-        <div class="ui-card">
+        <section class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold">Visit Summary</span>
+                <h3>Visit Summary</h3>
             </div>
-            <div class="p-5 space-y-4">
+            <div class="ss-body ss-stack">
                 @if($visit->visit_summary)
-                <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Summary</div>
-                    <p class="text-sm text-gray-700 leading-relaxed">{{ $visit->visit_summary }}</p>
-                </div>
+                <dl class="ss-item">
+                    <dt>Summary</dt>
+                    <dd class="ss-text">{{ $visit->visit_summary }}</dd>
+                </dl>
                 @endif
                 @if($visit->comments)
-                <div>
-                    <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Comments</div>
-                    <p class="text-sm text-gray-700 leading-relaxed">{{ $visit->comments }}</p>
-                </div>
+                <dl class="ss-item">
+                    <dt>Comments</dt>
+                    <dd class="ss-text">{{ $visit->comments }}</dd>
+                </dl>
                 @endif
             </div>
-        </div>
+        </section>
         @endif
 
         {{-- Sign-off --}}
         @if($visit->merchant_sign_off_name || $visit->merchant_signature_path)
-        <div class="ui-card">
+        <section class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold">Merchant Sign-off</span>
+                <h3>Merchant Sign-off</h3>
             </div>
-            <div class="p-5 flex items-center gap-5">
+            <div class="ss-body ss-signoff">
                 @if($visit->merchant_signature_path)
-                    <img src="{{ asset($visit->merchant_signature_path) }}" alt="Signature"
-                         class="border border-gray-200 rounded" style="max-height:80px; max-width:200px">
+                    <img src="{{ asset($visit->merchant_signature_path) }}" alt="Signature">
                 @endif
                 @if($visit->merchant_sign_off_name)
-                    <div>
-                        <div class="text-xs text-gray-400 mb-1">Signed by</div>
-                        <div class="text-sm font-semibold text-gray-800">{{ $visit->merchant_sign_off_name }}</div>
-                    </div>
+                    <dl class="ss-item">
+                        <dt>Signed by</dt>
+                        <dd class="ss-strong">{{ $visit->merchant_sign_off_name }}</dd>
+                    </dl>
                 @endif
             </div>
-        </div>
+        </section>
         @endif
 
         {{-- Visit History for this Terminal --}}
         @if($history->count())
-        <div class="ui-card">
+        <section class="ui-card overflow-hidden">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold">
-                    Visit History — {{ $visit->posTerminal?->terminal_id ?? 'This Terminal' }}
-                </span>
-                <span class="text-xs text-gray-400">{{ $history->count() }} previous visit(s)</span>
+                <h3>
+                    Visit History —
+                    @if($visit->posTerminal?->terminal_id)
+                        <span class="mv-mono">{{ $visit->posTerminal->terminal_id }}</span>
+                    @else
+                        This Terminal
+                    @endif
+                </h3>
+                <span class="ss-count">{{ $history->count() }} previous visit(s)</span>
             </div>
             <div class="overflow-x-auto">
-                <table class="ui-table">
+                <table class="ui-table w-full">
                     <thead>
                         <tr>
                             <th>Visit ID</th>
@@ -261,138 +306,134 @@
                                 'needs_maintenance' => ['badge-yellow', 'Needs Maint.'],
                             ];
                             [$htsCls, $htsLbl] = $htsMap[$hts] ?? ['badge-gray', '—'];
+                            $hsCls = match($h->status) { 'closed' => 'badge-green', 'in_progress' => 'badge-yellow', default => 'badge-blue' };
                         @endphp
                         <tr>
-                            <td><span class="font-mono text-xs font-semibold" style="color:#1a3a5c">{{ $h->visit_id ?? '#'.$h->id }}</span></td>
-                            <td>
-                                <div class="text-sm">{{ optional($h->started_at ?? $h->visit_date)->format('M j, Y') ?? '—' }}</div>
-                            </td>
-                            <td>
-                                <span class="text-sm">
-                                    {{ $h->technician ? $h->technician->first_name.' '.$h->technician->last_name : '—' }}
-                                </span>
-                            </td>
-                            <td>
-                                @php
-                                    $hsCls = match($h->status) { 'closed' => 'badge-green', 'in_progress' => 'badge-yellow', default => 'badge-blue' };
-                                @endphp
-                                <span class="badge {{ $hsCls }}">{{ ucfirst($h->status ?? 'open') }}</span>
-                            </td>
+                            <td><span class="mv-mono ss-id">{{ $h->visit_id ?? '#'.$h->id }}</span></td>
+                            <td class="ss-num">{{ optional($h->started_at ?? $h->visit_date)->format('M j, Y') ?? '—' }}</td>
+                            <td>{{ $h->technician ? $h->technician->first_name.' '.$h->technician->last_name : '—' }}</td>
+                            <td><span class="badge {{ $hsCls }}">{{ ucfirst($h->status ?? 'open') }}</span></td>
                             <td><span class="badge {{ $htsCls }}">{{ $htsLbl }}</span></td>
-                            <td>
-                                <a href="{{ route('site_visits.show', $h) }}" class="btn-secondary btn-sm">View</a>
+                            <td class="ss-actions">
+                                <a href="{{ route('site_visits.show', $h) }}" class="action-btn" title="View" aria-label="View visit {{ $h->visit_id ?? $h->id }}"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg></a>
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
         @endif
 
     </div>
 
     {{-- ====== RIGHT / SIDEBAR ====== --}}
-    <div class="flex flex-col gap-6">
+    <div class="ss-col">
 
         {{-- Technician Card --}}
-        <div class="ui-card">
+        <section class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold">Technician</span>
+                <h3>Technician</h3>
             </div>
-            <div class="p-5">
+            <div class="ss-body">
                 @if($visit->technician)
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style="background:#1a3a5c">
-                        {{ substr($visit->technician->first_name,0,1) }}{{ substr($visit->technician->last_name,0,1) }}
-                    </div>
-                    <div>
-                        <div class="text-sm font-semibold text-gray-800">
-                            {{ $visit->technician->first_name }} {{ $visit->technician->last_name }}
-                        </div>
-                        <div class="text-xs text-gray-500">{{ $visit->technician->employee_number ?? '' }}</div>
+                <div class="ss-person">
+                    <span class="ss-avatar" aria-hidden="true">{{ substr($visit->technician->first_name,0,1) }}{{ substr($visit->technician->last_name,0,1) }}</span>
+                    <div class="min-w-0">
+                        <div class="ss-name">{{ $visit->technician->first_name }} {{ $visit->technician->last_name }}</div>
+                        @if($visit->technician->employee_number ?? false)
+                        <span class="ss-sub mv-mono">{{ $visit->technician->employee_number }}</span>
+                        @endif
                     </div>
                 </div>
-                @if($visit->technician->phone ?? false)
-                <div class="text-xs text-gray-500 mb-1"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-phone"/></svg> {{ $visit->technician->phone }}</div>
-                @endif
-                @if($visit->technician->email ?? false)
-                <div class="text-xs text-gray-500"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-mail"/></svg> {{ $visit->technician->email }}</div>
+                @if(($visit->technician->phone ?? false) || ($visit->technician->email ?? false))
+                <div class="ss-contact">
+                    @if($visit->technician->phone ?? false)
+                    <div><svg class="mv-i" aria-hidden="true"><use href="#i-phone"/></svg><span>{{ $visit->technician->phone }}</span></div>
+                    @endif
+                    @if($visit->technician->email ?? false)
+                    <div><svg class="mv-i" aria-hidden="true"><use href="#i-mail"/></svg><span>{{ $visit->technician->email }}</span></div>
+                    @endif
+                </div>
                 @endif
                 @else
-                <p class="text-sm text-gray-400 italic">No technician assigned.</p>
+                <p class="ss-none">No technician assigned.</p>
                 @endif
             </div>
-        </div>
+        </section>
 
         {{-- Terminal Card --}}
-        <div class="ui-card">
+        <section class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold">Terminal</span>
+                <h3>Terminal</h3>
             </div>
-            <div class="p-5 space-y-3">
+            <div class="ss-body ss-stack">
                 @if($visit->posTerminal)
-                <div>
-                    <div class="text-xs text-gray-400 mb-0.5">Terminal ID</div>
-                    <div class="text-sm font-semibold text-navy">{{ $visit->posTerminal->terminal_id }}</div>
-                </div>
+                <dl class="ss-item">
+                    <dt>Terminal ID</dt>
+                    <dd><span class="mv-mono ss-strong">{{ $visit->posTerminal->terminal_id }}</span></dd>
+                </dl>
                 @if($visit->posTerminal->merchant_name)
-                <div>
-                    <div class="text-xs text-gray-400 mb-0.5">Merchant</div>
-                    <div class="text-sm font-medium">{{ $visit->posTerminal->merchant_name }}</div>
-                </div>
+                <dl class="ss-item">
+                    <dt>Merchant</dt>
+                    <dd>{{ $visit->posTerminal->merchant_name }}</dd>
+                </dl>
                 @endif
                 @if($visit->posTerminal->physical_address ?? false)
-                <div>
-                    <div class="text-xs text-gray-400 mb-0.5">Address</div>
-                    <div class="text-sm text-gray-700">{{ $visit->posTerminal->physical_address }}</div>
-                </div>
+                <dl class="ss-item">
+                    <dt>Address</dt>
+                    <dd>{{ $visit->posTerminal->physical_address }}</dd>
+                </dl>
                 @endif
                 @if($visit->posTerminal->region ?? false)
-                <div>
-                    <div class="text-xs text-gray-400 mb-0.5">Region</div>
-                    <div class="text-sm text-gray-700">{{ $visit->posTerminal->region->name }}</div>
-                </div>
+                <dl class="ss-item">
+                    <dt>Region</dt>
+                    <dd>{{ $visit->posTerminal->region->name }}</dd>
+                </dl>
                 @endif
                 @if($visit->posTerminal->client)
-                <div>
-                    <div class="text-xs text-gray-400 mb-0.5">Client</div>
-                    <div class="text-sm text-gray-700">{{ $visit->posTerminal->client->company_name }}</div>
-                </div>
+                <dl class="ss-item">
+                    <dt>Client</dt>
+                    <dd>{{ $visit->posTerminal->client->company_name }}</dd>
+                </dl>
                 @endif
                 {{-- $visit is the technician_visits report row; contact details live on
                      the linked tablet visit record, so read them from there. --}}
                 @php $rec = $visit->visit; @endphp
                 @if($rec?->contact_person)
-                <div>
-                    <div class="text-xs text-gray-400 mb-0.5">Contact</div>
-                    <div class="text-sm">{{ $rec->contact_person }}</div>
-                    @if($rec->phone_number)
-                    <div class="text-xs text-gray-500">{{ $rec->phone_number }}</div>
-                    @endif
-                </div>
+                <dl class="ss-item">
+                    <dt>Contact</dt>
+                    <dd>
+                        {{ $rec->contact_person }}
+                        @if($rec->phone_number)
+                        <span class="ss-sub">{{ $rec->phone_number }}</span>
+                        @endif
+                    </dd>
+                </dl>
                 @endif
 
                 {{-- Updated contact details captured on this visit (from the mobile app) --}}
                 @if($rec && ($rec->new_contact_person || $rec->new_phone_number || $rec->new_physical_address))
-                <div>
-                    <div class="text-xs text-gray-400 mb-0.5">New / Updated Contact</div>
-                    @if($rec->new_contact_person)
-                    <div class="text-sm">{{ $rec->new_contact_person }}</div>
-                    @endif
-                    @if($rec->new_phone_number)
-                    <div class="text-xs text-gray-500">{{ $rec->new_phone_number }}</div>
-                    @endif
-                    @if($rec->new_physical_address)
-                    <div class="text-xs text-gray-500">{{ $rec->new_physical_address }}</div>
-                    @endif
-                </div>
+                <dl class="ss-item">
+                    <dt>New / Updated Contact</dt>
+                    <dd>
+                        @if($rec->new_contact_person)
+                        {{ $rec->new_contact_person }}
+                        @endif
+                        @if($rec->new_phone_number)
+                        <span class="ss-sub">{{ $rec->new_phone_number }}</span>
+                        @endif
+                        @if($rec->new_physical_address)
+                        <span class="ss-sub">{{ $rec->new_physical_address }}</span>
+                        @endif
+                    </dd>
+                </dl>
                 @endif
                 @else
-                <p class="text-sm text-gray-400 italic">No terminal linked.</p>
+                <p class="ss-none">No terminal linked.</p>
                 @endif
             </div>
-        </div>
+        </section>
 
         {{-- Photos taken on the tablet for this visit (stored on the linked visit record).
              This used to read an "attachments" relation whose model/table were never
@@ -403,18 +444,19 @@
                 ->values();
         @endphp
         @if($photos->count())
-        <div class="ui-card">
+        <section class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold">Photos ({{ $photos->count() }})</span>
+                <h3>Photos</h3>
+                <span class="ss-count">{{ $photos->count() }}</span>
             </div>
-            <div class="p-4 grid grid-cols-2 gap-3">
+            <div class="ss-photos">
                 @foreach($photos as $url)
-                <a href="{{ $url }}" target="_blank" class="block rounded overflow-hidden border border-gray-200 hover:opacity-80 transition">
-                    <img src="{{ $url }}" alt="Visit photo" class="w-full object-cover" style="height:100px">
+                <a href="{{ $url }}" target="_blank" rel="noopener" title="Open photo">
+                    <img src="{{ $url }}" alt="Visit photo">
                 </a>
                 @endforeach
             </div>
-        </div>
+        </section>
         @endif
 
     </div>
