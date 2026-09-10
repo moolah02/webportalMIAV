@@ -34,6 +34,21 @@ button .mv-ei, .btn .mv-ei, [class*="btn-"] .mv-ei { width: 16px; height: 16px; 
 .mv-page .btn-warning, .mv-page .btn.btn-warning { background: var(--mv-surface) !important; border: 1px solid #E8D2A6 !important; color: var(--mv-warn) !important; border-radius: 8px; background-image: none !important; }
 .mv-page .btn-info, .mv-page .btn.btn-info { background: var(--mv-accent-soft) !important; border: 1px solid #C9D9EE !important; color: var(--mv-accent-ink) !important; border-radius: 8px; background-image: none !important; }
 
+/* Buttons placed in the top bar (@section('header-actions')) */
+.mv-header-actions a, .mv-header-actions button { text-decoration: none !important; }
+.mv-header-actions .btn-primary, .mv-header-actions .btn.btn-primary {
+  background: var(--mv-accent) !important; border: 1px solid var(--mv-accent) !important; color: #FFFFFF !important;
+  border-radius: 8px; font-weight: 500; box-shadow: none; background-image: none !important;
+}
+.mv-header-actions .btn-primary:hover, .mv-header-actions .btn.btn-primary:hover { background: var(--mv-accent-ink) !important; border-color: var(--mv-accent-ink) !important; }
+.mv-header-actions .btn-secondary, .mv-header-actions .btn.btn-secondary, .mv-header-actions .btn-outline-secondary, .mv-header-actions .btn-light, .mv-header-actions .btn-outline-primary {
+  background: var(--mv-surface) !important; border: 1px solid var(--mv-line-strong) !important; color: var(--mv-ink) !important;
+  border-radius: 8px; font-weight: 500; box-shadow: none; background-image: none !important;
+}
+.mv-header-actions .btn-secondary:hover, .mv-header-actions .btn.btn-secondary:hover, .mv-header-actions .btn-outline-secondary:hover, .mv-header-actions .btn-light:hover { background: var(--mv-surface-2) !important; }
+.mv-header-actions .btn-danger, .mv-header-actions .btn.btn-danger { background: var(--mv-surface) !important; border: 1px solid #EBC3C3 !important; color: var(--mv-crit) !important; border-radius: 8px; background-image: none !important; }
+.mv-header-actions .btn-danger:hover { background: var(--mv-crit-soft) !important; }
+
 /* ── Cards ────────────────────────────────── */
 .mv-page .ui-card, .mv-page .card, .mv-page .form-section, .mv-page .filter-bar {
   background: var(--mv-surface); border: 1px solid var(--mv-line) !important; border-radius: 10px !important;
