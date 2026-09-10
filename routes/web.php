@@ -5,7 +5,6 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\PosTerminalController;
-use App\Http\Controllers\TechnicianController;
 use App\Http\Controllers\AssetApprovalController;
 use App\Http\Controllers\AssetRequestController;
 use App\Http\Controllers\AssetController;
@@ -314,16 +313,6 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
     Route::post('/assignments/{assignmentId}/complete', [JobAssignmentController::class, 'complete'])
         ->middleware('permission:view_jobs,manage_jobs,assign_jobs,all')
         ->name('assignments.complete');
-
-    // ==============================================
-    // TECHNICIAN MANAGEMENT ROUTES
-    // ==============================================
-
-    Route::middleware('permission:manage_team,manage_employees,all')->group(function () {
-        Route::resource('technicians', TechnicianController::class);
-        Route::patch('/technicians/{technician}/availability', [TechnicianController::class, 'updateAvailability'])
-            ->name('technicians.update-availability');
-    });
 
     // ==============================================
     // ASSET MANAGEMENT ROUTES - UPDATED PERMISSIONS
@@ -995,22 +984,6 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
     Route::get('/api/asset-categories/{categoryName}/fields', [AssetCategoryFieldController::class, 'getFieldsByName'])->name('api.asset-category-fields');
 
     // ==============================================
-    // DOCUMENT MANAGEMENT ROUTES - UPDATED PERMISSIONS
-    // ==============================================
-
-    Route::prefix('documents')->name('documents.')->group(function () {
-        Route::get('/', function () {
-            return view('documents.index', ['title' => 'Documents']);
-        })->middleware('permission:view_documents,manage_documents,all')
-          ->name('index');
-
-        Route::get('/upload', function () {
-            return view('documents.upload', ['title' => 'Upload Document']);
-        })->middleware('permission:manage_documents,all')
-          ->name('upload');
-    });
-
-    // ==============================================
     // CLIENT DASHBOARDS ROUTES
     // ==============================================
 
@@ -1031,10 +1004,6 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
             ->middleware('permission:export_data,all')
             ->name('export-table');
 
-        Route::get('/{client}/terminals/create', [ClientDashboardController::class, 'createTerminal'])
-            ->middleware('permission:manage_terminals,all')
-            ->name('terminals.create');
-
         Route::post('/{client}/terminals', [ClientDashboardController::class, 'storeTerminal'])
             ->middleware('permission:manage_terminals,all')
             ->name('terminals.store');
@@ -1042,10 +1011,6 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::get('/{client}/terminals/{terminal}', [ClientDashboardController::class, 'viewTerminal'])
             ->middleware('permission:view_terminals,all')
             ->name('terminals.show');
-
-        Route::get('/{client}/terminals/{terminal}/edit', [ClientDashboardController::class, 'editTerminal'])
-            ->middleware('permission:manage_terminals,all')
-            ->name('terminals.edit');
 
         Route::put('/{client}/terminals/{terminal}', [ClientDashboardController::class, 'updateTerminal'])
             ->middleware('permission:manage_terminals,all')

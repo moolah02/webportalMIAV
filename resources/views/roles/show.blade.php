@@ -1,302 +1,226 @@
-{{-- 
-==============================================
-ROLE SHOW VIEW
-File: resources/views/roles/show.blade.php
-==============================================
---}}
+{{-- resources/views/roles/show.blade.php --}}
 @extends('layouts.app')
 @section('title', 'Role Details')
 
-@section('content')
-<div>
-    @php $rolePermNames = $role->rolePermissions->pluck('name')->toArray(); @endphp
+@section('header-actions')
+<a href="{{ route('roles.index') }}" class="btn-secondary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Back to Roles</a>
+<a href="{{ route('roles.edit', $role) }}" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg> Edit Role</a>
+@endsection
 
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
+@push('styles')
+<style>
+.rs-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .rs-layout { grid-template-columns: 1fr; } }
+.rs-main, .rs-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.rs-head { display: flex; align-items: center; gap: 14px; padding: 16px 18px; flex-wrap: wrap; }
+.rs-mark { width: 40px; height: 40px; border-radius: 9px; background: var(--mv-surface-2); border: 1px solid var(--mv-line); color: var(--mv-ink-2); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rs-mark.is-admin { background: var(--mv-crit-soft); border-color: #F2CACA; color: var(--mv-crit); }
+.rs-title { font-size: 16px; font-weight: 600; color: var(--mv-ink); margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rs-sub { font-size: 12.5px; color: var(--mv-muted); margin-top: 2px; }
+.rs-kpis { display: flex; gap: 28px; margin-left: auto; }
+.rs-kpi span { display: block; font-size: 11.5px; color: var(--mv-muted); }
+.rs-kpi strong { font-size: 18px; font-weight: 600; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+.rs-body { padding: 16px 18px; }
+.rs-mono { font-family: var(--mv-mono); font-size: 12.5px; color: var(--mv-ink-2); }
+.rs-group { border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
+.rs-group + .rs-group { margin-top: 12px; }
+.rs-group-head { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: var(--mv-surface-2); border-bottom: 1px solid var(--mv-line); }
+.rs-group-head .mv-i { color: var(--mv-ink-2); }
+.rs-group-title { font-size: 13px; font-weight: 600; color: var(--mv-ink); }
+.rs-group-count { margin-left: auto; font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.rs-perms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: -1px; }
+@media (max-width: 760px) { .rs-perms { grid-template-columns: 1fr; } }
+.rs-perm { padding: 9px 14px; border-bottom: 1px solid var(--mv-line); }
+@media (min-width: 761px) { .rs-perms .rs-perm:nth-child(odd) { border-right: 1px solid var(--mv-line); } }
+.rs-perm-name { font-size: 13px; font-weight: 500; color: var(--mv-ink); }
+.rs-perm-desc { font-size: 12px; color: var(--mv-muted); margin-top: 1px; line-height: 1.4; }
+.rs-danger { display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: .03em; color: var(--mv-crit); background: var(--mv-crit-soft); border: 1px solid #F2CACA; border-radius: 5px; padding: 0 5px; margin-left: 6px; vertical-align: 1px; }
+.rs-person { display: flex; align-items: center; gap: 10px; }
+.rs-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--mv-surface-2); border: 1px solid var(--mv-line); color: var(--mv-ink-2); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.rs-muted { color: var(--mv-muted); font-size: 12.5px; }
+.rs-empty { padding: 28px 18px; text-align: center; color: var(--mv-muted); font-size: 13px; }
+.rs-actions { display: flex; flex-direction: column; gap: 8px; padding: 14px 18px; }
+.rs-actions > * { width: 100%; justify-content: center; }
+.rs-list { padding: 4px 18px; }
+.rs-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; font-size: 13px; color: var(--mv-ink-2); }
+.rs-row + .rs-row { border-top: 1px solid var(--mv-line); }
+.rs-row strong { color: var(--mv-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+</style>
+@endpush
+
+@section('content')
+@php
+    $rolePermNames = $role->rolePermissions->pluck('name')->toArray();
+    $hasAll = in_array('all', $rolePermNames);
+    $employees = $role->employees;
+    $displayName = ucfirst(str_replace('_', ' ', $role->name));
+
+    $permissionCount = count($rolePermNames);
+    if ($hasAll) {
+        $level = ['Super Admin', 'badge-red'];
+    } elseif (in_array('manage_team', $rolePermNames) || in_array('manage_assets', $rolePermNames)) {
+        $level = ['Admin', 'badge-yellow'];
+    } elseif ($permissionCount > 3) {
+        $level = ['Elevated', 'badge-blue'];
+    } else {
+        $level = ['Standard', 'badge-green'];
+    }
+
+    $categoryConfig = [
+        'admin'      => ['name' => 'System Administration', 'icon' => 'settings'],
+        'dashboard'  => ['name' => 'Dashboard Access',      'icon' => 'grid'],
+        'assets'     => ['name' => 'Asset Management',      'icon' => 'box'],
+        'operations' => ['name' => 'Field Operations',      'icon' => 'wrench'],
+        'clients'    => ['name' => 'Client Management',     'icon' => 'building'],
+        'management' => ['name' => 'Employee Management',   'icon' => 'users'],
+        'technician' => ['name' => 'Technician Portal',     'icon' => 'user-check'],
+        'reports'    => ['name' => 'Reports & Analytics',   'icon' => 'chart'],
+        'special'    => ['name' => 'Special Operations',    'icon' => 'zap'],
+    ];
+    $groupedPermissions = collect($allPermissions)
+        ->filter(fn ($permission, $key) => in_array($key, $rolePermNames))
+        ->groupBy('category', true);
+    $knownKeys = array_keys($allPermissions);
+    $otherPerms = array_values(array_diff($rolePermNames, $knownKeys));
+@endphp
+
+<div class="ui-card" style="margin-bottom:16px">
+    <div class="rs-head">
+        <span class="rs-mark {{ $hasAll ? 'is-admin' : '' }}"><svg class="mv-i" aria-hidden="true"><use href="#i-{{ $hasAll ? 'shield' : 'key' }}"/></svg></span>
         <div>
-            <h2 style="margin: 0; color: #333;">
-                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-key"/></svg> {{ ucfirst(str_replace('_', ' ', $role->name)) }}
-                @if(in_array('all', $rolePermNames))
-                    <span style="color: #f44336; font-size: 16px; margin-left: 10px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Super Admin</span>
-                @endif
-            </h2>
-            <p style="color: #666; margin: 5px 0 0 0;">Role details and assigned employees</p>
+            <h2 class="rs-title">{{ $displayName }} @if($hasAll)<span class="badge badge-red">Super Admin</span>@endif</h2>
+            <div class="rs-sub">Role details and assigned employees</div>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <a href="{{ route('roles.edit', $role) }}" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit Role</a>
-            <a href="{{ route('roles.index') }}" class="btn">← Back to Roles</a>
+        <div class="rs-kpis">
+            <div class="rs-kpi"><span>Assigned Employees</span><strong>{{ $employees->count() }}</strong></div>
+            <div class="rs-kpi"><span>Total Permissions</span><strong>{{ $permissionCount }}</strong></div>
         </div>
     </div>
+</div>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-        <!-- Main Content -->
-        <div>
-            <!-- Role Information -->
-            <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Role Information</h4>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <div style="margin-block-end: 15px;">
-                            <div style="font-weight: 600; color: #333; margin-block-end: 5px;">Role Name</div>
-                            <div style="color: #666;">{{ $role->name }}</div>
-                        </div>
-                        
-                        <div style="margin-block-end: 15px;">
-                            <div style="font-weight: 600; color: #333; margin-block-end: 5px;">Display Name</div>
-                            <div style="color: #666;">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <div style="margin-block-end: 15px;">
-                            <div style="font-weight: 600; color: #333; margin-block-end: 5px;">Assigned Employees</div>
-                            <div style="color: #666; font-size: 24px; font-weight: bold;">{{ $role->employees->count() }}</div>
-                        </div>
-                        
-                        <div style="margin-block-end: 15px;">
-                            <div style="font-weight: 600; color: #333; margin-block-end: 5px;">Total Permissions</div>
-                            <div style="color: #666; font-size: 24px; font-weight: bold;">{{ count($rolePermNames) }}</div>
-                        </div>
-                    </div>
-                </div>
+<div class="rs-layout">
+    <div class="rs-main">
+        <div class="ui-card">
+            <div class="ui-card-header"><h3>Role Information</h3></div>
+            <div class="rs-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
+                <div><div class="ui-label">Role Name</div><div class="rs-mono">{{ $role->name }}</div></div>
+                <div><div class="ui-label">Display Name</div><div>{{ $displayName }}</div></div>
+                <div><div class="ui-label">Created</div><div>{{ $role->created_at ? $role->created_at->format('M d, Y') : '—' }}</div></div>
+                <div><div class="ui-label">Permission Level</div><span class="badge {{ $level[1] }}">{{ $level[0] }}</span></div>
             </div>
+        </div>
 
-            <!-- Permissions Details -->
-            <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lock"/></svg> Permissions</h4>
-                
+        <div class="ui-card">
+            <div class="ui-card-header"><h3>Permissions</h3><span class="rs-muted">{{ $permissionCount }} granted</span></div>
+            <div class="rs-body">
                 @if(empty($rolePermNames))
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <div style="font-size: 48px; margin-block-end: 15px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lock"/></svg></div>
-                        <div>No permissions assigned to this role</div>
-                    </div>
+                    <div class="rs-empty">No permissions assigned to this role</div>
                 @else
-                    @php
-                        $groupedPermissions = collect($allPermissions)->filter(function($permission, $key) use ($rolePermNames) {
-                            return in_array($key, $rolePermNames);
-                        })->groupBy('category');
-                    @endphp
-                    
                     @foreach($groupedPermissions as $category => $categoryPermissions)
-                    <div style="margin-block-end: 25px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
-                        <h6 style="color: #333; margin-block-end: 15px; text-transform: capitalize; display: flex; align-items: center; gap: 8px;">
-                            @switch($category)
-                                @case('admin')
-                                    <span style="color: #f44336;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg></span> Admin
-                                    @break
-                                @case('general')
-                                    <span style="color: #2196f3;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg></span> General
-                                    @break
-                                @case('assets')
-                                    <span style="color: #4caf50;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg></span> Assets
-                                    @break
-                                @case('clients')
-                                    <span style="color: #ff9800;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg></span> Clients
-                                    @break
-                                @case('management')
-                                    <span style="color: #9c27b0;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></span> Management
-                                    @break
-                                @case('technical')
-                                    <span style="color: #00bcd4;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg></span> Technical
-                                    @break
-                                @default
-                                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span> {{ ucfirst($category) }}
-                            @endswitch
-                        </h6>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px;">
+                    @php $cfg = $categoryConfig[$category] ?? ['name' => ucfirst($category), 'icon' => 'layers']; @endphp
+                    <div class="rs-group">
+                        <div class="rs-group-head">
+                            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-{{ $cfg['icon'] }}"/></svg>
+                            <span class="rs-group-title">{{ $cfg['name'] }}</span>
+                            <span class="rs-group-count">{{ count($categoryPermissions) }}</span>
+                        </div>
+                        <div class="rs-perms">
                             @foreach($categoryPermissions as $key => $permission)
-                            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 12px; background: #f8f9fa;">
-                                <div style="font-weight: 500; margin-block-end: 4px; display: flex; align-items: center; gap: 8px;">
-                                    {{ $permission['name'] }}
-                                    @if(isset($permission['danger']) && $permission['danger'])
-                                        <span style="background: #ffebee; color: #d32f2f; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
-                                            DANGER
-                                        </span>
-                                    @endif
-                                </div>
-                                <div style="font-size: 12px; color: #666;">{{ $permission['description'] }}</div>
+                            <div class="rs-perm">
+                                <div class="rs-perm-name">{{ $permission['name'] }}@if(!empty($permission['danger']))<span class="rs-danger">DANGER</span>@endif</div>
+                                <div class="rs-perm-desc">{{ $permission['description'] }}</div>
                             </div>
                             @endforeach
                         </div>
                     </div>
                     @endforeach
+
+                    @if(count($otherPerms))
+                    <div class="rs-group">
+                        <div class="rs-group-head">
+                            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-layers"/></svg>
+                            <span class="rs-group-title">Other</span>
+                            <span class="rs-group-count">{{ count($otherPerms) }}</span>
+                        </div>
+                        <div class="rs-perms">
+                            @foreach($otherPerms as $name)
+                            <div class="rs-perm"><div class="rs-perm-name rs-mono">{{ $name }}</div></div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                 @endif
             </div>
+        </div>
 
-            <!-- Assigned Employees -->
-            @if($role->employees->count() > 0)
-            <div class="content-card">
-                <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Assigned Employees</h4>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
-                    @foreach($role->employees as $employee)
-                    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: #f8f9fa;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-block-end: 10px;">
-                            <div style="inline-size: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
-                                {{ substr($employee->first_name, 0, 1) }}{{ substr($employee->last_name, 0, 1) }}
-                            </div>
-                            <div>
-                                <div style="font-weight: 500; color: #333;">{{ $employee->full_name }}</div>
-                                <div style="font-size: 12px; color: #666;">{{ $employee->email }}</div>
-                            </div>
-                        </div>
-                        
-                        @if($employee->department)
-                        <div style="font-size: 12px; color: #666; margin-block-end: 5px;">
-                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> {{ $employee->department->name }}
-                        </div>
-                        @endif
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="status-badge status-{{ $employee->status }}">
-                                {{ ucfirst($employee->status) }}
-                            </span>
-                            <a href="{{ route('employees.show', $employee) }}" style="color: #2196f3; text-decoration: none; font-size: 12px;">
-                                View →
-                            </a>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
+        <div class="ui-card overflow-hidden">
+            <div class="ui-card-header"><h3>Assigned Employees</h3><span class="rs-muted">{{ $employees->count() }}</span></div>
+            @if($employees->count() > 0)
+            <div class="overflow-x-auto">
+                <table class="ui-table w-full">
+                    <thead>
+                        <tr><th>Employee</th><th>Department</th><th>Status</th><th style="width:60px"></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach($employees as $employee)
+                        @php
+                            // employees has a legacy `department` text column that shadows the relation
+                            $dept = $employee->getRelationValue('department');
+                            $deptName = $dept->name ?? ($employee->getAttributes()['department'] ?? null);
+                            $sc = ['active' => 'badge-green', 'pending' => 'badge-yellow', 'inactive' => 'badge-gray'][$employee->status] ?? 'badge-gray';
+                        @endphp
+                        <tr>
+                            <td>
+                                <div class="rs-person">
+                                    <span class="rs-avatar">{{ substr($employee->first_name, 0, 1) }}{{ substr($employee->last_name, 0, 1) }}</span>
+                                    <div>
+                                        <div style="font-weight:500;color:var(--mv-ink)">{{ $employee->full_name }}</div>
+                                        <div class="rs-muted">{{ $employee->email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ $deptName ?: '—' }}</td>
+                            <td><span class="badge {{ $sc }}">{{ ucfirst($employee->status) }}</span></td>
+                            <td><a href="{{ route('employees.show', $employee) }}" class="action-btn" title="View"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg></a></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
+            @else
+            <div class="rs-empty">No employees have this role yet.</div>
             @endif
         </div>
+    </div>
 
-        <!-- Sidebar -->
-        <div>
-            <!-- Quick Actions -->
-            <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Quick Actions</h4>
-                
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="{{ route('roles.edit', $role) }}" class="btn-primary" style="inline-size: 100%; text-align: center;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit Role
-                    </a>
-                    
-                    <button onclick="cloneRole({{ $role->id }})" class="btn" style="inline-size: 100%;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Clone Role
-                    </button>
-                    
-                    @if(!in_array($role->name, ['super_admin', 'admin', 'manager', 'employee', 'technician']))
-                    <button onclick="deleteRole({{ $role->id }}, '{{ $role->name }}')" class="btn" style="inline-size: 100%; color: #f44336; border-color: #f44336;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Delete Role
-                    </button>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Role Statistics -->
-            <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Statistics</h4>
-                
-                <div style="margin-block-end: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-block-end: 8px;">
-                        <span style="color: #666;">Assigned Employees:</span>
-                        <span style="font-weight: bold;">{{ $role->employees->count() }}</span>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-block-end: 8px;">
-                        <span style="color: #666;">Active Employees:</span>
-                        <span style="font-weight: bold;">{{ $role->employees->where('status', 'active')->count() }}</span>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-block-end: 8px;">
-                        <span style="color: #666;">Total Permissions:</span>
-                        <span style="font-weight: bold;">{{ count($rolePermNames) }}</span>
-                    </div>
-                </div>
-                
-                <!-- Permission Level Indicator -->
-                @php
-                    $permissionCount = count($rolePermNames);
-                    $hasAll = in_array('all', $rolePermNames);
-                    $hasManageTeam = in_array('manage_team', $rolePermNames);
-                    $hasManageAssets = in_array('manage_assets', $rolePermNames);
-                    
-                    if ($hasAll) {
-                        $level = 'Super Admin';
-                        $color = '#f44336';
-                    } elseif ($hasManageTeam || $hasManageAssets) {
-                        $level = 'Admin';
-                        $color = '#ff9800';
-                    } elseif ($permissionCount > 3) {
-                        $level = 'Elevated';
-                        $color = '#2196f3';
-                    } else {
-                        $level = 'Standard';
-                        $color = '#4caf50';
-                    }
-                @endphp
-                
-                <div style="background: {{ $color }}20; color: {{ $color }}; padding: 10px; border-radius: 6px; text-align: center;">
-                    <div style="font-weight: bold;">{{ $level }}</div>
-                    <div style="font-size: 12px; opacity: 0.8;">Permission Level</div>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="content-card">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg> Recent Activity</h4>
-                
-                <div style="color: #666; font-style: italic; text-align: center; padding: 20px;">
-                    Activity tracking coming soon
-                </div>
+    <aside class="rs-side">
+        <div class="ui-card">
+            <div class="ui-card-header"><h3>Quick Actions</h3></div>
+            <div class="rs-actions">
+                <a href="{{ route('roles.edit', $role) }}" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg> Edit Role</a>
+                <button type="button" onclick="cloneRole({{ $role->id }})" class="btn-secondary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-copy"/></svg> Clone Role</button>
+                @if(!in_array($role->name, ['super_admin', 'admin', 'manager', 'employee', 'technician']))
+                <button type="button" onclick="deleteRole({{ $role->id }}, '{{ $role->name }}')" class="btn-danger"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-trash"/></svg> Delete Role</button>
+                @endif
             </div>
         </div>
-    </div>
+
+        <div class="ui-card">
+            <div class="ui-card-header"><h3>Statistics</h3></div>
+            <div class="rs-list">
+                <div class="rs-row"><span>Assigned Employees</span><strong>{{ $employees->count() }}</strong></div>
+                <div class="rs-row"><span>Active Employees</span><strong>{{ $employees->where('status', 'active')->count() }}</strong></div>
+                <div class="rs-row"><span>Total Permissions</span><strong>{{ $permissionCount }}</strong></div>
+                <div class="rs-row"><span>Permission Level</span><span class="badge {{ $level[1] }}">{{ $level[0] }}</span></div>
+            </div>
+        </div>
+
+        <div class="ui-card">
+            <div class="ui-card-header"><h3>Recent Activity</h3></div>
+            <div class="rs-empty">Activity tracking coming soon</div>
+        </div>
+    </aside>
 </div>
-
-<style>
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn {
-    padding: 8px 16px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.btn:hover {
-    border-color: #2196f3;
-    color: #2196f3;
-}
-
-.btn-primary {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-}
-
-.btn-primary:hover {
-    background: #1976d2;
-    border-color: #1976d2;
-    color: white;
-}
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.status-active { background: #e8f5e8; color: #2e7d32; }
-.status-pending { background: #fff3e0; color: #f57c00; }
-.status-inactive { background: #f5f5f5; color: #666; }
-</style>
 
 <script>
 function cloneRole(roleId) {
@@ -316,9 +240,7 @@ function cloneRole(roleId) {
                 alert('Failed to clone role');
             }
         })
-        .catch(error => {
-            alert('Failed to clone role');
-        });
+        .catch(() => alert('Failed to clone role'));
     }
 }
 
@@ -327,17 +249,17 @@ function deleteRole(roleId, roleName) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/roles/${roleId}`;
-        
+
         const methodInput = document.createElement('input');
         methodInput.type = 'hidden';
         methodInput.name = '_method';
         methodInput.value = 'DELETE';
-        
+
         const tokenInput = document.createElement('input');
         tokenInput.type = 'hidden';
         tokenInput.name = '_token';
         tokenInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        
+
         form.appendChild(methodInput);
         form.appendChild(tokenInput);
         document.body.appendChild(form);

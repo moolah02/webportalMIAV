@@ -3,48 +3,50 @@
 
 @section('title', 'Client Management')
 
-@section('content')
-{{-- Actions --}}
-<div class="flex justify-end items-center mb-6">
-    <a href="{{ route('clients.create') }}" class="btn-primary">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        Add New Client
-    </a>
-</div>
+@section('header-actions')
+<a href="{{ route('clients.create') }}" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Add New Client</a>
+@endsection
 
-{{-- Stats --}}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+@push('styles')
+<style>
+.cl-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 900px) { .cl-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cl-muted { color: var(--mv-muted); font-size: 12.5px; }
+.cl-company { font-weight: 500; color: var(--mv-ink); font-size: 13.5px; }
+.cl-sub { font-size: 12px; color: var(--mv-muted); margin-top: 1px; }
+.cl-link { color: var(--mv-accent-ink); text-decoration: none; }
+.cl-link:hover { text-decoration: underline; }
+.cl-contract { font-size: 12px; color: var(--mv-muted); line-height: 1.55; white-space: nowrap; }
+.cl-contract b { font-weight: 500; color: var(--mv-ink-2); font-variant-numeric: tabular-nums; }
+.cl-contract .badge { margin-left: 4px; font-size: 11px; padding: 1px 6px; }
+</style>
+@endpush
+
+@section('content')
+<div class="cl-stats">
     <div class="stat-card">
-        <div class="stat-icon stat-icon-blue">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
-        </div>
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-building"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['total_clients'] }}</div>
             <div class="stat-label">Total Clients</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-green">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-        </div>
+        <div class="stat-icon stat-icon-green"><svg class="mv-i" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['active_clients'] }}</div>
             <div class="stat-label">Active Clients</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-yellow">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9.5 9.293 8.207a1 1 0 10-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414z" clip-rule="evenodd"/></svg>
-        </div>
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-target"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['prospects'] }}</div>
             <div class="stat-label">Prospects</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-purple">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h3v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
-        </div>
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-file-check"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['under_contract'] }}</div>
             <div class="stat-label">Under Contract</div>
@@ -52,15 +54,14 @@
     </div>
 </div>
 
-{{-- Filters --}}
 <form method="GET" class="filter-bar">
-    <div>
+    <div class="filter-group" style="flex:1;min-width:200px">
         <label class="ui-label">Search</label>
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search clients..." class="ui-input w-48">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search clients..." class="ui-input" style="width:100%">
     </div>
-    <div>
+    <div class="filter-group">
         <label class="ui-label">Status</label>
-        <select name="status" class="ui-select w-36">
+        <select name="status" class="ui-select">
             <option value="">All Status</option>
             <option value="active"   {{ request('status') === 'active'   ? 'selected' : '' }}>Active</option>
             <option value="prospect" {{ request('status') === 'prospect' ? 'selected' : '' }}>Prospect</option>
@@ -68,16 +69,16 @@
             <option value="lost"     {{ request('status') === 'lost'     ? 'selected' : '' }}>Lost</option>
         </select>
     </div>
-    <div>
+    <div class="filter-group">
         <label class="ui-label">Region</label>
-        <select name="region" class="ui-select w-36">
+        <select name="region" class="ui-select">
             <option value="">All Regions</option>
             @foreach($regions as $region)
                 <option value="{{ $region }}" {{ request('region') == $region ? 'selected' : '' }}>{{ $region }}</option>
             @endforeach
         </select>
     </div>
-    <div class="flex items-end gap-2">
+    <div class="filter-actions">
         <button type="submit" class="btn-primary">Filter</button>
         @if(request()->hasAny(['search','status','region']))
             <a href="{{ route('clients.index') }}" class="btn-secondary">Clear</a>
@@ -85,15 +86,10 @@
     </div>
 </form>
 
-{{-- Table Card --}}
 <div class="ui-card overflow-hidden">
     <div class="ui-card-header">
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold text-gray-800">Clients</span>
-            <span class="text-xs text-gray-400">•</span>
-            <span class="text-xs text-gray-500">{{ number_format(method_exists($clients,'total') ? $clients->total() : $clients->count()) }} total</span>
-        </div>
-        <a href="{{ route('clients.create') }}" class="btn-primary btn-sm">+ Add Client</a>
+        <h3>Clients</h3>
+        <span class="cl-muted">{{ number_format(method_exists($clients,'total') ? $clients->total() : $clients->count()) }} total</span>
     </div>
 
     @if($clients->count())
@@ -109,7 +105,7 @@
                     <th>Phone</th>
                     <th>Location</th>
                     <th>Contract</th>
-                    <th>Actions</th>
+                    <th style="width:120px">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -118,50 +114,48 @@
                         $end    = $client->contract_end_date;
                         $isPast = $end ? $end->isPast() : false;
                         $isSoon = $end ? (!$isPast && $end->diffInDays(now()) <= 30) : false;
-                        $sc     = ['active'=>'badge badge-green','prospect'=>'badge badge-yellow','inactive'=>'badge badge-gray','lost'=>'badge badge-red'];
+                        $sc     = ['active' => 'badge-green', 'prospect' => 'badge-blue', 'inactive' => 'badge-gray', 'lost' => 'badge-red'];
                     @endphp
                     <tr>
+                        <td><span class="id-chip" style="padding:2px 7px;font-size:12px">{{ $client->client_code ?: '—' }}</span></td>
                         <td>
-                            <span class="inline-block px-2 py-0.5 rounded bg-gray-100 text-xs font-semibold text-gray-700">{{ $client->client_code ?: '—' }}</span>
+                            <div class="cl-company">{{ $client->company_name }}</div>
+                            <div class="cl-sub">{{ $client->address ? \Illuminate\Support\Str::limit($client->address, 50) : '—' }}</div>
                         </td>
-                        <td>
-                            <div class="text-sm font-semibold text-gray-900">{{ $client->company_name }}</div>
-                            <div class="text-xs text-gray-500">{{ $client->address ? \Illuminate\Support\Str::limit($client->address, 50) : '—' }}</div>
-                        </td>
-                        <td>
-                            <span class="{{ $sc[strtolower($client->status)] ?? 'badge badge-gray' }}">{{ ucfirst($client->status) }}</span>
-                        </td>
-                        <td class="text-sm text-gray-700">{{ $client->contact_person ?: '—' }}</td>
+                        <td><span class="badge {{ $sc[strtolower($client->status)] ?? 'badge-gray' }}">{{ ucfirst($client->status) }}</span></td>
+                        <td>{{ $client->contact_person ?: '—' }}</td>
                         <td>
                             @if($client->email)
-                                <a href="mailto:{{ $client->email }}" class="text-sm text-[#1a3a5c] hover:underline">{{ $client->email }}</a>
-                            @else <span class="text-xs text-gray-400">—</span>
+                                <a href="mailto:{{ $client->email }}" class="cl-link">{{ $client->email }}</a>
+                            @else <span class="cl-muted">—</span>
                             @endif
                         </td>
-                        <td>
+                        <td style="white-space:nowrap">
                             @if($client->phone)
-                                <a href="tel:{{ $client->phone }}" class="text-sm text-[#1a3a5c] hover:underline">{{ $client->phone }}</a>
-                            @else <span class="text-xs text-gray-400">—</span>
+                                <a href="tel:{{ $client->phone }}" class="cl-link">{{ $client->phone }}</a>
+                            @else <span class="cl-muted">—</span>
                             @endif
                         </td>
-                        <td class="text-sm text-gray-500">{{ collect([$client->city, $client->region])->filter()->join(', ') ?: '—' }}</td>
+                        <td>{{ collect([$client->city, $client->region])->filter()->join(', ') ?: '—' }}</td>
                         <td>
                             @if($client->contract_start_date || $client->contract_end_date)
-                                <div class="text-xs text-gray-500">Start: <span class="font-medium text-gray-700">{{ $client->contract_start_date?->format('M d, Y') ?: '—' }}</span></div>
-                                <div class="text-xs text-gray-500 mt-0.5">End: <span class="font-medium text-gray-700">{{ $client->contract_end_date?->format('M d, Y') ?: '—' }}</span>
-                                    @if($isPast) <span class="badge badge-red ml-1">Expired</span>
-                                    @elseif($isSoon) <span class="badge badge-yellow ml-1">Expiring</span>
-                                    @endif
+                                <div class="cl-contract">
+                                    <div>Start <b>{{ $client->contract_start_date?->format('M d, Y') ?: '—' }}</b></div>
+                                    <div>End <b>{{ $client->contract_end_date?->format('M d, Y') ?: '—' }}</b>
+                                        @if($isPast) <span class="badge badge-red">Expired</span>
+                                        @elseif($isSoon) <span class="badge badge-yellow">Expiring</span>
+                                        @endif
+                                    </div>
                                 </div>
                             @else
-                                <span class="text-xs text-gray-400">—</span>
+                                <span class="cl-muted">—</span>
                             @endif
                         </td>
                         <td>
-                            <div class="flex items-center gap-1">
-                                <a href="{{ route('clients.show', ['client' => $client->id]) }}" class="btn-secondary btn-sm">View</a>
-                                <a href="{{ route('clients.edit', ['client' => $client->id]) }}" class="btn-secondary btn-sm">Edit</a>
-                                <button type="button" onclick="contactClient('{{ $client->email }}')" class="btn-secondary btn-sm">Contact</button>
+                            <div class="action-group">
+                                <a href="{{ route('clients.show', ['client' => $client->id]) }}" class="action-btn" title="View"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg></a>
+                                <a href="{{ route('clients.edit', ['client' => $client->id]) }}" class="action-btn" title="Edit"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg></a>
+                                <button type="button" onclick="contactClient('{{ $client->email }}')" class="action-btn" title="Contact"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-mail"/></svg></button>
                             </div>
                         </td>
                     </tr>
@@ -171,18 +165,23 @@
     </div>
     @else
     <div class="empty-state">
-        <div class="empty-state-icon">
-            <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
-        </div>
-        <p class="empty-state-msg">No clients found. <a href="{{ route('clients.create') }}" class="text-[#1a3a5c] underline">Add your first client</a>.</p>
+        <div class="empty-state-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-building"/></svg></div>
+        <p class="empty-state-msg">No clients found.</p>
+        <a href="{{ route('clients.create') }}" class="btn-primary" style="margin-top:12px">Add your first client</a>
     </div>
     @endif
 </div>
 
-{{-- Pagination --}}
 @if(method_exists($clients,'hasPages') && $clients->hasPages())
 <div class="mt-5 flex justify-center">
     {{ $clients->appends(request()->query())->links() }}
 </div>
 @endif
+
+<script>
+function contactClient(email) {
+    if (email) { window.location.href = 'mailto:' + email; }
+    else { alert('No email address available for this client'); }
+}
+</script>
 @endsection

@@ -1,103 +1,89 @@
 {{-- Terminal Upload Section for Project Create/Edit --}}
-<div id="terminal-upload-section">
+<div id="terminal-upload-section" class="tus">
 
-    {{-- Header row --}}
-    <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-[#1a3a5c]/10 flex items-center justify-center text-base"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg></div>
-            <div>
-                <h5 class="font-semibold text-gray-800 text-sm m-0 leading-tight">Terminal Assignment
-                    @if(isset($project) && $project->exists)
-                        <span class="badge badge-blue ml-1">{{ $project->projectTerminals()->where('is_active', true)->count() }} assigned</span>
-                    @else
-                        <span class="text-xs font-normal text-gray-400 ml-1">optional</span>
-                    @endif
-                </h5>
-                <p class="text-xs text-gray-400 m-0">Upload a CSV/Excel list to bulk-assign terminals</p>
+    <div class="tus-head">
+        <div>
+            <div class="tus-title">Terminal Assignment
+                @if(isset($project) && $project->exists)
+                    <span class="badge badge-blue">{{ $project->projectTerminals()->where('is_active', true)->count() }} assigned</span>
+                @else
+                    <span class="tus-muted">optional</span>
+                @endif
             </div>
+            <div class="tus-muted">Upload a CSV/Excel list to bulk-assign terminals</div>
         </div>
         @if(isset($project) && $project->exists)
         <button type="button" class="btn-secondary btn-sm" onclick="viewProjectTerminals()">
-            View List
+            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-list"/></svg> View List
         </button>
         @endif
     </div>
 
     @if(isset($project) && $project->exists)
-    <div class="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 mb-4 text-sm">
-        <span class="text-2xl"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg></span>
-        <span class="text-gray-700">
-            <strong class="text-[#1a3a5c]">{{ $project->projectTerminals()->where('is_active', true)->count() }}</strong>
-            terminals currently assigned to this project.
-        </span>
+    <div class="tus-info">
+        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-monitor"/></svg>
+        <span><strong>{{ $project->projectTerminals()->where('is_active', true)->count() }}</strong> terminals currently assigned to this project.</span>
     </div>
     @endif
 
-    {{-- Upload zone --}}
-    <div class="border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:border-[#1a3a5c]/30 hover:bg-[#1a3a5c]/[0.02] transition-colors p-5">
-        <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5 items-center">
-
-            {{-- File input side --}}
-            <div>
-                <label class="ui-label">File <span class="text-gray-400 font-normal">(CSV, Excel, TXT)</span></label>
-                <div class="flex gap-2">
-                    <input type="file"
-                           id="terminal_file"
-                           class="ui-input flex-1"
-                           accept=".csv,.xlsx,.xls,.txt"
-                           onchange="handleTerminalFileSelect(this)">
-                    <button type="button"
-                            id="previewTerminalsBtn"
-                            class="btn-primary"
-                            onclick="previewTerminalUpload()"
-                            disabled>
-                        Preview
-                    </button>
-                </div>
-                <p class="text-xs text-gray-400 mt-2">
-                    File must contain a <code class="bg-gray-200 px-1 rounded text-[11px]">terminal_id</code> column.
-                    <a href="{{ route('projects.terminals.download-template') }}" class="text-[#1a3a5c] hover:underline ml-1 no-underline">
-                        ↓ Download Template
-                    </a>
-                </p>
+    <div class="tus-zone">
+        <div>
+            <label class="ui-label" for="terminal_file">File <span class="tus-muted">(CSV, Excel, TXT)</span></label>
+            <div class="tus-file">
+                <input type="file" id="terminal_file" class="ui-input" accept=".csv,.xlsx,.xls,.txt" onchange="handleTerminalFileSelect(this)">
+                <button type="button" id="previewTerminalsBtn" class="btn-primary" onclick="previewTerminalUpload()" disabled>Preview</button>
             </div>
-
-            {{-- Options side --}}
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 min-w-[190px]">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Options</p>
-                <label class="flex items-center gap-2.5 text-sm text-gray-700 mb-3 cursor-pointer select-none">
-                    <input type="checkbox" id="skip_duplicates" class="w-4 h-4 rounded accent-[#1a3a5c]" checked>
-                    <span>Skip already assigned</span>
-                </label>
-                <label class="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer select-none">
-                    <input type="checkbox" id="create_missing" class="w-4 h-4 rounded accent-[#1a3a5c]">
-                    <span>Create missing terminals</span>
-                </label>
+            <div class="tus-muted" style="margin-top:8px">
+                File must contain a <code class="tus-code">terminal_id</code> column.
+                <a href="{{ route('projects.terminals.download-template') }}" class="tus-link"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg> Download Template</a>
             </div>
+        </div>
+        <div class="tus-options">
+            <div class="tus-options-title">Options</div>
+            <label class="tus-check"><input type="checkbox" id="skip_duplicates" checked><span>Skip already assigned</span></label>
+            <label class="tus-check"><input type="checkbox" id="create_missing"><span>Create missing terminals</span></label>
         </div>
     </div>
 
-    {{-- Upload Progress --}}
-    <div id="uploadProgress" class="mt-3" style="display: none;">
-        <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-            <div class="bg-[#1a3a5c] h-2 rounded-full transition-all" style="width: 0%" id="uploadProgressBar"></div>
-        </div>
-        <p class="text-xs text-gray-500 mt-1" id="uploadProgressText">Uploading...</p>
+    <div id="uploadProgress" style="display: none; margin-top: 12px;">
+        <div class="tus-bar"><div id="uploadProgressBar" style="width: 0%"></div></div>
+        <div class="tus-muted" id="uploadProgressText" style="margin-top:4px">Uploading...</div>
     </div>
 
-    {{-- Upload Results Summary --}}
-    <div id="terminalUploadSummary" class="mt-3" style="display: none;">
-        <div class="flash-success">
-            <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></span>
+    <div id="terminalUploadSummary" style="display: none; margin-top: 12px;">
+        <div class="alert-success tus-summary">
+            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-check-circle"/></svg>
             <span id="terminalUploadSummaryText"></span>
         </div>
     </div>
 
-    {{-- Hidden fields --}}
     <input type="hidden" name="uploaded_terminal_ids" id="uploaded_terminal_ids" value="">
     <input type="hidden" name="missing_terminals_data" id="missing_terminals_data" value="">
     <input type="hidden" name="terminal_inclusion_reason" id="terminal_inclusion_reason" value="Bulk Upload">
 </div>
+
+<style>
+.tus-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.tus-title { font-size: 13.5px; font-weight: 600; color: var(--mv-ink); display: flex; align-items: center; gap: 8px; }
+.tus-muted { font-size: 12px; color: var(--mv-muted); font-weight: 400; }
+.tus-info { display: flex; align-items: center; gap: 8px; padding: 9px 12px; margin-bottom: 12px; border: 1px solid var(--mv-line); border-radius: 8px; background: var(--mv-surface-2); font-size: 13px; color: var(--mv-ink-2); }
+.tus-info .mv-i { color: var(--mv-muted); }
+.tus-info strong { color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+.tus-zone { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 16px; align-items: center; padding: 14px 16px; border: 1px dashed var(--mv-line-strong); border-radius: 10px; background: var(--mv-surface-2); }
+@media (max-width: 760px) { .tus-zone { grid-template-columns: 1fr; } }
+.tus-file { display: flex; gap: 8px; }
+.tus-file .ui-input { flex: 1; min-width: 0; padding: 6px; background: var(--mv-surface); }
+.tus-code { font-family: var(--mv-mono); font-size: 11.5px; background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 4px; padding: 0 4px; color: var(--mv-ink-2); }
+.tus-link { color: var(--mv-accent-ink); text-decoration: none; margin-left: 6px; display: inline-flex; align-items: center; gap: 4px; }
+.tus-link:hover { text-decoration: underline; }
+.tus-options { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 8px; padding: 10px 12px; }
+.tus-options-title { font-size: 11.5px; font-weight: 600; color: var(--mv-muted); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 6px; }
+.tus-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--mv-ink); padding: 3px 0; cursor: pointer; }
+.tus-check input { width: 15px; height: 15px; accent-color: var(--mv-accent); }
+.tus-bar { height: 6px; background: var(--mv-line); border-radius: 3px; overflow: hidden; }
+.tus-bar > div { height: 100%; background: var(--mv-accent); border-radius: 3px; transition: width .2s ease; }
+.tus-summary { display: flex; align-items: center; gap: 8px; padding: 10px 12px; font-size: 13px; border: 1px solid; border-radius: 8px; }
+</style>
 
 {{-- Include the preview modal --}}
 @include('projects.partials.terminal-preview-modal')
@@ -251,7 +237,7 @@ function showPreviewModal(data) {
                     <td>${terminal.terminal_id}</td>
                     <td>${terminal.merchant_name || '-'}</td>
                     <td>${terminal.city || '-'}</td>
-                    <td><span class="badge bg-${terminal.status === 'active' ? 'success' : 'secondary'}">${terminal.status || '-'}</span></td>
+                    <td><span class="badge ${terminal.status === 'active' ? 'badge-green' : 'badge-gray'}">${terminal.status || '-'}</span></td>
                 </tr>
             `;
         });
@@ -295,8 +281,8 @@ function showPreviewModal(data) {
                     <td>${terminal.reason}</td>
                     <td>
                         ${hasData ?
-                            '<span class="badge bg-warning">Can create</span>' :
-                            '<span class="badge bg-secondary">No data</span>'}
+                            '<span class="badge badge-yellow">Can create</span>' :
+                            '<span class="badge badge-gray">No data</span>'}
                     </td>
                 </tr>
             `;
@@ -386,12 +372,10 @@ function viewProjectTerminals() {
                             <td>${terminal.merchant_name}</td>
                             <td>${terminal.city || '-'}</td>
                             <td>${terminal.region || '-'}</td>
-                            <td><span class="badge bg-${terminal.status === 'active' ? 'success' : 'secondary'}">${terminal.status}</span></td>
+                            <td><span class="badge ${terminal.status === 'active' ? 'badge-green' : 'badge-gray'}">${terminal.status}</span></td>
                             <td>${terminal.included_at || '-'}</td>
                             <td>
-                                <button type="button" class="btn-sm btn-outline-danger" onclick="removeTerminalFromProject(${terminal.id})">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                                <button type="button" class="action-btn action-delete" title="Remove" onclick="removeTerminalFromProject(${terminal.id})"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-x"/></svg></button>
                             </td>
                         </tr>
                     `;
