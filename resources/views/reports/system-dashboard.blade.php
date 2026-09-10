@@ -3,1050 +3,752 @@
 
 @push('styles')
 <style>
-    .reports-dashboard {
-        display: grid;
-        gap: 24px;
-    }
+    .sd { display: grid; gap: 20px; }
 
-    .reports-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 16px;
-        padding-bottom: 18px;
-        border-bottom: 1px solid #e5e7eb;
-    }
+    /* Toolbar: context left, actions right */
+    .sd-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .sd-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: var(--mv-muted); }
+    .sd-meta strong { color: var(--mv-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .sd-meta .sd-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--mv-line-strong); }
+    .sd-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .sd-actions button { display: inline-flex; align-items: center; gap: 8px; }
+    .sd-actions .mv-i { width: 16px; height: 16px; }
 
-    .reports-kicker {
-        margin: 0 0 6px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: #1a3a5c;
-    }
+    /* KPI row */
+    .sd-kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+    .sd-kpi { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+    .sd-kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; font-weight: 500; color: var(--mv-muted); }
+    .sd-kpi-top .mv-i { width: 16px; height: 16px; color: var(--mv-muted); }
+    .sd-kpi-value { margin-top: 6px; font-size: 24px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+    .sd-kpi-sub { margin-top: 2px; font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
 
-    .reports-title {
-        margin: 0;
-        font-size: 1.875rem;
-        font-weight: 700;
-        color: #111827;
-        line-height: 1.1;
-    }
+    /* Cards */
+    .sd-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; min-width: 0; }
+    .sd-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--mv-line); }
+    .sd-card-head h3 { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+    .sd-card-head .sd-note { font-size: 12.5px; color: var(--mv-muted); }
+    .sd-card-head a { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; color: var(--mv-accent-ink); text-decoration: none; }
+    .sd-card-head a:hover { text-decoration: underline; }
+    .sd-card-body { padding: 16px 18px; }
+    .sd-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 
-    .reports-subtitle {
-        margin: 8px 0 0;
-        color: #6b7280;
-        font-size: 15px;
-        max-width: 720px;
-    }
+    /* Health */
+    .sd-health { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 28px; align-items: center; }
+    .sd-ring { position: relative; width: 148px; height: 148px; margin: 0 auto; }
+    .sd-ring canvas { width: 148px !important; height: 148px !important; }
+    .sd-ring-copy { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+    .sd-ring-value { font-size: 26px; font-weight: 600; letter-spacing: -.02em; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+    .sd-ring-label { font-size: 12px; color: var(--mv-muted); }
+    .sd-bars { display: grid; gap: 14px; }
+    .sd-bar-row { display: grid; grid-template-columns: minmax(110px, 170px) minmax(0, 1fr) 64px; gap: 14px; align-items: center; font-size: 13.5px; }
+    .sd-bar-label { color: var(--mv-ink-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sd-track { height: 8px; border-radius: 4px; background: #EDF0F4; overflow: hidden; }
+    .sd-fill { height: 100%; border-radius: 4px; background: var(--mv-accent); }
+    .sd-fill.is-good { background: var(--mv-good); }
+    .sd-fill.is-warn { background: #C28A2C; }
+    .sd-fill.is-crit { background: var(--mv-crit); }
+    .sd-bar-value { text-align: right; font-weight: 500; color: var(--mv-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-    .reports-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        justify-content: flex-end;
-    }
+    /* Action items */
+    .sd-alert { display: flex; align-items: center; gap: 12px; padding: 12px 18px; }
+    .sd-alert + .sd-alert { border-top: 1px solid var(--mv-line); }
+    .sd-alert-ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; }
+    .sd-alert-ic .mv-i { width: 16px; height: 16px; }
+    .sd-alert-ic.is-crit { background: var(--mv-crit-soft); color: var(--mv-crit); }
+    .sd-alert-ic.is-warn { background: var(--mv-warn-soft); color: var(--mv-warn); }
+    .sd-alert-text { flex: 1; min-width: 0; }
+    .sd-alert-title { font-size: 13.5px; font-weight: 600; color: var(--mv-ink); }
+    .sd-alert-desc { font-size: 12.5px; color: var(--mv-muted); }
+    .sd-alert-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; color: var(--mv-accent-ink); text-decoration: none; white-space: nowrap; }
+    .sd-alert-link:hover { text-decoration: underline; }
 
-    .reports-metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-    }
+    /* Charts */
+    .sd-chart { position: relative; height: 240px; }
+    .sd-chart canvas { display: block; }
+    .sd-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: var(--mv-muted); text-align: center; }
+    .sd-empty .mv-i { width: 26px; height: 26px; color: var(--mv-line-strong); }
+    .sd-empty-inline { padding: 24px 0; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; color: var(--mv-muted); }
+    .sd-empty-inline .mv-i { width: 24px; height: 24px; color: var(--mv-line-strong); }
 
-    .reports-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
+    /* Table */
+    .sd .ui-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .sd .ui-table th { text-align: left; white-space: nowrap; }
+    .sd .ui-table td.sd-title { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sd .ui-table td.sd-title a { color: var(--mv-ink); font-weight: 500; text-decoration: none; }
+    .sd .ui-table td.sd-title a:hover { color: var(--mv-accent-ink); text-decoration: underline; }
+    .sd .ui-table .sd-muted { color: var(--mv-muted); white-space: nowrap; }
 
-    .reports-meta-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
-        color: #475569;
-        font-size: 13px;
-        font-weight: 600;
-    }
-
-    .reports-health-grid {
-        display: grid;
-        grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
-        gap: 30px;
-        align-items: center;
-    }
-
-    .health-ring {
-        position: relative;
-        width: 150px;
-        height: 150px;
-        margin: 0 auto;
-    }
-
-    .health-ring canvas {
-        width: 150px !important;
-        height: 150px !important;
-    }
-
-    .health-score-copy {
-        position: absolute;
-        inset: 50% auto auto 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-    }
-
-    .health-metrics,
-    .project-metrics,
-    .coverage-grid,
-    .stat-grid,
-    .utilization-stats,
-    .kpi-grid {
-        display: grid;
-        gap: 16px;
-    }
-
-    .kpi-grid,
-    .coverage-grid,
-    .utilization-stats,
-    .stat-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-
-    .health-item,
-    .workload-item,
-    .productivity-item,
-    .region-item {
-        display: grid;
-        grid-template-columns: minmax(110px, 160px) minmax(0, 1fr) auto;
-        gap: 12px;
-        align-items: center;
-    }
-
-    .health-label,
-    .tech-name,
-    .region-name,
-    .asset-name,
-    .client-name {
-        font-weight: 600;
-        color: #111827;
-    }
-
-    .health-bar,
-    .workload-bar,
-    .productivity-bar,
-    .health-score-bar {
-        height: 10px;
-        border-radius: 999px;
-        background: #e5e7eb;
-        overflow: hidden;
-    }
-
-    .health-progress,
-    .workload-fill,
-    .progress-fill,
-    .score-fill {
-        height: 100%;
-        border-radius: inherit;
-    }
-
-    .health-value,
-    .assignment-count,
-    .score-value,
-    .request-count,
-    .terminal-count,
-    .active-count,
-    .kpi-change,
-    .coverage-label,
-    .stat-title,
-    .stat-label {
-        color: #6b7280;
-    }
-
-    .tab-navigation {
-        display: flex;
-        gap: 8px;
-        padding-bottom: 12px;
-        overflow-x: auto;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
+    /* Tabs (class names are used by switchTab) */
+    .tab-navigation { display: flex; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--mv-line); overflow-x: auto; }
     .tab-button {
-        border: 0;
-        background: transparent;
-        color: #6b7280;
-        padding: 12px 16px;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background-color 0.2s ease, color 0.2s ease;
+        display: inline-flex; align-items: center; gap: 7px; padding: 12px 10px; margin-bottom: -1px;
+        border: 0; border-bottom: 2px solid transparent; background: transparent; cursor: pointer;
+        font: inherit; font-size: 13.5px; font-weight: 500; color: var(--mv-muted); white-space: nowrap;
     }
+    .tab-button .mv-i { width: 16px; height: 16px; }
+    .tab-button:hover { color: var(--mv-ink); }
+    .tab-button.active { color: var(--mv-accent-ink); border-bottom-color: var(--mv-accent); }
+    .tab-content { display: none; padding: 18px; }
+    .tab-content.active { display: block; }
+    .sd-sec-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .sd-sec-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--mv-ink); }
+    .sd-sec-head .btn-secondary { display: inline-flex; align-items: center; gap: 6px; }
+    .sd-sec-head .btn-secondary .mv-i { width: 15px; height: 15px; }
+    .sd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: 16px; }
+    .sd-panel { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+    .sd-panel h4 { margin: 0 0 12px; font-size: 13.5px; font-weight: 600; color: var(--mv-ink); }
+    .sd-panel .sd-chart { height: 260px; }
+    .sd-panel-wide { grid-column: 1 / -1; }
 
-    .tab-button:hover {
-        background: #f3f4f6;
-        color: #1f2937;
-    }
+    /* Figures (small numbers with labels) */
+    .sd-figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1px; background: var(--mv-line); border: 1px solid var(--mv-line); border-radius: 8px; overflow: hidden; }
+    .sd-fig { background: var(--mv-surface); padding: 12px 14px; }
+    .sd-fig-value { font-size: 20px; font-weight: 600; letter-spacing: -.01em; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+    .sd-fig-label { font-size: 12.5px; color: var(--mv-muted); }
+    .sd-fig-sub { margin-top: 2px; font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+    .sd-fig-sub.is-up { color: var(--mv-good); }
+    .sd-fig-sub.is-down { color: var(--mv-crit); }
 
-    .tab-button.active {
-        background: rgba(26, 58, 92, 0.08);
-        color: #1a3a5c;
-    }
+    /* Row lists */
+    .sd-rows { display: flex; flex-direction: column; }
+    .sd-rows.is-scroll { max-height: 272px; overflow-y: auto; padding-right: 4px; }
+    .sd-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--mv-line); font-size: 13.5px; }
+    .sd-row:first-child { border-top: 0; padding-top: 2px; }
+    .sd-row-main { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .sd-row-name { color: var(--mv-ink); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sd-row-meta { color: var(--mv-muted); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .sd-row-meta strong { color: var(--mv-ink); font-weight: 600; }
+    .sd-panel .sd-bar-row { grid-template-columns: minmax(90px, 150px) minmax(0, 1fr) auto; font-size: 13px; }
 
-    .tab-content {
-        display: none;
-        padding-top: 24px;
-    }
+    /* Notes / recommendations */
+    .sd-notes { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+    .sd-notes li { display: flex; gap: 10px; font-size: 13.5px; color: var(--mv-ink-2); line-height: 1.5; }
+    .sd-notes li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--mv-muted); margin-top: 8px; flex-shrink: 0; }
+    .sd-notes strong { color: var(--mv-ink); font-weight: 600; }
 
-    .tab-content.active {
-        display: block;
-    }
+    /* Status rows (service requirements, project health, stock alerts) */
+    .sd-status { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--mv-line); }
+    .sd-status:first-of-type { border-top: 0; padding-top: 0; }
+    .sd-status .sd-alert-ic.is-good { background: var(--mv-good-soft); color: var(--mv-good); }
+    .sd-status-value { font-size: 18px; font-weight: 600; color: var(--mv-ink); font-variant-numeric: tabular-nums; min-width: 48px; }
+    .sd-status-text { font-size: 13px; color: var(--mv-ink-2); }
+    .sd-status-text span { display: block; font-size: 12.5px; color: var(--mv-muted); }
 
-    .section-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 20px;
-    }
-
-    .section-toolbar h3,
-    .tab-content h3 {
-        margin: 0;
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: #111827;
-    }
-
-    .section-intro {
-        margin: -8px 0 20px;
-        color: #64748b;
-        font-size: 14px;
-        max-width: 760px;
-    }
-
-    .chart-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 24px;
-    }
-
-    .chart-container,
-    .service-alerts,
-    .productivity-metrics,
-    .employee-stats,
-    .project-alerts,
-    .regional-health,
-    .coverage-stats,
-    .alert-box,
-    .recommendation-box {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 18px;
-        padding: 20px;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
-    }
-
-    .chart-container {
-        display: flex;
-        flex-direction: column;
-        min-height: 360px;
-    }
-
-    .chart-container h4,
-    .service-alerts h4,
-    .productivity-metrics h4,
-    .employee-stats h4,
-    .project-alerts h4,
-    .regional-health h4,
-    .coverage-stats h4,
-    .alert-box h4,
-    .recommendation-box h4 {
-        margin: 0 0 16px;
-        font-size: 15px;
-        font-weight: 700;
-        color: #111827;
-    }
-
-    .chart-container canvas {
-        width: 100% !important;
-        height: 280px !important;
-        max-height: 280px;
-        margin-top: auto;
-    }
-
-    .client-list,
-    .requested-assets,
-    .workload-list {
-        display: grid;
-        gap: 14px;
-    }
-
-    .client-item,
-    .asset-request-item {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        align-items: center;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .client-item:last-child,
-    .asset-request-item:last-child {
-        padding-bottom: 0;
-        border-bottom: 0;
-    }
-
-    .client-info,
-    .client-stats {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .client-status {
-        display: inline-flex;
-        align-items: center;
-        width: fit-content;
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-    }
-
-    .status-active { background: #dcfce7; color: #166534; }
-    .status-prospect { background: #fef3c7; color: #92400e; }
-    .status-inactive { background: #e5e7eb; color: #4b5563; }
-    .status-lost { background: #fee2e2; color: #991b1b; }
-
-    .alert-item,
-    .metric-box,
-    .coverage-item,
-    .kpi-item {
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 16px;
-        background: #f8fafc;
-    }
-
-    .alert-item {
-        display: flex;
-        gap: 14px;
-        align-items: flex-start;
-    }
-
-    .alert-icon {
-        font-size: 22px;
-        line-height: 1;
-    }
-
-    .alert-title,
-    .metric-value,
-    .coverage-number,
-    .kpi-value,
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #111827;
-        line-height: 1.1;
-    }
-
-    .alert-desc,
-    .metric-info,
-    .coverage-label,
-    .kpi-label,
-    .stat-title {
-        font-size: 13px;
-    }
-
-    .metric-box.success { background: #ecfdf5; border-color: #bbf7d0; }
-    .metric-box.warning { background: #fff7ed; border-color: #fed7aa; }
-    .metric-box.danger { background: #fef2f2; border-color: #fecaca; }
-    .alert-item.urgent { background: #fef2f2; border-color: #fecaca; }
-    .alert-item.warning { background: #fff7ed; border-color: #fed7aa; }
-
-    .recommendation-box ul {
-        margin: 0;
-        padding-left: 18px;
-        display: grid;
-        gap: 10px;
-        color: #475569;
-    }
-
-    .positive { color: #15803d; }
-    .negative { color: #b91c1c; }
-
-    @media (max-width: 900px) {
-        .reports-header,
-        .section-toolbar,
-        .health-item,
-        .workload-item,
-        .productivity-item,
-        .region-item,
-        .client-item,
-        .asset-request-item {
-            grid-template-columns: 1fr;
-            display: grid;
-        }
-
-        .reports-actions {
-            justify-content: flex-start;
-        }
-
-        .reports-health-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .chart-container {
-            min-height: 320px;
-        }
-
-        .chart-container canvas {
-            height: 240px !important;
-            max-height: 240px;
-        }
-    }
+    @media (max-width: 1280px) { .sd-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 1100px) { .sd-2 { grid-template-columns: minmax(0, 1fr); } .sd-health { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-width: 640px) { .sd-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sd-bar-row { grid-template-columns: minmax(0, 1fr) 56px; } .sd-bar-row .sd-track { grid-column: 1 / -1; grid-row: 2; } }
+    @media print { .sd-actions, .tab-navigation { display: none !important; } .tab-content { display: block !important; } }
 </style>
 @endpush
 
 @section('content')
-<div class="reports-dashboard">
-    <!-- Header -->
-    <div class="reports-header">
-        <div>
-            <p class="reports-kicker">System Analytics</p>
-            <h1 class="reports-title">System Dashboard</h1>
-            <p class="reports-subtitle">Comprehensive system performance, operational health, and cross-team analytics in one place.</p>
+@php
+    $score = $systemOverview['system_health_score'];
+    $tone = fn ($v) => $v >= 80 ? 'is-good' : ($v >= 60 ? 'is-warn' : 'is-crit');
+    $visitsNow  = $systemOverview['total_visits_this_month'];
+    $visitsPrev = $systemOverview['total_visits_last_month'];
+@endphp
+<div class="sd">
+
+    {{-- Toolbar --}}
+    <div class="sd-toolbar">
+        <div class="sd-meta">
+            <span>Generated {{ $generatedAt->format('M d, Y \a\t h:i A') }}</span>
+            <span class="sd-dot" aria-hidden="true"></span>
+            <span>Health score <strong>{{ $score }}%</strong></span>
+            <span class="sd-dot" aria-hidden="true"></span>
+            <span><strong>{{ $systemOverview['open_tickets'] }}</strong> open support tickets</span>
+            <span class="sd-dot" aria-hidden="true"></span>
+            <span><strong>{{ $assetData['low_stock_alerts'] }}</strong> low stock alerts</span>
         </div>
-        <div class="reports-actions">
+        <div class="sd-actions">
             <button onclick="exportFullReport()" class="btn-primary">
-                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export Full Report
+                <svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export Full Report
             </button>
             <button onclick="printDashboard()" class="btn-secondary">
-                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-printer"/></svg> Print
+                <svg class="mv-i" aria-hidden="true"><use href="#i-printer"/></svg> Print
             </button>
         </div>
     </div>
 
-    <div class="reports-meta">
-        <div class="reports-meta-chip">Generated {{ $generatedAt->format('M d, Y \a\t h:i A') }}</div>
-        <div class="reports-meta-chip">Health score {{ $systemOverview['system_health_score'] }}%</div>
-        <div class="reports-meta-chip">{{ $systemOverview['open_tickets'] }} open support tickets</div>
-        <div class="reports-meta-chip">{{ $assetData['low_stock_alerts'] }} low stock alerts</div>
-    </div>
-
-    <!-- Key Metrics Cards -->
-    <div class="reports-metrics-grid">
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #1976D2; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg></span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #1976D2;">{{ $systemOverview['total_clients'] }}</div>
-                <div class="stat-label uppercase tracking-wide">TOTAL CLIENTS</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">{{ $systemOverview['active_clients'] }} active</div>
-            </div>
+    {{-- Key metrics --}}
+    <div class="sd-kpis">
+        <div class="sd-kpi">
+            <div class="sd-kpi-top">Total Clients <svg class="mv-i" aria-hidden="true"><use href="#i-building"/></svg></div>
+            <div class="sd-kpi-value">{{ number_format($systemOverview['total_clients']) }}</div>
+            <div class="sd-kpi-sub">{{ $systemOverview['active_clients'] }} active</div>
         </div>
-
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #388E3C; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg></span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #388E3C;">{{ $systemOverview['total_terminals'] }}</div>
-                <div class="stat-label uppercase tracking-wide">POS TERMINALS</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">{{ $systemOverview['terminal_uptime'] }}% uptime</div>
-            </div>
+        <div class="sd-kpi">
+            <div class="sd-kpi-top">POS Terminals <svg class="mv-i" aria-hidden="true"><use href="#i-monitor"/></svg></div>
+            <div class="sd-kpi-value">{{ number_format($systemOverview['total_terminals']) }}</div>
+            <div class="sd-kpi-sub">{{ $systemOverview['terminal_uptime'] }}% uptime</div>
         </div>
-
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #F57C00; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #F57C00;">{{ $systemOverview['total_employees'] }}</div>
-                <div class="stat-label uppercase tracking-wide">EMPLOYEES</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">Active workforce</div>
-            </div>
+        <div class="sd-kpi">
+            <div class="sd-kpi-top">Employees <svg class="mv-i" aria-hidden="true"><use href="#i-users"/></svg></div>
+            <div class="sd-kpi-value">{{ number_format($systemOverview['total_employees']) }}</div>
+            <div class="sd-kpi-sub">Active workforce</div>
         </div>
-
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #7B1FA2; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #7B1FA2;">{{ $systemOverview['active_projects'] }}</div>
-                <div class="stat-label uppercase tracking-wide">ACTIVE PROJECTS</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">{{ $systemOverview['total_projects'] }} total</div>
-            </div>
+        <div class="sd-kpi">
+            <div class="sd-kpi-top">Active Projects <svg class="mv-i" aria-hidden="true"><use href="#i-folder"/></svg></div>
+            <div class="sd-kpi-value">{{ number_format($systemOverview['active_projects']) }}</div>
+            <div class="sd-kpi-sub">{{ $systemOverview['total_projects'] }} total</div>
         </div>
-
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #D32F2F; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ticket"/></svg></span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #D32F2F;">{{ $systemOverview['open_tickets'] }}</div>
-                <div class="stat-label uppercase tracking-wide">OPEN TICKETS</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">Need attention</div>
-            </div>
+        <div class="sd-kpi">
+            <div class="sd-kpi-top">Open Tickets <svg class="mv-i" aria-hidden="true"><use href="#i-ticket"/></svg></div>
+            <div class="sd-kpi-value">{{ number_format($systemOverview['open_tickets']) }}</div>
+            <div class="sd-kpi-sub">Need attention</div>
         </div>
-
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #00796B; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg></span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number" style="color: #00796B;">${{ number_format($systemOverview['revenue_impact'] / 1000) }}K</div>
-                <div class="stat-label uppercase tracking-wide">REVENUE IMPACT</div>
-                <div style="font-size: 11px; color: #666; margin-top: 2px;">Monthly estimate</div>
-            </div>
+        <div class="sd-kpi">
+            <div class="sd-kpi-top">Revenue Impact <svg class="mv-i" aria-hidden="true"><use href="#i-banknote"/></svg></div>
+            <div class="sd-kpi-value">${{ number_format($systemOverview['revenue_impact'] / 1000) }}K</div>
+            <div class="sd-kpi-sub">Monthly estimate</div>
         </div>
     </div>
 
-    <!-- System Health Score -->
-    <div class="ui-card p-6">
-        <h3 style="margin: 0 0 20px 0; color: #333; font-size: 20px; font-weight: 600;">System Health Overview</h3>
-        <div class="reports-health-grid">
-            <div style="text-align: center;">
-                <div class="health-ring">
-                    <canvas id="healthScoreChart" width="150" height="150"></canvas>
-                    <div class="health-score-copy">
-                        <div style="font-size: 32px; font-weight: bold; color: #1976D2;">{{ $systemOverview['system_health_score'] }}%</div>
-                        <div style="font-size: 12px; color: #666;">HEALTH SCORE</div>
+    {{-- System health --}}
+    <div class="sd-card">
+        <div class="sd-card-head">
+            <h3>System Health Overview</h3>
+            <span class="badge {{ $score >= 80 ? 'badge-green' : ($score >= 60 ? 'badge-yellow' : 'badge-red') }}">{{ $score }}% Health</span>
+        </div>
+        <div class="sd-card-body">
+            <div class="sd-health">
+                <div class="sd-ring">
+                    <canvas id="healthScoreChart" width="148" height="148"></canvas>
+                    <div class="sd-ring-copy">
+                        <div class="sd-ring-value">{{ $score }}%</div>
+                        <div class="sd-ring-label">Health score</div>
                     </div>
                 </div>
-            </div>
-            <div>
-                <div class="health-metrics">
-                    <div class="health-item">
-                        <span class="health-label">Terminal Uptime</span>
-                        <div class="health-bar">
-                            <div class="health-progress" style="width: {{ $systemOverview['terminal_uptime'] }}%; background: #4CAF50;"></div>
-                        </div>
-                        <span class="health-value">{{ $systemOverview['terminal_uptime'] }}%</span>
+                <div class="sd-bars">
+                    @foreach([
+                        ['Terminal Uptime', $systemOverview['terminal_uptime']],
+                        ['Asset Utilization', $assetData['asset_utilization']],
+                        ['Project Completion', $projectData['project_completion_rate']],
+                    ] as [$label, $value])
+                    <div class="sd-bar-row">
+                        <span class="sd-bar-label">{{ $label }}</span>
+                        <div class="sd-track"><div class="sd-fill {{ $tone($value) }}" style="width: {{ min(100, max(0, $value)) }}%;"></div></div>
+                        <span class="sd-bar-value">{{ $value }}%</span>
                     </div>
-                    <div class="health-item">
-                        <span class="health-label">Asset Utilization</span>
-                        <div class="health-bar">
-                            <div class="health-progress" style="width: {{ $assetData['asset_utilization'] }}%; background: #2196F3;"></div>
-                        </div>
-                        <span class="health-value">{{ $assetData['asset_utilization'] }}%</span>
-                    </div>
-                    <div class="health-item">
-                        <span class="health-label">Project Completion</span>
-                        <div class="health-bar">
-                            <div class="health-progress" style="width: {{ $projectData['project_completion_rate'] }}%; background: #FF9800;"></div>
-                        </div>
-                        <span class="health-value">{{ $projectData['project_completion_rate'] }}%</span>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Alerts / Action Items --}}
+    {{-- Action items --}}
     @if(count($alerts) > 0)
-    <div class="ui-card p-6" style="border-left: 4px solid #ef4444;">
-        <h3 style="margin:0 0 16px;font-size:16px;font-weight:700;color:#111827;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Action Items <span style="font-size:13px;font-weight:500;color:#6b7280;margin-left:8px;">{{ count($alerts) }} item(s) need attention</span></h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
+    @php
+        $alertIcons = ['View Terminals' => 'monitor', 'View Tickets' => 'ticket', 'View Assets' => 'box', 'View Licenses' => 'file-check', 'View Projects' => 'folder'];
+    @endphp
+    <div class="sd-card">
+        <div class="sd-card-head">
+            <h3>Action Items</h3>
+            <span class="sd-note">{{ count($alerts) }} item(s) need attention</span>
+        </div>
+        <div>
             @foreach($alerts as $alert)
-            <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:10px;border:1px solid {{ $alert['type'] === 'danger' ? '#fecaca' : '#fed7aa' }};background:{{ $alert['type'] === 'danger' ? '#fef2f2' : '#fff7ed' }};">
-                <span style="font-size:20px;line-height:1.3;">{{ $alert['icon'] }}</span>
-                <div style="flex:1;min-width:0;">
-                    <div style="font-size:13.5px;font-weight:700;color:#111827;margin-bottom:3px;">{{ $alert['title'] }}</div>
-                    <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">{{ $alert['desc'] }}</div>
-                    <a href="{{ $alert['link'] }}" style="font-size:12px;font-weight:600;color:{{ $alert['type'] === 'danger' ? '#dc2626' : '#d97706' }};text-decoration:none;">{{ $alert['label'] }} →</a>
+            @php
+                $alertIcon = preg_match('/^[a-z][a-z-]*$/', (string) ($alert['icon'] ?? ''))
+                    ? $alert['icon']
+                    : ($alertIcons[$alert['label'] ?? ''] ?? 'alert-triangle');
+            @endphp
+            <div class="sd-alert">
+                <span class="sd-alert-ic {{ $alert['type'] === 'danger' ? 'is-crit' : 'is-warn' }}"><svg class="mv-i" aria-hidden="true"><use href="#i-{{ $alertIcon }}"/></svg></span>
+                <div class="sd-alert-text">
+                    <div class="sd-alert-title">{{ $alert['title'] }}</div>
+                    <div class="sd-alert-desc">{{ $alert['desc'] }}</div>
                 </div>
+                <a href="{{ $alert['link'] }}" class="sd-alert-link">{{ $alert['label'] }} <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
             </div>
             @endforeach
         </div>
     </div>
     @endif
 
-    {{-- Ticket Trend + Visits Trend --}}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-        <div class="ui-card p-6">
-            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#111827;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ticket"/></svg> Ticket Trend (6 Months)</h3>
-            <canvas id="ticketTrendChart" style="width:100%;height:220px;max-height:220px;"></canvas>
+    {{-- Ticket trend + visits trend --}}
+    <div class="sd-2">
+        <div class="sd-card">
+            <div class="sd-card-head"><h3>Ticket Trend (6 Months)</h3></div>
+            <div class="sd-card-body"><div class="sd-chart"><canvas id="ticketTrendChart"></canvas></div></div>
         </div>
-        <div class="ui-card p-6">
-            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#111827;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Service Visits (6 Months)</h3>
-            <canvas id="visitsTrendChart" style="width:100%;height:220px;max-height:220px;"></canvas>
+        <div class="sd-card">
+            <div class="sd-card-head"><h3>Service Visits (6 Months)</h3></div>
+            <div class="sd-card-body"><div class="sd-chart"><canvas id="visitsTrendChart"></canvas></div></div>
         </div>
     </div>
 
-    {{-- Recent Tickets --}}
-    <div class="ui-card p-6">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="margin:0;font-size:15px;font-weight:700;color:#111827;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ticket"/></svg> Recent Tickets</h3>
-            <a href="{{ route('tickets.index') }}" style="font-size:13px;color:#1a3a5c;font-weight:600;text-decoration:none;">View All →</a>
+    {{-- Recent tickets --}}
+    <div class="sd-card">
+        <div class="sd-card-head">
+            <h3>Recent Tickets</h3>
+            <a href="{{ route('tickets.index') }}">View All <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
         </div>
         <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <table class="ui-table">
             <thead>
-                <tr style="background:#f8fafc;">
-                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">#</th>
-                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Title</th>
-                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Client</th>
-                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Assigned To</th>
-                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Priority</th>
-                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Status</th>
-                    <th style="padding:9px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Created</th>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Client</th>
+                    <th>Assigned To</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Created</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($recentTickets as $ticket)
                 @php
-                    $statusColors = ['open'=>'#dbeafe:#1d4ed8','in_progress'=>'#fef3c7:#92400e','on_hold'=>'#f3e8ff:#7e22ce','resolved'=>'#dcfce7:#166534','closed'=>'#f1f5f9:#475569','cancelled'=>'#fee2e2:#991b1b'];
-                    [$sBg,$sFg] = explode(':', $statusColors[$ticket->status] ?? '#f1f5f9:#374151');
-                    $priorityColors = ['low'=>'#dcfce7:#166534','medium'=>'#fef3c7:#92400e','high'=>'#fee2e2:#991b1b','urgent'=>'#fce7f3:#9d174d'];
-                    [$pBg,$pFg] = explode(':', $priorityColors[$ticket->priority] ?? '#f1f5f9:#374151');
+                    $statusBadge = ['open' => 'badge-blue', 'in_progress' => 'badge-yellow', 'on_hold' => 'badge-gray', 'resolved' => 'badge-green', 'closed' => 'badge-gray', 'cancelled' => 'badge-red'][$ticket->status] ?? 'badge-gray';
+                    $priorityBadge = ['low' => 'badge-gray', 'medium' => 'badge-blue', 'high' => 'badge-yellow', 'urgent' => 'badge-red', 'critical' => 'badge-red'][$ticket->priority] ?? 'badge-gray';
                 @endphp
-                <tr style="border-bottom:1px solid #f1f5f9;">
-                    <td style="padding:9px 12px;color:#6b7280;">#{{ $ticket->id }}</td>
-                    <td style="padding:9px 12px;font-weight:600;color:#111827;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                        <a href="{{ route('tickets.show', $ticket->id) }}" style="color:#1a3a5c;text-decoration:none;">{{ Str::limit($ticket->title, 45) }}</a>
-                    </td>
-                    <td style="padding:9px 12px;color:#374151;">{{ optional($ticket->client)->company_name ?? '—' }}</td>
-                    <td style="padding:9px 12px;color:#374151;">{{ $ticket->assignedTo ? $ticket->assignedTo->first_name . ' ' . $ticket->assignedTo->last_name : '—' }}</td>
-                    <td style="padding:9px 12px;">
-                        <span style="padding:3px 8px;border-radius:99px;font-size:11px;font-weight:700;background:{{ $pBg }};color:{{ $pFg }};">{{ ucfirst($ticket->priority ?? 'normal') }}</span>
-                    </td>
-                    <td style="padding:9px 12px;">
-                        <span style="padding:3px 8px;border-radius:99px;font-size:11px;font-weight:700;background:{{ $sBg }};color:{{ $sFg }};">{{ ucfirst(str_replace('_',' ',$ticket->status)) }}</span>
-                    </td>
-                    <td style="padding:9px 12px;color:#6b7280;white-space:nowrap;">{{ $ticket->created_at->format('d M Y') }}</td>
+                <tr>
+                    <td class="sd-muted mv-mono">#{{ $ticket->id }}</td>
+                    <td class="sd-title"><a href="{{ route('tickets.show', $ticket->id) }}">{{ Str::limit($ticket->title, 60) }}</a></td>
+                    <td>{{ optional($ticket->client)->company_name ?? '—' }}</td>
+                    <td>{{ $ticket->assignedTo ? $ticket->assignedTo->first_name . ' ' . $ticket->assignedTo->last_name : '—' }}</td>
+                    <td><span class="badge {{ $priorityBadge }}">{{ ucfirst($ticket->priority ?? 'normal') }}</span></td>
+                    <td><span class="badge {{ $statusBadge }}">{{ ucfirst(str_replace('_', ' ', $ticket->status)) }}</span></td>
+                    <td class="sd-muted">{{ $ticket->created_at->format('d M Y') }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="7" style="padding:24px;text-align:center;color:#6b7280;">No tickets found.</td></tr>
+                <tr><td colspan="7"><div class="sd-empty-inline"><svg class="mv-i" aria-hidden="true"><use href="#i-ticket"/></svg>No tickets found.</div></td></tr>
                 @endforelse
             </tbody>
         </table>
         </div>
     </div>
 
-    <!-- Tabbed Content -->
-    <div class="ui-card p-6">
-        <!-- Tab Navigation -->
-        <div class="tab-navigation">
-            <button class="tab-button active" onclick="switchTab(event, 'overview')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> System Overview</button>
-            <button class="tab-button" onclick="switchTab(event, 'clients')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Client Analytics</button>
-            <button class="tab-button" onclick="switchTab(event, 'terminals')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg> Terminal Management</button>
-            <button class="tab-button" onclick="switchTab(event, 'service')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Service Activity</button>
-            <button class="tab-button" onclick="switchTab(event, 'assets')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Asset Management</button>
-            <button class="tab-button" onclick="switchTab(event, 'employees')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Employee Performance</button>
-            <button class="tab-button" onclick="switchTab(event, 'projects')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Project Management</button>
-            <button class="tab-button" onclick="switchTab(event, 'regional')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg> Regional Analysis</button>
+    {{-- Tabbed analytics --}}
+    <div class="sd-card">
+        <div class="tab-navigation" role="tablist">
+            <button class="tab-button active" onclick="switchTab(event, 'overview')"><svg class="mv-i" aria-hidden="true"><use href="#i-chart"/></svg> System Overview</button>
+            <button class="tab-button" onclick="switchTab(event, 'clients')"><svg class="mv-i" aria-hidden="true"><use href="#i-building"/></svg> Client Analytics</button>
+            <button class="tab-button" onclick="switchTab(event, 'terminals')"><svg class="mv-i" aria-hidden="true"><use href="#i-monitor"/></svg> Terminal Management</button>
+            <button class="tab-button" onclick="switchTab(event, 'service')"><svg class="mv-i" aria-hidden="true"><use href="#i-wrench"/></svg> Service Activity</button>
+            <button class="tab-button" onclick="switchTab(event, 'assets')"><svg class="mv-i" aria-hidden="true"><use href="#i-box"/></svg> Asset Management</button>
+            <button class="tab-button" onclick="switchTab(event, 'employees')"><svg class="mv-i" aria-hidden="true"><use href="#i-users"/></svg> Employee Performance</button>
+            <button class="tab-button" onclick="switchTab(event, 'projects')"><svg class="mv-i" aria-hidden="true"><use href="#i-folder"/></svg> Project Management</button>
+            <button class="tab-button" onclick="switchTab(event, 'regional')"><svg class="mv-i" aria-hidden="true"><use href="#i-map"/></svg> Regional Analysis</button>
         </div>
 
-        <!-- Tab Content -->
+        {{-- Overview --}}
         <div id="overview" class="tab-content active">
-            <h3>System Overview & Key Metrics</h3>
-            <p class="section-intro">Start here for the fastest read on platform health, field activity, and the most important operational signals driving the rest of the dashboard.</p>
-
-            <div class="chart-grid" style="margin: 24px 0;">
-                <div class="chart-container">
+            <div class="sd-sec-head"><h3>System Overview &amp; Key Metrics</h3></div>
+            <div class="sd-grid">
+                <div class="sd-panel">
                     <h4>Monthly Visit Trends</h4>
-                    <canvas id="visitTrendsChart"></canvas>
+                    <div class="sd-chart"><canvas id="visitTrendsChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>System Performance Indicators</h4>
-                    <div class="kpi-grid">
-                        <div class="kpi-item">
-                            <div class="kpi-value">{{ $systemOverview['total_visits_this_month'] }}</div>
-                            <div class="kpi-label">Visits This Month</div>
-                            <div class="kpi-change {{ $systemOverview['total_visits_this_month'] > $systemOverview['total_visits_last_month'] ? 'positive' : 'negative' }}">
-                                {{ $systemOverview['total_visits_this_month'] > $systemOverview['total_visits_last_month'] ? '↗' : '↘' }}
-                                {{ abs($systemOverview['total_visits_this_month'] - $systemOverview['total_visits_last_month']) }} vs last month
+                    <div class="sd-figures">
+                        <div class="sd-fig">
+                            <div class="sd-fig-value">{{ $visitsNow }}</div>
+                            <div class="sd-fig-label">Visits This Month</div>
+                            <div class="sd-fig-sub {{ $visitsNow > $visitsPrev ? 'is-up' : ($visitsNow < $visitsPrev ? 'is-down' : '') }}">
+                                {{ $visitsNow >= $visitsPrev ? '+' : '−' }}{{ abs($visitsNow - $visitsPrev) }} vs last month
                             </div>
                         </div>
-
-                        <div class="kpi-item">
-                            <div class="kpi-value">{{ $assetData['total_assets'] }}</div>
-                            <div class="kpi-label">Total Assets</div>
-                            <div class="kpi-change">{{ $assetData['assignment_status']['assigned'] }} assigned</div>
+                        <div class="sd-fig">
+                            <div class="sd-fig-value">{{ $assetData['total_assets'] }}</div>
+                            <div class="sd-fig-label">Total Assets</div>
+                            <div class="sd-fig-sub">{{ $assetData['assignment_status']['assigned'] }} assigned</div>
                         </div>
-
-                        <div class="kpi-item">
-                            <div class="kpi-value">{{ number_format($serviceActivity['average_resolution_time'], 1) }}h</div>
-                            <div class="kpi-label">Avg Resolution Time</div>
-                            <div class="kpi-change">Ticket resolution</div>
+                        <div class="sd-fig">
+                            <div class="sd-fig-value">{{ number_format($serviceActivity['average_resolution_time'], 1) }}h</div>
+                            <div class="sd-fig-label">Avg Resolution Time</div>
+                            <div class="sd-fig-sub">Ticket resolution</div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="recommendation-box">
-                <h4><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-target"/></svg> Key Recommendations</h4>
-                <ul>
-                    @if($systemOverview['terminal_uptime'] < 90)
-                    <li><strong>Terminal Health:</strong> System uptime is {{ $systemOverview['terminal_uptime'] }}%. Consider increasing maintenance frequency for terminals in maintenance/faulty status.</li>
-                    @endif
-                    @if($systemOverview['open_tickets'] > 5)
-                    <li><strong>Support Queue:</strong> {{ $systemOverview['open_tickets'] }} open tickets require attention to maintain service quality.</li>
-                    @endif
-                    @if($assetData['low_stock_alerts'] > 0)
-                    <li><strong>Inventory Alert:</strong> {{ $assetData['low_stock_alerts'] }} assets are below minimum stock levels and need replenishment.</li>
-                    @endif
-                    <li><strong>Growth Opportunity:</strong> Consider expanding service coverage to improve regional distribution and reduce technician workload.</li>
-                </ul>
+                    <h4 style="margin-top:18px;">Key Recommendations</h4>
+                    <ul class="sd-notes">
+                        @if($systemOverview['terminal_uptime'] < 90)
+                        <li><span><strong>Terminal Health:</strong> System uptime is {{ $systemOverview['terminal_uptime'] }}%. Consider increasing maintenance frequency for terminals in maintenance/faulty status.</span></li>
+                        @endif
+                        @if($systemOverview['open_tickets'] > 5)
+                        <li><span><strong>Support Queue:</strong> {{ $systemOverview['open_tickets'] }} open tickets require attention to maintain service quality.</span></li>
+                        @endif
+                        @if($assetData['low_stock_alerts'] > 0)
+                        <li><span><strong>Inventory Alert:</strong> {{ $assetData['low_stock_alerts'] }} assets are below minimum stock levels and need replenishment.</span></li>
+                        @endif
+                        <li><span><strong>Growth Opportunity:</strong> Consider expanding service coverage to improve regional distribution and reduce technician workload.</span></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
+        {{-- Clients --}}
         <div id="clients" class="tab-content">
-            <div class="section-toolbar">
-                <h3>Client Analytics & Performance</h3>
-                <button onclick="exportSection('clients')" class="btn-secondary btn-sm">Export Client Data</button>
+            <div class="sd-sec-head">
+                <h3>Client Analytics &amp; Performance</h3>
+                <button onclick="exportSection('clients')" class="btn-secondary btn-sm"><svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export Client Data</button>
             </div>
-            <p class="section-intro">Review client mix, concentration, and account activity to spot where terminal footprint and service demand are growing fastest.</p>
-
-            <div class="chart-grid">
-                <div class="chart-container">
+            <div class="sd-grid">
+                <div class="sd-panel">
                     <h4>Client Distribution by Status</h4>
-                    <canvas id="clientStatusChart"></canvas>
+                    <div class="sd-chart"><canvas id="clientStatusChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Top Clients by Terminal Count</h4>
-                    <div class="client-list">
-                        @foreach($clientAnalytics['client_terminal_counts'] as $client)
-                        <div class="client-item">
-                            <div class="client-info">
-                                <span class="client-name">{{ $client['name'] }}</span>
-                                <span class="client-status status-{{ $client['status'] }}">{{ strtoupper($client['status']) }}</span>
+                    @php $clientBadge = ['active' => 'badge-green', 'prospect' => 'badge-yellow', 'lost' => 'badge-red']; @endphp
+                    <div class="sd-rows is-scroll">
+                        @forelse($clientAnalytics['client_terminal_counts'] as $client)
+                        <div class="sd-row">
+                            <div class="sd-row-main">
+                                <span class="sd-row-name">{{ $client['name'] }}</span>
+                                <span class="badge {{ $clientBadge[$client['status']] ?? 'badge-gray' }}">{{ ucfirst($client['status']) }}</span>
                             </div>
-                            <div class="client-stats">
-                                <span class="terminal-count">{{ $client['terminal_count'] }} terminals</span>
-                                <span class="active-count">({{ $client['active_terminals'] }} active)</span>
-                            </div>
+                            <span class="sd-row-meta"><strong>{{ $client['terminal_count'] }}</strong> terminals ({{ $client['active_terminals'] }} active)</span>
                         </div>
-                        @endforeach
+                        @empty
+                        <div class="sd-empty-inline"><svg class="mv-i" aria-hidden="true"><use href="#i-building"/></svg>No clients yet.</div>
+                        @endforelse
                     </div>
                 </div>
-            </div>
-
-            <div style="margin-top: 24px;">
-                <h4>Client Activity Analysis</h4>
-                <div class="chart-container">
-                    <canvas id="clientActivityChart"></canvas>
+                <div class="sd-panel sd-panel-wide">
+                    <h4>Client Activity Analysis</h4>
+                    <div class="sd-chart"><canvas id="clientActivityChart"></canvas></div>
                 </div>
             </div>
         </div>
 
+        {{-- Terminals --}}
         <div id="terminals" class="tab-content">
-            <div class="section-toolbar">
-                <h3>Terminal Management & Health</h3>
-                <button onclick="exportSection('terminals')" class="btn-secondary btn-sm">Export Terminal Data</button>
+            <div class="sd-sec-head">
+                <h3>Terminal Management &amp; Health</h3>
+                <button onclick="exportSection('terminals')" class="btn-secondary btn-sm"><svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export Terminal Data</button>
             </div>
-            <p class="section-intro">Use this section to track fleet health, deployment spread, and the terminals most likely to need service before they affect uptime.</p>
-
-            <div class="chart-grid">
-                <div class="chart-container">
+            <div class="sd-grid">
+                <div class="sd-panel">
                     <h4>Terminal Status Distribution</h4>
-                    <canvas id="terminalStatusChart"></canvas>
+                    <div class="sd-chart"><canvas id="terminalStatusChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Device Model Distribution</h4>
-                    <canvas id="terminalModelsChart"></canvas>
+                    <div class="sd-chart"><canvas id="terminalModelsChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Geographic Distribution</h4>
-                    <canvas id="terminalRegionChart"></canvas>
+                    <div class="sd-chart"><canvas id="terminalRegionChart"></canvas></div>
                 </div>
-
-                <div class="service-alerts">
+                <div class="sd-panel">
                     <h4>Service Requirements</h4>
-                    <div class="alert-item urgent">
-                        <span class="alert-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
-                        <div class="alert-content">
-                            <div class="alert-title">{{ $terminalData['terminals_needing_service'] }} Terminals Need Service</div>
-                            <div class="alert-desc">Immediate attention required for optimal performance</div>
-                        </div>
+                    <div class="sd-status">
+                        <span class="sd-alert-ic is-crit"><svg class="mv-i" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
+                        <span class="sd-status-value">{{ $terminalData['terminals_needing_service'] }}</span>
+                        <div class="sd-status-text">Terminals Need Service<span>Immediate attention required for optimal performance</span></div>
                     </div>
-
                     @if(isset($terminalData['service_due_analysis']))
-                    <div class="alert-item warning">
-                        <span class="alert-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
-                        <div class="alert-content">
-                            <div class="alert-title">{{ $terminalData['service_due_analysis']['due_this_week'] ?? 0 }} Due This Week</div>
-                            <div class="alert-desc">Schedule maintenance to prevent issues</div>
-                        </div>
+                    <div class="sd-status">
+                        <span class="sd-alert-ic is-warn"><svg class="mv-i" aria-hidden="true"><use href="#i-calendar"/></svg></span>
+                        <span class="sd-status-value">{{ $terminalData['service_due_analysis']['due_this_week'] ?? 0 }}</span>
+                        <div class="sd-status-text">Due This Week<span>Schedule maintenance to prevent issues</span></div>
                     </div>
                     @endif
                 </div>
             </div>
         </div>
 
+        {{-- Service --}}
         <div id="service" class="tab-content">
-            <div class="section-toolbar">
-                <h3>Service Activity & Performance</h3>
-                <button onclick="exportSection('service')" class="btn-secondary btn-sm">Export Service Data</button>
+            <div class="sd-sec-head">
+                <h3>Service Activity &amp; Performance</h3>
+                <button onclick="exportSection('service')" class="btn-secondary btn-sm"><svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export Service Data</button>
             </div>
-            <p class="section-intro">This view ties technician output, ticket load, and job status together so support pressure is easier to assess at a glance.</p>
-
-            <div class="chart-grid">
-                <div class="chart-container">
+            <div class="sd-grid">
+                <div class="sd-panel">
                     <h4>Visits by Technician (Last 30 Days)</h4>
-                    <canvas id="technicianVisitsChart"></canvas>
+                    <div class="sd-chart"><canvas id="technicianVisitsChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Ticket Priority Distribution</h4>
-                    <canvas id="ticketPriorityChart"></canvas>
+                    <div class="sd-chart"><canvas id="ticketPriorityChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Job Assignment Status</h4>
-                    <canvas id="jobStatusChart"></canvas>
+                    <div class="sd-chart"><canvas id="jobStatusChart"></canvas></div>
                 </div>
-
-                <div class="productivity-metrics">
+                <div class="sd-panel">
                     <h4>Technician Productivity</h4>
-                    @foreach($serviceActivity['technician_productivity'] as $tech)
-                    <div class="productivity-item">
-                        <div class="tech-name">{{ $tech['name'] }}</div>
-                        <div class="productivity-bar">
-                            <div class="progress-fill" style="width: {{ $tech['productivity_score'] }}%; background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);"></div>
+                    <div class="sd-bars">
+                        @forelse($serviceActivity['technician_productivity'] as $tech)
+                        <div class="sd-bar-row">
+                            <span class="sd-bar-label">{{ $tech['name'] }}</span>
+                            <div class="sd-track"><div class="sd-fill" style="width: {{ min(100, max(0, $tech['productivity_score'])) }}%;"></div></div>
+                            <span class="sd-bar-value">{{ $tech['visits'] }} visits</span>
                         </div>
-                        <div class="tech-stats">{{ $tech['visits'] }} visits</div>
+                        @empty
+                        <div class="sd-empty-inline"><svg class="mv-i" aria-hidden="true"><use href="#i-users"/></svg>No technician activity yet.</div>
+                        @endforelse
                     </div>
-                    @endforeach
                 </div>
             </div>
         </div>
 
+        {{-- Assets --}}
         <div id="assets" class="tab-content">
-            <div class="section-toolbar">
-                <h3>Asset Management & Utilization</h3>
-                <button onclick="exportSection('assets')" class="btn-secondary btn-sm">Export Asset Data</button>
+            <div class="sd-sec-head">
+                <h3>Asset Management &amp; Utilization</h3>
+                <button onclick="exportSection('assets')" class="btn-secondary btn-sm"><svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export Asset Data</button>
             </div>
-            <p class="section-intro">Check stock pressure, assignment utilization, and the items driving the most operational demand across the business.</p>
-
-            <div class="chart-grid">
-                <div class="chart-container">
+            <div class="sd-grid">
+                <div class="sd-panel">
                     <h4>Assets by Category</h4>
-                    <canvas id="assetCategoryChart"></canvas>
+                    <div class="sd-chart"><canvas id="assetCategoryChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Asset Utilization Overview</h4>
-                    <div class="utilization-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">{{ $assetData['assignment_status']['total_stock'] }}</div>
-                            <div class="stat-label">Total Stock</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">{{ $assetData['assignment_status']['assigned'] }}</div>
-                            <div class="stat-label">Currently Assigned</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">{{ $assetData['assignment_status']['available'] }}</div>
-                            <div class="stat-label">Available</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">{{ $assetData['asset_utilization'] }}%</div>
-                            <div class="stat-label">Utilization Rate</div>
-                        </div>
+                    <div class="sd-figures">
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $assetData['assignment_status']['total_stock'] }}</div><div class="sd-fig-label">Total Stock</div></div>
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $assetData['assignment_status']['assigned'] }}</div><div class="sd-fig-label">Currently Assigned</div></div>
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $assetData['assignment_status']['available'] }}</div><div class="sd-fig-label">Available</div></div>
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $assetData['asset_utilization'] }}%</div><div class="sd-fig-label">Utilization Rate</div></div>
                     </div>
+                    @if($assetData['low_stock_alerts'] > 0)
+                    <div class="sd-status" style="margin-top:14px;">
+                        <span class="sd-alert-ic is-warn"><svg class="mv-i" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
+                        <div class="sd-status-text" style="flex:1;">Stock Alerts<span>{{ $assetData['low_stock_alerts'] }} assets are below minimum stock levels and require immediate attention.</span></div>
+                        <a href="{{ route('assets.low-stock-alerts') }}" class="btn-secondary btn-sm">View Low Stock Items</a>
+                    </div>
+                    @endif
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Most Requested Assets</h4>
-                    <div class="requested-assets">
-                        @foreach($assetData['top_requested_assets'] as $asset => $count)
-                        <div class="asset-request-item">
-                            <span class="asset-name">{{ $asset }}</span>
-                            <span class="request-count">{{ $count }} requests</span>
+                    <div class="sd-rows">
+                        @forelse($assetData['top_requested_assets'] as $asset => $count)
+                        <div class="sd-row">
+                            <span class="sd-row-name">{{ $asset }}</span>
+                            <span class="sd-row-meta"><strong>{{ $count }}</strong> requests</span>
                         </div>
-                        @endforeach
+                        @empty
+                        <div class="sd-empty-inline"><svg class="mv-i" aria-hidden="true"><use href="#i-box"/></svg>No asset requests yet.</div>
+                        @endforelse
                     </div>
                 </div>
-
-                @if($assetData['low_stock_alerts'] > 0)
-                <div class="alert-box">
-                    <h4><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Stock Alerts</h4>
-                    <p>{{ $assetData['low_stock_alerts'] }} assets are below minimum stock levels and require immediate attention.</p>
-                    <a href="{{ route('assets.low-stock-alerts') }}" class="btn-secondary">View Low Stock Items</a>
-                </div>
-                @endif
             </div>
         </div>
 
+        {{-- Employees --}}
         <div id="employees" class="tab-content">
-            <div class="section-toolbar">
-                <h3>Employee Performance & Analytics</h3>
-                <button onclick="exportSection('employees')" class="btn-secondary btn-sm">Export Employee Data</button>
+            <div class="sd-sec-head">
+                <h3>Employee Performance &amp; Analytics</h3>
+                <button onclick="exportSection('employees')" class="btn-secondary btn-sm"><svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export Employee Data</button>
             </div>
-            <p class="section-intro">Review team composition, technician workload, and resource distribution to see where capacity is tight or underused.</p>
-
-            <div class="chart-grid">
-                <div class="chart-container">
+            <div class="sd-grid">
+                <div class="sd-panel">
                     <h4>Employees by Department</h4>
-                    <canvas id="employeeDeptChart"></canvas>
+                    <div class="sd-chart"><canvas id="employeeDeptChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Employee Roles Distribution</h4>
-                    <canvas id="employeeRoleChart"></canvas>
+                    <div class="sd-chart"><canvas id="employeeRoleChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Current Technician Workload</h4>
-                    <div class="workload-list">
-                        @foreach($employeeData['technician_workload'] as $tech => $assignments)
-                        <div class="workload-item">
-                            <span class="tech-name">{{ $tech }}</span>
-                            <div class="workload-bar">
-                                <div class="workload-fill" style="width: {{ min(100, ($assignments / 5) * 100) }}%;"></div>
-                            </div>
-                            <span class="assignment-count">{{ $assignments }} assignments</span>
+                    <div class="sd-bars">
+                        @forelse($employeeData['technician_workload'] as $tech => $assignments)
+                        <div class="sd-bar-row">
+                            <span class="sd-bar-label">{{ $tech }}</span>
+                            <div class="sd-track"><div class="sd-fill" style="width: {{ min(100, ($assignments / 5) * 100) }}%;"></div></div>
+                            <span class="sd-bar-value">{{ $assignments }} assignments</span>
                         </div>
-                        @endforeach
+                        @empty
+                        <div class="sd-empty-inline"><svg class="mv-i" aria-hidden="true"><use href="#i-users"/></svg>No open assignments.</div>
+                        @endforelse
                     </div>
                 </div>
-
-                <div class="employee-stats">
+                <div class="sd-panel">
                     <h4>Workforce Overview</h4>
-                    <div class="stat-grid">
-                        <div class="stat-card">
-                            <div class="stat-number">{{ $employeeData['total_employees'] }}</div>
-                            <div class="stat-title">Active Employees</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">{{ $employeeData['employee_asset_assignments'] }}</div>
-                            <div class="stat-title">Asset Assignments</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">{{ $employeeData['recent_hires'] }}</div>
-                            <div class="stat-title">Recent Hires (3mo)</div>
-                        </div>
+                    <div class="sd-figures">
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $employeeData['total_employees'] }}</div><div class="sd-fig-label">Active Employees</div></div>
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $employeeData['employee_asset_assignments'] }}</div><div class="sd-fig-label">Asset Assignments</div></div>
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $employeeData['recent_hires'] }}</div><div class="sd-fig-label">Recent Hires (3mo)</div></div>
                     </div>
                 </div>
             </div>
         </div>
 
+        {{-- Projects --}}
         <div id="projects" class="tab-content">
-            <div class="section-toolbar">
-                <h3>Project Management & Progress</h3>
-                <button onclick="exportSection('projects')" class="btn-secondary btn-sm">Export Project Data</button>
+            <div class="sd-sec-head">
+                <h3>Project Management &amp; Progress</h3>
+                <button onclick="exportSection('projects')" class="btn-secondary btn-sm"><svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export Project Data</button>
             </div>
-            <p class="section-intro">This section focuses on delivery health, active project mix, and deadline risk so execution issues stand out earlier.</p>
-
-            <div class="chart-grid">
-                <div class="chart-container">
+            <div class="sd-grid">
+                <div class="sd-panel">
                     <h4>Projects by Status</h4>
-                    <canvas id="projectStatusChart"></canvas>
+                    <div class="sd-chart"><canvas id="projectStatusChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Project Types Distribution</h4>
-                    <canvas id="projectTypeChart"></canvas>
+                    <div class="sd-chart"><canvas id="projectTypeChart"></canvas></div>
                 </div>
-
-                <div class="project-alerts">
+                <div class="sd-panel">
                     <h4>Project Health Indicators</h4>
-                    <div class="project-metrics">
-                        <div class="metric-box success">
-                            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
-                            <div class="metric-info">
-                                <div class="metric-value">{{ $projectData['project_completion_rate'] }}%</div>
-                                <div class="stat-label uppercase tracking-wide">Completion Rate</div>
-                            </div>
-                        </div>
-
-                        @if(isset($projectData['overdue_projects']) && $projectData['overdue_projects'] > 0)
-                        <div class="metric-box danger">
-                            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
-                            <div class="metric-info">
-                                <div class="metric-value">{{ $projectData['overdue_projects'] }}</div>
-                                <div class="stat-label uppercase tracking-wide">Overdue Projects</div>
-                            </div>
-                        </div>
-                        @endif
-
-                        @if(isset($projectData['upcoming_deadlines']) && $projectData['upcoming_deadlines'] > 0)
-                        <div class="metric-box warning">
-                            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
-                            <div class="metric-info">
-                                <div class="metric-value">{{ $projectData['upcoming_deadlines'] }}</div>
-                                <div class="stat-label uppercase tracking-wide">Due in 30 Days</div>
-                            </div>
-                        </div>
-                        @endif
+                    <div class="sd-status">
+                        <span class="sd-alert-ic is-good"><svg class="mv-i" aria-hidden="true"><use href="#i-check-circle"/></svg></span>
+                        <span class="sd-status-value">{{ $projectData['project_completion_rate'] }}%</span>
+                        <div class="sd-status-text">Completion Rate</div>
                     </div>
+                    @if(isset($projectData['overdue_projects']) && $projectData['overdue_projects'] > 0)
+                    <div class="sd-status">
+                        <span class="sd-alert-ic is-crit"><svg class="mv-i" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
+                        <span class="sd-status-value">{{ $projectData['overdue_projects'] }}</span>
+                        <div class="sd-status-text">Overdue Projects</div>
+                    </div>
+                    @endif
+                    @if(isset($projectData['upcoming_deadlines']) && $projectData['upcoming_deadlines'] > 0)
+                    <div class="sd-status">
+                        <span class="sd-alert-ic is-warn"><svg class="mv-i" aria-hidden="true"><use href="#i-calendar"/></svg></span>
+                        <span class="sd-status-value">{{ $projectData['upcoming_deadlines'] }}</span>
+                        <div class="sd-status-text">Due in 30 Days</div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
 
+        {{-- Regional --}}
         <div id="regional" class="tab-content">
-            <div class="section-toolbar">
-                <h3>Regional Analysis & Coverage</h3>
-                <button onclick="exportSection('regional')" class="btn-secondary btn-sm">Export Regional Data</button>
+            <div class="sd-sec-head">
+                <h3>Regional Analysis &amp; Coverage</h3>
+                <button onclick="exportSection('regional')" class="btn-secondary btn-sm"><svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export Regional Data</button>
             </div>
-            <p class="section-intro">Compare geographic load, service intensity, and coverage depth to understand where regional support balance is strongest or weakest.</p>
-
-            <div class="chart-grid">
-                <div class="chart-container">
+            <div class="sd-grid">
+                <div class="sd-panel">
                     <h4>Terminal Distribution by Region</h4>
-                    <canvas id="regionalTerminalsChart"></canvas>
+                    <div class="sd-chart"><canvas id="regionalTerminalsChart"></canvas></div>
                 </div>
-
-                <div class="chart-container">
+                <div class="sd-panel">
                     <h4>Service Activity by Region</h4>
-                    <canvas id="regionalServiceChart"></canvas>
+                    <div class="sd-chart"><canvas id="regionalServiceChart"></canvas></div>
                 </div>
-
-                <div class="regional-health">
+                <div class="sd-panel">
                     <h4>Regional Health Scores</h4>
-                    @foreach($regionalData['regional_health_scores'] as $region => $score)
-                    <div class="region-item">
-                        <div class="region-name">{{ $region }}</div>
-                        <div class="health-score-bar">
-                            <div class="score-fill" style="width: {{ $score }}%; background: {{ $score >= 80 ? '#4CAF50' : ($score >= 60 ? '#FF9800' : '#F44336') }};"></div>
+                    <div class="sd-bars">
+                        @forelse($regionalData['regional_health_scores'] as $region => $regionScore)
+                        <div class="sd-bar-row">
+                            <span class="sd-bar-label">{{ $region }}</span>
+                            <div class="sd-track"><div class="sd-fill {{ $tone($regionScore) }}" style="width: {{ min(100, max(0, $regionScore)) }}%;"></div></div>
+                            <span class="sd-bar-value">{{ $regionScore }}%</span>
                         </div>
-                        <div class="score-value">{{ $score }}%</div>
+                        @empty
+                        <div class="sd-empty-inline"><svg class="mv-i" aria-hidden="true"><use href="#i-map"/></svg>No regional data yet.</div>
+                        @endforelse
                     </div>
-                    @endforeach
                 </div>
-
-                <div class="coverage-stats">
+                <div class="sd-panel">
                     <h4>Coverage Analysis</h4>
-                    <div class="coverage-grid">
-                        <div class="coverage-item">
-                            <div class="coverage-number">{{ $regionalData['coverage_analysis']['total_cities'] }}</div>
-                            <div class="coverage-label">Cities Covered</div>
-                        </div>
-                        <div class="coverage-item">
-                            <div class="coverage-number">{{ $regionalData['coverage_analysis']['covered_regions'] }}</div>
-                            <div class="coverage-label">Active Regions</div>
-                        </div>
-                        <div class="coverage-item">
-                            <div class="coverage-number">{{ $regionalData['coverage_analysis']['terminals_per_technician'] }}</div>
-                            <div class="coverage-label">Terminals/Technician</div>
-                        </div>
+                    <div class="sd-figures">
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $regionalData['coverage_analysis']['total_cities'] }}</div><div class="sd-fig-label">Cities Covered</div></div>
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $regionalData['coverage_analysis']['covered_regions'] }}</div><div class="sd-fig-label">Active Regions</div></div>
+                        <div class="sd-fig"><div class="sd-fig-value">{{ $regionalData['coverage_analysis']['terminals_per_technician'] }}</div><div class="sd-fig-label">Terminals/Technician</div></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+@endsection
 
-<!-- Chart.js CDN -->
+@push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-
-<!-- Custom Styles -->
-
 <script>
+// ── Chart styling shared by every chart on this page ──────────────────────
+const MV = {
+    accent: '#2B64A8', neutral: '#9AA6B4', light: '#CBD3DD',
+    good: '#1D7F46', warn: '#C28A2C', crit: '#B83232',
+    grid: '#E1E6EC', tick: '#6A7686', ink: '#16202C'
+};
+
+if (window.Chart) {
+    Chart.defaults.font.family = '"IBM Plex Sans", "Segoe UI", system-ui, sans-serif';
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = MV.tick;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.pointStyle = 'rect';
+    Chart.defaults.plugins.legend.labels.boxWidth = 8;
+    Chart.defaults.plugins.legend.labels.boxHeight = 8;
+    Chart.defaults.plugins.legend.labels.padding = 14;
+    Chart.defaults.plugins.tooltip.backgroundColor = MV.ink;
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.plugins.tooltip.cornerRadius = 6;
+    Chart.defaults.plugins.tooltip.boxPadding = 4;
+}
+
+const mvCatAxis   = { grid: { display: false, drawBorder: false }, ticks: { color: MV.tick, autoSkip: true, maxRotation: 0 } };
+const mvValueAxis = { beginAtZero: true, grid: { color: MV.grid, drawBorder: false }, ticks: { color: MV.tick, precision: 0 } };
+
+const pretty = s => String(s ?? '—').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+function mvHasData(values) {
+    return Array.isArray(values) && values.some(v => Number(v) > 0);
+}
+
+function mvEmpty(canvas, text) {
+    if (!canvas) return;
+    canvas.style.display = 'none';
+    const box = canvas.parentElement;
+    if (box.querySelector('.sd-empty')) return;
+    const el = document.createElement('div');
+    el.className = 'sd-empty';
+    el.innerHTML = '<svg class="mv-i" aria-hidden="true"><use href="#i-chart"/></svg><span></span>';
+    el.querySelector('span').textContent = text || 'No data for this period yet';
+    box.appendChild(el);
+}
+
+// Colour by meaning for status-like keys; unknown keys stay neutral.
+function mvStatusColor(key, map) {
+    const k = String(key ?? '').toLowerCase().replace(/[\s-]+/g, '_');
+    return map[k] || MV.light;
+}
+const TERMINAL_STATUS = { active: MV.good, online: MV.good, working: MV.good, maintenance: MV.warn, needs_attention: MV.warn, pending: MV.warn, faulty: MV.crit, offline: MV.crit, not_working: MV.crit, decommissioned: MV.neutral, inactive: MV.light };
+const CLIENT_STATUS   = { active: MV.good, prospect: MV.neutral, inactive: MV.light, lost: MV.crit };
+const PRIORITY        = { urgent: MV.crit, critical: MV.crit, high: MV.warn, medium: MV.neutral, low: MV.light };
+const JOB_STATUS      = { completed: MV.good, assigned: MV.accent, in_progress: MV.accent, scheduled: MV.accent, pending: MV.warn, on_hold: MV.warn, cancelled: MV.crit, failed: MV.crit };
+const PROJECT_STATUS  = { active: MV.accent, completed: MV.good, on_hold: MV.warn, paused: MV.warn, cancelled: MV.crit, planning: MV.neutral, closed: MV.light };
+
+function mvBar(canvas, labels, values, opts = {}) {
+    if (!canvas) return null;
+    if (!labels.length || !mvHasData(values)) { mvEmpty(canvas, opts.empty); return null; }
+    const horizontal = !!opts.horizontal;
+    return new Chart(canvas, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: opts.label || 'Count', data: values, backgroundColor: opts.colors || MV.accent, borderRadius: 4, maxBarThickness: 28 }] },
+        options: {
+            responsive: true, maintainAspectRatio: false, indexAxis: horizontal ? 'y' : 'x',
+            plugins: { legend: { display: false } },
+            scales: horizontal ? { x: mvValueAxis, y: mvCatAxis } : { x: mvCatAxis, y: mvValueAxis }
+        }
+    });
+}
+
+function mvDoughnut(canvas, labels, values, colors, opts = {}) {
+    if (!canvas) return null;
+    if (!labels.length || !mvHasData(values)) { mvEmpty(canvas, opts.empty); return null; }
+    return new Chart(canvas, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: '#fff', borderWidth: 2, hoverOffset: 2 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom' } } }
+    });
+}
+
+function mvLine(canvas, labels, values, label, opts = {}) {
+    if (!canvas) return null;
+    if (!labels.length || !mvHasData(values)) { mvEmpty(canvas, opts.empty); return null; }
+    return new Chart(canvas, {
+        type: 'line',
+        data: { labels, datasets: [{ label, data: values, borderColor: MV.accent, backgroundColor: 'rgba(43, 100, 168, .08)', fill: true, tension: 0.3, borderWidth: 2, pointRadius: 3, pointBackgroundColor: MV.accent }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: mvCatAxis, y: mvValueAxis } }
+    });
+}
+
+const entries = obj => Object.entries(obj || {});
+
 // Global chart instances
 let charts = {};
 
@@ -1054,445 +756,148 @@ let charts = {};
 function switchTab(evt, tabName) {
     const tabContents = document.getElementsByClassName('tab-content');
     const tabButtons = document.getElementsByClassName('tab-button');
-
-    // Hide all tab contents
-    for (let i = 0; i < tabContents.length; i++) {
-        tabContents[i].classList.remove('active');
-    }
-
-    // Remove active class from all buttons
-    for (let i = 0; i < tabButtons.length; i++) {
-        tabButtons[i].classList.remove('active');
-    }
-
-    // Show selected tab and mark button as active
+    for (let i = 0; i < tabContents.length; i++) tabContents[i].classList.remove('active');
+    for (let i = 0; i < tabButtons.length; i++) tabButtons[i].classList.remove('active');
     document.getElementById(tabName).classList.add('active');
     evt.currentTarget.classList.add('active');
-
-    // Initialize charts for the active tab
     setTimeout(() => initializeChartsForTab(tabName), 100);
 }
 
-// Chart initialization
 function initializeChartsForTab(tabName) {
-    switch(tabName) {
-        case 'overview':
-            initOverviewCharts();
-            break;
-        case 'clients':
-            initClientCharts();
-            break;
-        case 'terminals':
-            initTerminalCharts();
-            break;
-        case 'service':
-            initServiceCharts();
-            break;
-        case 'assets':
-            initAssetCharts();
-            break;
-        case 'employees':
-            initEmployeeCharts();
-            break;
-        case 'projects':
-            initProjectCharts();
-            break;
-        case 'regional':
-            initRegionalCharts();
-            break;
+    switch (tabName) {
+        case 'overview':  initOverviewCharts(); break;
+        case 'clients':   initClientCharts(); break;
+        case 'terminals': initTerminalCharts(); break;
+        case 'service':   initServiceCharts(); break;
+        case 'assets':    initAssetCharts(); break;
+        case 'employees': initEmployeeCharts(); break;
+        case 'projects':  initProjectCharts(); break;
+        case 'regional':  initRegionalCharts(); break;
     }
 }
 
 function initOverviewCharts() {
-    // Health Score Chart (Doughnut)
+    // Health score ring
     const healthCtx = document.getElementById('healthScoreChart');
     if (healthCtx && !charts.healthScore) {
         const score = {{ $systemOverview['system_health_score'] }};
+        const tone = score >= 80 ? MV.good : (score >= 60 ? MV.warn : MV.crit);
         charts.healthScore = new Chart(healthCtx, {
             type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [score, 100 - score],
-                    backgroundColor: ['#1976D2', '#F0F0F0'],
-                    borderWidth: 0,
-                    cutout: '70%'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
+            data: { datasets: [{ data: [score, Math.max(0, 100 - score)], backgroundColor: [tone, '#EDF0F4'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '78%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
         });
     }
 
-    // Visit Trends Chart
+    // Monthly visit trends (real visit counts for the last 6 months)
     const visitCtx = document.getElementById('visitTrendsChart');
     if (visitCtx && !charts.visitTrends) {
-        charts.visitTrends = new Chart(visitCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Visits',
-                    data: [120, 150, 180, 200, 170, 220],
-                    borderColor: '#1976D2',
-                    backgroundColor: 'rgba(25, 118, 210, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        const v = @json($visitsTrend);
+        charts.visitTrends = mvLine(visitCtx, v.labels, v.visits, 'Visits', { empty: 'No visits in the last 6 months' }) || true;
     }
 }
 
 function initClientCharts() {
-    // Client Status Distribution
     const clientStatusCtx = document.getElementById('clientStatusChart');
     if (clientStatusCtx && !charts.clientStatus) {
-        const statusData = @json($clientAnalytics['client_distribution']);
-        charts.clientStatus = new Chart(clientStatusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(statusData).map(s => s.toUpperCase()),
-                datasets: [{
-                    data: Object.values(statusData),
-                    backgroundColor: ['#4CAF50', '#FF9800', '#F44336', '#9E9E9E']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+        const d = entries(@json($clientAnalytics['client_distribution']));
+        charts.clientStatus = mvDoughnut(clientStatusCtx, d.map(e => pretty(e[0])), d.map(e => e[1]), d.map(e => mvStatusColor(e[0], CLIENT_STATUS))) || true;
     }
 
-    // Client Activity Chart
     const activityCtx = document.getElementById('clientActivityChart');
     if (activityCtx && !charts.clientActivity) {
-        const activityData = @json($clientAnalytics['top_clients_by_activity']);
-        charts.clientActivity = new Chart(activityCtx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(activityData),
-                datasets: [{
-                    label: 'Visits',
-                    data: Object.values(activityData),
-                    backgroundColor: '#1976D2'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        const d = entries(@json($clientAnalytics['top_clients_by_activity']));
+        charts.clientActivity = mvBar(activityCtx, d.map(e => e[0]), d.map(e => e[1]), { label: 'Visits', empty: 'No client visits yet' }) || true;
     }
 }
 
 function initTerminalCharts() {
-    // Terminal Status Distribution
     const terminalStatusCtx = document.getElementById('terminalStatusChart');
     if (terminalStatusCtx && !charts.terminalStatus) {
-        const statusData = @json($terminalData['status_distribution']);
-        charts.terminalStatus = new Chart(terminalStatusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(statusData).map(s => s.toUpperCase()),
-                datasets: [{
-                    data: Object.values(statusData),
-                    backgroundColor: ['#4CAF50', '#FF9800', '#F44336', '#9E9E9E']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+        const d = entries(@json($terminalData['status_distribution']));
+        charts.terminalStatus = mvDoughnut(terminalStatusCtx, d.map(e => pretty(e[0])), d.map(e => e[1]), d.map(e => mvStatusColor(e[0], TERMINAL_STATUS))) || true;
     }
 
-    // Terminal Models Chart
     const modelsCtx = document.getElementById('terminalModelsChart');
     if (modelsCtx && !charts.terminalModels) {
-        const modelData = @json($terminalData['model_distribution']);
-        charts.terminalModels = new Chart(modelsCtx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(modelData),
-                datasets: [{
-                    data: Object.values(modelData),
-                    backgroundColor: '#2196F3'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        const d = entries(@json($terminalData['model_distribution'])).sort((a, b) => b[1] - a[1]);
+        charts.terminalModels = mvBar(modelsCtx, d.map(e => e[0] || 'Unknown'), d.map(e => e[1]), { label: 'Terminals', horizontal: true }) || true;
     }
 
-    // Regional Distribution
     const regionCtx = document.getElementById('terminalRegionChart');
     if (regionCtx && !charts.terminalRegion) {
-        const regionData = @json($terminalData['regional_distribution']);
-        charts.terminalRegion = new Chart(regionCtx, {
-            type: 'pie',
-            data: {
-                labels: Object.keys(regionData),
-                datasets: [{
-                    data: Object.values(regionData),
-                    backgroundColor: ['#4CAF50', '#FF9800', '#F44336', '#2196F3', '#9C27B0']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+        const d = entries(@json($terminalData['regional_distribution'])).sort((a, b) => b[1] - a[1]);
+        charts.terminalRegion = mvBar(regionCtx, d.map(e => e[0] || 'Unknown'), d.map(e => e[1]), { label: 'Terminals', horizontal: true }) || true;
     }
 }
 
 function initServiceCharts() {
-    // Technician Visits Chart
     const techVisitsCtx = document.getElementById('technicianVisitsChart');
     if (techVisitsCtx && !charts.technicianVisits) {
-        const visitsData = @json($serviceActivity['visits_by_technician']);
-        charts.technicianVisits = new Chart(techVisitsCtx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(visitsData),
-                datasets: [{
-                    label: 'Visits',
-                    data: Object.values(visitsData),
-                    backgroundColor: '#4CAF50'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        const d = entries(@json($serviceActivity['visits_by_technician'])).sort((a, b) => b[1] - a[1]);
+        charts.technicianVisits = mvBar(techVisitsCtx, d.map(e => e[0]), d.map(e => e[1]), { label: 'Visits', horizontal: true, empty: 'No visits in the last 30 days' }) || true;
     }
 
-    // Ticket Priority Chart
     const ticketPriorityCtx = document.getElementById('ticketPriorityChart');
     if (ticketPriorityCtx && !charts.ticketPriority) {
-        const priorityData = @json($serviceActivity['tickets_by_priority']);
-        charts.ticketPriority = new Chart(ticketPriorityCtx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(priorityData).map(p => p.toUpperCase()),
-                datasets: [{
-                    data: Object.values(priorityData),
-                    backgroundColor: ['#F44336', '#FF9800', '#2196F3', '#4CAF50']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+        const d = entries(@json($serviceActivity['tickets_by_priority']));
+        charts.ticketPriority = mvDoughnut(ticketPriorityCtx, d.map(e => pretty(e[0])), d.map(e => e[1]), d.map(e => mvStatusColor(e[0], PRIORITY))) || true;
     }
 
-    // Job Status Chart
     const jobStatusCtx = document.getElementById('jobStatusChart');
     if (jobStatusCtx && !charts.jobStatus) {
-        const jobData = @json($serviceActivity['job_assignments_by_status']);
-        charts.jobStatus = new Chart(jobStatusCtx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(jobData).map(s => s.replace('_', ' ').toUpperCase()),
-                datasets: [{
-                    data: Object.values(jobData),
-                    backgroundColor: '#FF9800'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        const d = entries(@json($serviceActivity['job_assignments_by_status']));
+        charts.jobStatus = mvBar(jobStatusCtx, d.map(e => pretty(e[0])), d.map(e => e[1]), { label: 'Assignments', colors: d.map(e => mvStatusColor(e[0], JOB_STATUS)) }) || true;
     }
 }
 
 function initAssetCharts() {
-    // Asset Category Chart
     const assetCategoryCtx = document.getElementById('assetCategoryChart');
     if (assetCategoryCtx && !charts.assetCategory) {
-        const categoryData = @json($assetData['assets_by_category']);
-        charts.assetCategory = new Chart(assetCategoryCtx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(categoryData),
-                datasets: [{
-                    data: Object.values(categoryData),
-                    backgroundColor: ['#2196F3', '#4CAF50', '#FF9800', '#F44336', '#9C27B0', '#00BCD4']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+        const d = entries(@json($assetData['assets_by_category'])).sort((a, b) => b[1] - a[1]);
+        charts.assetCategory = mvBar(assetCategoryCtx, d.map(e => e[0] || 'Uncategorised'), d.map(e => e[1]), { label: 'Assets', horizontal: true }) || true;
     }
 }
 
 function initEmployeeCharts() {
-    // Employee Department Chart
     const deptCtx = document.getElementById('employeeDeptChart');
     if (deptCtx && !charts.employeeDept) {
-        const deptData = @json($employeeData['employees_by_department']);
-        charts.employeeDept = new Chart(deptCtx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(deptData),
-                datasets: [{
-                    data: Object.values(deptData),
-                    backgroundColor: '#1976D2'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        const d = entries(@json($employeeData['employees_by_department'])).sort((a, b) => b[1] - a[1]);
+        charts.employeeDept = mvBar(deptCtx, d.map(e => e[0] || 'No department'), d.map(e => e[1]), { label: 'Employees', horizontal: true }) || true;
     }
 
-    // Employee Role Chart
     const roleCtx = document.getElementById('employeeRoleChart');
     if (roleCtx && !charts.employeeRole) {
-        const roleData = @json($employeeData['employees_by_role']);
-        charts.employeeRole = new Chart(roleCtx, {
-            type: 'pie',
-            data: {
-                labels: Object.keys(roleData),
-                datasets: [{
-                    data: Object.values(roleData),
-                    backgroundColor: ['#4CAF50', '#FF9800', '#F44336', '#2196F3']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+        const d = entries(@json($employeeData['employees_by_role'])).sort((a, b) => b[1] - a[1]);
+        charts.employeeRole = mvBar(roleCtx, d.map(e => pretty(e[0])), d.map(e => e[1]), { label: 'Employees', horizontal: true }) || true;
     }
 }
 
 function initProjectCharts() {
-    // Project Status Chart
     const projectStatusCtx = document.getElementById('projectStatusChart');
     if (projectStatusCtx && !charts.projectStatus) {
-        const statusData = @json($projectData['projects_by_status']);
-        charts.projectStatus = new Chart(projectStatusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(statusData).map(s => s.toUpperCase()),
-                datasets: [{
-                    data: Object.values(statusData),
-                    backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#F44336']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+        const d = entries(@json($projectData['projects_by_status']));
+        charts.projectStatus = mvDoughnut(projectStatusCtx, d.map(e => pretty(e[0])), d.map(e => e[1]), d.map(e => mvStatusColor(e[0], PROJECT_STATUS))) || true;
     }
 
-    // Project Type Chart
     const projectTypeCtx = document.getElementById('projectTypeChart');
     if (projectTypeCtx && !charts.projectType) {
-        const typeData = @json($projectData['projects_by_type']);
-        charts.projectType = new Chart(projectTypeCtx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(typeData).map(t => t.replace('_', ' ').toUpperCase()),
-                datasets: [{
-                    data: Object.values(typeData),
-                    backgroundColor: '#9C27B0'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        const d = entries(@json($projectData['projects_by_type'])).sort((a, b) => b[1] - a[1]);
+        charts.projectType = mvBar(projectTypeCtx, d.map(e => pretty(e[0])), d.map(e => e[1]), { label: 'Projects', horizontal: true }) || true;
     }
 }
 
 function initRegionalCharts() {
-    // Regional Terminals Chart
     const regionalTerminalsCtx = document.getElementById('regionalTerminalsChart');
     if (regionalTerminalsCtx && !charts.regionalTerminals) {
-        const terminalData = @json($regionalData['terminals_by_region']);
-        charts.regionalTerminals = new Chart(regionalTerminalsCtx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(terminalData),
-                datasets: [{
-                    label: 'Terminals',
-                    data: Object.values(terminalData),
-                    backgroundColor: '#4CAF50'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        const d = entries(@json($regionalData['terminals_by_region'])).sort((a, b) => b[1] - a[1]);
+        charts.regionalTerminals = mvBar(regionalTerminalsCtx, d.map(e => e[0] || 'Unknown'), d.map(e => e[1]), { label: 'Terminals', horizontal: true }) || true;
     }
 
-    // Regional Service Chart
     const regionalServiceCtx = document.getElementById('regionalServiceChart');
     if (regionalServiceCtx && !charts.regionalService) {
-        const serviceData = @json($regionalData['service_activity_by_region']);
-        charts.regionalService = new Chart(regionalServiceCtx, {
-            type: 'line',
-            data: {
-                labels: Object.keys(serviceData),
-                datasets: [{
-                    label: 'Service Visits',
-                    data: Object.values(serviceData),
-                    borderColor: '#FF9800',
-                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+        const d = entries(@json($regionalData['service_activity_by_region'])).sort((a, b) => b[1] - a[1]);
+        charts.regionalService = mvBar(regionalServiceCtx, d.map(e => e[0] || 'Unknown'), d.map(e => e[1]), { label: 'Service Visits', horizontal: true, empty: 'No service visits recorded by region' }) || true;
     }
 }
 
@@ -1510,71 +915,37 @@ function printDashboard() {
 }
 
 function initTrendCharts() {
-    // Ticket Trend Chart
     const ticketCtx = document.getElementById('ticketTrendChart');
     if (ticketCtx) {
-        const trendData = @json($ticketTrend);
-        new Chart(ticketCtx, {
-            type: 'bar',
-            data: {
-                labels: trendData.labels,
-                datasets: [
-                    {
-                        label: 'Created',
-                        data: trendData.created,
-                        backgroundColor: 'rgba(239,68,68,0.7)',
-                        borderRadius: 4,
-                    },
-                    {
-                        label: 'Resolved',
-                        data: trendData.resolved,
-                        backgroundColor: 'rgba(34,197,94,0.7)',
-                        borderRadius: 4,
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'top', labels: { font: { size: 12 } } } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-            }
-        });
+        const t = @json($ticketTrend);
+        if (!mvHasData(t.created) && !mvHasData(t.resolved)) {
+            mvEmpty(ticketCtx, 'No tickets in the last 6 months');
+        } else {
+            new Chart(ticketCtx, {
+                type: 'bar',
+                data: {
+                    labels: t.labels,
+                    datasets: [
+                        { label: 'Created',  data: t.created,  backgroundColor: MV.accent, borderRadius: 4, maxBarThickness: 28 },
+                        { label: 'Resolved', data: t.resolved, backgroundColor: MV.good,   borderRadius: 4, maxBarThickness: 28 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: mvCatAxis, y: mvValueAxis } }
+            });
+        }
     }
 
-    // Visits Trend Chart
     const visitsCtx = document.getElementById('visitsTrendChart');
     if (visitsCtx) {
-        const visitsData = @json($visitsTrend);
-        new Chart(visitsCtx, {
-            type: 'line',
-            data: {
-                labels: visitsData.labels,
-                datasets: [{
-                    label: 'Visits',
-                    data: visitsData.visits,
-                    borderColor: '#1a3a5c',
-                    backgroundColor: 'rgba(26,58,92,0.08)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#1a3a5c',
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-            }
-        });
+        const v = @json($visitsTrend);
+        mvLine(visitsCtx, v.labels, v.visits, 'Visits', { empty: 'No service visits in the last 6 months' });
     }
 }
 
-// Initialize page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    if (!window.Chart) return;
     initOverviewCharts();
     initTrendCharts();
 });
 </script>
-@endsection
+@endpush
