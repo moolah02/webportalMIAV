@@ -394,27 +394,24 @@
             </div>
         </div>
 
-        {{-- Attachments --}}
-        @if($visit->attachments && $visit->attachments->count())
+        {{-- Photos taken on the tablet for this visit (stored on the linked visit record).
+             This used to read an "attachments" relation whose model/table were never
+             built, which crashed the whole page. --}}
+        @php
+            $photos = collect($visit->visit?->evidence ?? [])
+                ->filter(fn ($u) => is_string($u) && str_starts_with($u, 'http'))
+                ->values();
+        @endphp
+        @if($photos->count())
         <div class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold">Attachments ({{ $visit->attachments->count() }})</span>
+                <span class="text-sm font-semibold">Photos ({{ $photos->count() }})</span>
             </div>
             <div class="p-4 grid grid-cols-2 gap-3">
-                @foreach($visit->attachments as $att)
-                    @if($att->type === 'photo')
-                    <a href="{{ asset($att->path) }}" target="_blank" class="block rounded overflow-hidden border border-gray-200 hover:opacity-80 transition">
-                        <img src="{{ asset($att->path) }}" alt="{{ $att->caption ?? 'Photo' }}" class="w-full object-cover" style="height:100px">
-                        @if($att->caption)
-                        <div class="text-xs text-gray-500 px-2 py-1 truncate">{{ $att->caption }}</div>
-                        @endif
-                    </a>
-                    @else
-                    <a href="{{ asset($att->path) }}" target="_blank"
-                       class="flex items-center gap-2 p-2 rounded border border-gray-200 hover:bg-gray-50 transition text-sm text-gray-700">
-                        📎 {{ $att->caption ?? basename($att->path) }}
-                    </a>
-                    @endif
+                @foreach($photos as $url)
+                <a href="{{ $url }}" target="_blank" class="block rounded overflow-hidden border border-gray-200 hover:opacity-80 transition">
+                    <img src="{{ $url }}" alt="Visit photo" class="w-full object-cover" style="height:100px">
+                </a>
                 @endforeach
             </div>
         </div>

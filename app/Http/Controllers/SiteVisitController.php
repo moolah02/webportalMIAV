@@ -472,7 +472,6 @@ class SiteVisitController extends Controller
             'technician',
             'posTerminal.client',
             'posTerminal.region',
-            'attachments',
             'jobAssignment.project',
             'jobAssignment.client',
             'visit', // tablet visit record: contact + new contact details
