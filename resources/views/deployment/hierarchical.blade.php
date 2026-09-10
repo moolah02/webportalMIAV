@@ -21,8 +21,7 @@
 /* Stepper */
 .dp-stepper { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 14px 18px; gap: 0; }
 .step-item { position: relative; display: flex; gap: 10px; align-items: flex-start; padding-right: 18px; color: var(--mv-muted); }
-.step-item::after { content: ''; position: absolute; top: 12px; left: 34px; right: 12px; height: 1px; background: var(--mv-line); z-index: 0; }
-.step-item:last-child::after { display: none; }
+.step-item + .step-item { border-left: 1px solid var(--mv-line); padding-left: 16px; }
 .step-circle { position: relative; z-index: 1; width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center;
     font-size: 12px; font-weight: 600; background: var(--mv-surface); color: var(--mv-muted); border: 1px solid var(--mv-line-strong); box-shadow: 0 0 0 4px var(--mv-surface); }
 .dp-step-text { position: relative; z-index: 1; background: var(--mv-surface); padding-right: 10px; min-width: 0; }
@@ -32,7 +31,6 @@
 .step-item.active .dp-step-text strong { color: var(--mv-accent-ink); }
 .step-item.completed .step-circle { background: var(--mv-good-soft); border-color: #C6E6D2; color: var(--mv-good); }
 .step-item.completed .dp-step-text strong { color: var(--mv-ink); }
-.step-item.completed::after { background: #C6E6D2; }
 
 /* Setup */
 .dp-setup { position: relative; z-index: 20; }
