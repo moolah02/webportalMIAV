@@ -1,44 +1,66 @@
 @extends('layouts.app')
 @section('title', 'Manage Roles')
 
+@section('header-actions')
+<a href="{{ route('settings.index') }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Settings</a>
+<button type="button" class="btn-primary btn-sm" onclick="openAddModal()"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Add Role</button>
+@endsection
+
+@push('styles')
+<style>
+.sm-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
+.sm-card-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--mv-line); }
+.sm-card-head h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+.sm-count { font-size: 12px; font-weight: 500; color: var(--mv-ink-2); background: var(--mv-surface-2); border: 1px solid var(--mv-line); border-radius: 6px; padding: 0 7px; }
+.sm-card .ui-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sm-card .ui-table th { text-align: left; white-space: nowrap; }
+.sm-key { font-family: var(--mv-mono); font-size: 12.5px; color: var(--mv-ink); }
+.sm-name { color: var(--mv-ink) !important; font-weight: 500; }
+.sm-desc { max-width: 280px; }
+.sm-num { font-variant-numeric: tabular-nums; font-weight: 500; color: var(--mv-ink); }
+.permission-tags { display: flex; flex-wrap: wrap; gap: 4px; max-width: 320px; }
+.permission-tags .badge { font-size: 11.5px; }
+.sm-actions { display: flex; gap: 6px; justify-content: flex-end; white-space: nowrap; }
+.sm-btn { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--mv-line-strong); background: var(--mv-surface); font: inherit; font-size: 12.5px; font-weight: 500; color: var(--mv-ink-2); cursor: pointer; }
+.sm-btn .mv-i { width: 13px; height: 13px; }
+.sm-btn:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.sm-btn-danger { color: var(--mv-crit); border-color: #EBC3C3; }
+.sm-btn-danger:hover { background: var(--mv-crit-soft); color: var(--mv-crit); }
+.sm-empty { padding: 48px 16px; text-align: center; color: var(--mv-muted); font-size: 13.5px; }
+.sm-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); margin-bottom: 8px; }
+.sm-empty h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+.sm-empty p { margin: 0; }
+
+/* Modals (JS toggles .show on .modal) */
+#addModal.modal, #editModal.modal { display: none; position: fixed; inset: 0; z-index: 1100; width: auto; height: auto; background: rgba(22,32,44,.45); align-items: center; justify-content: center; padding: 16px; overflow: auto; }
+#addModal.modal.show, #editModal.modal.show { display: flex; }
+.modal .modal-content { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; box-shadow: 0 20px 48px rgba(22,32,44,.18); width: 100%; max-width: 760px; max-height: 90vh; overflow-y: auto; padding: 0; display: block; }
+.modal .modal-content > h3 { margin: 0; padding: 14px 20px; border-bottom: 1px solid var(--mv-line); font-size: 15px; font-weight: 600; color: var(--mv-ink); }
+.modal .modal-content form { padding: 18px 20px 0; }
+.modal .mb-4 { margin-bottom: 14px; }
+.modal .form-label { display: block; margin-bottom: 5px; }
+.modal .ui-input { width: 100%; height: 36px; padding: 0 11px; font-size: 13.5px; }
+.modal textarea.ui-input { height: auto; padding: 8px 11px; }
+.modal input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--mv-accent); vertical-align: -2px; }
+.permissions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.permission-group { border: 1px solid var(--mv-line); border-radius: 8px; padding: 10px 12px; }
+.permission-group h4 { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--mv-muted); letter-spacing: .03em; }
+.permission-item { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.permission-item label { font-size: 13px; color: var(--mv-ink-2); cursor: pointer; }
+.modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin: 18px -20px 0; padding: 12px 20px; border-top: 1px solid var(--mv-line); background: var(--mv-surface-2); position: sticky; bottom: 0; }
+</style>
+@endpush
+
 @section('content')
 
-<div class="">
-  <!-- Breadcrumb -->
-  <div style="background: #fff; padding: 20px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-    <nav style="font-size: 14px; color: #666;">
-      <a href="{{ route('dashboard') }}" style="color: #1a3a5c; text-decoration: none;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-home"/></svg> Dashboard</a>
-      <span style="margin: 0 8px;">›</span>
-      <a href="{{ route('settings.index') }}" style="color: #1a3a5c; text-decoration: none;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> Settings</a>
-      <span style="margin: 0 8px;">›</span>
-      <span>Role Management</span>
-    </nav>
-    <h1 style="margin: 10px 0 0 0; color: #2c3e50; font-weight: 700;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Role Management</h1>
-  </div>
-
-  <!-- Alerts -->
-  @if(session('success'))
-    <div class="alert alert-success">
-      <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> {{ session('success') }}
-    </div>
-  @endif
-
-  @if(session('error'))
-    <div class="alert alert-danger">
-      <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> {{ session('error') }}
-    </div>
-  @endif
-
-  <!-- Roles Table -->
-  <div class="table-container">
-    <div class="table-header">
-      <h2 class="table-title">System Roles</h2>
-      <button type="button" class="btn-primary" onclick="openAddModal()">
-        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Add Role
-      </button>
+<div class="sm-card">
+    <div class="sm-card-head">
+        <h2 class="table-title">System Roles</h2>
+        <span class="sm-count">{{ $roles->count() }}</span>
     </div>
 
     @if($roles->count() > 0)
+    <div style="overflow-x:auto;">
       <table class="ui-table">
         <thead>
           <tr>
@@ -48,25 +70,19 @@
             <th>Permissions</th>
             <th>Status</th>
             <th>Employees</th>
-            <th style="width: 150px;">Actions</th>
+            <th style="text-align:right;">Actions</th>
           </tr>
         </thead>
         <tbody>
           @foreach($roles as $role)
             <tr>
-              <td>
-                <strong>{{ $role->name }}</strong>
-              </td>
-              <td>
-                {{ $role->display_name ?: $role->name }}
-              </td>
-              <td>
-                {{ $role->description ?: 'No description' }}
-              </td>
+              <td><span class="sm-key">{{ $role->name }}</span></td>
+              <td class="sm-name">{{ $role->display_name ?: $role->name }}</td>
+              <td class="sm-desc">{{ $role->description ?: 'No description' }}</td>
               <td>
                 <div class="permission-tags">
                   @if(in_array('all', $role->permissions ?? []))
-                    <span class="permission-tag all">All Permissions</span>
+                    <span class="badge badge-blue">All Permissions</span>
                   @else
                     @foreach(array_slice($role->permissions ?? [], 0, 3) as $permission)
                       <span class="badge badge-gray">{{ str_replace('_', ' ', ucwords($permission)) }}</span>
@@ -78,43 +94,43 @@
                 </div>
               </td>
               <td>
-                <span class="status-badge {{ $role->is_active ? 'status-active' : 'status-inactive' }}">
+                <span class="badge {{ $role->is_active ? 'badge-green' : 'badge-gray' }}">
                   {{ $role->is_active ? 'Active' : 'Inactive' }}
                 </span>
               </td>
+              <td><span class="sm-num">{{ $role->employees->count() }}</span></td>
               <td>
-                <strong>{{ $role->employees->count() }}</strong>
-              </td>
-              <td>
-                <button type="button" class="btn-sm btn-outline-primary" 
-                        onclick="openEditModal({{ $role->id }}, '{{ $role->name }}', '{{ $role->display_name }}', '{{ $role->description }}', {{ json_encode($role->permissions ?? []) }}, {{ $role->is_active ? 'true' : 'false' }})">
-                  <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit
-                </button>
-                @if($role->employees->count() == 0)
-                  <button type="button" class="btn-sm btn-outline-danger" 
-                          onclick="deleteRole({{ $role->id }}, '{{ $role->name }}')">
-                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Delete
+                <div class="sm-actions">
+                  <button type="button" class="sm-btn"
+                          onclick="openEditModal({{ $role->id }}, '{{ $role->name }}', '{{ $role->display_name }}', '{{ $role->description }}', {{ json_encode($role->permissions ?? []) }}, {{ $role->is_active ? 'true' : 'false' }})">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-edit"/></svg> Edit
                   </button>
-                @endif
+                  @if($role->employees->count() == 0)
+                    <button type="button" class="sm-btn sm-btn-danger"
+                            onclick="deleteRole({{ $role->id }}, '{{ $role->name }}')">
+                      <svg class="mv-i" aria-hidden="true"><use href="#i-trash"/></svg> Delete
+                    </button>
+                  @endif
+                </div>
               </td>
             </tr>
           @endforeach
         </tbody>
       </table>
+    </div>
     @else
-      <div style="text-align: center; padding: 60px; color: #666;">
-        <div style="font-size: 48px; margin-block-end: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
+      <div class="sm-empty">
+        <svg class="mv-i" aria-hidden="true"><use href="#i-shield"/></svg>
         <h3>No Roles Found</h3>
         <p>Get started by creating your first user role.</p>
       </div>
     @endif
-  </div>
 </div>
 
 <!-- Add Role Modal -->
 <div id="addModal" class="modal">
   <div class="modal-content">
-    <h3 style="margin-top: 0;">Add New Role</h3>
+    <h3>Add New Role</h3>
     <form id="addForm" method="POST" action="{{ route('settings.roles.store') }}">
       @csrf
       <div class="mb-4">
@@ -156,7 +172,7 @@
 <!-- Edit Role Modal -->
 <div id="editModal" class="modal">
   <div class="modal-content">
-    <h3 style="margin-top: 0;">Edit Role</h3>
+    <h3>Edit Role</h3>
     <form id="editForm" method="POST">
       @csrf
       @method('PUT')
@@ -173,8 +189,8 @@
         <textarea name="description" id="edit_description" class="ui-input" rows="3"></textarea>
       </div>
       <div class="mb-4">
-        <label class="form-label">
-          <input type="checkbox" name="is_active" id="edit_is_active" value="1" style="margin-right: 8px;">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="is_active" id="edit_is_active" value="1">
           Active
         </label>
       </div>
@@ -220,10 +236,10 @@ function openEditModal(id, name, displayName, description, permissions, isActive
   document.getElementById('edit_display_name').value = displayName || '';
   document.getElementById('edit_description').value = description || '';
   document.getElementById('edit_is_active').checked = isActive;
-  
+
   // Clear all permissions first
   document.querySelectorAll('#editModal input[name="permissions[]"]').forEach(cb => cb.checked = false);
-  
+
   // Check the permissions this role has
   permissions.forEach(permission => {
     const checkbox = document.getElementById(`edit_perm_${permission}`);
@@ -231,7 +247,7 @@ function openEditModal(id, name, displayName, description, permissions, isActive
       checkbox.checked = true;
     }
   });
-  
+
   document.getElementById('editModal').classList.add('show');
 }
 
@@ -267,7 +283,7 @@ document.addEventListener('change', function(e) {
   if (e.target.value === 'all' && e.target.type === 'checkbox') {
     const modal = e.target.closest('.modal');
     const allCheckboxes = modal.querySelectorAll('input[name="permissions[]"]');
-    
+
     if (e.target.checked) {
       // If "all" is checked, uncheck others
       allCheckboxes.forEach(cb => {

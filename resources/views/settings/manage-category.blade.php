@@ -1,328 +1,122 @@
 @extends('layouts.app')
 @section('title', 'Manage Categories')
 
-@section('content')
+@php
+  $singular = str_replace(['Categories', 'Status', 'Types'], ['Category', 'Status', 'Type'], $typeLabel);
+@endphp
+
+@section('header-actions')
+<a href="{{ route('settings.index') }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Settings</a>
+<button type="button" class="btn-primary btn-sm" onclick="openAddModal()"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Add {{ $singular }}</button>
+@endsection
+
+@push('styles')
 <style>
-  .table-container {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.05);
-  }
-  
-  .table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-block-end: 25px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #f1f3f4;
-  }
-  
-  .table-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin: 0;
-  }
-  
-  .btn-primary {
-    background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%);
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    color: white;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-  }
-  
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-    color: white;
-    text-decoration: none;
-  }
-  
-  .category-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .category-table th {
-    background: #f8f9fa;
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-    color: #495057;
-    border-bottom: 2px solid #dee2e6;
-  }
-  
-  .category-table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-    vertical-align: middle;
-  }
-  
-  .category-table tr:hover {
-    background: #f8f9fa;
-  }
-  
-  .status-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-  
-  .status-active {
-    background: #d4edda;
-    color: #155724;
-  }
-  
-  .status-inactive {
-    background: #f8d7da;
-    color: #721c24;
-  }
-  
-  .color-preview {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    display: inline-block;
-    border: 2px solid #dee2e6;
-  }
-  
-  .btn-sm {
-    padding: 6px 12px;
-    font-size: 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    margin-right: 5px;
-    transition: all 0.3s ease;
-  }
-  
-  .btn-outline-primary {
-    border: 1px solid #1a3a5c;
-    color: #1a3a5c;
-    background: transparent;
-  }
-  
-  .btn-outline-primary:hover {
-    background: #1a3a5c;
-    color: white;
-  }
-  
-  .btn-outline-danger {
-    border: 1px solid #dc3545;
-    color: #dc3545;
-    background: transparent;
-  }
-  
-  .btn-outline-danger:hover {
-    background: #dc3545;
-    color: white;
-  }
-  
-  .alert {
-    padding: 15px;
-    border-radius: 8px;
-    margin-block-end: 20px;
-    border: none;
-  }
-  
-  .alert-success {
-    background: #d4edda;
-    color: #155724;
-  }
-  
-  .alert-danger {
-    background: #f8d7da;
-    color: #721c24;
-  }
-  
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-  }
-  
-  .modal.show {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .modal-content {
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  
-  .form-group {
-    margin-block-end: 20px;
-  }
-  
-  .form-label {
-    display: block;
-    margin-block-end: 8px;
-    font-weight: 600;
-    color: #495057;
-  }
-  
-  .form-control {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.3s ease;
-  }
-  
-  .form-control:focus {
-    outline: none;
-    border-color: #1a3a5c;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  }
-  
-  .modal-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 1px solid #dee2e6;
-  }
-  
-  .btn-secondary {
-    background: #6c757d;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  
-  .btn-secondary:hover {
-    background: #5a6268;
-  }
+.sm-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
+.sm-card-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--mv-line); }
+.sm-card-head h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+.sm-count { font-size: 12px; font-weight: 500; color: var(--mv-ink-2); background: var(--mv-surface-2); border: 1px solid var(--mv-line); border-radius: 6px; padding: 0 7px; }
+.category-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.category-table th { text-align: left; white-space: nowrap; }
+.sm-name { color: var(--mv-ink) !important; font-weight: 500; }
+.sm-desc { max-width: 420px; }
+.sm-muted { color: var(--mv-muted); }
+.color-preview { width: 16px; height: 16px; border-radius: 4px; display: inline-block; border: 1px solid var(--mv-line-strong); vertical-align: -3px; }
+.sm-hex { font-family: var(--mv-mono); font-size: 12px; color: var(--mv-muted); margin-left: 6px; }
+.sm-actions { display: flex; gap: 6px; justify-content: flex-end; white-space: nowrap; }
+.sm-btn { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--mv-line-strong); background: var(--mv-surface); font: inherit; font-size: 12.5px; font-weight: 500; color: var(--mv-ink-2); cursor: pointer; }
+.sm-btn .mv-i { width: 13px; height: 13px; }
+.sm-btn:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.sm-btn-danger { color: var(--mv-crit); border-color: #EBC3C3; }
+.sm-btn-danger:hover { background: var(--mv-crit-soft); color: var(--mv-crit); }
+.sm-empty { padding: 48px 16px; text-align: center; color: var(--mv-muted); font-size: 13.5px; }
+.sm-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); margin-bottom: 8px; }
+.sm-empty h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+.sm-empty p { margin: 0; }
+
+/* Modals (JS toggles .show on .modal) */
+#addModal.modal, #editModal.modal { display: none; position: fixed; inset: 0; z-index: 1100; width: auto; height: auto; background: rgba(22,32,44,.45); align-items: center; justify-content: center; padding: 16px; overflow: auto; }
+#addModal.modal.show, #editModal.modal.show { display: flex; }
+.modal .modal-content { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; box-shadow: 0 20px 48px rgba(22,32,44,.18); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 0; display: block; }
+.modal .modal-content > h3 { margin: 0; padding: 14px 20px; border-bottom: 1px solid var(--mv-line); font-size: 15px; font-weight: 600; color: var(--mv-ink); }
+.modal .modal-content form { padding: 18px 20px 0; }
+.modal .mb-4 { margin-bottom: 14px; }
+.modal .form-label { display: block; margin-bottom: 5px; }
+.modal .ui-input { width: 100%; height: 36px; padding: 0 11px; font-size: 13.5px; }
+.modal textarea.ui-input { height: auto; padding: 8px 11px; }
+.modal input[type="color"].ui-input { width: 64px; padding: 3px; cursor: pointer; }
+.modal input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--mv-accent); }
+.modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin: 18px -20px 0; padding: 12px 20px; border-top: 1px solid var(--mv-line); background: var(--mv-surface-2); }
 </style>
+@endpush
 
-<div class="">
-  <!-- Breadcrumb -->
-  <div style="background: #fff; padding: 20px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-    <nav style="font-size: 14px; color: #666;">
-      <a href="{{ route('dashboard') }}" style="color: #1a3a5c; text-decoration: none;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-home"/></svg> Dashboard</a>
-      <span style="margin: 0 8px;">›</span>
-      <a href="{{ route('settings.index') }}" style="color: #1a3a5c; text-decoration: none;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> Settings</a>
-      <span style="margin: 0 8px;">›</span>
-      <span>{{ $typeLabel }}</span>
-    </nav>
-    <h1 style="margin: 10px 0 0 0; color: #2c3e50; font-weight: 700;">{{ $typeLabel }}</h1>
-  </div>
+@section('content')
 
-  <!-- Alerts -->
-  @if(session('success'))
-    <div class="alert alert-success">
-      <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> {{ session('success') }}
-    </div>
-  @endif
-
-  @if(session('error'))
-    <div class="alert alert-danger">
-      <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> {{ session('error') }}
-    </div>
-  @endif
-
-  <!-- Categories Table -->
-  <div class="table-container">
-    <div class="table-header">
-      <h2 class="table-title">Manage {{ $typeLabel }}</h2>
-      <button type="button" class="btn-primary" onclick="openAddModal()">
-        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Add {{ str_replace(['Categories', 'Status', 'Types'], ['Category', 'Status', 'Type'], $typeLabel) }}
-      </button>
+<div class="sm-card">
+    <div class="sm-card-head">
+        <h2 class="table-title">Manage {{ $typeLabel }}</h2>
+        <span class="sm-count">{{ $categories->count() }}</span>
     </div>
 
     @if($categories->count() > 0)
-      <table class="category-table">
+    <div style="overflow-x:auto;">
+      <table class="category-table ui-table">
         <thead>
           <tr>
-            <th style="width: 30px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-phone"/></svg></th>
             <th>Name</th>
             <th>Description</th>
             <th>Status</th>
             <th>Color</th>
-            <th style="width: 150px;">Actions</th>
+            <th style="text-align:right;">Actions</th>
           </tr>
         </thead>
         <tbody id="sortable-categories">
           @foreach($categories as $category)
             <tr data-id="{{ $category->id }}">
-              <td style="text-align: center;">
-                {{ $category->icon ?: '' }}
-              </td>
+              <td class="sm-name">{{ $category->name }}</td>
+              <td class="sm-desc">{{ $category->description ?: 'No description' }}</td>
               <td>
-                <strong>{{ $category->name }}</strong>
-              </td>
-              <td>
-                {{ $category->description ?: 'No description' }}
-              </td>
-              <td>
-                <span class="status-badge {{ $category->is_active ? 'status-active' : 'status-inactive' }}">
+                <span class="badge {{ $category->is_active ? 'badge-green' : 'badge-gray' }}">
                   {{ $category->is_active ? 'Active' : 'Inactive' }}
                 </span>
               </td>
               <td>
                 @if($category->color)
-                  <span class="color-preview" style="background-color: {{ $category->color }};"></span>
+                  <span class="color-preview" style="background-color: {{ $category->color }};"></span><span class="sm-hex">{{ $category->color }}</span>
                 @else
-                  <span style="color: #999;">None</span>
+                  <span class="sm-muted">None</span>
                 @endif
               </td>
               <td>
-                <button type="button" class="btn-sm btn-outline-primary" 
-                        onclick="openEditModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}', '{{ $category->color }}', '{{ $category->icon }}', {{ $category->is_active ? 'true' : 'false' }})">
-                  <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit
-                </button>
-                <button type="button" class="btn-sm btn-outline-danger" 
-                        onclick="deleteCategory({{ $category->id }}, '{{ $category->name }}')">
-                  <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Delete
-                </button>
+                <div class="sm-actions">
+                  <button type="button" class="sm-btn"
+                          onclick="openEditModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}', '{{ $category->color }}', '{{ $category->icon }}', {{ $category->is_active ? 'true' : 'false' }})">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-edit"/></svg> Edit
+                  </button>
+                  <button type="button" class="sm-btn sm-btn-danger"
+                          onclick="deleteCategory({{ $category->id }}, '{{ $category->name }}')">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-trash"/></svg> Delete
+                  </button>
+                </div>
               </td>
             </tr>
           @endforeach
         </tbody>
       </table>
+    </div>
     @else
-      <div style="text-align: center; padding: 60px; color: #666;">
-        <div style="font-size: 48px; margin-block-end: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
+      <div class="sm-empty">
+        <svg class="mv-i" aria-hidden="true"><use href="#i-list"/></svg>
         <h3>No {{ $typeLabel }} Found</h3>
         <p>Get started by adding your first {{ strtolower(str_replace(['Categories', 'Status', 'Types'], ['category', 'status', 'type'], $typeLabel)) }}.</p>
       </div>
     @endif
-  </div>
 </div>
 
 <!-- Add Category Modal -->
 <div id="addModal" class="modal">
   <div class="modal-content">
-    <h3 style="margin-top: 0;">Add {{ str_replace(['Categories', 'Status', 'Types'], ['Category', 'Status', 'Type'], $typeLabel) }}</h3>
+    <h3>Add {{ $singular }}</h3>
     <form id="addForm" method="POST" action="{{ route('settings.category.store', $type) }}">
       @csrf
       <div class="mb-4">
@@ -335,10 +129,10 @@
       </div>
       <div class="mb-4">
         <label class="form-label">Color</label>
-        <input type="color" name="color" class="ui-input" style="height: 50px;">
+        <input type="color" name="color" class="ui-input">
       </div>
       <div class="mb-4">
-        <label class="form-label">Icon (Emoji)</label>
+        <label class="form-label">Icon</label>
         <input type="text" name="icon" class="ui-input" placeholder="">
       </div>
       <div class="modal-buttons">
@@ -352,7 +146,7 @@
 <!-- Edit Category Modal -->
 <div id="editModal" class="modal">
   <div class="modal-content">
-    <h3 style="margin-top: 0;">Edit {{ str_replace(['Categories', 'Status', 'Types'], ['Category', 'Status', 'Type'], $typeLabel) }}</h3>
+    <h3>Edit {{ $singular }}</h3>
     <form id="editForm" method="POST">
       @csrf
       @method('PUT')
@@ -366,15 +160,15 @@
       </div>
       <div class="mb-4">
         <label class="form-label">Color</label>
-        <input type="color" name="color" id="edit_color" class="ui-input" style="height: 50px;">
+        <input type="color" name="color" id="edit_color" class="ui-input">
       </div>
       <div class="mb-4">
-        <label class="form-label">Icon (Emoji)</label>
+        <label class="form-label">Icon</label>
         <input type="text" name="icon" id="edit_icon" class="ui-input" placeholder="">
       </div>
       <div class="mb-4">
-        <label class="form-label">
-          <input type="checkbox" name="is_active" id="edit_is_active" value="1" style="margin-right: 8px;">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="is_active" id="edit_is_active" value="1">
           Active
         </label>
       </div>
