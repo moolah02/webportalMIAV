@@ -206,7 +206,7 @@
                         @endphp
                         <tr>
                             <td><span class="code-chip" style="padding:2px 7px;font-size:12px">{{ $terminal->terminal_id }}</span></td>
-                            <td>
+                            <td style="min-width:220px">
                                 <div class="cx-strong">{{ $terminal->merchant_name ?? '—' }}</div>
                                 @if($terminal->merchant_contact_person)<div class="cx-muted">{{ $terminal->merchant_contact_person }}</div>@endif
                             </td>
