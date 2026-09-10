@@ -638,6 +638,16 @@
                 </select>
             </div>
 
+            <div class="rb-strip-group">
+                <label><span>&#128205;</span> Terminals</label>
+                <select class="rb-strip-select" x-model="config.terminalSource"
+                        title="Terminals found on site by technicians are extra work — they were not on the original list">
+                    <option value="">All terminals</option>
+                    <option value="office">Original list only</option>
+                    <option value="field_discovery">Discovered on site (extra work)</option>
+                </select>
+            </div>
+
             <div class="rb-strip-sep"></div>
 
             <div class="rb-strip-group">
@@ -1025,11 +1035,13 @@ document.addEventListener('alpine:init', () => {
     availableTemplates: [],
 
     fields: [],
+    reportTitle: '', // preset/template name, printed on the PDF
 
     config: {
       baseTable:  'pos_terminals',
       regionId:   '',
       clientId:   '',
+      terminalSource: '', // '' | 'office' | 'field_discovery'
       dateColumn: '',
       dateFrom:   '',
       dateTo:     '',
@@ -1071,6 +1083,7 @@ document.addEventListener('alpine:init', () => {
             aggregate:  item.aggregate || '',
           }));
           (p.where || []).forEach(w => {
+            if (w.column === 'pos_terminals.source') this.config.terminalSource = w.value || '';
             if (w.operator === 'between_dates') {
               this.config.dateColumn = w.column;
               this.config.dateFrom   = w.value?.from || '';
@@ -1137,7 +1150,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     clearAll() {
-      this.fields = []; this.reportData = null; this.reportColumns = [];
+      this.fields = []; this.reportData = null; this.reportColumns = []; this.reportTitle = '';
       this.errorMessage = ''; this.successMessage = '';
       this.destroyChart();
     },
@@ -1410,6 +1423,10 @@ document.addEventListener('alpine:init', () => {
         const bf = this.availableFields[this.config.baseTable]?.fields || [];
         where.push({ column: bf.some(f=>f.name==='client_id') ? this.config.baseTable+'.client_id' : 'pos_terminals.client_id', operator:'=', value:this.config.clientId });
       }
+      if (this.config.terminalSource) {
+        // Auto-join brings in pos_terminals from any data source
+        where.push({ column: 'pos_terminals.source', operator: '=', value: this.config.terminalSource });
+      }
       if (this.config.dateColumn && (this.config.dateFrom || this.config.dateTo)) {
         where.push({ column:this.config.dateColumn, operator:'between_dates', value:{from:this.config.dateFrom||null, to:this.config.dateTo||null} });
       }
@@ -1446,7 +1463,9 @@ document.addEventListener('alpine:init', () => {
       this.errorMessage = '';
       try {
         const payload = this.buildPayload();
-        payload.format = format; payload.filename = 'report_'+new Date().toISOString().slice(0,10); payload.download_all = true;
+        const slug = (this.reportTitle || 'report').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'report';
+        payload.format = format; payload.filename = slug+'_'+new Date().toISOString().slice(0,10); payload.download_all = true;
+        if (this.reportTitle) payload.title = this.reportTitle;
         const res = await fetch('/api/report/export', {
           method:'POST', credentials:'same-origin',
           headers:{ 'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'X-Requested-With':'XMLHttpRequest' },
@@ -1496,13 +1515,57 @@ document.addEventListener('alpine:init', () => {
 
     applyPreset(preset) {
       this.fields = preset.fields.map(f => ({ ...f, aggregate: '' }));
-      this.config = { baseTable: preset.baseTable, regionId: '', clientId: '', dateColumn: preset.dateColumn || '', dateFrom: '', dateTo: '', limit: 100 };
+      this.config = { baseTable: preset.baseTable, regionId: '', clientId: '', terminalSource: preset.terminalSource || '', dateColumn: preset.dateColumn || '', dateFrom: '', dateTo: '', limit: 100 };
+      this.reportTitle = preset.name;
       this.reportData = null; this.reportColumns = [];
       this.showTemplateModal = false;
       this.runReport();
     },
 
     presets: [
+      {
+        id: 'technician-visits-detail',
+        icon: '🧰',
+        name: 'Technician Visits Detail',
+        desc: 'Every tablet visit: technician, merchant, terminal state and condition, issues found, corrective action, notes and updated contact details.',
+        baseTable: 'technician_visits',
+        dateColumn: 'technician_visits.started_at',
+        fields: [
+          { label: 'Visit Date',          expression: 'technician_visits.started_at',                   category: 'dimensions' },
+          { label: 'Technician',          expression: 'employees.first_name',                           category: 'dimensions' },
+          { label: 'Technician Surname',  expression: 'employees.last_name',                            category: 'dimensions' },
+          { label: 'Merchant Name',       expression: 'pos_terminals.merchant_name',                    category: 'dimensions' },
+          { label: 'Terminal Code',       expression: 'pos_terminals.terminal_id',                      category: 'dimensions' },
+          { label: 'State',               expression: 'technician_visits.terminal_status_during_visit', category: 'dimensions' },
+          { label: 'Condition',           expression: 'technician_visits.terminal_condition',           category: 'dimensions' },
+          { label: 'Issues Found',        expression: 'technician_visits.issues_found',                 category: 'dimensions' },
+          { label: 'Corrective Action',   expression: 'technician_visits.corrective_action',            category: 'dimensions' },
+          { label: 'Visit Summary',       expression: 'technician_visits.visit_summary',                category: 'dimensions' },
+          { label: 'New Contact Person',  expression: 'visits.new_contact_person',                      category: 'dimensions' },
+          { label: 'New Phone',           expression: 'visits.new_phone_number',                        category: 'dimensions' },
+          { label: 'New Address',         expression: 'visits.new_physical_address',                    category: 'dimensions' },
+        ],
+      },
+      {
+        id: 'discovered-terminals',
+        icon: '🧭',
+        name: 'Discovered Terminals (Extra Work)',
+        desc: 'Terminals found on site by technicians that were not on the original list — the extra work done in the field.',
+        baseTable: 'pos_terminals',
+        terminalSource: 'field_discovery',
+        dateColumn: 'pos_terminals.created_at',
+        fields: [
+          { label: 'Terminal Code',     expression: 'pos_terminals.terminal_id',             category: 'dimensions' },
+          { label: 'Merchant Name',     expression: 'pos_terminals.merchant_name',           category: 'dimensions' },
+          { label: 'Discovered On',     expression: 'pos_terminals.created_at',              category: 'dimensions' },
+          { label: 'City',              expression: 'pos_terminals.city',                    category: 'dimensions' },
+          { label: 'Physical Address',  expression: 'pos_terminals.physical_address',        category: 'dimensions' },
+          { label: 'Terminal Model',    expression: 'pos_terminals.terminal_model',          category: 'dimensions' },
+          { label: 'Serial Number',     expression: 'pos_terminals.serial_number',           category: 'dimensions' },
+          { label: 'Contact Person',    expression: 'pos_terminals.merchant_contact_person', category: 'dimensions' },
+          { label: 'Phone',             expression: 'pos_terminals.merchant_phone',          category: 'dimensions' },
+        ],
+      },
       {
         id: 'visit-summary',
         icon: '🗺️',
@@ -1512,10 +1575,12 @@ document.addEventListener('alpine:init', () => {
         dateColumn: 'visits.completed_at',
         fields: [
           { label: 'Merchant Name',       expression: 'visits.merchant_name',  category: 'dimensions' },
-          { label: 'Technician ID',        expression: 'visits.employee_id',    category: 'measures'   },
+          { label: 'Technician',           expression: 'employees.first_name',  category: 'dimensions' },
+          { label: 'Technician Surname',   expression: 'employees.last_name',   category: 'dimensions' },
           { label: 'Visit Completed At',   expression: 'visits.completed_at',   category: 'dimensions' },
           { label: 'Visit Summary',        expression: 'visits.visit_summary',  category: 'dimensions' },
           { label: 'Action Points',        expression: 'visits.action_points',  category: 'dimensions' },
+          { label: 'Corrective Action',    expression: 'visits.terminal_comments', category: 'dimensions' },
         ],
       },
       {
@@ -1526,7 +1591,8 @@ document.addEventListener('alpine:init', () => {
         baseTable: 'technician_visits',
         dateColumn: 'technician_visits.started_at',
         fields: [
-          { label: 'Terminal (link)',         expression: 'technician_visits.pos_terminal_id',              category: 'measures'   },
+          { label: 'Merchant Name',          expression: 'pos_terminals.merchant_name',                    category: 'dimensions' },
+          { label: 'Terminal Code',          expression: 'pos_terminals.terminal_id',                      category: 'dimensions' },
           { label: 'Terminal Condition',     expression: 'technician_visits.terminal_condition',            category: 'dimensions' },
           { label: 'State',                  expression: 'technician_visits.terminal_status_during_visit',  category: 'dimensions' },
           { label: 'Issues Found',           expression: 'technician_visits.issues_found',                  category: 'dimensions' },
@@ -1641,8 +1707,9 @@ document.addEventListener('alpine:init', () => {
         if (!raw) { this.errorMessage='Template has no payload.'; return; }
         const p = (typeof raw === 'string') ? JSON.parse(raw) : raw;
         this.fields = Array.isArray(p.fields) ? p.fields : [];
-        this.config = { baseTable:p.baseTable||'pos_terminals', regionId:p.regionId||'', clientId:p.clientId||'', dateColumn:p.dateColumn||'', dateFrom:p.dateFrom||'', dateTo:p.dateTo||'', limit:p.limit||100 };
+        this.config = { baseTable:p.baseTable||'pos_terminals', regionId:p.regionId||'', clientId:p.clientId||'', terminalSource:p.terminalSource||'', dateColumn:p.dateColumn||'', dateFrom:p.dateFrom||'', dateTo:p.dateTo||'', limit:p.limit||100 };
         this.having = Array.isArray(p.having) ? p.having : [];
+        this.reportTitle = tpl.name || '';
         this.reportData = null; this.reportColumns = [];
         this.runReport();
       } catch(e) { this.errorMessage='Failed to load template: '+e.message; }
@@ -1654,7 +1721,7 @@ document.addEventListener('alpine:init', () => {
         const res = await fetch('/api/report/templates', {
           method:'POST', credentials:'same-origin',
           headers:{ 'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'X-Requested-With':'XMLHttpRequest' },
-          body: JSON.stringify({ name:this.saveForm.name, description:this.saveForm.description, is_global:this.saveForm.isGlobal, payload:{fields:this.fields,baseTable:this.config.baseTable,regionId:this.config.regionId,clientId:this.config.clientId,dateColumn:this.config.dateColumn,dateFrom:this.config.dateFrom,dateTo:this.config.dateTo,limit:this.config.limit} })
+          body: JSON.stringify({ name:this.saveForm.name, description:this.saveForm.description, is_global:this.saveForm.isGlobal, payload:{fields:this.fields,baseTable:this.config.baseTable,regionId:this.config.regionId,clientId:this.config.clientId,terminalSource:this.config.terminalSource,dateColumn:this.config.dateColumn,dateFrom:this.config.dateFrom,dateTo:this.config.dateTo,limit:this.config.limit} })
         });
         const text = await res.text();
         if (text.trim().startsWith('<!')) { this.errorMessage='Session expired.'; return; }

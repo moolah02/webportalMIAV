@@ -354,6 +354,7 @@ class SiteVisitController extends Controller
 
         // --- Also save to technician_visits for detailed technical tracking ---
         $techVisit = TechnicianVisit::create([
+            'visit_id'                     => (string) $visitRecord->id, // link so reports can join visits
             'technician_id'                => $validated['technician_id'],
             'pos_terminal_id'              => $posTerminal->id,
             'job_assignment_id'            => $validated['job_assignment_id'] ?? null,

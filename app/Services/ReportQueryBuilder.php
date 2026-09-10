@@ -13,7 +13,7 @@ class ReportQueryBuilder
             'id', 'terminal_id', 'client_id', 'merchant_name', 'merchant_contact_person',
             'merchant_phone', 'physical_address', 'region', 'city', 'province', 'area', 'business_type',
             'installation_date', 'terminal_model', 'serial_number', 'status', 'last_service_date',
-            'created_at', 'updated_at', 'current_status'
+            'created_at', 'updated_at', 'current_status', 'source'
         ],
         'clients' => [
             'id', 'client_code', 'company_name', 'email', 'phone', 'address', 'city', 'region',
@@ -24,12 +24,15 @@ class ReportQueryBuilder
         ],
         'visits' => [
             'id', 'merchant_id', 'merchant_name', 'employee_id', 'assignment_id', 'completed_at',
-            'contact_person', 'phone_number', 'visit_summary', 'action_points', 'created_at', 'updated_at'
+            'contact_person', 'phone_number', 'new_contact_person', 'new_phone_number',
+            'new_physical_address', 'visit_summary', 'action_points', 'terminal_comments',
+            'created_at', 'updated_at'
         ],
         'technician_visits' => [
             'id', 'visit_id', 'technician_id', 'pos_terminal_id', 'job_assignment_id',
             'started_at', 'ended_at', 'terminal_status_during_visit', 'terminal_condition',
             'condition_notes', 'issues_found', 'corrective_action', 'visit_summary',
+            'outcome', 'serial_snapshot', 'device_type_snapshot',
             'created_at', 'updated_at'
         ],
         'visit_terminals' => [
@@ -48,6 +51,10 @@ class ReportQueryBuilder
         'projects' => [
             'id', 'project_code', 'project_name', 'client_id', 'project_type', 'description',
             'start_date', 'end_date', 'status', 'priority', 'created_by', 'created_at', 'updated_at'
+        ],
+        // Technician names for visit reports (only non-sensitive columns)
+        'employees' => [
+            'id', 'employee_number', 'first_name', 'last_name'
         ]
     ];
 
@@ -65,6 +72,10 @@ class ReportQueryBuilder
         'job_assignments.project_id = projects.id',
         'job_assignments.client_id = clients.id',
         'job_assignments.region_id = regions.id',
+        // Technician names (added last so existing auto-join paths are unchanged)
+        'technician_visits.technician_id = employees.id',
+        'visits.employee_id = employees.id',
+        'job_assignments.technician_id = employees.id',
     ];
 
     private const AGGREGATE_FUNCTIONS = ['COUNT', 'SUM', 'AVG', 'MIN', 'MAX'];
@@ -540,7 +551,7 @@ class ReportQueryBuilder
 
         $enumColumns = [
             'status', 'current_status', 'deployment_status', 'priority',
-            'project_type', 'service_type', 'issue_type'
+            'project_type', 'service_type', 'issue_type', 'source', 'outcome'
         ];
 
         if (in_array($column, $dateColumns)) {
@@ -568,6 +579,7 @@ class ReportQueryBuilder
                 'id'          => 'Terminal Record ID',
                 'terminal_id' => 'Terminal Code',
                 'client_id'   => 'Client (link)',
+                'source'      => 'Terminal Source',
             ],
             'technician_visits' => [
                 'id'                => 'Visit Record ID',
@@ -575,6 +587,8 @@ class ReportQueryBuilder
                 'technician_id'     => 'Technician (link)',
                 'pos_terminal_id'   => 'Terminal (link)',
                 'job_assignment_id' => 'Assignment (link)',
+                'serial_snapshot'      => 'Serial No. (at visit)',
+                'device_type_snapshot' => 'Model (at visit)',
             ],
             'visit_terminals' => [
                 'id'          => 'Visit Terminal Record ID',
@@ -595,13 +609,20 @@ class ReportQueryBuilder
                 'project_id'    => 'Project (link)',
             ],
             'visits' => [
-                'merchant_id'   => 'Merchant (link)',
-                'employee_id'   => 'Technician (link)',
-                'assignment_id' => 'Assignment (link)',
+                'merchant_id'       => 'Merchant (link)',
+                'employee_id'       => 'Technician (link)',
+                'assignment_id'     => 'Assignment (link)',
+                'terminal_comments' => 'Corrective Action',
             ],
             'projects' => [
                 'client_id'  => 'Client (link)',
                 'created_by' => 'Created By (link)',
+            ],
+            'employees' => [
+                'id'              => 'Technician Record ID',
+                'employee_number' => 'Employee No.',
+                'first_name'      => 'Technician Name',
+                'last_name'       => 'Technician Surname',
             ],
         ];
 
@@ -632,6 +653,7 @@ class ReportQueryBuilder
                 'status'             => 'Current operational status (active, offline, etc.)',
                 'current_status'     => 'Latest known status of the terminal',
                 'last_service_date'  => 'Date of the most recent service visit',
+                'source'             => 'Where the terminal came from: office = on the original list, field_discovery = found on site by a technician (extra work)',
             ],
             'technician_visits' => [
                 'started_at'                   => 'Date and time the technician arrived at the site',
@@ -642,6 +664,23 @@ class ReportQueryBuilder
                 'corrective_action'            => 'CORRECTIVE ACTION — the fix or next step taken by the technician (e.g. "Replacement scheduled", "Follow up needed")',
                 'visit_summary'                => 'Free-text notes the technician wrote about the visit',
                 'condition_notes'              => 'Additional notes about the terminal condition',
+                'outcome'                      => 'Outcome of the visit',
+                'serial_snapshot'              => 'Serial number recorded on the tablet during the visit',
+                'device_type_snapshot'         => 'Terminal model recorded on the tablet during the visit',
+            ],
+            'visits' => [
+                'contact_person'       => 'Contact person on record at the time of the visit',
+                'new_contact_person'   => 'NEW contact person captured by the technician on this visit',
+                'new_phone_number'     => 'NEW phone number captured by the technician on this visit',
+                'new_physical_address' => 'NEW physical address captured by the technician on this visit',
+                'action_points'        => 'Issues found, as selected on the tablet',
+                'terminal_comments'    => 'CORRECTIVE ACTION recorded on the tablet (e.g. "No action needed", "Follow-up needed")',
+                'visit_summary'        => 'Free-text notes the technician wrote about the visit',
+            ],
+            'employees' => [
+                'employee_number' => 'Staff number',
+                'first_name'      => 'Technician first name',
+                'last_name'       => 'Technician surname',
             ],
             'visit_terminals' => [
                 'status'         => 'Status of the terminal as recorded during the visit',
@@ -705,7 +744,8 @@ class ReportQueryBuilder
             'visit_terminals'     => 'Visit Terminals',
             'tickets'        => 'Tickets',
             'job_assignments'=> 'Job Assignments',
-            'projects'       => 'Projects'
+            'projects'       => 'Projects',
+            'employees'      => 'Technicians',
         ];
 
         return $labels[$table] ?? ucwords(str_replace('_', ' ', $table));

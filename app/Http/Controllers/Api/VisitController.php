@@ -215,7 +215,7 @@ class VisitController extends Controller
             $visit->load('visitTerminal');
 
             // Mirror to technician_visits so the report builder has data
-            $this->mirrorToTechnicianVisit($visit, $t, $data);
+            app(\App\Services\TechnicianVisitMirror::class)->sync($visit);
 
             return response()->json([
                 'success' => true,
@@ -312,7 +312,8 @@ class VisitController extends Controller
                 $visit->update(['terminal' => array_merge($visit->terminal ?? [], $t)]);
             }
 
-            $this->updateMirroredTechnicianVisit($visit, $data);
+            // Rebuild the report copy from the saved visit (also repairs a missing one).
+            app(\App\Services\TechnicianVisitMirror::class)->sync($visit->fresh());
 
             $visit->load('visitTerminals');
 
@@ -322,124 +323,6 @@ class VisitController extends Controller
                 'data'    => $visit,
             ]);
         });
-    }
-
-    private function updateMirroredTechnicianVisit(Visit $visit, array $data): void
-    {
-        try {
-            $tv = TechnicianVisit::where('visit_id', $visit->id)->first();
-            if (!$tv) return;
-
-            $statusMap = [
-                'working' => 'active',      'Working' => 'active',
-                'not working' => 'inactive','Not Working' => 'inactive',
-                'not_working' => 'inactive',
-                'not found' => 'not_found', 'Not Found' => 'not_found',
-                'not_found' => 'not_found',
-                'relocated' => 'relocated', 'Relocated' => 'relocated',
-                'replaced'  => 'replaced',  'Replaced'  => 'replaced',
-                'active' => 'active',       'inactive' => 'inactive',
-            ];
-            $condMap = [
-                'good' => 'good',    'Good' => 'good',
-                'fair' => 'fair',    'Fair' => 'fair',
-                'bad'  => 'poor',    'Bad'  => 'poor',
-                'poor' => 'poor',    'Poor' => 'poor',
-                'damaged' => 'damaged', 'Damaged' => 'damaged',
-            ];
-
-            $updates = [];
-            if (!empty($data['terminal']['status'])) {
-                $updates['terminal_status_during_visit'] = $statusMap[$data['terminal']['status']] ?? null;
-            }
-            if (!empty($data['terminal']['condition'])) {
-                $updates['terminal_condition'] = $condMap[$data['terminal']['condition']] ?? null;
-            }
-            if (array_key_exists('action_points', $data)) {
-                $updates['issues_found'] = $data['action_points'];
-            }
-            if (array_key_exists('corrective_action', $data)) {
-                $updates['corrective_action'] = $data['corrective_action'];
-            }
-            if (array_key_exists('visit_summary', $data)) {
-                $updates['visit_summary'] = $data['visit_summary'];
-            }
-
-            if (!empty($updates)) {
-                $tv->update($updates);
-            }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('Failed to update mirrored technician_visit', [
-                'visit_id' => $visit->id,
-                'error'    => $e->getMessage(),
-            ]);
-        }
-    }
-
-    private function mirrorToTechnicianVisit(Visit $visit, array $terminal, array $data): void
-    {
-        try {
-            $statusMap = [
-                'working' => 'active', 'Working' => 'active',
-                'not working' => 'inactive', 'Not Working' => 'inactive',
-                'not_working' => 'inactive',
-                'not found' => 'not_found', 'Not Found' => 'not_found',
-                'not_found' => 'not_found',
-                'relocated' => 'relocated', 'Relocated' => 'relocated',
-                'replaced'  => 'replaced',  'Replaced'  => 'replaced',
-                'active' => 'active', 'inactive' => 'inactive',
-            ];
-            $condMap = [
-                'good' => 'good', 'Good' => 'good',
-                'fair' => 'fair', 'Fair' => 'fair',
-                'bad'  => 'poor', 'Bad'  => 'poor',
-                'poor' => 'poor', 'Poor' => 'poor',
-                'damaged' => 'damaged', 'Damaged' => 'damaged',
-            ];
-
-            // Resolve pos_terminal_id — mobile sends pos_terminals.id as terminal_id
-            $posTerminalId = null;
-            if (!empty($terminal['terminal_id'])) {
-                $pt = PosTerminal::find((int) $terminal['terminal_id'])
-                    ?? PosTerminal::where('terminal_id', (string) $terminal['terminal_id'])->first();
-                $posTerminalId = $pt?->id;
-            }
-
-            // Resolve job_assignment FK
-            $jobAssignmentId = null;
-            if (!empty($data['assignment_id'])) {
-                $ja = JobAssignment::find((int) $data['assignment_id'])
-                    ?? JobAssignment::where('assignment_id', (string) $data['assignment_id'])->first();
-                $jobAssignmentId = $ja?->id;
-            }
-
-            TechnicianVisit::create([
-                'visit_id'                     => $visit->id,
-                'technician_id'                => $data['employee_id'],
-                'pos_terminal_id'              => $posTerminalId,
-                'job_assignment_id'            => $jobAssignmentId,
-                'started_at'                   => $data['completed_at'],
-                'ended_at'                     => $data['completed_at'],
-                'status'                       => 'closed',
-                'outcome'                      => 'completed',
-                'terminal_status_during_visit' => !empty($terminal['state'])
-                    ? strtolower($terminal['state'])
-                    : ($statusMap[$terminal['status'] ?? ''] ?? null),
-                'terminal_condition'           => $condMap[$terminal['condition'] ?? ''] ?? null,
-                'issues_found'                 => $data['action_points'] ?? null,
-                'corrective_action'            => $data['corrective_action'] ?? null,
-                'visit_summary'                => $data['visit_summary'] ?? null,
-                'other_terminals_found'        => $data['other_terminals_found'] ?? null,
-                'serial_snapshot'              => $terminal['serial_number'] ?? null,
-                'device_type_snapshot'         => $terminal['terminal_model'] ?? null,
-            ]);
-        } catch (\Throwable $e) {
-            // Non-fatal — Visit was already saved; log and continue
-            \Illuminate\Support\Facades\Log::warning('Failed to mirror visit to technician_visits', [
-                'visit_id' => $visit->id,
-                'error'    => $e->getMessage(),
-            ]);
-        }
     }
 
     /**

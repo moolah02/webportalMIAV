@@ -102,6 +102,7 @@ class ReportController extends Controller
                 'order_by'          => 'sometimes|array',
                 'limit'             => 'sometimes|integer|min:1|max:100000',
                 'format'            => 'required|string|in:csv,xlsx,pdf',
+                'title'             => 'sometimes|nullable|string|max:120',
                 'filename'          => 'sometimes|string',
                 'download_all'      => 'sometimes|boolean',
             ]);
@@ -179,12 +180,42 @@ class ReportController extends Controller
             'columns'    => $columns,
             'filename'   => $filename,
             'baseTable'  => $config['base']['table'] ?? '',
+            'title'      => $config['title'] ?? null, // preset / template name
+            'filterNotes' => $this->describeFilters($config['where'] ?? []),
             'rowCount'   => $results->count(),
             'truncated'  => $truncated,
             'generatedAt' => now()->format('d M Y, H:i'),
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download($filename . '.pdf');
+    }
+
+    /**
+     * Plain-English list of the active filters for the PDF header, so a printed
+     * report says what it contains (e.g. "Discovered terminals only").
+     */
+    private function describeFilters(array $where): array
+    {
+        $notes = [];
+        foreach ($where as $w) {
+            $column = $w['column'] ?? '';
+            $value  = $w['value'] ?? null;
+
+            if ($column === 'pos_terminals.source') {
+                $notes[] = $value === 'field_discovery'
+                    ? 'Discovered terminals only (extra work found on site)'
+                    : 'Original terminal list only';
+            } elseif (($w['operator'] ?? '') === 'between_dates' && is_array($value)) {
+                $notes[] = ucwords(str_replace(['_', '.'], [' ', ' - '], $column)) . ': '
+                    . (($value['from'] ?? null) ?: 'start') . ' to ' . (($value['to'] ?? null) ?: 'today');
+            } elseif (str_ends_with($column, 'client_id') && $value) {
+                $name = \Illuminate\Support\Facades\DB::table('clients')->where('id', $value)->value('company_name');
+                $notes[] = 'Client: ' . ($name ?? $value);
+            } elseif ($value !== null && $value !== '' && !is_array($value)) {
+                $notes[] = ucwords(str_replace(['_', '.'], [' ', ' - '], $column)) . ': ' . $value;
+            }
+        }
+        return $notes;
     }
 
     public function history(Request $request)

@@ -47,8 +47,11 @@
         <table>
             <tr>
                 <td>
-                    <h1>Report Builder Export</h1>
+                    <h1>{{ ($title ?? null) ?: 'Report Builder Export' }}</h1>
                     <p>Data source: <strong>{{ ucwords(str_replace('_', ' ', $baseTable)) }}</strong> &nbsp;&middot;&nbsp; {{ $rowCount }} rows</p>
+                    @if(!empty($filterNotes))
+                    <p>Filters: <strong>{{ implode(' · ', $filterNotes) }}</strong></p>
+                    @endif
                 </td>
                 <td class="right">
                     Revival Technologies<br>

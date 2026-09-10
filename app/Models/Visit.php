@@ -37,6 +37,15 @@ class Visit extends Model
 
     ];
 
+    protected static function booted(): void
+    {
+        // Remove the report-builder mirror row with its visit, otherwise the
+        // deleted visit keeps appearing in "Technician Visits (Detail)" reports.
+        static::deleted(function (Visit $visit) {
+            TechnicianVisit::where('visit_id', (string) $visit->id)->delete();
+        });
+    }
+
     public function visitTerminals()
     {
         return $this->hasMany(VisitTerminal::class);
