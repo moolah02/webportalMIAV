@@ -2,15 +2,10 @@
 @extends('layouts.app')
 @section('title', 'Ticket ' . $ticket->ticket_id)
 
-@section('header-actions')
-    <a href="{{ route('tickets.edit', $ticket) }}" class="btn-primary btn-sm">
-        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg> Edit Ticket
-    </a>
-@endsection
-
 @push('styles')
 <style>
-    .tk-crumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--mv-muted); text-decoration: none; margin-bottom: 14px; }
+    .tk-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .tk-crumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--mv-muted); text-decoration: none; }
     .tk-crumb:hover { color: var(--mv-ink); }
     .tk-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
     .tk-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; margin-bottom: 16px; }
@@ -55,9 +50,14 @@
     $steps = $ticket->steps()->with(['employee', 'transferredToEmployee'])->orderBy('step_number')->get();
 @endphp
 
-<a href="{{ route('tickets.index') }}" class="tk-crumb">
-    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Support Tickets
-</a>
+<div class="tk-bar">
+    <a href="{{ route('tickets.index') }}" class="tk-crumb">
+        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Support Tickets
+    </a>
+    <a href="{{ route('tickets.edit', $ticket) }}" class="btn-primary btn-sm">
+        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg> Edit Ticket
+    </a>
+</div>
 
 <div class="tk-layout">
     <div>

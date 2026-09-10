@@ -3,172 +3,171 @@
 
 @push('styles')
 <style>
-    /* &#x2500;&#x2500; Modals &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; */
-    .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
-    .modal.show { display: flex; align-items: center; justify-content: center; }
-    .modal-content { background: white; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-    .modal-header { padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-    .modal-title { font-size: 17px; font-weight: 700; color: #111827; }
-    .modal-close { background: none; border: none; font-size: 22px; color: #6b7280; cursor: pointer; line-height: 1; padding: 0; }
-    .modal-body { padding: 24px; }
-    .modal-footer { padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; justify-content: flex-end; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px; }
-    .form-group { display: flex; flex-direction: column; }
-    .form-group-full { grid-column: 1 / -1; }
-    textarea.ui-input { min-height: 90px; resize: vertical; }
+    /* ── Stats strip ── */
+    .tx-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; margin-bottom: 16px; }
+    .tx-stat { padding: 14px 18px; }
+    .tx-stat + .tx-stat { border-left: 1px solid var(--mv-line); }
+    .tx-stat-label { font-size: 12.5px; color: var(--mv-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
+    .tx-stat-value { font-size: 22px; font-weight: 600; color: var(--mv-ink); letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
+    .tx-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mv-line-strong); }
+    .tx-dot.is-accent { background: var(--mv-accent); }
+    .tx-dot.is-warn { background: #C28A2C; }
+    .tx-dot.is-good { background: var(--mv-good); }
+    .tx-dot.is-crit { background: var(--mv-crit); }
 
-    /* &#x2500;&#x2500; Badges &#x2014; referenced by JS-generated HTML &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; */
-    .status-badge, .priority-badge, .issue-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
-    .status-open { background: #dbeafe; color: #1e40af; }
-    .status-in-progress { background: #fef3c7; color: #92400e; }
-    .status-resolved { background: #d1fae5; color: #065f46; }
-    .status-closed { background: #dcfce7; color: #166534; }
-    .status-cancelled { background: #fee2e2; color: #991b1b; }
-    .priority-critical { background: #fee2e2; color: #991b1b; }
-    .priority-high { background: #fef3c7; color: #92400e; }
-    .priority-medium { background: #dbeafe; color: #1e40af; }
-    .priority-low { background: #d1fae5; color: #065f46; }
-    .issue-hardware_malfunction { background: #fee2e2; color: #991b1b; }
-    .issue-software_issue { background: #dbeafe; color: #1e40af; }
-    .issue-network_connectivity { background: #fef3c7; color: #92400e; }
-    .issue-user_training { background: #cffafe; color: #164e63; }
-    .issue-maintenance_required { background: #fef9c3; color: #713f12; }
-    .issue-replacement_needed { background: #ffe4e6; color: #9f1239; }
-    .issue-other { background: #f3f4f6; color: #374151; }
+    /* ── Toolbar / filters ── */
+    .tx-toolbar { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .tx-toolbar .tx-f { display: flex; flex-direction: column; gap: 5px; min-width: 150px; }
+    .tx-toolbar .tx-f-search { flex: 1; min-width: 220px; max-width: 360px; }
+    .tx-toolbar .ui-label { margin: 0; }
+    .tx-toolbar .ui-input, .tx-toolbar .ui-select { width: 100%; }
+    .tx-toolbar .tx-spacer { flex: 1; }
+    .tx-searchbox { display: flex; align-items: center; gap: 6px; border: 1px solid var(--mv-line-strong); border-radius: 8px; padding: 0 10px; background: var(--mv-surface); color: var(--mv-muted); }
+    .tx-searchbox:focus-within { border-color: var(--mv-accent); box-shadow: 0 0 0 3px rgba(43, 100, 168, .15); }
+    .tx-searchbox input { border: 0 !important; box-shadow: none !important; outline: 0; padding: 8px 0; font: inherit; font-size: 13.5px; width: 100%; background: transparent; }
 
-    /* &#x2500;&#x2500; Table cell helpers &#x2014; referenced by JS filter queries &#x2500;&#x2500; */
-    .ticket-id { font-family: monospace; font-weight: 600; color: #1a3a5c; font-size: 13px; }
-    .ticket-title { font-weight: 600; color: #111827; font-size: 14px; margin-bottom: 2px; }
-    .ticket-description { color: #6b7280; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .ticket-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
-    .technician-avatar { width: 24px; height: 24px; border-radius: 50%; background: #1a3a5c; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+    /* ── Table ── */
+    .tx-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; }
+    .tx-card-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-bottom: 1px solid var(--mv-line); }
+    .tx-card-head h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+    .tx-count { font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+    .tx-table { width: 100%; border-collapse: collapse; }
+    .tx-table th { background: var(--mv-surface-2); color: var(--mv-muted); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--mv-line); white-space: nowrap; }
+    .tx-table td { padding: 11px 14px; border-bottom: 1px solid var(--mv-line); vertical-align: middle; font-size: 13px; color: var(--mv-ink-2); }
+    .tx-table tbody tr:last-child td { border-bottom: 0; }
+    .tx-table tbody tr:hover { background: var(--mv-surface-2); }
 
-    /* ── Status change dropdown ────────────────────── */
+    /* Table cell helpers — referenced by JS filter queries */
+    .ticket-id { font-family: var(--mv-mono); font-weight: 500; font-size: 12.5px; color: var(--mv-ink); white-space: nowrap; text-decoration: none; }
+    a.ticket-id:hover { color: var(--mv-accent-ink); text-decoration: underline; }
+    .ticket-title { font-weight: 500; color: var(--mv-ink); font-size: 13.5px; margin-bottom: 2px; }
+    .ticket-description { color: var(--mv-muted); font-size: 12.5px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; max-width: 460px; }
+    .ticket-meta { font-size: 12px; color: var(--mv-muted); margin-top: 2px; }
+    .ticket-meta .mv-mono { color: var(--mv-ink-2); }
+    .technician-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--mv-accent-soft); color: var(--mv-accent-ink); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+    .tx-person { display: flex; align-items: center; gap: 8px; white-space: nowrap; color: var(--mv-ink); }
+    .tx-nowrap { white-space: nowrap; }
+
+    /* Chips — class names are read by the JS filters */
+    .status-badge, .priority-badge, .issue-badge { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; line-height: 1.7; white-space: nowrap;
+        background: var(--mv-surface-2); color: var(--mv-ink-2); border: 1px solid var(--mv-line); }
+    .status-open, .priority-medium { background: var(--mv-accent-soft); color: var(--mv-accent-ink); border-color: transparent; }
+    .status-in-progress, .status-pending, .priority-high { background: var(--mv-warn-soft); color: var(--mv-warn); border-color: transparent; }
+    .status-resolved { background: var(--mv-good-soft); color: var(--mv-good); border-color: transparent; }
+    .status-cancelled, .priority-critical { background: var(--mv-crit-soft); color: var(--mv-crit); border-color: transparent; }
+    /* issue types, closed / on hold and low priority stay neutral */
+
+    /* Row actions */
+    .tx-actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
+    .tx-icon-btn { width: 30px; height: 30px; border: 1px solid var(--mv-line); border-radius: 7px; background: var(--mv-surface); color: var(--mv-ink-2); display: grid; place-items: center; cursor: pointer; padding: 0; }
+    .tx-icon-btn:hover { background: var(--mv-surface-2); color: var(--mv-ink); border-color: var(--mv-line-strong); }
+    .tx-status-btn { height: 30px; display: inline-flex; align-items: center; gap: 4px; padding: 0 8px 0 10px; border: 1px solid var(--mv-line); border-radius: 7px; background: var(--mv-surface); color: var(--mv-ink-2); font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+    .tx-status-btn:hover { background: var(--mv-surface-2); color: var(--mv-ink); border-color: var(--mv-line-strong); }
+
+    /* Status change dropdown */
     .status-drop { position: relative; display: inline-block; }
-    .status-drop-menu { display: none; position: absolute; right: 0; top: calc(100% + 4px); background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.12); z-index: 200; min-width: 145px; padding: 4px 0; }
-    .status-drop-menu button { display: block; width: 100%; padding: 8px 14px; text-align: left; background: none; border: none; cursor: pointer; font-size: 12px; color: #374151; white-space: nowrap; }
-    .status-drop-menu button:hover { background: #f3f4f6; }
-    .status-drop-menu .sdm-divider { height: 1px; background: #e5e7eb; margin: 3px 0; }
+    .status-drop-menu { display: none; position: absolute; right: 0; top: calc(100% + 4px); background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 8px; box-shadow: 0 12px 32px rgba(22, 32, 44, .12); z-index: 200; min-width: 160px; padding: 4px; }
+    .status-drop-menu button { display: block; width: 100%; padding: 7px 10px; text-align: left; background: none; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--mv-ink-2); white-space: nowrap; }
+    .status-drop-menu button:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
     .status-drop.open .status-drop-menu { display: block; }
 
-    /* ── Toast container ───────────────────────────── */
-    #notificationContainer {
-        position: fixed; top: 20px; right: 20px;
-        display: flex; flex-direction: column; gap: 10px;
-        z-index: 99999; max-width: min(360px, calc(100vw - 24px));
-        pointer-events: none;
+    .tx-empty { padding: 40px 20px; text-align: center; color: var(--mv-muted); font-size: 13.5px; }
+    .tx-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); display: block; margin: 0 auto 10px; }
+
+    /* ── Modals ── */
+    .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(22, 32, 44, .45); padding: 16px; }
+    .modal.show { display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; max-width: 760px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 16px 40px rgba(22, 32, 44, .18); }
+    .modal-header { padding: 14px 18px; border-bottom: 1px solid var(--mv-line); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--mv-surface); z-index: 1; }
+    .modal-title { font-size: 15px; font-weight: 600; color: var(--mv-ink); margin: 0; }
+    .modal-close { width: 32px; height: 32px; border: 0; border-radius: 7px; background: transparent; color: var(--mv-muted); display: grid; place-items: center; cursor: pointer; padding: 0; }
+    .modal-close:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+    .modal-body { padding: 18px; }
+    .modal-footer { padding: 12px 18px; border-top: 1px solid var(--mv-line); display: flex; gap: 8px; justify-content: flex-end; background: var(--mv-surface-2); border-radius: 0 0 12px 12px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; margin-bottom: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group-full { grid-column: 1 / -1; }
+    .form-group .ui-label { margin: 0; }
+    textarea.ui-input { min-height: 90px; resize: vertical; }
+    .tx-section-title { font-size: 13px; font-weight: 600; color: var(--mv-ink); margin: 0 0 10px; }
+
+    /* JS-generated details / steps */
+    .tx-dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px 20px; margin: 0 0 18px; }
+    .tx-dl dt { font-size: 12px; color: var(--mv-muted); margin-bottom: 3px; font-weight: 400; }
+    .tx-dl dd { margin: 0; font-size: 13.5px; color: var(--mv-ink); }
+    .tx-block { background: var(--mv-surface-2); border: 1px solid var(--mv-line); border-radius: 8px; padding: 12px 14px; font-size: 13.5px; color: var(--mv-ink-2); white-space: pre-wrap; line-height: 1.55; }
+    .tx-block-label { font-size: 12px; color: var(--mv-muted); margin: 0 0 6px; }
+    .tx-steps { list-style: none; margin: 0; padding: 0; }
+    .tx-step { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--mv-line); }
+    .tx-step:first-child { padding-top: 0; }
+    .tx-step-no { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--mv-line-strong); display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--mv-ink-2); }
+    .tx-step-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--mv-ink); font-weight: 500; }
+    .tx-step-when { font-size: 12px; color: var(--mv-muted); font-weight: 400; }
+    .tx-step p { margin: 4px 0 0; font-size: 13px; color: var(--mv-ink-2); }
+    .tx-step .tx-note { font-size: 12.5px; color: var(--mv-muted); }
+    .tx-step .tx-transfer { font-size: 12.5px; color: var(--mv-warn); }
+    .tx-add-step { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--mv-line); }
+
+    @media (max-width: 900px) {
+        .tx-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .tx-stat:nth-child(3) { border-left: 0; }
+        .tx-stat:nth-child(n+3) { border-top: 1px solid var(--mv-line); }
+        .form-grid { grid-template-columns: 1fr; }
     }
-    .notification-toast {
-        pointer-events: auto;
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 14px 14px 14px 16px;
-        border-radius: 14px;
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-left: 4px solid #e5e7eb;
-        box-shadow: 0 8px 32px rgba(15, 23, 42, 0.13), 0 1px 4px rgba(15,23,42,.05);
-        color: #111827;
-        font-size: 13px;
-        line-height: 1.5;
-        opacity: 0;
-        transform: translateX(16px);
-        transition: opacity 0.22s ease, transform 0.22s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    .notification-toast::after {
-        content: '';
-        position: absolute;
-        bottom: 0; left: 0; height: 3px;
-        background: currentColor; opacity: 0.2;
-        animation: toast-timer 5s linear forwards;
-        width: 100%;
-    }
-    @keyframes toast-timer { from { width: 100%; } to { width: 0%; } }
-    .notification-toast.visible {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    .notification-toast.success { border-left-color: #10b981; }
-    .notification-toast.error   { border-left-color: #ef4444; }
-    .notification-toast.info    { border-left-color: #3b82f6; }
-    .notification-icon {
-        width: 30px; height: 30px; border-radius: 999px;
-        display: grid; place-items: center;
-        background: #f3f4f6; color: #111827;
-        font-size: 14px; font-weight: 700; flex-shrink: 0;
-    }
-    .notification-toast.success .notification-icon { background: #dcfce7; color: #047857; }
-    .notification-toast.error   .notification-icon { background: #fee2e2; color: #b91c1c; }
-    .notification-toast.info    .notification-icon { background: #dbeafe; color: #1d4ed8; }
-    .notification-body { flex: 1; min-width: 0; }
-    .notification-title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
-    .notification-message { font-size: 12.5px; color: #374151; word-break: break-word; }
-    .notification-close {
-        background: none; border: none; cursor: pointer;
-        color: #9ca3af; font-size: 17px; line-height: 1;
-        padding: 0; flex-shrink: 0; margin-top: 1px;
-    }
-    .notification-close:hover { color: #4b5563; }
 </style>
 @endpush
 
+@section('header-actions')
+    <button type="button" class="btn-secondary btn-sm" onclick="openCreateTicketModal()">
+        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> New Ticket
+    </button>
+@endsection
+
 @section('content')
 
-{{-- Page header --}}
-<div class="flex justify-between items-center mb-6">
-    <button class="btn-primary" onclick="openCreateTicketModal()">&#x2795; New Ticket</button>
-</div>
-
 {{-- Stats --}}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-    <div class="stat-card">
-        <div class="stat-icon stat-icon-blue">&#x1F3AB;</div>
-        <div>
-            <div class="stat-number" id="openTickets">{{ $stats['open'] ?? 0 }}</div>
-            <div class="stat-label">Open Tickets</div>
-        </div>
+<div class="tx-stats">
+    <div class="tx-stat">
+        <div class="tx-stat-label"><span class="tx-dot is-accent"></span>Open Tickets</div>
+        <div class="tx-stat-value" id="openTickets">{{ $stats['open'] ?? 0 }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon stat-icon-yellow">&#x1F504;</div>
-        <div>
-            <div class="stat-number" id="inProgressTickets">{{ $stats['in_progress'] ?? 0 }}</div>
-            <div class="stat-label">In Progress</div>
-        </div>
+    <div class="tx-stat">
+        <div class="tx-stat-label"><span class="tx-dot is-warn"></span>In Progress</div>
+        <div class="tx-stat-value" id="inProgressTickets">{{ $stats['in_progress'] ?? 0 }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon stat-icon-green">&#x2705;</div>
-        <div>
-            <div class="stat-number" id="resolvedTickets">{{ $stats['resolved'] ?? 0 }}</div>
-            <div class="stat-label">Resolved This Month</div>
-        </div>
+    <div class="tx-stat">
+        <div class="tx-stat-label"><span class="tx-dot is-good"></span>Resolved This Month</div>
+        <div class="tx-stat-value" id="resolvedTickets">{{ $stats['resolved'] ?? 0 }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon stat-icon-red">&#x1F6A8;</div>
-        <div>
-            <div class="stat-number" id="criticalTickets">{{ $stats['critical'] ?? 0 }}</div>
-            <div class="stat-label">Critical Priority</div>
-        </div>
+    <div class="tx-stat">
+        <div class="tx-stat-label"><span class="tx-dot is-crit"></span>Critical Priority</div>
+        <div class="tx-stat-value" id="criticalTickets">{{ $stats['critical'] ?? 0 }}</div>
     </div>
 </div>
 
 {{-- Filters --}}
-<div class="filter-bar">
-    <div class="flex-1 min-w-[140px]">
-        <label class="ui-label">Status</label>
+<div class="tx-toolbar">
+    <div class="tx-f tx-f-search">
+        <label class="ui-label" for="searchInput">Search</label>
+        <div class="tx-searchbox">
+            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-search"/></svg>
+            <input type="text" id="searchInput" placeholder="Search tickets...">
+        </div>
+    </div>
+    <div class="tx-f">
+        <label class="ui-label" for="statusFilter">Status</label>
         <select class="ui-select" id="statusFilter">
             <option value="">All Status</option>
             <option value="open">Open</option>
             <option value="in_progress">In Progress</option>
+            <option value="on_hold">On Hold</option>
             <option value="resolved">Resolved</option>
             <option value="closed">Closed</option>
             <option value="cancelled">Cancelled</option>
         </select>
     </div>
-    <div class="flex-1 min-w-[140px]">
-        <label class="ui-label">Priority</label>
+    <div class="tx-f">
+        <label class="ui-label" for="priorityFilter">Priority</label>
         <select class="ui-select" id="priorityFilter">
             <option value="">All Priorities</option>
             <option value="critical">Critical</option>
@@ -177,8 +176,8 @@
             <option value="low">Low</option>
         </select>
     </div>
-    <div class="flex-1 min-w-[160px]">
-        <label class="ui-label">Issue Type</label>
+    <div class="tx-f">
+        <label class="ui-label" for="issueTypeFilter">Issue Type</label>
         <select class="ui-select" id="issueTypeFilter">
             <option value="">All Types</option>
             <option value="hardware_malfunction">Hardware Malfunction</option>
@@ -190,22 +189,17 @@
             <option value="other">Other</option>
         </select>
     </div>
-    <div class="flex-1 min-w-[160px]">
-        <label class="ui-label">Search</label>
-        <input type="text" class="ui-input" id="searchInput" placeholder="Search tickets...">
-    </div>
-    <div class="flex items-end">
-        <button class="btn-secondary" onclick="clearFilters()">Clear</button>
-    </div>
+    <button type="button" class="btn-secondary" onclick="clearFilters()">Clear</button>
 </div>
 
 {{-- Tickets table --}}
-<div class="ui-card overflow-hidden">
-    <div class="ui-card-header">
-        <span class="font-semibold text-gray-800 text-sm">All Tickets</span>
+<div class="tx-card">
+    <div class="tx-card-head">
+        <h2>All Tickets</h2>
+        <span class="tx-count">{{ $tickets->count() }} {{ \Illuminate\Support\Str::plural('ticket', $tickets->count()) }}</span>
     </div>
-    <div class="overflow-x-auto">
-        <table class="ui-table" id="ticketsTable">
+    <div style="overflow-x: auto;">
+        <table class="tx-table" id="ticketsTable">
             <thead>
                 <tr>
                     <th>Ticket ID</th>
@@ -215,18 +209,18 @@
                     <th>Status</th>
                     <th>Technician</th>
                     <th>Created</th>
-                    <th>Actions</th>
+                    <th style="text-align:right;">Actions</th>
                 </tr>
             </thead>
             <tbody id="ticketsTableBody">
                 @forelse($tickets as $ticket)
                 <tr>
-                    <td><span class="ticket-id">{{ $ticket->ticket_id }}</span></td>
+                    <td><a href="{{ route('tickets.show', $ticket) }}" class="ticket-id">{{ $ticket->ticket_id }}</a></td>
                     <td>
                         <div class="ticket-title">{{ $ticket->title }}</div>
                         <div class="ticket-description">{{ Str::limit($ticket->description, 100) }}</div>
                         @if($ticket->posTerminal)
-                            <div class="ticket-meta">Terminal: {{ $ticket->posTerminal->terminal_id }}</div>
+                            <div class="ticket-meta">Terminal <span class="mv-mono">{{ $ticket->posTerminal->terminal_id }}</span></div>
                         @endif
                     </td>
                     <td>
@@ -246,22 +240,26 @@
                     </td>
                     <td>
                         @if($ticket->assignedTo)
-                            <div class="flex items-center gap-2">
+                            <div class="tx-person">
                                 <span class="technician-avatar">{{ substr($ticket->assignedTo->first_name, 0, 1) }}</span>
-                                <span class="text-sm text-gray-700">{{ $ticket->assignedTo->first_name }} {{ $ticket->assignedTo->last_name }}</span>
+                                <span>{{ $ticket->assignedTo->first_name }} {{ $ticket->assignedTo->last_name }}</span>
                             </div>
                         @else
-                            <span class="text-gray-400 text-sm">Unassigned</span>
+                            <span class="ticket-meta">Unassigned</span>
                         @endif
                     </td>
-                    <td>
-                        <div class="text-sm text-gray-700">{{ $ticket->created_at->format('M j, Y') }}</div>
+                    <td class="tx-nowrap">
+                        <div>{{ $ticket->created_at->format('M j, Y') }}</div>
                         <div class="ticket-meta">{{ $ticket->created_at->format('g:i A') }}</div>
                     </td>
                     <td>
-                        <div class="flex gap-1.5 flex-wrap">
-                            <button class="btn-secondary btn-sm" onclick="viewTicketDetails({{ $ticket->id }})">&#x1F441; View</button>
-                            <button class="btn-primary btn-sm" onclick="editTicketFromTable({{ $ticket->id }})">&#x270F; Edit</button>
+                        <div class="tx-actions">
+                            <button type="button" class="tx-icon-btn" onclick="viewTicketDetails({{ $ticket->id }})" title="View" aria-label="View ticket {{ $ticket->ticket_id }}">
+                                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg>
+                            </button>
+                            <button type="button" class="tx-icon-btn" onclick="editTicketFromTable({{ $ticket->id }})" title="Edit" aria-label="Edit ticket {{ $ticket->ticket_id }}">
+                                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg>
+                            </button>
                             @php
                                 $transitions = [
                                     'open'        => ['in_progress'=>'Mark In Progress','on_hold'=>'Put On Hold','resolved'=>'Resolve','cancelled'=>'Cancel'],
@@ -273,12 +271,12 @@
                             @endphp
                             @if(!empty($nextStatuses))
                             <div class="status-drop" id="sdrop-{{ $ticket->id }}">
-                                <button class="btn-secondary btn-sm" onclick="toggleStatusDrop({{ $ticket->id }})">
-                                    &#x21BB; Status &#x25BE;
+                                <button type="button" class="tx-status-btn" onclick="toggleStatusDrop({{ $ticket->id }})" aria-haspopup="true">
+                                    Status <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg>
                                 </button>
                                 <div class="status-drop-menu">
                                     @foreach($nextStatuses as $status => $label)
-                                        <button onclick="updateTicketStatus({{ $ticket->id }},'{{ $status }}',this);closeAllStatusDrops()">
+                                        <button type="button" onclick="updateTicketStatus({{ $ticket->id }},'{{ $status }}',this);closeAllStatusDrops()">
                                             {{ $label }}
                                         </button>
                                     @endforeach
@@ -291,9 +289,10 @@
                 @empty
                 <tr>
                     <td colspan="8">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">&#x1F3AB;</div>
-                            <div class="empty-state-msg">No tickets found</div>
+                        <div class="tx-empty">
+                            <svg class="mv-i" aria-hidden="true"><use href="#i-ticket"/></svg>
+                            No tickets found.
+                            <div style="margin-top:12px;"><button type="button" class="btn-secondary btn-sm" onclick="openCreateTicketModal()">New Ticket</button></div>
                         </div>
                     </td>
                 </tr>
@@ -305,21 +304,21 @@
 
 {{-- Create / Edit Ticket Modal --}}
 <div id="ticketModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="ticketModalTitle">
         <div class="modal-header">
             <h3 class="modal-title" id="ticketModalTitle">Create New Ticket</h3>
-            <button class="modal-close" onclick="closeTicketModal()">&times;</button>
+            <button type="button" class="modal-close" onclick="closeTicketModal()" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
         <div class="modal-body">
             <form id="ticketForm">
                 @csrf
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label class="ui-label">Title *</label>
+                    <div class="form-group form-group-full">
+                        <label class="ui-label" for="ticketTitle">Title *</label>
                         <input type="text" class="ui-input" id="ticketTitle" required>
                     </div>
                     <div class="form-group">
-                        <label class="ui-label">Priority *</label>
+                        <label class="ui-label" for="ticketPriority">Priority *</label>
                         <select class="ui-select" id="ticketPriority" required>
                             <option value="">Select Priority</option>
                             <option value="low">Low</option>
@@ -329,23 +328,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="ui-label">Ticket Type *</label>
-                        <select class="ui-select" id="ticketType" required>
-                            <option value="">Select Type</option>
-                            <option value="pos_terminal">POS Terminal</option>
-                            <option value="internal">Internal</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="ui-label">Assignment Type *</label>
-                        <select class="ui-select" id="ticketAssignmentType" required>
-                            <option value="">Select Assignment</option>
-                            <option value="public">Public (Any Employee)</option>
-                            <option value="direct">Direct (Specific Employee)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="ui-label">Issue Type *</label>
+                        <label class="ui-label" for="ticketIssueType">Issue Type *</label>
                         <select class="ui-select" id="ticketIssueType" required>
                             <option value="">Select Issue Type</option>
                             <option value="hardware_malfunction">Hardware Malfunction</option>
@@ -357,8 +340,16 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label class="ui-label" for="ticketType">Ticket Type *</label>
+                        <select class="ui-select" id="ticketType" required>
+                            <option value="">Select Type</option>
+                            <option value="pos_terminal">POS Terminal</option>
+                            <option value="internal">Internal</option>
+                        </select>
+                    </div>
                     <div class="form-group" id="posTerminalField">
-                        <label class="ui-label">POS Terminal *</label>
+                        <label class="ui-label" for="ticketPosTerminal">POS Terminal *</label>
                         <select class="ui-select" id="ticketPosTerminal" required>
                             <option value="">Select Terminal</option>
                             @foreach($posTerminals as $terminal)
@@ -366,8 +357,16 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label class="ui-label" for="ticketAssignmentType">Assignment Type *</label>
+                        <select class="ui-select" id="ticketAssignmentType" required>
+                            <option value="">Select Assignment</option>
+                            <option value="public">Public (Any Employee)</option>
+                            <option value="direct">Direct (Specific Employee)</option>
+                        </select>
+                    </div>
                     <div class="form-group" id="assignedToField" style="display: none;">
-                        <label class="ui-label">Assigned To *</label>
+                        <label class="ui-label" for="ticketAssignedTo">Assigned To *</label>
                         <select class="ui-select" id="ticketAssignedTo" required>
                             <option value="">Select Employee</option>
                             @foreach($technicians as $technician)
@@ -376,16 +375,16 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="ui-label">Est. Resolution Time (Days)</label>
+                        <label class="ui-label" for="ticketEstimatedDays">Est. Resolution Time (Days)</label>
                         <input type="number" class="ui-input" id="ticketEstimatedDays" min="0">
                     </div>
                 </div>
                 <div class="form-group form-group-full">
-                    <label class="ui-label">Description *</label>
+                    <label class="ui-label" for="ticketDescription">Description *</label>
                     <textarea class="ui-input" id="ticketDescription" required placeholder="Please provide a detailed description of the issue..."></textarea>
                 </div>
-                <div class="form-group form-group-full" id="resolutionGroup" style="display: none;">
-                    <label class="ui-label">Resolution</label>
+                <div class="form-group form-group-full" id="resolutionGroup" style="display: none; margin-top: 14px;">
+                    <label class="ui-label" for="ticketResolution">Resolution</label>
                     <textarea class="ui-input" id="ticketResolution" placeholder="Describe how the issue was resolved..."></textarea>
                 </div>
             </form>
@@ -399,10 +398,10 @@
 
 {{-- View Ticket Details Modal --}}
 <div id="ticketDetailsModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="ticketDetailsTitle">
         <div class="modal-header">
             <h3 class="modal-title" id="ticketDetailsTitle">Ticket Details</h3>
-            <button class="modal-close" onclick="closeTicketDetailsModal()">&times;</button>
+            <button type="button" class="modal-close" onclick="closeTicketDetailsModal()" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
         <div class="modal-body" id="ticketDetailsBody"></div>
         <div class="modal-footer">
@@ -415,25 +414,25 @@
 
 {{-- Ticket Steps / Audit Trail Modal --}}
 <div id="ticketStepsModal" class="modal">
-    <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-content" style="max-width: 680px;" role="dialog" aria-modal="true" aria-labelledby="ticketStepsTitle">
         <div class="modal-header">
             <h3 class="modal-title" id="ticketStepsTitle">Ticket Steps &amp; Audit Trail</h3>
-            <button class="modal-close" onclick="closeTicketStepsModal()">&times;</button>
+            <button type="button" class="modal-close" onclick="closeTicketStepsModal()" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
         <div class="modal-body">
             <div id="ticketStepsContainer"></div>
-            <div class="mt-5 pt-5 border-t border-gray-100">
-                <h4 class="text-sm font-semibold text-gray-700 mb-3">Add Work Step</h4>
-                <div class="form-group mb-3">
-                    <label class="ui-label">Description *</label>
+            <div class="tx-add-step">
+                <h4 class="tx-section-title">Add Work Step</h4>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="ui-label" for="stepDescription">Description *</label>
                     <input type="text" class="ui-input" id="stepDescription" placeholder="What work was done?">
                 </div>
-                <div class="form-group mb-3">
-                    <label class="ui-label">Notes</label>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="ui-label" for="stepNotes">Notes</label>
                     <textarea class="ui-input" id="stepNotes" placeholder="Additional notes..." rows="3"></textarea>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" class="btn-success btn-sm" onclick="addTicketStep()">Add Step</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn-primary btn-sm" onclick="addTicketStep()">Add Step</button>
                     <button type="button" class="btn-secondary btn-sm" onclick="completeAndTransfer()">Complete &amp; Transfer</button>
                 </div>
             </div>
@@ -446,14 +445,14 @@
 
 {{-- Transfer Ticket Modal --}}
 <div id="transferModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-content" style="max-width: 480px;" role="dialog" aria-modal="true" aria-labelledby="transferTicketTitle">
         <div class="modal-header">
-            <h3 class="modal-title">Transfer Ticket</h3>
-            <button class="modal-close" onclick="closeTransferModal()">&times;</button>
+            <h3 class="modal-title" id="transferTicketTitle">Transfer Ticket</h3>
+            <button type="button" class="modal-close" onclick="closeTransferModal()" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
         <div class="modal-body">
-            <div class="form-group mb-3">
-                <label class="ui-label">Transfer To *</label>
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label class="ui-label" for="transferToEmployee">Transfer To *</label>
                 <select class="ui-select" id="transferToEmployee">
                     <option value="">Select Employee</option>
                     @foreach($technicians as $tech)
@@ -461,12 +460,12 @@
                     @endforeach
                 </select>
             </div>
-            <div class="form-group mb-3">
-                <label class="ui-label">Reason for Transfer *</label>
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label class="ui-label" for="transferReason">Reason for Transfer *</label>
                 <textarea class="ui-input" id="transferReason" placeholder="Why are you transferring this ticket?" rows="3"></textarea>
             </div>
             <div class="form-group">
-                <label class="ui-label">Work Completed</label>
+                <label class="ui-label" for="transferNotes">Work Completed</label>
                 <textarea class="ui-input" id="transferNotes" placeholder="What have you accomplished so far?" rows="3"></textarea>
             </div>
         </div>
@@ -498,32 +497,26 @@
     let currentEditingTicket = null;
     let currentViewingTicketId = null;
 
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const titleCase = (v) => String(v ?? '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
     });
 
     function setupEventListeners() {
-        // Filter event listeners
         document.getElementById('statusFilter').addEventListener('change', filterTickets);
         document.getElementById('priorityFilter').addEventListener('change', filterTickets);
         document.getElementById('issueTypeFilter').addEventListener('change', filterTickets);
         document.getElementById('searchInput').addEventListener('input', filterTickets);
 
-        // Ticket form field visibility
         document.getElementById('ticketType')?.addEventListener('change', updateFormFields);
         document.getElementById('ticketAssignmentType')?.addEventListener('change', updateFormFields);
 
-        // Modal close on outside click
         window.addEventListener('click', function(event) {
-            const ticketModal = document.getElementById('ticketModal');
-            const detailsModal = document.getElementById('ticketDetailsModal');
-            if (event.target === ticketModal) {
-                closeTicketModal();
-            }
-            if (event.target === detailsModal) {
-                closeTicketDetailsModal();
-            }
+            if (event.target === document.getElementById('ticketModal')) closeTicketModal();
+            if (event.target === document.getElementById('ticketDetailsModal')) closeTicketDetailsModal();
         });
     }
 
@@ -531,11 +524,10 @@
         const ticketType = document.getElementById('ticketType')?.value;
         const assignmentType = document.getElementById('ticketAssignmentType')?.value;
 
-        // Show/hide POS Terminal field based on ticket type
         const posTerminalField = document.getElementById('posTerminalField');
         if (posTerminalField) {
             if (ticketType === 'pos_terminal') {
-                posTerminalField.style.display = 'block';
+                posTerminalField.style.display = '';
                 document.getElementById('ticketPosTerminal').required = true;
             } else {
                 posTerminalField.style.display = 'none';
@@ -544,11 +536,10 @@
             }
         }
 
-        // Show/hide Assigned To field based on assignment type
         const assignedToField = document.getElementById('assignedToField');
         if (assignedToField) {
             if (assignmentType === 'direct') {
-                assignedToField.style.display = 'block';
+                assignedToField.style.display = '';
                 document.getElementById('ticketAssignedTo').required = true;
             } else {
                 assignedToField.style.display = 'none';
@@ -564,9 +555,7 @@
         const issueTypeFilter = document.getElementById('issueTypeFilter').value;
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
 
-        const rows = document.querySelectorAll('#ticketsTableBody tr');
-
-        rows.forEach(row => {
+        document.querySelectorAll('#ticketsTableBody tr').forEach(row => {
             const cells = row.querySelectorAll('td');
             if (cells.length < 8) return; // Skip empty state row
 
@@ -582,8 +571,7 @@
                 description.toLowerCase().includes(searchInput) ||
                 ticketId.toLowerCase().includes(searchInput);
 
-            const shouldShow = issueType && priority && status && matchesSearch;
-            row.style.display = shouldShow ? '' : 'none';
+            row.style.display = (issueType && priority && status && matchesSearch) ? '' : 'none';
         });
     }
 
@@ -592,11 +580,7 @@
         document.getElementById('priorityFilter').value = '';
         document.getElementById('issueTypeFilter').value = '';
         document.getElementById('searchInput').value = '';
-
-        // Show all rows
-        document.querySelectorAll('#ticketsTableBody tr').forEach(row => {
-            row.style.display = '';
-        });
+        document.querySelectorAll('#ticketsTableBody tr').forEach(row => { row.style.display = ''; });
     }
 
     function openCreateTicketModal() {
@@ -604,7 +588,7 @@
         document.getElementById('ticketModalTitle').textContent = 'Create New Ticket';
         document.getElementById('ticketForm').reset();
         document.getElementById('resolutionGroup').style.display = 'none';
-        updateFormFields(); // Update field visibility based on form defaults
+        updateFormFields();
         document.getElementById('ticketModal').classList.add('show');
     }
 
@@ -619,7 +603,6 @@
         currentEditingTicket = ticket;
         document.getElementById('ticketModalTitle').textContent = 'Edit Ticket';
 
-        // Populate form
         document.getElementById('ticketTitle').value = ticket.title;
         document.getElementById('ticketPriority').value = ticket.priority;
         document.getElementById('ticketType').value = ticket.ticket_type || 'pos_terminal';
@@ -627,16 +610,14 @@
         document.getElementById('ticketIssueType').value = ticket.issue_type;
         document.getElementById('ticketPosTerminal').value = ticket.pos_terminal_id || '';
         document.getElementById('ticketAssignedTo').value = ticket.assigned_to || '';
-        document.getElementById('ticketEstimatedDays').value = ticket.estimated_resolution_days || '';
+        document.getElementById('ticketEstimatedDays').value = ticket.estimated_resolution_days || ticket.estimated_resolution_time || '';
         document.getElementById('ticketDescription').value = ticket.description;
         document.getElementById('ticketResolution').value = ticket.resolution || '';
 
-        // Update form fields visibility based on values
         updateFormFields();
 
-        // Show resolution field if ticket is resolved
         if (ticket.status === 'resolved' || ticket.status === 'closed') {
-            document.getElementById('resolutionGroup').style.display = 'block';
+            document.getElementById('resolutionGroup').style.display = '';
         }
 
         document.getElementById('ticketModal').classList.add('show');
@@ -683,13 +664,9 @@
                 let message = 'Unknown error';
                 try {
                     const errorData = await response.json();
-                    if (errorData.errors) {
-                        message = Object.values(errorData.errors).flat().join('\n');
-                    } else {
-                        message = errorData.message || message;
-                    }
+                    message = errorData.errors ? Object.values(errorData.errors).flat().join('\n') : (errorData.message || message);
                 } catch (_) {}
-                showNotification('error', 'Error saving ticket: ' + message);
+                showNotification('error', 'Error saving ticket: ' + esc(message));
             }
         } catch (error) {
             console.error('Error:', error);
@@ -736,9 +713,7 @@
                 return;
             }
 
-            const message = data?.message || data?.error
-                || `Could not update ticket status (HTTP ${response.status})`;
-            showNotification('error', message);
+            showNotification('error', data?.message || data?.error || `Could not update ticket status (HTTP ${response.status})`);
         } catch (error) {
             console.error('Error:', error);
             showNotification('error', 'Could not update ticket status. Please try again.');
@@ -747,99 +722,36 @@
         }
     }
 
-    function showNotification(type, message, title) {
-        let container = document.getElementById('notificationContainer');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'notificationContainer';
-            document.body.appendChild(container);
-        }
-
-        const icons = { success: '✓', error: '✕', info: '' };
-        const titles = { success: 'Success', error: 'Error', info: 'Info' };
-        const el = document.createElement('div');
-        el.className = `notification-toast ${type}`;
-        el.innerHTML = `
-            <div class="notification-icon">${icons[type] || '!'}</div>
-            <div class="notification-body">
-                <div class="notification-title">${title || titles[type] || 'Notice'}</div>
-                <div class="notification-message">${message}</div>
-            </div>
-            <button class="notification-close" title="Dismiss">&times;</button>`;
-        container.appendChild(el);
-
-        const close = () => {
-            el.classList.remove('visible');
-            setTimeout(() => el.remove(), 300);
-        };
-        el.querySelector('.notification-close').addEventListener('click', close);
-
-        requestAnimationFrame(() => el.classList.add('visible'));
-        setTimeout(close, 5000);
-    }
+    // Toasts: showNotification(type, message) comes from the portal layout.
 
     function viewTicketDetails(ticketId) {
         const ticket = ticketsData.find(t => t.id === ticketId);
         if (!ticket) return;
 
         currentViewingTicketId = ticketId;
-
         document.getElementById('ticketDetailsTitle').textContent = `Ticket ${ticket.ticket_id}`;
 
-        const detailsBody = document.getElementById('ticketDetailsBody');
-        detailsBody.innerHTML = `
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px;">
-                <div>
-                    <strong>Title:</strong><br>
-                    ${ticket.title}
-                </div>
-                <div>
-                    <strong>Status:</strong><br>
-                    <span class="status-badge status-${ticket.status.replace('_', '-')}">${ticket.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                </div>
-                <div>
-                    <strong>Priority:</strong><br>
-                    <span class="priority-badge priority-${ticket.priority}">${ticket.priority}</span>
-                </div>
-                <div>
-                    <strong>Issue Type:</strong><br>
-                    <span class="issue-badge issue-${ticket.issue_type}">${ticket.issue_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                </div>
-                <div>
-                    <strong>Assigned To:</strong><br>
-                    ${ticket.assigned_to ? (ticket.assigned_to.first_name + ' ' + ticket.assigned_to.last_name) : 'Unassigned'}
-                </div>
-                <div>
-                    <strong>Created:</strong><br>
-                    ${new Date(ticket.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} ${new Date(ticket.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                </div>
-                ${ticket.pos_terminal ? `
-                    <div>
-                        <strong>POS Terminal:</strong><br>
-                        ${ticket.pos_terminal.terminal_id}
-                    </div>
-                ` : ''}
-                ${ticket.estimated_resolution_days ? `
-                    <div>
-                        <strong>Est. Resolution:</strong><br>
-                        ${ticket.estimated_resolution_days} days
-                    </div>
-                ` : ''}
-            </div>
-            <div style="margin-bottom: 20px;">
-                <strong>Description:</strong><br>
-                <div style="background: #f8f9fa; padding: 16px; border-radius: 6px; margin-top: 8px;">
-                    ${ticket.description}
-                </div>
-            </div>
+        const created = new Date(ticket.created_at);
+        const estDays = ticket.estimated_resolution_days || ticket.estimated_resolution_time;
+
+        document.getElementById('ticketDetailsBody').innerHTML = `
+            <dl class="tx-dl">
+                <div style="grid-column: 1 / -1;"><dt>Title</dt><dd>${esc(ticket.title)}</dd></div>
+                <div><dt>Status</dt><dd><span class="status-badge status-${esc(ticket.status.replace('_', '-'))}">${esc(titleCase(ticket.status))}</span></dd></div>
+                <div><dt>Priority</dt><dd><span class="priority-badge priority-${esc(ticket.priority)}">${esc(titleCase(ticket.priority))}</span></dd></div>
+                <div><dt>Issue Type</dt><dd><span class="issue-badge issue-${esc(ticket.issue_type)}">${esc(titleCase(ticket.issue_type))}</span></dd></div>
+                <div><dt>Assigned To</dt><dd>${ticket.assigned_to ? esc(ticket.assigned_to.first_name + ' ' + ticket.assigned_to.last_name) : 'Unassigned'}</dd></div>
+                <div><dt>Created</dt><dd>${created.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} ${created.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</dd></div>
+                ${ticket.pos_terminal ? `<div><dt>POS Terminal</dt><dd class="mv-mono">${esc(ticket.pos_terminal.terminal_id)}</dd></div>` : ''}
+                ${estDays ? `<div><dt>Est. Resolution</dt><dd>${esc(estDays)} days</dd></div>` : ''}
+            </dl>
+            <p class="tx-block-label">Description</p>
+            <div class="tx-block">${esc(ticket.description)}</div>
             ${ticket.resolution ? `
-                <div>
-                    <strong>Resolution:</strong><br>
-                    <div style="background: #d4edda; padding: 16px; border-radius: 6px; margin-top: 8px; border-left: 4px solid #28a745;">
-                        ${ticket.resolution}
-                    </div>
-                </div>
+                <p class="tx-block-label" style="margin-top: 16px;">Resolution</p>
+                <div class="tx-block">${esc(ticket.resolution)}</div>
             ` : ''}
+            <p style="margin: 16px 0 0; font-size: 13px;"><a href="${routes.show(ticket.id)}" style="color: var(--mv-accent-ink);">Open full ticket page</a></p>
         `;
 
         document.getElementById('editTicketBtn').onclick = () => {
@@ -882,37 +794,37 @@
         const container = document.getElementById('ticketStepsContainer');
 
         if (steps.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: #999;">No steps recorded yet</p>';
+            container.innerHTML = '<p style="margin: 0; font-size: 13px; color: var(--mv-muted);">No steps recorded yet</p>';
             return;
         }
 
-        container.innerHTML = steps.map((step, index) => `
-            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid ${getStepColor(step.status)};">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div style="flex: 1;">
-                        <strong>Step ${step.step_number}</strong> - ${step.status.toUpperCase()}
-                        <div style="font-size: 12px; color: #666; margin-top: 4px;">
-                            ${step.employee_name}
-                            ${step.completed_at ? ` • Completed: ${new Date(step.completed_at).toLocaleString()}` : ''}
-                        </div>
+        container.innerHTML = '<ol class="tx-steps">' + steps.map(step => `
+            <li class="tx-step">
+                <span class="tx-step-no">${esc(step.step_number)}</span>
+                <div>
+                    <div class="tx-step-head">
+                        ${esc(step.employee_name)}
+                        <span class="status-badge ${getStepColor(step.status)}">${esc(titleCase(step.status))}</span>
+                        ${step.completed_at ? `<span class="tx-step-when">Completed ${new Date(step.completed_at).toLocaleString()}</span>` : ''}
                     </div>
+                    <p>${esc(step.description)}</p>
+                    ${step.resolution_notes ? `<p><strong>Resolution:</strong> ${esc(step.resolution_notes)}</p>` : ''}
+                    ${step.notes ? `<p class="tx-note">Notes: ${esc(step.notes)}</p>` : ''}
+                    ${step.transferred_reason ? `<p class="tx-transfer">Transferred to ${esc(step.transferred_to_name)}: ${esc(step.transferred_reason)}</p>` : ''}
                 </div>
-                <p style="margin: 10px 0; color: #333;">${step.description}</p>
-                ${step.resolution_notes ? `<p style="margin: 10px 0; padding: 10px; background: white; border-radius: 4px;"><strong>Resolution:</strong> ${step.resolution_notes}</p>` : ''}
-                ${step.notes ? `<p style="margin: 10px 0; font-size: 12px; color: #666;"><strong>Notes:</strong> ${step.notes}</p>` : ''}
-                ${step.transferred_reason ? `<p style="margin: 10px 0; font-size: 12px; color: #d9534f;"><strong>Transferred to ${step.transferred_to_name}:</strong> ${step.transferred_reason}</p>` : ''}
-            </div>
-        `).join('');
+            </li>
+        `).join('') + '</ol>';
     }
 
+    // step status → chip tone (classes defined above)
     function getStepColor(status) {
-        const colors = {
-            'in_progress': '#3498db',
-            'completed': '#27ae60',
-            'transferred': '#f39c12',
-            'resolved': '#2ecc71'
+        const tones = {
+            'in_progress': 'status-in-progress',
+            'completed': 'status-resolved',
+            'transferred': 'status-open',
+            'resolved': 'status-resolved'
         };
-        return colors[status] || '#95a5a6';
+        return tones[status] || '';
     }
 
     async function addTicketStep() {
@@ -932,19 +844,13 @@
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    description,
-                    notes: notes || null
-                })
+                body: JSON.stringify({ description, notes: notes || null })
             });
 
             if (!response.ok) throw new Error('Failed to add step');
 
-            // Clear form and reload steps
             document.getElementById('stepDescription').value = '';
             document.getElementById('stepNotes').value = '';
-
-            // Reload steps display
             await viewTicketSteps();
         } catch (error) {
             console.error('Error:', error);
@@ -974,7 +880,6 @@
         }
 
         try {
-            // First get current step
             const auditResponse = await fetch(routes.auditTrail(currentViewingTicketId));
             const auditData = await auditResponse.json();
             const currentStep = auditData.steps?.find(s => s.status === 'in_progress');
@@ -984,7 +889,6 @@
                 return;
             }
 
-            // Transfer the step
             const transferResponse = await fetch(
                 routes.transferStep(currentViewingTicketId, currentStep.id),
                 {
