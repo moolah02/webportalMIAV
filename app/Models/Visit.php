@@ -22,6 +22,7 @@ class Visit extends Model
         'visit_summary',
         'action_points',
         'terminal_comments', // corrective action (mobile sends this key)
+        'condition_notes',   // free-text terminal condition notes (mobile)
         'evidence',
         'signature',
         'other_terminals_found',

@@ -61,6 +61,23 @@
                     </td>
                 </tr>
                 @endif
+                @if(!empty($visit->new_contact_person) || !empty($visit->new_phone_number) || !empty($visit->new_physical_address))
+                {{-- New / updated contact details captured on the tablet --}}
+                <tr class="hover:bg-gray-50">
+                    <td class="w-44 bg-gray-50 font-semibold text-gray-500 text-xs uppercase tracking-wide py-3 px-4 align-top whitespace-nowrap">New / Updated Contact</td>
+                    <td class="text-gray-700 py-3 px-4">
+                        @if(!empty($visit->new_contact_person))
+                        <div>{{ $visit->new_contact_person }}</div>
+                        @endif
+                        @if(!empty($visit->new_phone_number))
+                        <div class="text-xs text-gray-400 mt-0.5">{{ $visit->new_phone_number }}</div>
+                        @endif
+                        @if(!empty($visit->new_physical_address))
+                        <div class="text-xs text-gray-400 mt-0.5">{{ $visit->new_physical_address }}</div>
+                        @endif
+                    </td>
+                </tr>
+                @endif
                 {{-- Visit Summary --}}
                 <tr class="hover:bg-gray-50">
                     <td class="w-44 bg-gray-50 font-semibold text-gray-500 text-xs uppercase tracking-wide py-3 px-4 align-top whitespace-nowrap">Visit Summary</td>
@@ -71,6 +88,20 @@
                 <tr class="hover:bg-gray-50">
                     <td class="w-44 bg-gray-50 font-semibold text-gray-500 text-xs uppercase tracking-wide py-3 px-4 align-top whitespace-nowrap">Action Points</td>
                     <td class="text-gray-700 py-3 px-4">{{ $visit->action_points }}</td>
+                </tr>
+                @endif
+                @if(!empty($visit->terminal_comments))
+                {{-- Corrective Action (the tablet sends it as terminal_comments) --}}
+                <tr class="hover:bg-gray-50">
+                    <td class="w-44 bg-gray-50 font-semibold text-gray-500 text-xs uppercase tracking-wide py-3 px-4 align-top whitespace-nowrap">Corrective Action</td>
+                    <td class="text-gray-700 py-3 px-4">{{ $visit->terminal_comments }}</td>
+                </tr>
+                @endif
+                @if(!empty($visit->condition_notes))
+                {{-- Condition Notes --}}
+                <tr class="hover:bg-gray-50">
+                    <td class="w-44 bg-gray-50 font-semibold text-gray-500 text-xs uppercase tracking-wide py-3 px-4 align-top whitespace-nowrap">Condition Notes</td>
+                    <td class="text-gray-700 py-3 px-4">{{ $visit->condition_notes }}</td>
                 </tr>
                 @endif
                 {{-- Primary Terminal --}}

@@ -164,6 +164,7 @@ class VisitController extends Controller
             'action_points'            => ['nullable','string'],
             'corrective_action'        => ['nullable','string','max:500'],
             'terminal_comments'        => ['nullable','string','max:500'], // corrective action key sent by mobile
+            'condition_notes'          => ['nullable','string','max:2000'], // free-text terminal condition notes
             'evidence'                 => ['nullable','array'],
             'evidence.*'               => ['nullable','string'],
             'signature'                => ['required','string'],
@@ -190,6 +191,7 @@ class VisitController extends Controller
                 'visit_summary'          => $data['visit_summary'] ?? null,
                 'action_points'          => $data['action_points'] ?? null,
                 'terminal_comments'      => $data['terminal_comments'] ?? ($data['corrective_action'] ?? null),
+                'condition_notes'        => $data['condition_notes'] ?? null,
                 'evidence'               => $data['evidence'] ?? null,
                 'signature'              => $data['signature'],
                 'other_terminals_found'  => $data['other_terminals_found'] ?? null,
@@ -259,6 +261,7 @@ class VisitController extends Controller
             'action_points'    => ['sometimes','nullable','string'],
             'corrective_action'=> ['sometimes','nullable','string','max:500'],
             'terminal_comments'=> ['sometimes','nullable','string','max:500'], // corrective action key sent by mobile
+            'condition_notes'  => ['sometimes','nullable','string','max:2000'],
             'evidence'         => ['sometimes','nullable','array'],
             'evidence.*'       => ['nullable','string'],
             'signature'        => ['sometimes','nullable','string'],
@@ -279,7 +282,7 @@ class VisitController extends Controller
             if (array_key_exists('merchant_phone', $data)) {
                 $visitUpdates['phone_number'] = $data['merchant_phone'];
             }
-            foreach (['new_contact_person','new_phone_number','new_physical_address','visit_summary','action_points','terminal_comments','evidence','signature'] as $field) {
+            foreach (['new_contact_person','new_phone_number','new_physical_address','visit_summary','action_points','terminal_comments','condition_notes','evidence','signature'] as $field) {
                 if (array_key_exists($field, $data)) {
                     $visitUpdates[$field] = $data[$field];
                 }

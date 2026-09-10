@@ -475,6 +475,7 @@ class SiteVisitController extends Controller
             'attachments',
             'jobAssignment.project',
             'jobAssignment.client',
+            'visit', // tablet visit record: contact + new contact details
         ]);
 
         // History: other visits to the same terminal

@@ -360,28 +360,31 @@
                     <div class="text-sm text-gray-700">{{ $visit->posTerminal->client->company_name }}</div>
                 </div>
                 @endif
-                @if($visit->contact_person ?? false)
+                {{-- $visit is the technician_visits report row; contact details live on
+                     the linked tablet visit record, so read them from there. --}}
+                @php $rec = $visit->visit; @endphp
+                @if($rec?->contact_person)
                 <div>
                     <div class="text-xs text-gray-400 mb-0.5">Contact</div>
-                    <div class="text-sm">{{ $visit->contact_person }}</div>
-                    @if($visit->phone_number ?? false)
-                    <div class="text-xs text-gray-500">{{ $visit->phone_number }}</div>
+                    <div class="text-sm">{{ $rec->contact_person }}</div>
+                    @if($rec->phone_number)
+                    <div class="text-xs text-gray-500">{{ $rec->phone_number }}</div>
                     @endif
                 </div>
                 @endif
 
                 {{-- Updated contact details captured on this visit (from the mobile app) --}}
-                @if(($visit->new_contact_person ?? false) || ($visit->new_phone_number ?? false) || ($visit->new_physical_address ?? false))
+                @if($rec && ($rec->new_contact_person || $rec->new_phone_number || $rec->new_physical_address))
                 <div>
                     <div class="text-xs text-gray-400 mb-0.5">New / Updated Contact</div>
-                    @if($visit->new_contact_person ?? false)
-                    <div class="text-sm">{{ $visit->new_contact_person }}</div>
+                    @if($rec->new_contact_person)
+                    <div class="text-sm">{{ $rec->new_contact_person }}</div>
                     @endif
-                    @if($visit->new_phone_number ?? false)
-                    <div class="text-xs text-gray-500">{{ $visit->new_phone_number }}</div>
+                    @if($rec->new_phone_number)
+                    <div class="text-xs text-gray-500">{{ $rec->new_phone_number }}</div>
                     @endif
-                    @if($visit->new_physical_address ?? false)
-                    <div class="text-xs text-gray-500">{{ $visit->new_physical_address }}</div>
+                    @if($rec->new_physical_address)
+                    <div class="text-xs text-gray-500">{{ $rec->new_physical_address }}</div>
                     @endif
                 </div>
                 @endif

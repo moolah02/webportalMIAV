@@ -92,6 +92,7 @@ class TechnicianVisitMirror
                     // Mobile sends the corrective action as terminal_comments.
                     'corrective_action'            => $visit->terminal_comments,
                     'visit_summary'                => $visit->visit_summary,
+                    'condition_notes'              => $visit->condition_notes,
                     'other_terminals_found'        => $visit->other_terminals_found ?: null,
                     'serial_snapshot'              => $vt->serial_number ?? ($t['serial_number'] ?? null),
                     'device_type_snapshot'         => $model,

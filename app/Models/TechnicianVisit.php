@@ -127,6 +127,12 @@ class TechnicianVisit extends Model
      * Relationships
      * ========================= */
 
+    /** The tablet visit this report row mirrors (contact details live there). */
+    public function visit()
+    {
+        return $this->belongsTo(Visit::class, 'visit_id');
+    }
+
     public function technician()
     {
         return $this->belongsTo(Employee::class, 'technician_id');
