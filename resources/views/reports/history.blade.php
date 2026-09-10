@@ -224,7 +224,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
     {{-- ── Top bar ──────────────────────────────────────────── --}}
     <div class="rh-topbar">
         <div>
-            <h1>&#128221; Report Audit Trail</h1>
+            <h1><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Report Audit Trail</h1>
             <p>Every report run and export, who triggered it, when, and from where.</p>
         </div>
         <div class="rh-topbar-actions">
@@ -237,7 +237,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
     {{-- ── Stat cards ────────────────────────────────────────── --}}
     <div class="rh-stats">
         <div class="rh-stat">
-            <div class="rh-stat-icon" style="background:#eff6ff;">&#128202;</div>
+            <div class="rh-stat-icon" style="background:#eff6ff;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></div>
             <div class="rh-stat-label">Total Runs</div>
             <div class="rh-stat-value">{{ number_format($totalRuns) }}</div>
             <div class="rh-stat-sub">all time</div>
@@ -249,13 +249,13 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
             <div class="rh-stat-sub">this page</div>
         </div>
         <div class="rh-stat">
-            <div class="rh-stat-icon" style="background:#f0fdf4; color:#15803d;">&#11015;</div>
+            <div class="rh-stat-icon" style="background:#f0fdf4; color:#15803d;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-download"/></svg></div>
             <div class="rh-stat-label">Exports</div>
             <div class="rh-stat-value" style="color:#15803d;">{{ number_format($totalExports) }}</div>
             <div class="rh-stat-sub">this page</div>
         </div>
         <div class="rh-stat">
-            <div class="rh-stat-icon" style="background:#faf5ff; color:#7c3aed;">&#128100;</div>
+            <div class="rh-stat-icon" style="background:#faf5ff; color:#7c3aed;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg></div>
             <div class="rh-stat-label">Unique Users</div>
             <div class="rh-stat-value" style="color:#7c3aed;">{{ $uniqueUsers }}</div>
             <div class="rh-stat-sub">this page</div>
@@ -266,7 +266,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
     <div class="rh-card">
         <div class="rh-card-header">
             <div class="rh-card-header-title">
-                &#128337; Activity Log
+                 Activity Log
                 <span class="rh-count-badge">{{ number_format($totalRuns) }} total</span>
             </div>
             <div style="font-size:12px; color:#94a3b8;">Showing {{ $runs->firstItem() }}–{{ $runs->lastItem() }} of {{ number_format($runs->total()) }}</div>
@@ -319,7 +319,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
                     <td>
                         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                             @if($isExport)
-                                <span class="rh-badge rh-badge-export">&#11015; Export</span>
+                                <span class="rh-badge rh-badge-export"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-download"/></svg> Export</span>
                                 @if($run->format)
                                     <span class="rh-badge-format">{{ $run->format }}</span>
                                 @endif
@@ -394,7 +394,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
                             <button class="rh-action-btn rh-action-btn-tpl"
                                     onclick="rhOpenSaveTemplate({{ $payloadJson }})"
                                     title="Save this report as a named template">
-                                &#128190; Save
+                                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save
                             </button>
                         </div>
                         @else
@@ -406,7 +406,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
                 <tr>
                     <td colspan="8">
                         <div class="rh-empty">
-                            <div class="rh-empty-icon">&#128202;</div>
+                            <div class="rh-empty-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></div>
                             <p class="rh-empty-title">No report activity yet</p>
                             <p class="rh-empty-sub">Every time someone runs or exports a report it will appear here.</p>
                         </div>
@@ -427,7 +427,7 @@ table.rh-table td { padding: 13px 16px; vertical-align: middle; }
 {{-- ── Save-as-template modal ─────────────────────────────── --}}
 <div id="rh-tpl-modal" class="rh-modal-backdrop" style="display:none;">
     <div class="rh-modal-box">
-        <h3>&#128190; Save as Template</h3>
+        <h3><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save as Template</h3>
         <div style="margin-bottom:12px;">
             <label class="rh-modal-label">Template Name *</label>
             <input id="rh-tpl-name" type="text" class="rh-modal-input" placeholder="e.g. Monthly Visits Report">

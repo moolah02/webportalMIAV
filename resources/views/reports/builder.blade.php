@@ -547,7 +547,7 @@
         <div class="rb-topbar">
             <div class="rb-topbar-left">
                 <div>
-                    <h2>&#128202; Report Builder</h2>
+                    <h2><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Report Builder</h2>
                     <p>Pick a data source, add columns, apply filters — then run your report.</p>
                 </div>
             </div>
@@ -567,14 +567,14 @@
                     <button @click="open=!open"
                             :disabled="!reportData || reportData.length===0"
                             class="rb-btn rb-btn-export">
-                        &#11015;&nbsp;Export&nbsp;&#9662;
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-download"/></svg>&nbsp;Export&nbsp;&#9662;
                     </button>
                     <div x-show="open" @click.outside="open=false" x-transition class="rb-menu">
                         <button @click="exportReport('csv');open=false">
-                            <span>&#128196;</span> Download CSV
+                            <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg></span> Download CSV
                         </button>
                         <button @click="exportReport('pdf');open=false">
-                            <span>&#128240;</span> Download PDF
+                            <span></span> Download PDF
                         </button>
                     </div>
                 </div>
@@ -584,19 +584,19 @@
                         :class="{ 'rb-btn-chart-on': showChart }"
                         class="rb-btn rb-btn-outline"
                         :title="showChart ? 'Hide chart' : 'Show chart'">
-                    &#128200;&nbsp;Chart
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg>&nbsp;Chart
                 </button>
 
                 <button @click="openTemplateModal()" class="rb-btn rb-btn-outline">
-                    &#128193;&nbsp;Templates
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg>&nbsp;Templates
                 </button>
 
                 <a href="{{ route('reports.history') }}" class="rb-btn rb-btn-outline">
-                    &#128221;&nbsp;History
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg>&nbsp;History
                 </a>
 
                 <button x-show="fields.length > 0" @click="clearAll()" class="rb-btn rb-btn-danger">
-                    &#128465;&nbsp;Clear
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg>&nbsp;Clear
                 </button>
 
             </div>
@@ -608,7 +608,7 @@
         <div class="rb-strip">
 
             <div class="rb-strip-group">
-                <label><span>&#128200;</span> Data Source</label>
+                <label><span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg></span> Data Source</label>
                 <select class="rb-strip-select" x-model="config.baseTable" @change="onDataSourceChange()" style="min-width:160px;">
                     <template x-for="(t,tn) in availableFields" :key="tn">
                         <option :value="tn" x-text="t.label"></option>
@@ -619,7 +619,7 @@
             <div class="rb-strip-sep"></div>
 
             <div class="rb-strip-group">
-                <label><span>&#127759;</span> Region</label>
+                <label><span></span> Region</label>
                 <select class="rb-strip-select" x-model="config.regionId">
                     <option value="">All Regions</option>
                     <template x-for="(name,id) in availableFilters.regions" :key="id">
@@ -629,7 +629,7 @@
             </div>
 
             <div class="rb-strip-group">
-                <label><span>&#128100;</span> Client</label>
+                <label><span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg></span> Client</label>
                 <select class="rb-strip-select" x-model="config.clientId">
                     <option value="">All Clients</option>
                     <template x-for="(name,id) in availableFilters.clients" :key="id">
@@ -639,7 +639,7 @@
             </div>
 
             <div class="rb-strip-group">
-                <label><span>&#128205;</span> Terminals</label>
+                <label><span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-pin"/></svg></span> Terminals</label>
                 <select class="rb-strip-select" x-model="config.terminalSource"
                         title="Terminals found on site by technicians are extra work — they were not on the original list">
                     <option value="">All terminals</option>
@@ -651,7 +651,7 @@
             <div class="rb-strip-sep"></div>
 
             <div class="rb-strip-group">
-                <label><span>&#128197;</span> Date Column</label>
+                <label><span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></span> Date Column</label>
                 <select class="rb-strip-select" x-model="config.dateColumn" style="min-width:160px;">
                     <option value="">No date filter</option>
                     <template x-for="(t,tn) in availableFields" :key="tn">
@@ -675,7 +675,7 @@
             <div class="rb-strip-sep"></div>
 
             <div class="rb-strip-group">
-                <label>&#9776; Rows</label>
+                <label> Rows</label>
                 <input type="number" class="rb-strip-input" x-model.number="config.limit" min="1" max="10000" style="text-align:center;">
             </div>
 
@@ -729,7 +729,7 @@
             <div class="rb-fields-panel">
                 <div class="rb-fields-head">
                     <h4>Report Fields</h4>
-                    <input type="text" class="rb-search" x-model="fieldSearch" placeholder="&#128269;  Search fields…">
+                    <input type="text" class="rb-search" x-model="fieldSearch" placeholder=" Search fields…">
                 </div>
                 <div class="rb-fields-body">
                     <template x-for="(table, tableName) in availableFields" :key="tableName">
@@ -770,7 +770,7 @@
                 <div class="rb-columns-bar">
                     <div class="rb-columns-head">
                         <div class="rb-columns-head-left">
-                            &#9776; Report Columns
+                             Report Columns
                             <span x-show="fields.length > 0" class="rb-col-count" x-text="fields.length"></span>
                         </div>
                         <span x-show="hasAggregates()" class="rb-agg-hint">&#9432; Non-aggregated fields will be grouped</span>
@@ -823,7 +823,7 @@
                      @keydown.escape.window="showChart=false;destroyChart()"
                      style="display:none;">
                     <div class="rb-chart-modal-head">
-                        <div class="rb-chart-modal-title">&#128200; Chart Visualisation
+                        <div class="rb-chart-modal-title"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg> Chart Visualisation
                             <span x-show="reportData" style="font-weight:400;font-size:12px;color:#94a3b8;margin-left:8px;"
                                   x-text="reportData ? reportData.length + ' rows' : ''"></span>
                             <span id="rb-chart-mode-badge"
@@ -889,7 +889,7 @@
 
                     {{-- Idle --}}
                     <div x-show="!reportData && !loading" class="rb-results-empty">
-                        <div class="rb-results-empty-icon">&#128202;</div>
+                        <div class="rb-results-empty-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></div>
                         <p class="rb-results-empty-title">Your report will appear here</p>
                         <p class="rb-results-empty-sub">Add columns from the left panel, set filters above, then hit <strong>Run Report</strong></p>
                     </div>
@@ -903,7 +903,7 @@
 
                     {{-- No rows --}}
                     <div x-show="reportData && reportData.length===0 && !loading" class="rb-results-empty">
-                        <div class="rb-results-empty-icon">&#128269;</div>
+                        <div class="rb-results-empty-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-search"/></svg></div>
                         <p class="rb-results-empty-title">No results found</p>
                         <p class="rb-results-empty-sub">Try broadening your filters or choosing a different data source</p>
                     </div>
@@ -940,7 +940,7 @@
     {{-- Save template --}}
     <div x-show="showSaveModal" x-transition class="rb-backdrop" @click.self="showSaveModal=false">
         <div class="rb-modal">
-            <h3>&#128190; Save as Template</h3>
+            <h3><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save as Template</h3>
             <div style="margin-bottom:12px;">
                 <label class="rb-label">Name *</label>
                 <input type="text" x-model="saveForm.name" class="rb-input"
@@ -968,11 +968,11 @@
     {{-- Load template (includes built-in presets at top) --}}
     <div x-show="showTemplateModal" x-transition class="rb-backdrop" @click.self="showTemplateModal=false">
         <div class="rb-modal-lg" style="width:660px;max-height:85vh;">
-            <h3>&#128193; Templates</h3>
+            <h3><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg> Templates</h3>
 
             {{-- ── Built-in Presets ── --}}
             <div style="margin-bottom:18px;flex-shrink:0;max-height:260px;overflow-y:auto;">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rb-sub);margin-bottom:10px;position:sticky;top:0;background:var(--rb-surface);padding-bottom:4px;">&#9889; Built-in Presets</div>
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rb-sub);margin-bottom:10px;position:sticky;top:0;background:var(--rb-surface);padding-bottom:4px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Built-in Presets</div>
                 <div class="rb-preset-grid">
                     <template x-for="preset in presets" :key="preset.id">
                         <button class="rb-preset-card" @click="applyPreset(preset)">
@@ -998,7 +998,7 @@
     {{-- Data source confirm --}}
     <div x-show="showSourceConfirm" x-transition class="rb-backdrop">
         <div class="rb-modal rb-confirm">
-            <div class="rb-confirm-icon">&#9888;&#65039;</div>
+            <div class="rb-confirm-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
             <h3 style="text-align:center;">Change Data Source?</h3>
             <p>Switching data sources will clear your current column selection. This can't be undone.</p>
             <div style="display:flex;justify-content:flex-end;gap:8px;">

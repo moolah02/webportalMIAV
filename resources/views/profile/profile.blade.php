@@ -2,33 +2,33 @@
 @section('title', 'My Profile')
 
 @section('header-actions')
-<a href="{{ route('employee.edit-profile') }}" class="btn-primary btn-sm">&#x270F;&#xFE0F; Edit Profile</a>
-<button type="button" onclick="document.getElementById('changePwModal2').classList.remove('hidden')" class="btn-secondary btn-sm">&#x1F510; Change Password</button>
+<a href="{{ route('employee.edit-profile') }}" class="btn-primary btn-sm"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit Profile</a>
+<button type="button" onclick="document.getElementById('changePwModal2').classList.remove('hidden')" class="btn-secondary btn-sm"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lock"/></svg> Change Password</button>
 @endsection
 
 @section('content')
 
 {{-- Flash --}}
 @if(session('success'))
-<div class="flash-success"><span>&#x2705;</span> {{ session('success') }}</div>
+<div class="flash-success"><span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></span> {{ session('success') }}</div>
 @endif
 
 {{-- Stat Cards --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
     <div class="stat-card">
-        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-xl flex-shrink-0">&#x1F4CB;</div>
+        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
         <div><div class="stat-number">{{ $stats['total_asset_requests'] }}</div><div class="stat-label">Total Requests</div></div>
     </div>
     <div class="stat-card">
-        <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-xl flex-shrink-0">&#x23F1;&#xFE0F;</div>
+        <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clock"/></svg></div>
         <div><div class="stat-number">{{ $stats['pending_requests'] }}</div><div class="stat-label">Pending</div></div>
     </div>
     <div class="stat-card">
-        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-xl flex-shrink-0">&#x1F4E6;</div>
+        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg></div>
         <div><div class="stat-number">{{ $stats['assigned_assets_count'] }}</div><div class="stat-label">Assigned Assets</div></div>
     </div>
     <div class="stat-card">
-        <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-xl flex-shrink-0">&#x1F465;</div>
+        <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
         <div><div class="stat-number">{{ $stats['subordinates_count'] }}</div><div class="stat-label">Team Members</div></div>
     </div>
 </div>
@@ -40,7 +40,7 @@
     <div class="flex flex-col gap-5">
         <div class="ui-card">
             <div class="ui-card-header">
-                <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F464; Personal Information</h3>
+                <h3 class="text-sm font-semibold text-gray-800 m-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> Personal Information</h3>
             </div>
             <div class="ui-card-body">
                 <div class="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
@@ -52,7 +52,7 @@
                         <div class="text-sm text-gray-500">{{ $employee->employee_number }}@if($employee->department) &middot; {{ $employee->department->name }}@endif</div>
                         <div class="flex flex-wrap gap-1 mt-1">
                             <span class="badge {{ $employee->status === 'active' ? 'badge-green' : 'badge-gray' }}">{{ ucfirst($employee->status) }}</span>
-                            @if($employee->isFieldTechnician())<span class="badge badge-yellow">&#x1F527; Technician</span>@endif
+                            @if($employee->isFieldTechnician())<span class="badge badge-yellow"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Technician</span>@endif
                         </div>
                     </div>
                 </div>
@@ -69,12 +69,12 @@
 
         <div class="ui-card">
             <div class="ui-card-header">
-                <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F3E2; Organisation</h3>
+                <h3 class="text-sm font-semibold text-gray-800 m-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Organisation</h3>
             </div>
             <div class="ui-card-body">
                 <div class="divide-y divide-gray-50 text-sm">
                     <div class="flex justify-between py-2"><span class="text-gray-500">Department</span><span class="text-gray-800">{{ $employee->department->name ?? 'Not assigned' }}</span></div>
-                    <div class="flex justify-between py-2"><span class="text-gray-500">Role</span><span class="text-gray-800">{{ $employee->role->name ?? 'Not assigned' }}@if($employee->isFieldTechnician()) &#x1F527;@endif</span></div>
+                    <div class="flex justify-between py-2"><span class="text-gray-500">Role</span><span class="text-gray-800">{{ $employee->role->name ?? 'Not assigned' }}@if($employee->isFieldTechnician()) <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg>@endif</span></div>
                     <div class="flex justify-between py-2"><span class="text-gray-500">Manager</span><span class="text-gray-800">{{ $employee->manager->full_name ?? 'None' }}</span></div>
                     <div class="flex justify-between py-2">
                         <span class="text-gray-500">2FA</span>
@@ -91,7 +91,7 @@
         @if($employee->currentAssetAssignments->count() > 0)
         <div class="ui-card">
             <div class="ui-card-header">
-                <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F5A5;&#xFE0F; Assigned Assets</h3>
+                <h3 class="text-sm font-semibold text-gray-800 m-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg> Assigned Assets</h3>
                 <span class="badge badge-gray">{{ $employee->currentAssetAssignments->count() }}</span>
             </div>
             <div class="ui-card-body p-0">
@@ -119,7 +119,7 @@
         @if($employee->subordinates->count() > 0)
         <div class="ui-card">
             <div class="ui-card-header">
-                <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F465; Team Members ({{ $employee->subordinates->count() }})</h3>
+                <h3 class="text-sm font-semibold text-gray-800 m-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Team Members ({{ $employee->subordinates->count() }})</h3>
             </div>
             <div class="ui-card-body">
                 <div class="space-y-2">
@@ -128,7 +128,7 @@
                         <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">{{ strtoupper(substr($sub->first_name,0,1).substr($sub->last_name,0,1)) }}</div>
                         <div>
                             <div class="text-sm font-medium text-gray-800">{{ $sub->full_name }}</div>
-                            <div class="text-xs text-gray-500">{{ $sub->role->name ?? 'No role' }}@if($sub->isFieldTechnician()) &#x1F527;@endif</div>
+                            <div class="text-xs text-gray-500">{{ $sub->role->name ?? 'No role' }}@if($sub->isFieldTechnician()) <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg>@endif</div>
                         </div>
                     </div>
                     @endforeach
@@ -143,7 +143,7 @@
         @if($employee->assetRequests->count() > 0)
         <div class="ui-card">
             <div class="ui-card-header">
-                <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F4DC; Recent Asset Requests</h3>
+                <h3 class="text-sm font-semibold text-gray-800 m-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg> Recent Asset Requests</h3>
             </div>
             <div class="ui-card-body p-0">
                 <table class="ui-table">
@@ -177,7 +177,7 @@
 <div id="changePwModal2" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="ui-card w-full max-w-sm">
         <div class="ui-card-header" style="background:#1a3a5c;">
-            <h3 class="text-sm font-semibold text-white m-0">&#x1F510; Change Password</h3>
+            <h3 class="text-sm font-semibold text-white m-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lock"/></svg> Change Password</h3>
             <button onclick="document.getElementById('changePwModal2').classList.add('hidden')" class="text-white/70 hover:text-white text-xl leading-none border-0 bg-transparent cursor-pointer">&times;</button>
         </div>
         <div class="ui-card-body">
@@ -199,7 +199,7 @@
                     @error('password_confirmation')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div class="flex gap-3">
-                    <button type="submit" class="btn-primary">&#x1F510; Update Password</button>
+                    <button type="submit" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lock"/></svg> Update Password</button>
                     <button type="button" onclick="document.getElementById('changePwModal2').classList.add('hidden')" class="btn-secondary">Cancel</button>
                 </div>
             </form>

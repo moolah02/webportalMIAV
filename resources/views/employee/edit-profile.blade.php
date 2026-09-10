@@ -10,7 +10,7 @@
 {{-- Errors --}}
 @if($errors->any())
 <div class="flash-error mb-5">
-    <div><span class="font-semibold">&#x26A0;&#xFE0F; Please fix the following errors:</span>
+    <div><span class="font-semibold"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Please fix the following errors:</span>
     <ul class="list-disc pl-5 mt-1 space-y-0.5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
 </div>
 @endif
@@ -18,7 +18,7 @@
 <div class="max-w-2xl mx-auto">
     <div class="ui-card">
         <div class="ui-card-header">
-            <h3 class="text-sm font-semibold text-gray-800 m-0">&#x1F464; Profile Information</h3>
+            <h3 class="text-sm font-semibold text-gray-800 m-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> Profile Information</h3>
         </div>
         <div class="ui-card-body">
             {{-- Profile summary --}}
@@ -41,7 +41,7 @@
 
                 {{-- Personal Information --}}
                 <div class="mb-6">
-                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">&#x1F4DD; Personal Information</div>
+                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Personal Information</div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="ui-label" for="first_name">First Name <span class="text-red-500">*</span></label>
@@ -68,7 +68,7 @@
 
                 {{-- System Preferences --}}
                 <div class="mb-6">
-                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">&#x2699;&#xFE0F; System Preferences</div>
+                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> System Preferences</div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="ui-label" for="time_zone">Time Zone <span class="text-red-500">*</span></label>
@@ -96,7 +96,7 @@
 
                 {{-- Read-only system info --}}
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">&#x1F4CB; System Information <span class="normal-case font-normal">(managed by administrator)</span></div>
+                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> System Information <span class="normal-case font-normal">(managed by administrator)</span></div>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                         <div><div class="text-xs text-gray-400 mb-0.5">Employee #</div><div class="font-medium text-gray-700">{{ $employee->employee_number }}</div></div>
                         <div><div class="text-xs text-gray-400 mb-0.5">Hire Date</div><div class="font-medium text-gray-700">{{ $employee->hire_date ? $employee->hire_date->format('M d, Y') : 'Not specified' }}</div></div>
@@ -108,7 +108,7 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <button type="submit" class="btn-primary">&#x1F4BE; Save Changes</button>
+                    <button type="submit" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save Changes</button>
                     <a href="{{ route('employee.profile') }}" class="btn-secondary">Cancel</a>
                 </div>
             </form>

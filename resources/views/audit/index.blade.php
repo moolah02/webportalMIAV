@@ -6,7 +6,7 @@
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
         <div>
-            <h1 class="m-0 text-gray-900 text-2xl font-semibold">&#x1F50D; Audit Trail</h1>
+            <h1 class="m-0 text-gray-900 text-2xl font-semibold"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-search"/></svg> Audit Trail</h1>
             <p class="text-gray-500 text-sm mt-1">Complete history of all system actions, categorised by area</p>
         </div>
         <div>
@@ -212,7 +212,7 @@
                 @empty
                     <tr>
                         <td colspan="7" class="px-4 py-12 text-center text-gray-400">
-                            <div class="text-4xl mb-3">&#x1F4CB;</div>
+                            <div class="text-4xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                             <div class="font-medium">No audit log entries found</div>
                             <div class="text-sm mt-1">Activity will appear here as users perform actions.</div>
                         </td>
