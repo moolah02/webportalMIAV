@@ -394,14 +394,6 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->middleware('permission:view_assets,manage_assets,all')
             ->name('vehicle-info');
 
-        Route::get('/assignment-report', [AssetController::class, 'assignmentReport'])
-            ->middleware('permission:view_reports,manage_assets,all')
-            ->name('assignment-report');
-
-        Route::get('/overdue-report', [AssetController::class, 'overdueReport'])
-            ->middleware('permission:view_reports,manage_assets,all')
-            ->name('overdue-report');
-
         // Asset assignments
         Route::post('/assign', [AssetController::class, 'assignAsset'])
             ->middleware('permission:manage_assets,all')
@@ -416,8 +408,9 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             }
         })->name('internal');
 
+        // Legacy link: business licences live under /business-licenses now
         Route::get('/licenses', function () {
-            return view('assets.licenses', ['title' => 'Business Licenses']);
+            return redirect()->route('business-licenses.index');
         })->middleware('permission:manage_licenses,manage_assets,all')->name('licenses');
     });
 
