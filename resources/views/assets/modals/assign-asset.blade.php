@@ -161,7 +161,7 @@ document.getElementById('assignAssetForm').addEventListener('submit', function(e
     })
     .then(r => { if (r.ok) { closeAssignModal(); window.location.reload(); } else throw new Error(); })
     .catch(() => alert('Failed to assign asset. Please try again.'))
-    .finally(() => { btn.textContent = '🎯 Assign Asset'; btn.disabled = false; });
+    .finally(() => { btn.textContent = 'Assign Asset'; btn.disabled = false; });
 });
 
 document.getElementById('assign_quantity').addEventListener('input', function() {

@@ -5,12 +5,12 @@
 
 @section('header-actions')
 <a href="{{ route('projects.index') }}" class="btn-secondary">← All Projects</a>
-<a href="{{ route('projects.edit', $project) }}" class="btn-secondary">✏️ Edit</a>
+<a href="{{ route('projects.edit', $project) }}" class="btn-secondary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit</a>
 @if($project->status === 'active')
-<a href="{{ route('projects.closure-wizard', $project) }}" class="btn-secondary">🔒 Close Project</a>
+<a href="{{ route('projects.closure-wizard', $project) }}" class="btn-secondary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lock"/></svg> Close Project</a>
 @endif
 @if($project->report_path)
-<a href="{{ route('projects.download-report', $project) }}" class="btn-primary">⬇️ Download Report</a>
+<a href="{{ route('projects.download-report', $project) }}" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-download"/></svg> Download Report</a>
 @endif
 @endsection
 
@@ -32,12 +32,12 @@
         default     => 'badge-gray',
     };
     $typeIcon = match($project->project_type) {
-        'maintenance'  => '🔧',
-        'installation' => '📦',
-        'support'      => '💬',
-        'discovery'    => '🔍',
-        'servicing'    => '⚙️',
-        default        => '📝',
+        'maintenance'  => '',
+        'installation' => '',
+        'support'      => '',
+        'discovery'    => '',
+        'servicing'    => '',
+        default        => '',
     };
 @endphp
 
@@ -82,28 +82,28 @@
 {{-- Stat Cards --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center text-xl flex-shrink-0">📋</div>
+        <div class="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center text-xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
         <div>
             <div class="stat-number">{{ $progressData['total_assignments'] ?? 0 }}</div>
             <div class="stat-label">Total Assignments</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center text-xl flex-shrink-0">✅</div>
+        <div class="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center text-xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div>
             <div class="stat-number text-green-600">{{ $progressData['completed_visits'] ?? 0 }}</div>
             <div class="stat-label">Completed Visits</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-yellow-100 flex items-center justify-center text-xl flex-shrink-0">🖥️</div>
+        <div class="w-11 h-11 rounded-xl bg-yellow-100 flex items-center justify-center text-xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg></div>
         <div>
             <div class="stat-number text-yellow-600">{{ $progressData['total_terminals'] ?? 0 }}</div>
             <div class="stat-label">Total Terminals</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center text-xl flex-shrink-0">📊</div>
+        <div class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center text-xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></div>
         <div>
             <div class="stat-number text-purple-600">{{ number_format($progressData['completion_percentage'] ?? 0, 1) }}%</div>
             <div class="stat-label">Complete</div>
@@ -115,7 +115,7 @@
 @if($project->status === 'active')
 <div class="ui-card mb-5 border-l-4 border-blue-400">
     <div class="ui-card-header">
-        <span class="font-semibold text-gray-800">🖥️ Terminal Assignment</span>
+        <span class="font-semibold text-gray-800"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg> Terminal Assignment</span>
     </div>
     <div class="ui-card-body">
         <p class="text-gray-600 text-sm mb-4">
@@ -129,11 +129,11 @@
         <div class="flex gap-2 flex-wrap">
             <a href="{{ route('deployment.index', ['project_id' => $project->id, 'client_id' => $project->client_id]) }}"
                class="btn-primary">
-                🗺️ {{ ($progressData['total_terminals'] ?? 0) > 0 ? 'Manage Terminal Assignments' : 'Assign Terminals to Project' }}
+                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg> {{ ($progressData['total_terminals'] ?? 0) > 0 ? 'Manage Terminal Assignments' : 'Assign Terminals to Project' }}
             </a>
             @if(($progressData['total_terminals'] ?? 0) > 0)
             <a href="{{ route('jobs.index', ['project_id' => $project->id]) }}" class="btn-secondary">
-                📋 View Job Assignments
+                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> View Job Assignments
             </a>
             @endif
         </div>
@@ -209,21 +209,21 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="space-y-3">
                 <div class="flex items-center gap-3 p-2.5 rounded-lg {{ $totalTerminals > 0 ? 'bg-green-50' : 'bg-red-50' }}">
-                    <span class="text-lg">{{ $totalTerminals > 0 ? '✅' : '❌' }}</span>
+                    <span class="text-lg">{{ $totalTerminals > 0 ? '' : '' }}</span>
                     <div>
                         <div class="text-sm font-medium text-gray-700">Terminals Assigned</div>
                         <div class="text-xs text-gray-500">{{ $totalTerminals }} terminal{{ $totalTerminals !== 1 ? 's' : '' }}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 p-2.5 rounded-lg {{ $completedVisits >= $totalTerminals && $totalTerminals > 0 ? 'bg-green-50' : 'bg-red-50' }}">
-                    <span class="text-lg">{{ $completedVisits >= $totalTerminals && $totalTerminals > 0 ? '✅' : '❌' }}</span>
+                    <span class="text-lg">{{ $completedVisits >= $totalTerminals && $totalTerminals > 0 ? '' : '' }}</span>
                     <div>
                         <div class="text-sm font-medium text-gray-700">All Terminals Visited</div>
                         <div class="text-xs text-gray-500">{{ $completedVisits }}/{{ $totalTerminals }} completed</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 p-2.5 rounded-lg {{ $pendingAssignments == 0 ? 'bg-green-50' : 'bg-red-50' }}">
-                    <span class="text-lg">{{ $pendingAssignments == 0 ? '✅' : '❌' }}</span>
+                    <span class="text-lg">{{ $pendingAssignments == 0 ? '' : '' }}</span>
                     <div>
                         <div class="text-sm font-medium text-gray-700">No Pending Assignments</div>
                         <div class="text-xs text-gray-500">{{ $pendingAssignments }} remaining</div>
@@ -233,12 +233,12 @@
             <div class="flex flex-col justify-center">
                 @if($canComplete)
                 <div class="flash-success">
-                    <span>✅</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></span>
                     <div><strong>Ready for Completion!</strong><br>All requirements met. You can now complete this project.</div>
                 </div>
                 @else
                 <div class="flash-warning">
-                    <span>⚠️</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
                     <div><strong>Not Ready for Completion</strong><br>Complete all checklist items to close this project.</div>
                 </div>
                 @endif
@@ -260,7 +260,7 @@
                     <option value="{{ $s }}" {{ $project->status === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="btn-primary btn-sm">💾 Save Status</button>
+                <button type="submit" class="btn-primary btn-sm"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save Status</button>
             </form>
         </div>
     </div>
@@ -343,16 +343,16 @@
             <div class="ui-card-body">
                 @if($project->status === 'completed' && $project->report_path)
                 <div class="flash-success">
-                    <span>📄</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg></span>
                     <div>
                         <strong>Completion Report Available</strong><br>
                         Generated {{ $project->report_generated_at?->format('M j, Y g:i A') }}
-                        <a href="{{ route('projects.download-report', $project) }}" class="btn-primary btn-sm ml-2">⬇️ Download</a>
+                        <a href="{{ route('projects.download-report', $project) }}" class="btn-primary btn-sm ml-2"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-download"/></svg> Download</a>
                     </div>
                 </div>
                 @elseif($project->status === 'completed')
                 <div class="flash-warning">
-                    <span>⚠️</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
                     <span>Project completed but no report available. Contact administrator.</span>
                 </div>
                 @else
@@ -428,7 +428,7 @@
                 </div>
                 @else
                 <div class="empty-state">
-                    <div class="empty-state-icon">📬</div>
+                    <div class="empty-state-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-inbox"/></svg></div>
                     <div class="empty-state-msg">No recent activities.</div>
                 </div>
                 @endif

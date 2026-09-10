@@ -12,7 +12,7 @@
         <div>
             <a href="{{ route('audit-trail.export-analysis', request()->only(['date_from','date_to'])) }}"
                style="display:inline-flex;align-items:center;gap:6px;background:#1a3a5c;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">
-                📊 Export Analysis PDF
+                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export Analysis PDF
             </a>
         </div>
     </div>
@@ -20,14 +20,14 @@
     {{-- Top stats --}}
     <div class="grid grid-cols-2 gap-4 mb-4">
         <div class="stat-card">
-            <div class="stat-icon stat-icon-blue">📋</div>
+            <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
             <div>
                 <div class="stat-number">{{ number_format($stats['total']) }}</div>
                 <div class="stat-label">Total Events Logged</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon stat-icon-green">📅</div>
+            <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
             <div>
                 <div class="stat-number">{{ number_format($stats['today']) }}</div>
                 <div class="stat-label">Events Today</div>

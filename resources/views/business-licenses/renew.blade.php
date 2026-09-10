@@ -10,7 +10,7 @@
             <p style="color: #666; margin: 5px 0 0 0;">Process renewal for {{ $businessLicense->license_name }}</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn-secondary">👁️ View License</a>
+            <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn-secondary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> View License</a>
             <a href="{{ route('business-licenses.index') }}" class="btn-secondary">← Back to Licenses</a>
         </div>
     </div>
@@ -19,7 +19,7 @@
     @if($businessLicense->is_expired || $businessLicense->is_expiring_soon)
     <div style="background: {{ $businessLicense->is_expired ? '#ffebee' : '#fff3e0' }}; border: 1px solid {{ $businessLicense->is_expired ? '#f44336' : '#ff9800' }}; padding: 20px; border-radius: 8px; margin-block-end: 30px;">
         <div style="display: flex; align-items: center; gap: 15px; color: {{ $businessLicense->is_expired ? '#f44336' : '#f57c00' }};">
-            <div style="font-size: 32px;">{{ $businessLicense->is_expired ? '⚠️' : '⏰' }}</div>
+            <div style="font-size: 32px;">{{ $businessLicense->is_expired ? '' : '' }}</div>
             <div>
                 <div style="font-weight: bold; font-size: 18px; margin-block-end: 5px;">
                     {{ $businessLicense->is_expired ? 'License Has Expired' : 'License Expiring Soon' }}
@@ -45,7 +45,7 @@
         <!-- Renewal Form -->
         <div>
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 20px; color: #333;">🔄 Renewal Information</h4>
+                <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Renewal Information</h4>
                 
                 <form action="{{ route('business-licenses.process-renewal', $businessLicense) }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -97,7 +97,7 @@
                         @if($businessLicense->document_path)
                         <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin-block-end: 10px; display: flex; align-items: center; justify-content: between; gap: 10px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="color: #666;">📄 Current:</span>
+                                <span style="color: #666;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg> Current:</span>
                                 <span style="font-weight: 500;">{{ basename($businessLicense->document_path) }}</span>
                             </div>
                             <a href="{{ route('business-licenses.download', $businessLicense) }}" 
@@ -116,7 +116,7 @@
 
                     <!-- Renewal Confirmation -->
                     <div style="background: #e3f2fd; border: 1px solid #2196f3; padding: 20px; border-radius: 8px; margin-block-end: 25px;">
-                        <h5 style="margin: 0 0 10px 0; color: #1976d2;">📋 Renewal Summary</h5>
+                        <h5 style="margin: 0 0 10px 0; color: #1976d2;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Renewal Summary</h5>
                         <div style="font-size: 14px; color: #333; line-height: 1.6;">
                             <div><strong>License:</strong> {{ $businessLicense->license_name }}</div>
                             <div><strong>License Number:</strong> {{ $businessLicense->license_number }}</div>
@@ -134,7 +134,7 @@
                     <div style="display: flex; gap: 15px; justify-content: flex-end;">
                         <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn-secondary">Cancel</a>
                         <button type="submit" class="btn-primary" style="background: #4caf50; border-color: #4caf50;">
-                            🔄 Process Renewal
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Process Renewal
                         </button>
                     </div>
                 </form>
@@ -145,7 +145,7 @@
         <div>
             <!-- Current License Info -->
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">📋 Current License Details</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Current License Details</h4>
                 
                 <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
                     <div style="display: flex; justify-content: space-between;">
@@ -189,7 +189,7 @@
             <!-- Renewal History -->
             @if($businessLicense->renewal_date)
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">🔄 Last Renewal</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Last Renewal</h4>
                 <div style="font-size: 14px; color: #666;">
                     <div style="margin-block-end: 8px;">
                         <strong>Date:</strong> {{ $businessLicense->renewal_date->format('M d, Y') }}
@@ -205,7 +205,7 @@
 
             <!-- Renewal Tips -->
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">💡 Renewal Tips</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lightbulb"/></svg> Renewal Tips</h4>
                 <ul style="margin: 0; padding-inline-start: 20px; color: #666; line-height: 1.6; font-size: 14px;">
                     <li>Set new expiry date based on renewal period</li>
                     <li>Upload the new license document if available</li>
@@ -218,7 +218,7 @@
             <!-- Important Notes -->
             @if($businessLicense->license_conditions || $businessLicense->business_impact)
             <div class="ui-card p-6">
-                <h4 style="margin-block-end: 15px; color: #333;">⚠️ Important Notes</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Important Notes</h4>
                 
                 @if($businessLicense->business_impact)
                 <div style="background: #fff3e0; padding: 12px; border-radius: 6px; margin-block-end: 15px; border-inline-start: 4px solid #ff9800;">

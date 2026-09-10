@@ -27,7 +27,7 @@ return [
     ['from' => ['table' => 'job_assignments', 'column' => 'technician_id'],
      'to'   => ['table' => 'employees', 'column' => 'id']],
 
-    // visits → clients (⚠️ confirm mapping)
+    // visits → clients (confirm mapping)
     ['from' => ['table' => 'visits', 'column' => 'merchant_id'],
      'to'   => ['table' => 'clients','column' => 'id']],
   ],

@@ -35,7 +35,7 @@
 
                 <!-- Basic Information -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📋 Basic Information</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Basic Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
@@ -87,7 +87,7 @@
 
                 <!-- Dates -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📅 Dates</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg> Dates</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
                             <label class="form-label">Issue Date *</label>
@@ -106,7 +106,7 @@
                 @if($direction === 'company_held')
                     <!-- Company-Held Specific Fields -->
                     <div class="ui-card p-6" style="margin-block-end: 20px;">
-                        <h4 style="margin-block-end: 20px; color: #333;">🏢 Company Details</h4>
+                        <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Company Details</h4>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                             <div>
@@ -191,7 +191,7 @@
                 @else
                     <!-- Customer-Issued Specific Fields -->
                     <div class="ui-card p-6" style="margin-block-end: 20px;">
-                        <h4 style="margin-block-end: 20px; color: #333;">👤 Customer Information</h4>
+                        <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> Customer Information</h4>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                             <div>
@@ -227,7 +227,7 @@
                     </div>
 
                     <div class="ui-card p-6" style="margin-block-end: 20px;">
-                        <h4 style="margin-block-end: 20px; color: #333;">💰 License & Billing</h4>
+                        <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg> License & Billing</h4>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                             <div>
@@ -294,7 +294,7 @@
 
                 <!-- Attachments & Reminders -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📂 Attachments & Reminders</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg> Attachments & Reminders</h4>
 
                     <div style="margin-block-end: 20px;">
                         <label class="form-label">License Document</label>
@@ -339,7 +339,7 @@
         <!-- Sidebar -->
         <div>
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">💡 Tips</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lightbulb"/></svg> Tips</h4>
                 <ul style="margin: 0; padding-inline-start: 20px; color: #666; line-height: 1.6;">
                     @if($direction === 'company_held')
                         <li>Ensure license numbers are unique and identifiable</li>
@@ -358,7 +358,7 @@
             </div>
 
             <div class="ui-card p-6">
-                <h4 style="margin-block-end: 10px; color: #333;">📌 License Type</h4>
+                <h4 style="margin-block-end: 10px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-pin"/></svg> License Type</h4>
                 <p style="color:#666; font-size:14px; margin:0;">
                     @if($direction === 'company_held')
                         You are adding a <strong>Company-Held</strong> license owned by the company.

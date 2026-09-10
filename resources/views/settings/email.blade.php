@@ -27,15 +27,15 @@
 </div>
 
 <div style="margin-bottom:24px;">
-    <h1 style="margin:0;font-size:20px;font-weight:700;color:#1a3a5c;">📧 Email Settings</h1>
+    <h1 style="margin:0;font-size:20px;font-weight:700;color:#1a3a5c;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-mail"/></svg> Email Settings</h1>
     <p style="margin:6px 0 0;color:#6b7280;font-size:13px;">Configure SMTP for outgoing emails (notifications, alerts, ticket updates)</p>
 </div>
 
 @if(session('success'))
-    <div class="alert-success">✅ {{ session('success') }}</div>
+    <div class="alert-success"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> {{ session('success') }}</div>
 @endif
 @if(session('error'))
-    <div class="alert-error">❌ {{ session('error') }}</div>
+    <div class="alert-error"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> {{ session('error') }}</div>
 @endif
 
 <div class="settings-form-card">
@@ -102,13 +102,13 @@
         </div>
 
         <div style="display:flex;gap:12px;align-items:center;margin-top:8px;">
-            <button type="submit" class="btn-primary">💾 Save Settings</button>
+            <button type="submit" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save Settings</button>
         </div>
     </form>
 
     <hr class="section-divider">
 
-    <h3 style="font-size:14px;font-weight:700;color:#1a3a5c;margin:0 0 14px;">👤 New Employee Welcome Email</h3>
+    <h3 style="font-size:14px;font-weight:700;color:#1a3a5c;margin:0 0 14px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> New Employee Welcome Email</h3>
     <form method="POST" action="{{ route('settings.email.update') }}">
         @csrf
         <div style="display:flex;flex-direction:column;gap:14px;">
@@ -132,20 +132,20 @@
             </label>
         </div>
         <div style="margin-top:16px;">
-            <button type="submit" class="btn-primary">💾 Save</button>
+            <button type="submit" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save</button>
         </div>
     </form>
 
     <hr class="section-divider">
 
-    <h3 style="font-size:14px;font-weight:700;color:#1a3a5c;margin:0 0 14px;">🔬 Send Test Email</h3>
+    <h3 style="font-size:14px;font-weight:700;color:#1a3a5c;margin:0 0 14px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-search"/></svg> Send Test Email</h3>
     <form method="POST" action="{{ route('settings.email.test') }}" style="display:flex;gap:12px;align-items:flex-end;">
         @csrf
         <div class="form-group" style="flex:1;margin-bottom:0;">
             <label class="form-label">Send test to</label>
             <input class="form-input" type="email" name="test_email" placeholder="recipient@example.com">
         </div>
-        <button type="submit" class="btn-outline" style="white-space:nowrap;">📨 Send Test</button>
+        <button type="submit" class="btn-outline" style="white-space:nowrap;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-mail"/></svg> Send Test</button>
     </form>
 </div>
 

@@ -67,7 +67,7 @@
     </div>
     @else
     <div class="empty-state">
-        <div class="empty-state-icon">🏢</div>
+        <div class="empty-state-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg></div>
         <div class="empty-state-msg">No departments found. Create your first department!</div>
     </div>
     @endif

@@ -10,28 +10,28 @@
     {{-- Statistics Cards --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">▶️</div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-play"/></svg></div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number">{{ $activeProjects->count() }}</div>
                 <div class="stat-label">Active Projects</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number">{{ $closedProjects->count() }}</div>
                 <div class="stat-label">Closed Projects</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📄</div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg></div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number">{{ $closedProjects->where('report_path')->count() }}</div>
                 <div class="stat-label">Reports Generated</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📈</div>
+            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg></div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number">{{ number_format($activeProjects->avg('completion_percentage') ?? 0, 1) }}%</div>
                 <div class="stat-label">Avg. Progress</div>
@@ -228,21 +228,21 @@
     <div id="analytics" class="tab-content">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📊</div>
+                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></div>
                 <div class="flex-1 min-w-0">
                     <div class="stat-number">{{ number_format($activeProjects->avg('completion_percentage') ?? 0, 1) }}%</div>
                     <div class="stat-label">Avg. Progress</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">❤️</div>
+                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-activity"/></svg></div>
                 <div class="flex-1 min-w-0">
                     <div class="stat-number">{{ $closedProjects->where('closure')->avg('closure.client_satisfaction') ? number_format($closedProjects->where('closure')->avg('closure.client_satisfaction'), 1) : '0' }}</div>
                     <div class="stat-label">Avg. Client Satisfaction</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📅</div>
+                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
                 <div class="flex-1 min-w-0">
                     <div class="stat-number">
                         @php
@@ -258,7 +258,7 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">🗂️</div>
+                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg></div>
                 <div class="flex-1 min-w-0">
                     <div class="stat-number">{{ $closedProjects->count() }}</div>
                     <div class="stat-label">Total Closed</div>

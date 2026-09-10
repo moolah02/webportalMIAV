@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (statsHeader && !document.getElementById('export-chart-btn')) {
         const exportBtn = document.createElement('button');
         exportBtn.id = 'export-chart-btn';
-        exportBtn.innerHTML = '📊 Export Data';
+        exportBtn.innerHTML = 'Export Data';
         exportBtn.style.cssText = 'background: #007bff; color: white; border: 1px solid #007bff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 10px;';
         exportBtn.onclick = exportChartData;
         

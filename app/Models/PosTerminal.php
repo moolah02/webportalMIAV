@@ -171,11 +171,11 @@ class PosTerminal extends Model
 
         // Fallback to old system - always return array format for consistency
         $badges = [
-            'active' => ['class' => 'status-active', 'text' => 'Active', 'icon' => '✅'],
-            'offline' => ['class' => 'status-offline', 'text' => 'Offline', 'icon' => '📶'],
-            'maintenance' => ['class' => 'status-pending', 'text' => 'Maintenance', 'icon' => '🔧'],
-            'faulty' => ['class' => 'status-offline', 'text' => 'Faulty', 'icon' => '⚠️'],
-            'decommissioned' => ['class' => 'status-offline', 'text' => 'Decommissioned', 'icon' => '🗑️'],
+            'active' => ['class' => 'status-active', 'text' => 'Active', 'icon' => ''],
+            'offline' => ['class' => 'status-offline', 'text' => 'Offline', 'icon' => ''],
+            'maintenance' => ['class' => 'status-pending', 'text' => 'Maintenance', 'icon' => ''],
+            'faulty' => ['class' => 'status-offline', 'text' => 'Faulty', 'icon' => ''],
+            'decommissioned' => ['class' => 'status-offline', 'text' => 'Decommissioned', 'icon' => ''],
         ];
 
         return $badges[$this->status] ?? ['class' => 'status-offline', 'text' => ucfirst($this->status), 'icon' => ''];

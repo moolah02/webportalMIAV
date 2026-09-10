@@ -11,9 +11,9 @@
         </div>
         <div style="display: flex; gap: 10px;">
             <button onclick="exportAssignments()" class="btn-secondary" style="background: #4caf50; color: white; border-color: #4caf50;">
-                📊 Export CSV
+                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export CSV
             </button>
-            <button onclick="refreshData()" class="btn-primary">🔄 Refresh</button>
+            <button onclick="refreshData()" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Refresh</button>
         </div>
     </div>
 
@@ -21,7 +21,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-block-end: 30px;">
         <div class="stat-card" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="font-size: 32px;">📅</div>
+                <div style="font-size: 32px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
                 <div>
                     <div style="font-size: 28px; font-weight: bold;" id="todayAssignments">{{ $stats['today_assignments'] ?? 5 }}</div>
                     <div style="font-size: 14px opacity: 0.9;">Today's Assignments</div>
@@ -31,7 +31,7 @@
 
         <div class="stat-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="font-size: 32px;">⏳</div>
+                <div style="font-size: 32px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg></div>
                 <div>
                     <div style="font-size: 28px; font-weight: bold;" id="pendingAssignments">{{ $stats['pending_assignments'] ?? 12 }}</div>
                     <div style="font-size: 14px; opacity: 0.9;">Pending</div>
@@ -41,7 +41,7 @@
 
         <div class="stat-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="font-size: 32px;">🔄</div>
+                <div style="font-size: 32px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></div>
                 <div>
                     <div style="font-size: 28px; font-weight: bold;" id="inProgressAssignments">{{ $stats['in_progress_assignments'] ?? 8 }}</div>
                     <div style="font-size: 14px; opacity: 0.9;">In Progress</div>
@@ -51,7 +51,7 @@
 
         <div class="stat-card" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="font-size: 32px;">✅</div>
+                <div style="font-size: 32px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
                 <div>
                     <div style="font-size: 28px; font-weight: bold;" id="completedToday">{{ $stats['completed_today'] ?? 15 }}</div>
                     <div style="font-size: 14px; opacity: 0.9;">Completed Today</div>
@@ -63,7 +63,7 @@
     <div style="display: grid; grid-template-columns: 2fr 3fr; gap: 20px;">
         <!-- Assignment Form -->
         <div class="ui-card p-6">
-            <h4 style="margin-block-end: 20px; color: #333;">📝 Create New Assignment</h4>
+            <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Create New Assignment</h4>
             
             <form action="{{ route('jobs.assignment.store') }}" method="POST" id="jobAssignmentForm">
                 @csrf
@@ -119,7 +119,7 @@
                     <div style="border: 2px solid #ddd; border-radius: 6px; padding: 15px; max-height: 200px; overflow-y: auto; background: #f8f9fa;">
                         <div id="terminalsContainer">
                             <div style="text-align: center; color: #666; padding: 20px;">
-                                <span style="font-size: 32px;">🖥️</span>
+                                <span style="font-size: 32px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg></span>
                                 <div style="margin-block-start: 10px;">Select a region to view terminals</div>
                             </div>
                         </div>
@@ -170,10 +170,10 @@
                     <div>
                         <label style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Priority *</label>
                         <select id="priority" name="priority" required style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                            <option value="normal" {{ old('priority', 'normal') == 'normal' ? 'selected' : '' }}>🔵 Normal</option>
-                            <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>🟡 High</option>
-                            <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>⚪ Low</option>
-                            <option value="emergency" {{ old('priority') == 'emergency' ? 'selected' : '' }}>🔴 Emergency</option>
+                            <option value="normal" {{ old('priority', 'normal') == 'normal' ? 'selected' : '' }}>Normal</option>
+                            <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High</option>
+                            <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low</option>
+                            <option value="emergency" {{ old('priority') == 'emergency' ? 'selected' : '' }}>Emergency</option>
                         </select>
                         @error('priority')
                             <div style="color: #f44336; font-size: 12px; margin-block-start: 5px;">{{ $message }}</div>
@@ -203,10 +203,10 @@
 
                 <div style="display: flex; gap: 10px;">
                     <button type="submit" class="btn-primary" style="flex: 1;">
-                        ➕ Create Assignment
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Create Assignment
                     </button>
                     <button type="button" onclick="resetForm()" class="btn-secondary">
-                        🔄 Reset Form
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Reset Form
                     </button>
                 </div>
             </form>
@@ -215,7 +215,7 @@
         <!-- Current Assignments -->
         <div class="ui-card p-6">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px;">
-                <h4 style="margin: 0; color: #333;">📋 Current Assignments</h4>
+                <h4 style="margin: 0; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Current Assignments</h4>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <select id="assignmentFilter" style="padding: 5px 10px; border: 2px solid #ddd; border-radius: 4px;">
                         <option value="">All Assignments</option>
@@ -262,20 +262,20 @@
                         @endif
                         
                         <div style="display: flex; gap: 5px;">
-                            <button onclick="viewAssignment({{ $assignment->id }})" class="btn-small">👁️ View</button>
+                            <button onclick="viewAssignment({{ $assignment->id }})" class="btn-small"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> View</button>
                             @if($assignment->status == 'assigned')
-                                <button onclick="editAssignment({{ $assignment->id }})" class="btn-small">✏️ Edit</button>
-                                <button onclick="cancelAssignment({{ $assignment->id }})" class="btn-small" style="background: #f44336; color: white; border-color: #f44336;">❌ Cancel</button>
+                                <button onclick="editAssignment({{ $assignment->id }})" class="btn-small"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit</button>
+                                <button onclick="cancelAssignment({{ $assignment->id }})" class="btn-small" style="background: #f44336; color: white; border-color: #f44336;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> Cancel</button>
                             @elseif($assignment->status == 'in_progress')
-                                <button onclick="completeAssignment({{ $assignment->id }})" class="btn-small" style="background: #4caf50; color: white; border-color: #4caf50;">✅ Complete</button>
+                                <button onclick="completeAssignment({{ $assignment->id }})" class="btn-small" style="background: #4caf50; color: white; border-color: #4caf50;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> Complete</button>
                             @elseif($assignment->status == 'completed')
-                                <button onclick="generateReport({{ $assignment->id }})" class="btn-small" style="background: #9c27b0; color: white; border-color: #9c27b0;">📄 Report</button>
+                                <button onclick="generateReport({{ $assignment->id }})" class="btn-small" style="background: #9c27b0; color: white; border-color: #9c27b0;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg> Report</button>
                             @endif
                         </div>
                     </div>
                     @empty
                     <div style="text-align: center; padding: 60px; color: #666;">
-                        <div style="font-size: 64px; margin-block-end: 20px;">📋</div>
+                        <div style="font-size: 64px; margin-block-end: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                         <h3>No assignments found</h3>
                         <p>Create your first technician assignment to get started.</p>
                     </div>
@@ -291,7 +291,7 @@
     <div style="background: white; border-radius: 12px; padding: 0; max-inline-size: 600px; inline-size: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto;">
         <div style="background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>🔧</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg></span>
                 <span id="modalTitle">Assignment Details</span>
             </h3>
             <button onclick="closeModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
@@ -364,7 +364,7 @@ function setupEventListeners() {
         // Show loading state
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '⏳ Creating Assignment...';
+        submitBtn.innerHTML = 'Creating Assignment...';
         submitBtn.disabled = true;
         
         // Create FormData and submit via fetch
@@ -425,7 +425,7 @@ function loadTerminals() {
     if (!regionId) {
         document.getElementById('terminalsContainer').innerHTML = `
             <div style="text-align: center; color: #666; padding: 20px;">
-                <span style="font-size: 32px;">🖥️</span>
+                <span style="font-size: 32px;"></span>
                 <div style="margin-block-start: 10px;">Select a region to view terminals</div>
             </div>
         `;
@@ -435,7 +435,7 @@ function loadTerminals() {
     // Show loading state
     document.getElementById('terminalsContainer').innerHTML = `
         <div style="text-align: center; color: #666; padding: 20px;">
-            <span style="font-size: 32px;">⏳</span>
+            <span style="font-size: 32px;"></span>
             <div style="margin-block-start: 10px;">Loading terminals...</div>
         </div>
     `;
@@ -488,7 +488,7 @@ function loadTerminals() {
         // Show error state
         document.getElementById('terminalsContainer').innerHTML = `
             <div style="text-align: center; color: #f44336; padding: 20px;">
-                <span style="font-size: 32px;">⚠️</span>
+                <span style="font-size: 32px;"></span>
                 <div style="margin-block-start: 10px;">Error loading terminals</div>
                 <div style="font-size: 12px; margin-block-start: 5px; color: #999;">${error.message}</div>
             </div>
@@ -504,7 +504,7 @@ function renderTerminals(terminals) {
     if (!terminals || terminals.length === 0) {
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 20px;">
-                <span style="font-size: 32px;">🖥️</span>
+                <span style="font-size: 32px;"></span>
                 <div style="margin-block-start: 10px;">No terminals found in this region</div>
             </div>
         `;
@@ -612,7 +612,7 @@ function resetForm() {
     updateSelectedCount();
     document.getElementById('terminalsContainer').innerHTML = `
         <div style="text-align: center; color: #666; padding: 20px;">
-            <span style="font-size: 32px;">🖥️</span>
+            <span style="font-size: 32px;"></span>
             <div style="margin-block-start: 10px;">Select a region to view terminals</div>
         </div>
     `;
@@ -647,19 +647,19 @@ function viewAssignment(id) {
             <div style="display: grid; gap: 20px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
-                        <h5 style="margin-block-end: 10px; color: #333;">👨‍🔧 Technician</h5>
+                        <h5 style="margin-block-end: 10px; color: #333;">Technician</h5>
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                             <div style="font-weight: 500;">${assignment.technician ? assignment.technician.name : 'N/A'}</div>
                             <div style="font-size: 14px; color: #666;">${assignment.technician ? assignment.technician.specialization : 'N/A'}</div>
-                            <div style="font-size: 14px; color: #666;">📞 ${assignment.technician ? assignment.technician.phone : 'N/A'}</div>
+                            <div style="font-size: 14px; color: #666;">${assignment.technician ? assignment.technician.phone : 'N/A'}</div>
                         </div>
                     </div>
                     <div>
-                        <h5 style="margin-block-end: 10px; color: #333;">📍 Location</h5>
+                        <h5 style="margin-block-end: 10px; color: #333;">Location</h5>
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                             <div style="font-weight: 500;">${assignment.region ? assignment.region.name : 'N/A'}</div>
                             <div style="font-size: 14px; color: #666;">${assignment.terminals_count || (assignment.pos_terminals ? assignment.pos_terminals.length : 0)} terminals assigned</div>
-                            <div style="font-size: 14px; color: #666;">📅 ${assignment.scheduled_date}</div>
+                            <div style="font-size: 14px; color: #666;">${assignment.scheduled_date}</div>
                         </div>
                     </div>
                 </div>

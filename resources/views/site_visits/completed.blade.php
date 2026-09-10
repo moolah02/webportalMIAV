@@ -15,21 +15,21 @@
 {{-- Stats --}}
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
     <div class="stat-card">
-        <div class="stat-icon stat-icon-green">✅</div>
+        <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div>
             <div class="stat-number">{{ number_format($stats['total']) }}</div>
             <div class="stat-label">Total Completed</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-blue">📅</div>
+        <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
         <div>
             <div class="stat-number">{{ number_format($stats['this_month']) }}</div>
             <div class="stat-label">This Month</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-yellow">⏱</div>
+        <div class="stat-icon stat-icon-yellow"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clock"/></svg></div>
         <div>
             <div class="stat-number">
                 @if($stats['avg_duration'])
@@ -42,7 +42,7 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-navy">🎯</div>
+        <div class="stat-icon stat-icon-navy"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-target"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['outcomes']['completed'] ?? 0 }}</div>
             <div class="stat-label">Outcome: Completed</div>
@@ -199,7 +199,7 @@
                 <tr>
                     <td colspan="9">
                         <div class="empty-state">
-                            <div class="empty-state-icon">✅</div>
+                            <div class="empty-state-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
                             <div class="empty-state-msg">No completed visits found</div>
                         </div>
                     </td>

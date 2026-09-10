@@ -397,10 +397,10 @@
             
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                toggleIcon.innerHTML = '👁️';
+                toggleIcon.innerHTML = '';
             } else {
                 passwordInput.type = 'password';
-                toggleIcon.innerHTML = '👁️‍🗨️';
+                toggleIcon.innerHTML = '';
             }
         }
 

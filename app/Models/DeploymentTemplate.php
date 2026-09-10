@@ -76,10 +76,10 @@ class DeploymentTemplate extends Model
     public function getPriorityBadgeAttribute()
     {
         $badges = [
-            'emergency' => ['class' => 'bg-danger', 'icon' => '🔴', 'text' => 'Emergency'],
-            'high' => ['class' => 'bg-warning', 'icon' => '🟡', 'text' => 'High'],
-            'normal' => ['class' => 'bg-primary', 'icon' => '🔵', 'text' => 'Normal'],
-            'low' => ['class' => 'bg-secondary', 'icon' => '⚪', 'text' => 'Low']
+            'emergency' => ['class' => 'bg-danger', 'icon' => '', 'text' => 'Emergency'],
+            'high' => ['class' => 'bg-warning', 'icon' => '', 'text' => 'High'],
+            'normal' => ['class' => 'bg-primary', 'icon' => '', 'text' => 'Normal'],
+            'low' => ['class' => 'bg-secondary', 'icon' => '', 'text' => 'Low']
         ];
 
         return $badges[$this->priority] ?? $badges['normal'];

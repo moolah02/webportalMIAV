@@ -10,7 +10,7 @@
             <p style="color: #666; margin: 5px 0 0 0;">Update license information for {{ $businessLicense->license_name }}</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn-secondary">👁️ View</a>
+            <a href="{{ route('business-licenses.show', $businessLicense) }}" class="btn-secondary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> View</a>
             <a href="{{ route('business-licenses.index', ['direction' => $businessLicense->license_direction]) }}" class="btn-secondary">← Back to Licenses</a>
         </div>
     </div>
@@ -24,11 +24,11 @@
 
                 <!-- License Type Display (Read-only) -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">🔄 License Type</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> License Type</h4>
 
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 18px;">{{ $businessLicense->isCompanyHeld() ? '🏢' : '👥' }}</span>
+                            <span style="font-size: 18px;">{{ $businessLicense->isCompanyHeld() ? '' : '' }}</span>
                             <div>
                                 <div style="font-weight: 500; color: #333;">{{ $businessLicense->license_direction_name }}</div>
                                 <div style="font-size: 12px; color: #666;">
@@ -41,7 +41,7 @@
 
                 <!-- Basic Information -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📋 Basic Information</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Basic Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
@@ -110,7 +110,7 @@
 
                 <!-- Dates Information -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📅 Dates Information</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg> Dates Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
@@ -147,7 +147,7 @@
                 @if($businessLicense->isCompanyHeld())
                 <!-- Company-Held License Fields -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">💰 Financial Information</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg> Financial Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
@@ -172,7 +172,7 @@
 
                 <!-- Company Additional Information -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📝 Additional Information</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Additional Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
@@ -233,7 +233,7 @@
                 <!-- Customer-Issued License Fields -->
                 <!-- Customer Information -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">👤 Customer Information</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> Customer Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
@@ -295,7 +295,7 @@
 
                 <!-- License & Billing Information -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">💰 License & Billing Information</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg> License & Billing Information</h4>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block-end: 20px;">
                         <div>
@@ -357,7 +357,7 @@
 
                 <!-- Customer License Terms -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📋 License Terms & Conditions</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> License Terms & Conditions</h4>
 
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">License Terms</label>
@@ -381,11 +381,11 @@
 
                 <!-- Document Upload -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📄 Document</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg> Document</h4>
 
                     @if($businessLicense->document_path)
                     <div style="background: #e8f5e8; padding: 10px; border-radius: 4px; margin-block-end: 10px; display: flex; align-items: center; gap: 10px;">
-                        <span style="color: #4caf50;">📄 Current document: {{ basename($businessLicense->document_path) }}</span>
+                        <span style="color: #4caf50;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg> Current document: {{ basename($businessLicense->document_path) }}</span>
                         <a href="{{ route('business-licenses.download', $businessLicense) }}" style="color: #2196f3; text-decoration: none; font-size: 14px;">Download</a>
                     </div>
                     @endif
@@ -415,7 +415,7 @@
         <div>
             <!-- Current Status -->
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">📊 Current Status</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Current Status</h4>
                 <div style="display: flex; flex-direction: column; gap: 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-weight: 500;">Type:</span>
@@ -457,7 +457,7 @@
 
             <!-- Edit Tips -->
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">💡 Edit Tips</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lightbulb"/></svg> Edit Tips</h4>
                 <ul style="margin: 0; padding-inline-start: 20px; color: #666; line-height: 1.6;">
                     @if($businessLicense->isCompanyHeld())
                     <li>Update expiry dates when renewals are processed</li>
@@ -477,7 +477,7 @@
 
             <!-- Change History -->
             <div class="ui-card p-6">
-                <h4 style="margin-block-end: 15px; color: #333;">📝 License History</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> License History</h4>
                 <div style="font-size: 14px; color: #666; line-height: 1.6;">
                     <div style="margin-block-end: 10px;">
                         <strong>Created:</strong> {{ $businessLicense->created_at->format('M d, Y') }}

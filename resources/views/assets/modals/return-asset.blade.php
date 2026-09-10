@@ -4,7 +4,7 @@
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>↩️</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
                 <span>Return Asset</span>
             </h3>
             <button onclick="closeReturnModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
@@ -94,15 +94,15 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
                             <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
                                 <input type="radio" name="update_asset_status" value="available" checked>
-                                <span>📦 Available</span>
+                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Available</span>
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
                                 <input type="radio" name="update_asset_status" value="maintenance">
-                                <span>🔧 Maintenance</span>
+                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Maintenance</span>
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
                                 <input type="radio" name="update_asset_status" value="damaged">
-                                <span>⚠️ Damaged</span>
+                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Damaged</span>
                             </label>
                         </div>
                     </div>
@@ -111,7 +111,7 @@
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
                     <button type="submit" class="btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
-                        <span style="font-size: 16px; margin-right: 8px;">↩️</span>
+                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
                         Process Return
                     </button>
                     <button type="button" onclick="closeReturnModal()" style="padding: 10px 20px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">
@@ -129,7 +129,7 @@
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>📋</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
                 <span id="detailsModalTitle">Assignment Details</span>
             </h3>
             <button onclick="closeDetailsModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
@@ -177,7 +177,7 @@ function viewAssignmentDetails(assignmentId) {
                 <div style="display: grid; gap: 20px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">👤 Employee Details</h4>
+                            <h4 style="margin-block-end: 10px; color: #333;">Employee Details</h4>
                             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <div><strong>Name:</strong> ${assignment.employee.first_name} ${assignment.employee.last_name}</div>
                                 <div><strong>Number:</strong> ${assignment.employee.employee_number}</div>
@@ -185,7 +185,7 @@ function viewAssignmentDetails(assignmentId) {
                             </div>
                         </div>
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">📦 Asset Details</h4>
+                            <h4 style="margin-block-end: 10px; color: #333;">Asset Details</h4>
                             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <div><strong>Name:</strong> ${assignment.asset.name}</div>
                                 <div><strong>Category:</strong> ${assignment.asset.category}</div>
@@ -195,7 +195,7 @@ function viewAssignmentDetails(assignmentId) {
                     </div>
 
                     <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">📋 Assignment Timeline</h4>
+                        <h4 style="margin-block-end: 10px; color: #333;">Assignment Timeline</h4>
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                 <div><strong>Assigned Date:</strong> ${new Date(assignment.assignment_date).toLocaleDateString()}</div>
@@ -207,7 +207,7 @@ function viewAssignmentDetails(assignmentId) {
                     </div>
 
                     <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">🔧 Condition Tracking</h4>
+                        <h4 style="margin-block-end: 10px; color: #333;">Condition Tracking</h4>
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                             <div><strong>Condition When Assigned:</strong> <span style="padding: 4px 8px; background: #e3f2fd; color: #1976d2; border-radius: 12px; font-size: 12px;">${assignment.condition_when_assigned.charAt(0).toUpperCase() + assignment.condition_when_assigned.slice(1)}</span></div>
                         </div>
@@ -215,7 +215,7 @@ function viewAssignmentDetails(assignmentId) {
 
                     ${assignment.assignment_notes ? `
                     <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">📝 Notes</h4>
+                        <h4 style="margin-block-end: 10px; color: #333;">Notes</h4>
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                             <div><strong>Assignment Notes:</strong><br>${assignment.assignment_notes}</div>
                         </div>
@@ -250,7 +250,7 @@ document.getElementById('returnAssetForm').addEventListener('submit', function(e
     const originalText = submitBtn.innerHTML;
 
     // Show loading state
-    submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;">⏳</span>Processing...';
+    submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;"></span>Processing...';
     submitBtn.disabled = true;
 
     fetch(`/asset-assignments/${currentAssignmentForReturn}/return`, {
@@ -310,7 +310,7 @@ document.addEventListener('keydown', function(event) {
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
                     <button type="submit" class="btn-success" style="flex: 1; background: #2196f3; border-color: #2196f3;">
-                        <span style="font-size: 16px; margin-right: 8px;">↩️</span>
+                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
                         Process Return
                     </button>
                     <button type="button" onclick="closeReturnModal()" class="btn" style="padding: 10px 20px;">
@@ -371,7 +371,7 @@ function openReturnModal(assignmentId) {
             const overdueWarning = document.getElementById('overdue_warning');
             if (data.is_overdue) {
                 overdueWarning.style.display = 'block';
-                overdueWarning.innerHTML = `<strong>⚠️ This asset is ${data.days_overdue} days overdue for return!</strong>`;
+                overdueWarning.innerHTML = `<strong>This asset is ${data.days_overdue} days overdue for return!</strong>`;
             } else {
                 overdueWarning.style.display = 'none';
             }
@@ -418,7 +418,7 @@ document.getElementById('returnAssetForm').addEventListener('submit', function(e
     const originalText = submitBtn.innerHTML;
 
     // Show loading state
-    submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;">⏳</span>Processing...';
+    submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;"></span>Processing...';
     submitBtn.disabled = true;
 
     fetch(this.action, {

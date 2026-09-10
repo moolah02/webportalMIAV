@@ -1454,7 +1454,7 @@
     <div class="deployment-hero">
         <div class="deployment-hero-head">
             <div class="deployment-hero-copy">
-                <div class="deployment-hero-icon">🗺️</div>
+                <div class="deployment-hero-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg></div>
                 <div>
                     <h1 class="deployment-hero-title">Terminal Deployment</h1>
                     <p class="deployment-hero-subtitle">Deploy technicians to terminals across regions with a cleaner, step-based workflow.</p>
@@ -1577,7 +1577,7 @@
                     </div>
                     <div class="deployment-action-stack">
                         <button type="button" class="btn-primary" onclick="createNewProject()" style="margin-top: 8px; width: 100%; padding: 10px 12px;">
-                            ➕ Create New Project
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Create New Project
                         </button>
                         <div class="deployment-field-help">Need a fresh deployment project? Create it here and continue.</div>
                     </div>
@@ -1592,7 +1592,7 @@
                 <!-- Load Button -->
                 <button type="button" class="btn-success" onclick="loadHierarchy()" id="loadHierarchyBtn" disabled
                         style="margin-top: 12px; width: 100%; padding: 12px; font-size: 16px;">
-                    🗺️ Load Client Terminals
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg> Load Client Terminals
                 </button>
             </div>
         </div>
@@ -1601,7 +1601,7 @@
     <!-- Progress Stats - Hidden Initially -->
     <div id="progressStats" class="progress-section deployment-progress-stats">
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#dbeafe;">🎯</div>
+            <div class="deployment-progress-icon" style="background:#dbeafe;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-target"/></svg></div>
             <div>
                 <div class="deployment-progress-value" id="totalTerminals">0</div>
                 <div class="deployment-progress-label">Total Terminals</div>
@@ -1609,7 +1609,7 @@
         </div>
 
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#dcfce7;">✅</div>
+            <div class="deployment-progress-icon" style="background:#dcfce7;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
             <div>
                 <div class="deployment-progress-value" id="assignedTerminals">0</div>
                 <div class="deployment-progress-label">Assigned</div>
@@ -1617,7 +1617,7 @@
         </div>
 
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#fef3c7;">⏳</div>
+            <div class="deployment-progress-icon" style="background:#fef3c7;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg></div>
             <div>
                 <div class="deployment-progress-value" id="unassignedTerminals">0</div>
                 <div class="deployment-progress-label">Unassigned</div>
@@ -1625,7 +1625,7 @@
         </div>
 
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#ede9fe;">👥</div>
+            <div class="deployment-progress-icon" style="background:#ede9fe;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
             <div>
                 <div class="deployment-progress-value" id="selectedTerminals">0</div>
                 <div class="deployment-progress-label">Selected</div>
@@ -1633,7 +1633,7 @@
         </div>
 
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#fee2e2;">🔧</div>
+            <div class="deployment-progress-icon" style="background:#fee2e2;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg></div>
             <div>
                 <div class="deployment-progress-value" id="technicianCount">0</div>
                 <div class="deployment-progress-label">Technicians</div>
@@ -1650,18 +1650,18 @@
             <div class="deployment-table-head">
                 <div class="deployment-table-toolbar">
                     <h4 class="deployment-table-title">
-                        📊 Terminal List
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Terminal List
                         <span class="deployment-count-pill" id="terminalCount">0</span>
                     </h4>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn-secondary btn-sm" onclick="selectAllVisible()" disabled id="selectAllBtn" title="Select All Visible">
-                            ☑️ Select All
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-square"/></svg> Select All
                         </button>
                         <button class="btn-secondary btn-sm" onclick="clearSelections()" disabled id="clearAllBtn" title="Clear Selections">
-                            ❌ Clear
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> Clear
                         </button>
                         <button class="btn-secondary btn-sm" onclick="exportTableData()" disabled id="exportBtn" title="Export Data">
-                            📊 Export
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export
                         </button>
                     </div>
                 </div>
@@ -1690,8 +1690,8 @@
                         <label class="deployment-field-label">Assignment Status</label>
                         <select id="assignmentFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Terminals</option>
-                            <option value="assigned">✅ Assigned</option>
-                            <option value="unassigned">⏳ Unassigned</option>
+                            <option value="assigned">Assigned</option>
+                            <option value="unassigned">Unassigned</option>
                         </select>
                     </div>
                     <div>
@@ -1733,7 +1733,7 @@
                         <tr>
                             <td colspan="9" style="padding: 60px 20px; text-align: center; color: #666;">
                                 <div class="deployment-empty-state">
-                                    <div class="deployment-empty-icon">👈</div>
+                                    <div class="deployment-empty-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-arrow-left"/></svg></div>
                                     <h5>Step 1: Configure Deployment Setup</h5>
                                     <p>Select clients and projects to load terminals.</p>
                                     <div style="margin-top: 20px; font-size: 14px; color: #94a3b8;">
@@ -1764,7 +1764,7 @@
             <!-- Assignment Section -->
             <div class="deployment-side-card" id="assignmentSection">
                 <h4 class="deployment-side-title">
-                    👥 Technician Assignment
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Technician Assignment
                 </h4>
 
                 <!-- Technician Selection -->
@@ -1846,14 +1846,14 @@
                 <!-- Assignment Actions -->
                 <div class="deployment-action-grid">
                     <button type="button" class="btn-success" onclick="assignSelected()" id="assignSelectedBtn" disabled style="width: 100%;">
-                        ➕ Assign Selected Terminals
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Assign Selected Terminals
                     </button>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                         <button type="button" class="btn-secondary" onclick="assignAll()" id="assignAllBtn" disabled>
-                            📋 Assign All
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Assign All
                         </button>
                         <button type="button" class="btn-secondary" onclick="clearAssignments()" id="clearAssignmentsBtn" disabled>
-                            🗑️ Clear Assignments
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Clear Assignments
                         </button>
                     </div>
                 </div>
@@ -1862,12 +1862,12 @@
             <!-- Technician Workload Display -->
             <div class="deployment-side-card">
                 <h4 class="deployment-side-title">
-                    📊 Technician Workload
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Technician Workload
                 </h4>
 
                 <div id="technicianWorkload">
                     <div class="deployment-empty-panel">
-                        <div style="font-size: 32px; margin-block-end: 10px;">👥</div>
+                        <div style="font-size: 32px; margin-block-end: 10px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
                         <h6>Step 3: Select Technicians</h6>
                         <p>Choose technicians to see workload distribution</p>
                     </div>
@@ -1877,13 +1877,13 @@
             <!-- Unassigned Terminals -->
             <div class="deployment-side-card">
                 <h4 class="deployment-side-title">
-                    ⏳ Unassigned Terminals
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg> Unassigned Terminals
                     <span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;" id="unassignedCount">0</span>
                 </h4>
 
                 <div id="unassignedList" style="max-height: 200px; overflow-y: auto;">
                     <div class="deployment-empty-panel">
-                        <div style="font-size: 32px; margin-block-end: 10px;">⏳</div>
+                        <div style="font-size: 32px; margin-block-end: 10px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg></div>
                         <p>Load hierarchy to see unassigned terminals</p>
                     </div>
                 </div>
@@ -1895,7 +1895,7 @@
     <div class="assignment-success-section deployment-summary-shell" id="assignmentSuccessSection">
         <div class="deployment-success-card">
         <h4 class="deployment-side-title">
-            🎉 Assignment Complete!
+            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> Assignment Complete!
         </h4>
 
         <div class="deployment-success-grid">
@@ -1927,13 +1927,13 @@
             <div>
                 <div style="display: grid; gap: 12px;">
                     <button type="button" class="btn-success" onclick="exportDeployment()" id="exportDeploymentBtn" disabled style="width: 100%;">
-                        📊 Export Assignment Data
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export Assignment Data
                     </button>
                     <button type="button" class="btn-secondary" onclick="saveAsDraft()" id="saveDraftBtn" disabled style="width: 100%;">
-                        💾 Save as Draft
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save as Draft
                     </button>
                     <button type="button" class="btn-primary" onclick="viewAllAssignments()" style="width: 100%;">
-                        👁️ View All Assignments
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> View All Assignments
                     </button>
                 </div>
 
@@ -1967,7 +1967,7 @@
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>➕</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg></span>
                 <span>Create New Project</span>
             </h3>
             <button onclick="closeProjectModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
@@ -2026,7 +2026,7 @@
 
                 <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
                     <button type="submit" class="btn-primary" style="flex: 1;">
-                        ➕ Create Project
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Create Project
                     </button>
                     <button type="button" onclick="closeProjectModal()" class="btn-secondary">
                         Cancel
@@ -2156,7 +2156,7 @@ function loadProjectsAndSelect(projectId) {
 function showProjectSelectionMessage() {
     const messageHtml = `
         <div class="flash-info-lite">
-            <div style="font-size: 18px; line-height: 1;">ℹ️</div>
+            <div style="font-size: 18px; line-height: 1;"></div>
             <div>
                 <div>
                     <strong>Project Ready for Terminal Assignment</strong>
@@ -2225,7 +2225,7 @@ function updateButtonStates(hasClients, hasProjects, hasHierarchy, hasTechnician
     // Load Hierarchy Button
     const loadBtn = document.getElementById('loadHierarchyBtn');
     loadBtn.disabled = !(hasClients && hasProjects);
-    loadBtn.textContent = hasClients && hasProjects ? '🗺️ Load Client Terminals' : '🔒 Select Clients & Projects First';
+    loadBtn.textContent = hasClients && hasProjects ? 'Load Client Terminals' : 'Select Clients & Projects First';
 
     // Assignment Buttons
     document.getElementById('assignSelectedBtn').disabled = !(hasSelections && hasTechnicians);
@@ -2293,12 +2293,12 @@ function updateHelpfulHints(hasClients, hasProjects, hasHierarchy, hasTechnician
         if (treeContainer) {
             treeContainer.innerHTML = `
                 <div style="text-align: center; padding: 60px 20px; color: #666;">
-                    <div style="font-size: 64px; margin-block-end: 20px;">👈</div>
+                    <div style="font-size: 64px; margin-block-end: 20px;"></div>
                     <h5>Step 1: Configure Deployment Setup</h5>
                     <p>Select clients and projects to continue</p>
                     <div style="margin-top: 20px; font-size: 14px; color: #999;">
-                        ${!hasClients ? '• Choose one or more clients' : '✅ Clients selected'}<br>
-                        ${!hasProjects ? '• Select associated projects' : '✅ Projects selected'}
+                        ${!hasClients ? '• Choose one or more clients' : 'Clients selected'}<br>
+                        ${!hasProjects ? '• Select associated projects' : 'Projects selected'}
                     </div>
                 </div>
             `;
@@ -2309,7 +2309,7 @@ function updateHelpfulHints(hasClients, hasProjects, hasHierarchy, hasTechnician
     if (!hasTechnicians && hasHierarchy) {
         document.getElementById('technicianWorkload').innerHTML = `
             <div style="text-align: center; color: #666; padding: 20px;">
-                <div style="font-size: 32px; margin-block-end: 10px;">👥</div>
+                <div style="font-size: 32px; margin-block-end: 10px;"></div>
                 <h6>Step 3: Select Technicians</h6>
                 <p>Choose technicians to see workload distribution</p>
             </div>
@@ -2440,7 +2440,7 @@ function updateTechnicianSelection() {
     updateProgressiveVisibility();
 
     if (deploymentState.selectedTechnicians.size > 0) {
-        showAlert('✅ Step 3 Complete! Select terminals from the hierarchy to assign them.');
+        showAlert('Step 3 Complete! Select terminals from the hierarchy to assign them.');
     }
 
     // Auto-close dropdown after selection
@@ -2597,12 +2597,12 @@ function updateLoadButton() {
 
     if (hasClients && hasProjects) {
         loadBtn.disabled = false;
-        loadBtn.textContent = '🗺️ Load Client Terminals';
+        loadBtn.textContent = 'Load Client Terminals';
         loadBtn.style.opacity = '1';
         loadBtn.style.cursor = 'pointer';
     } else {
         loadBtn.disabled = true;
-        loadBtn.textContent = '🔒 Select Clients & Projects First';
+        loadBtn.textContent = 'Select Clients & Projects First';
         loadBtn.style.opacity = '0.6';
         loadBtn.style.cursor = 'not-allowed';
     }
@@ -2628,7 +2628,7 @@ function loadHierarchy() {
     tableBody.innerHTML = `
         <tr>
             <td colspan="8" style="padding: 40px 20px; text-align: center; color: #666;">
-                <div style="font-size: 32px; margin-bottom: 15px;">⏳</div>
+                <div style="font-size: 32px; margin-bottom: 15px;"></div>
                 <p>Loading terminals...</p>
             </td>
         </tr>
@@ -2666,7 +2666,7 @@ function loadHierarchy() {
                 indicator.style.display = 'none';
             }
 
-            showAlert('✅ Step 2 Complete! Now select technicians to start assigning terminals.');
+            showAlert('Step 2 Complete! Now select technicians to start assigning terminals.');
         } else {
             setLoading(tableBody, false);
 
@@ -2946,7 +2946,7 @@ function renderTerminalTable() {
         tableBody.innerHTML = `
             <tr>
                 <td colspan="9" style="padding: 40px 20px; text-align: center; color: #666;">
-                    <div style="font-size: 32px; margin-bottom: 10px;">🔍</div>
+                    <div style="font-size: 32px; margin-bottom: 10px;"></div>
                     <h5>No terminals found</h5>
                     <p>Try adjusting your filters or search criteria</p>
                 </td>
@@ -2987,7 +2987,7 @@ function renderTerminalTable() {
                 </td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
                     <span class="assignment-badge ${assignmentClass}">
-                        ${isAssigned ? '✅ Assigned' : '⏳ Unassigned'}
+                        ${isAssigned ? 'Assigned' : 'Unassigned'}
                     </span>
                 </td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
@@ -3044,7 +3044,7 @@ function showEmptyTable() {
     tableBody.innerHTML = `
         <tr>
             <td colspan="9" style="padding: 60px 20px; text-align: center; color: #666;">
-                <div style="font-size: 48px; margin-bottom: 15px;">👈</div>
+                <div style="font-size: 48px; margin-bottom: 15px;"></div>
                 <h5>Step 1: Configure Deployment Setup</h5>
                 <p>Select clients and projects to load terminals</p>
                 <div style="margin-top: 20px; font-size: 14px; color: #999;">
@@ -3084,7 +3084,7 @@ function updateTechnicianWorkload() {
     if (deploymentState.selectedTechnicians.size === 0) {
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 20px;">
-                <div style="font-size: 32px; margin-block-end: 10px;">👥</div>
+                <div style="font-size: 32px; margin-block-end: 10px;"></div>
                 <h6>Step 3: Select Technicians</h6>
                 <p>Choose technicians to see workload distribution</p>
             </div>
@@ -3383,7 +3383,7 @@ function updateUnassignedList() {
     if (unassignedTerminals.length === 0 && deploymentState.allTerminals.size > 0) {
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 20px;">
-                <div style="font-size: 32px; margin-block-end: 10px;">✅</div>
+                <div style="font-size: 32px; margin-block-end: 10px;"></div>
                 <p>All terminals assigned!</p>
             </div>
         `;
@@ -3393,7 +3393,7 @@ function updateUnassignedList() {
     if (deploymentState.allTerminals.size === 0) {
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 20px;">
-                <div style="font-size: 32px; margin-block-end: 10px;">⏳</div>
+                <div style="font-size: 32px; margin-block-end: 10px;"></div>
                 <p>Load hierarchy to see unassigned terminals</p>
             </div>
         `;
@@ -3449,7 +3449,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '⏳ Creating Project...';
+            submitBtn.innerHTML = 'Creating Project...';
             submitBtn.disabled = true;
 
             const formData = {
@@ -3681,7 +3681,7 @@ function showAlert(message, type = 'success') {
     // Create better alert/toast notification
     const alertId = 'alert-' + Date.now();
     const alertClass = type === 'success' ? 'alert-success' : type === 'danger' ? 'alert-danger' : 'alert-info';
-    const icon = type === 'success' ? '✅' : type === 'danger' ? '❌' : 'ℹ️';
+    const icon = type === 'success' ? '' : type === 'danger' ? '' : '';
 
     const alertHtml = `
         <div id="${alertId}" class="alert ${alertClass}" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; animation: slideIn 0.3s ease;">
@@ -3719,7 +3719,7 @@ function showErrorModal(title, message, details = null) {
         <div style="background: white; border-radius: 12px; padding: 0; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
             <div style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
                 <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <span>❌</span>
+                    <span></span>
                     <span>${title}</span>
                 </h3>
                 <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">×</button>
@@ -3814,7 +3814,7 @@ function showExportModal() {
         <div style="background: white; border-radius: 12px; padding: 0; max-width: 400px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
             <div style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
                 <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <span>📊</span>
+                    <span></span>
                     <span>Export Assignment Data</span>
                 </h3>
                 <button onclick="closeModal(this)"
@@ -3824,19 +3824,19 @@ function showExportModal() {
                 <p style="margin: 0 0 20px 0; color: #666;">Choose export format for your assignment data:</p>
                 <div style="display: grid; gap: 10px;">
                     <button onclick="exportAssignments('csv')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
-                        <span>📊</span>
+                        <span></span>
                         <span>CSV Spreadsheet</span>
                     </button>
                     <button onclick="exportAssignments('excel')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
-                        <span>📈</span>
+                        <span></span>
                         <span>Excel Workbook</span>
                     </button>
                     <button onclick="exportAssignments('pdf')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
-                        <span>📄</span>
+                        <span></span>
                         <span>PDF Report</span>
                     </button>
                     <button onclick="exportAssignments('mobile')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
-                        <span>📱</span>
+                        <span></span>
                         <span>Mobile Sync JSON</span>
                     </button>
                 </div>

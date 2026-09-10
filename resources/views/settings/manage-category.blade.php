@@ -228,9 +228,9 @@
   <!-- Breadcrumb -->
   <div style="background: #fff; padding: 20px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
     <nav style="font-size: 14px; color: #666;">
-      <a href="{{ route('dashboard') }}" style="color: #1a3a5c; text-decoration: none;">🏠 Dashboard</a>
+      <a href="{{ route('dashboard') }}" style="color: #1a3a5c; text-decoration: none;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-home"/></svg> Dashboard</a>
       <span style="margin: 0 8px;">›</span>
-      <a href="{{ route('settings.index') }}" style="color: #1a3a5c; text-decoration: none;">⚙️ Settings</a>
+      <a href="{{ route('settings.index') }}" style="color: #1a3a5c; text-decoration: none;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> Settings</a>
       <span style="margin: 0 8px;">›</span>
       <span>{{ $typeLabel }}</span>
     </nav>
@@ -240,13 +240,13 @@
   <!-- Alerts -->
   @if(session('success'))
     <div class="alert alert-success">
-      ✅ {{ session('success') }}
+      <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> {{ session('success') }}
     </div>
   @endif
 
   @if(session('error'))
     <div class="alert alert-danger">
-      ❌ {{ session('error') }}
+      <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> {{ session('error') }}
     </div>
   @endif
 
@@ -255,7 +255,7 @@
     <div class="table-header">
       <h2 class="table-title">Manage {{ $typeLabel }}</h2>
       <button type="button" class="btn-primary" onclick="openAddModal()">
-        ➕ Add {{ str_replace(['Categories', 'Status', 'Types'], ['Category', 'Status', 'Type'], $typeLabel) }}
+        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Add {{ str_replace(['Categories', 'Status', 'Types'], ['Category', 'Status', 'Type'], $typeLabel) }}
       </button>
     </div>
 
@@ -263,7 +263,7 @@
       <table class="category-table">
         <thead>
           <tr>
-            <th style="width: 30px;">📱</th>
+            <th style="width: 30px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-phone"/></svg></th>
             <th>Name</th>
             <th>Description</th>
             <th>Status</th>
@@ -275,7 +275,7 @@
           @foreach($categories as $category)
             <tr data-id="{{ $category->id }}">
               <td style="text-align: center;">
-                {{ $category->icon ?: '📄' }}
+                {{ $category->icon ?: '' }}
               </td>
               <td>
                 <strong>{{ $category->name }}</strong>
@@ -298,11 +298,11 @@
               <td>
                 <button type="button" class="btn-sm btn-outline-primary" 
                         onclick="openEditModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}', '{{ $category->color }}', '{{ $category->icon }}', {{ $category->is_active ? 'true' : 'false' }})">
-                  ✏️ Edit
+                  <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit
                 </button>
                 <button type="button" class="btn-sm btn-outline-danger" 
                         onclick="deleteCategory({{ $category->id }}, '{{ $category->name }}')">
-                  🗑️ Delete
+                  <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Delete
                 </button>
               </td>
             </tr>
@@ -311,7 +311,7 @@
       </table>
     @else
       <div style="text-align: center; padding: 60px; color: #666;">
-        <div style="font-size: 48px; margin-block-end: 20px;">📋</div>
+        <div style="font-size: 48px; margin-block-end: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
         <h3>No {{ $typeLabel }} Found</h3>
         <p>Get started by adding your first {{ strtolower(str_replace(['Categories', 'Status', 'Types'], ['category', 'status', 'type'], $typeLabel)) }}.</p>
       </div>
@@ -339,7 +339,7 @@
       </div>
       <div class="mb-4">
         <label class="form-label">Icon (Emoji)</label>
-        <input type="text" name="icon" class="ui-input" placeholder="📄">
+        <input type="text" name="icon" class="ui-input" placeholder="">
       </div>
       <div class="modal-buttons">
         <button type="button" class="btn-secondary" onclick="closeAddModal()">Cancel</button>
@@ -370,7 +370,7 @@
       </div>
       <div class="mb-4">
         <label class="form-label">Icon (Emoji)</label>
-        <input type="text" name="icon" id="edit_icon" class="ui-input" placeholder="📄">
+        <input type="text" name="icon" id="edit_icon" class="ui-input" placeholder="">
       </div>
       <div class="mb-4">
         <label class="form-label">

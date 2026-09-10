@@ -15,7 +15,7 @@
 {{-- SWAGGER BANNER --}}
 <div style="background:linear-gradient(135deg,#0f172a,#1e3a5c);border-radius:12px;padding:28px 32px;color:#fff;margin-bottom:32px;">
     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-        <div style="font-size:40px;">🗂️</div>
+        <div style="font-size:40px;"></div>
         <div style="flex:1;">
             <h2 style="color:#fff;font-size:18px;margin:0 0 6px;border:none;padding:0;">Swagger / OpenAPI Interactive UI</h2>
             <p style="opacity:.8;font-size:13.5px;margin:0;">

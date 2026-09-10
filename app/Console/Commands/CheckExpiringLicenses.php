@@ -38,7 +38,7 @@ class CheckExpiringLicenses extends Command
         foreach ($admins as $admin) {
             try {
                 $admin->notify(new SystemNotification(
-                    "⚠️ {$count} License" . ($count > 1 ? 's' : '') . " Expiring Soon",
+                    "{$count} License" . ($count > 1 ? 's' : '') . " Expiring Soon",
                     "{$count} license" . ($count > 1 ? 's expire' : ' expires') . " within {$days} days.",
                     'system',
                     route('licenses.index')
@@ -50,7 +50,7 @@ class CheckExpiringLicenses extends Command
                         "Dear {$admin->name},\n\nThe following license(s) expire within {$days} days:\n\n" .
                         $expiring->map(fn($l) => "- {$l->license_name} (expires {$l->expiry_date})")->implode("\n") .
                         "\n\nPlease review and arrange renewal as needed.",
-                        fn($m) => $m->to($admin->email)->subject("⚠️ {$count} License(s) Expiring Soon – Revival Technologies")
+                        fn($m) => $m->to($admin->email)->subject("{$count} License(s) Expiring Soon – Revival Technologies")
                     );
                 }
             } catch (\Throwable $e) {

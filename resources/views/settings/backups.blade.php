@@ -36,25 +36,25 @@
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
     <div>
-        <h1 style="margin:0;font-size:20px;font-weight:700;color:#1a3a5c;">💾 Database Backups</h1>
+        <h1 style="margin:0;font-size:20px;font-weight:700;color:#1a3a5c;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Database Backups</h1>
         <p style="margin:6px 0 0;color:#6b7280;font-size:13px;">Scheduled and on-demand MySQL backups — stored on the server</p>
     </div>
     <form method="POST" action="{{ route('settings.backups.store') }}">
         @csrf
-        <button type="submit" class="btn-success">⚡ Run Backup Now</button>
+        <button type="submit" class="btn-success"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Run Backup Now</button>
     </form>
 </div>
 
 @if(session('success'))
-    <div class="alert-success">✅ {{ session('success') }}</div>
+    <div class="alert-success"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> {{ session('success') }}</div>
 @endif
 @if(session('error'))
-    <div class="alert-error">❌ {{ session('error') }}</div>
+    <div class="alert-error"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> {{ session('error') }}</div>
 @endif
 
 {{-- Schedule settings --}}
 <div class="card">
-    <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#1a3a5c;">⏰ Backup Schedule</h3>
+    <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#1a3a5c;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clock"/></svg> Backup Schedule</h3>
     <form method="POST" action="{{ route('settings.backups.settings') }}" style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;">
         @csrf
         <div>
@@ -72,10 +72,10 @@
             <input class="form-input" type="number" name="backup_retention_days" min="1" max="365"
                 value="{{ $settings->get('backup_retention_days')?->value ?? 14 }}" style="width:100px;">
         </div>
-        <button type="submit" class="btn-primary">💾 Save</button>
+        <button type="submit" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save</button>
     </form>
     <p class="form-hint" style="margin-top:12px;">
-        ⚠️ The server cron must be running for scheduled backups to work:
+        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> The server cron must be running for scheduled backups to work:
         <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px;">* * * * * php /var/www/html/revival_production/artisan schedule:run >> /dev/null 2>&1</code>
     </p>
 </div>
@@ -83,7 +83,7 @@
 {{-- Backup list --}}
 <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h3 style="margin:0;font-size:15px;font-weight:700;color:#1a3a5c;">📂 Existing Backups</h3>
+        <h3 style="margin:0;font-size:15px;font-weight:700;color:#1a3a5c;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg> Existing Backups</h3>
         <span style="font-size:12px;color:#6b7280;">{{ $files->count() }} file(s) · Stored at <code style="background:#f1f5f9;padding:2px 5px;border-radius:4px;">storage/app/backups/</code></span>
     </div>
 
@@ -106,10 +106,10 @@
                     <td style="color:#6b7280;">{{ $file['size'] }}</td>
                     <td style="color:#6b7280;">{{ $file['created'] }}</td>
                     <td style="text-align:right;">
-                        <a href="{{ route('settings.backups.download', $file['name']) }}" class="btn-sm-link btn-dl">⬇ Download</a>
+                        <a href="{{ route('settings.backups.download', $file['name']) }}" class="btn-sm-link btn-dl"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-download"/></svg> Download</a>
                         <form method="POST" action="{{ route('settings.backups.destroy', $file['name']) }}" style="display:inline;" onsubmit="return confirm('Delete this backup?')">
                             @csrf @method('DELETE')
-                            <button type="submit" class="btn-sm-link btn-del">🗑 Delete</button>
+                            <button type="submit" class="btn-sm-link btn-del"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Delete</button>
                         </form>
                     </td>
                 </tr>

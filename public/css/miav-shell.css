@@ -85,6 +85,30 @@ html { scrollbar-width: thin; scrollbar-color: var(--mv-line-strong) transparent
 .mv-nav .mv-ver { margin-left: auto; font-family: var(--mv-mono); font-size: 11px; color: var(--mv-accent-ink); background: var(--mv-accent-soft); padding: 0 6px; border-radius: 4px; }
 .mv-nav .mv-ext { margin-left: auto; width: 13px; height: 13px; color: var(--mv-muted); }
 
+/* Folding sections (like the previous menu). Children sit on a thin guide
+   line; the current page marks its segment of that line. */
+nav.mv-nav { gap: 2px; }
+nav.mv-nav > .mv-nav-group { margin-bottom: 10px; }
+.mv-sec { display: flex; flex-direction: column; }
+.mv-sec-btn {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 7px 10px; border: 0; border-radius: 6px; background: transparent;
+  font: inherit; font-size: 13.5px; font-weight: 500; line-height: 1.35; color: var(--mv-ink-2);
+  text-align: left; cursor: pointer;
+}
+.mv-sec-btn:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.mv-sec-btn .mv-i { color: var(--mv-muted); }
+.mv-sec-btn span { flex: 1; min-width: 0; }
+.mv-sec-btn .mv-chev { width: 15px; height: 15px; transition: transform .15s ease; }
+.mv-sec.is-open > .mv-sec-btn .mv-chev { transform: rotate(180deg); }
+.mv-sec.is-current > .mv-sec-btn { color: var(--mv-ink); }
+.mv-sec.is-current > .mv-sec-btn .mv-i:first-child { color: var(--mv-accent); }
+.mv-sec-items { display: none; flex-direction: column; gap: 1px; margin: 2px 0 8px 18px; padding-left: 10px; border-left: 1px solid var(--mv-line); }
+.mv-sec.is-open > .mv-sec-items { display: flex; }
+.mv-nav .mv-sec-items a { position: relative; padding: 5px 10px; font-size: 13px; }
+.mv-nav .mv-sec-items a.is-on::before { content: ""; position: absolute; left: -11px; top: 5px; bottom: 5px; width: 2px; border-radius: 2px; background: var(--mv-accent); }
+@media (prefers-reduced-motion: reduce) { .mv-sec-btn .mv-chev { transition: none; } }
+
 .mv-side-foot { margin-top: auto; border-top: 1px solid var(--mv-line); padding: 10px 10px 12px; display: flex; flex-direction: column; gap: 6px; }
 .mv-me { display: flex; align-items: center; gap: 10px; padding: 6px 4px 0 10px; }
 .mv-me-text { line-height: 1.25; min-width: 0; flex: 1; }

@@ -48,12 +48,12 @@ class SystemNotification extends Notification
     public static function iconFor(string $type): string
     {
         return match ($type) {
-            'ticket'  => '🎫',
-            'job'     => '📋',
-            'asset'   => '📦',
-            'visit'   => '📝',
-            'employee'=> '👤',
-            default   => '🔔',
+            'ticket'  => '',
+            'job'     => '',
+            'asset'   => '',
+            'visit'   => '',
+            'employee'=> '',
+            default   => '',
         };
     }
 }

@@ -426,10 +426,10 @@
         </div>
         <div class="reports-actions">
             <button onclick="exportFullReport()" class="btn-primary">
-                📊 Export Full Report
+                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export Full Report
             </button>
             <button onclick="printDashboard()" class="btn-secondary">
-                🖨️ Print
+                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-printer"/></svg> Print
             </button>
         </div>
     </div>
@@ -445,7 +445,7 @@
     <div class="reports-metrics-grid">
         <div class="stat-card">
             <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #1976D2; font-size: 24px;">🏢</span>
+                <span style="color: #1976D2; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg></span>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number" style="color: #1976D2;">{{ $systemOverview['total_clients'] }}</div>
@@ -456,7 +456,7 @@
 
         <div class="stat-card">
             <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #388E3C; font-size: 24px;">💻</span>
+                <span style="color: #388E3C; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg></span>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number" style="color: #388E3C;">{{ $systemOverview['total_terminals'] }}</div>
@@ -467,7 +467,7 @@
 
         <div class="stat-card">
             <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #F57C00; font-size: 24px;">👥</span>
+                <span style="color: #F57C00; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></span>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number" style="color: #F57C00;">{{ $systemOverview['total_employees'] }}</div>
@@ -478,7 +478,7 @@
 
         <div class="stat-card">
             <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #7B1FA2; font-size: 24px;">📋</span>
+                <span style="color: #7B1FA2; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number" style="color: #7B1FA2;">{{ $systemOverview['active_projects'] }}</div>
@@ -489,7 +489,7 @@
 
         <div class="stat-card">
             <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #D32F2F; font-size: 24px;">🎫</span>
+                <span style="color: #D32F2F; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ticket"/></svg></span>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number" style="color: #D32F2F;">{{ $systemOverview['open_tickets'] }}</div>
@@ -500,7 +500,7 @@
 
         <div class="stat-card">
             <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-                <span style="color: #00796B; font-size: 24px;">💰</span>
+                <span style="color: #00796B; font-size: 24px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg></span>
             </div>
             <div class="flex-1 min-w-0">
                 <div class="stat-number" style="color: #00796B;">${{ number_format($systemOverview['revenue_impact'] / 1000) }}K</div>
@@ -554,7 +554,7 @@
     {{-- Alerts / Action Items --}}
     @if(count($alerts) > 0)
     <div class="ui-card p-6" style="border-left: 4px solid #ef4444;">
-        <h3 style="margin:0 0 16px;font-size:16px;font-weight:700;color:#111827;">⚡ Action Items <span style="font-size:13px;font-weight:500;color:#6b7280;margin-left:8px;">{{ count($alerts) }} item(s) need attention</span></h3>
+        <h3 style="margin:0 0 16px;font-size:16px;font-weight:700;color:#111827;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Action Items <span style="font-size:13px;font-weight:500;color:#6b7280;margin-left:8px;">{{ count($alerts) }} item(s) need attention</span></h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
             @foreach($alerts as $alert)
             <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:10px;border:1px solid {{ $alert['type'] === 'danger' ? '#fecaca' : '#fed7aa' }};background:{{ $alert['type'] === 'danger' ? '#fef2f2' : '#fff7ed' }};">
@@ -573,11 +573,11 @@
     {{-- Ticket Trend + Visits Trend --}}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
         <div class="ui-card p-6">
-            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#111827;">🎫 Ticket Trend (6 Months)</h3>
+            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#111827;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ticket"/></svg> Ticket Trend (6 Months)</h3>
             <canvas id="ticketTrendChart" style="width:100%;height:220px;max-height:220px;"></canvas>
         </div>
         <div class="ui-card p-6">
-            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#111827;">🔧 Service Visits (6 Months)</h3>
+            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#111827;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Service Visits (6 Months)</h3>
             <canvas id="visitsTrendChart" style="width:100%;height:220px;max-height:220px;"></canvas>
         </div>
     </div>
@@ -585,7 +585,7 @@
     {{-- Recent Tickets --}}
     <div class="ui-card p-6">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="margin:0;font-size:15px;font-weight:700;color:#111827;">🎫 Recent Tickets</h3>
+            <h3 style="margin:0;font-size:15px;font-weight:700;color:#111827;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ticket"/></svg> Recent Tickets</h3>
             <a href="{{ route('tickets.index') }}" style="font-size:13px;color:#1a3a5c;font-weight:600;text-decoration:none;">View All →</a>
         </div>
         <div style="overflow-x:auto;">
@@ -636,14 +636,14 @@
     <div class="ui-card p-6">
         <!-- Tab Navigation -->
         <div class="tab-navigation">
-            <button class="tab-button active" onclick="switchTab(event, 'overview')">📊 System Overview</button>
-            <button class="tab-button" onclick="switchTab(event, 'clients')">🏢 Client Analytics</button>
-            <button class="tab-button" onclick="switchTab(event, 'terminals')">💻 Terminal Management</button>
-            <button class="tab-button" onclick="switchTab(event, 'service')">🔧 Service Activity</button>
-            <button class="tab-button" onclick="switchTab(event, 'assets')">📦 Asset Management</button>
-            <button class="tab-button" onclick="switchTab(event, 'employees')">👥 Employee Performance</button>
-            <button class="tab-button" onclick="switchTab(event, 'projects')">📋 Project Management</button>
-            <button class="tab-button" onclick="switchTab(event, 'regional')">🗺️ Regional Analysis</button>
+            <button class="tab-button active" onclick="switchTab(event, 'overview')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> System Overview</button>
+            <button class="tab-button" onclick="switchTab(event, 'clients')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Client Analytics</button>
+            <button class="tab-button" onclick="switchTab(event, 'terminals')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg> Terminal Management</button>
+            <button class="tab-button" onclick="switchTab(event, 'service')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Service Activity</button>
+            <button class="tab-button" onclick="switchTab(event, 'assets')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Asset Management</button>
+            <button class="tab-button" onclick="switchTab(event, 'employees')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Employee Performance</button>
+            <button class="tab-button" onclick="switchTab(event, 'projects')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Project Management</button>
+            <button class="tab-button" onclick="switchTab(event, 'regional')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg> Regional Analysis</button>
         </div>
 
         <!-- Tab Content -->
@@ -685,7 +685,7 @@
             </div>
 
             <div class="recommendation-box">
-                <h4>🎯 Key Recommendations</h4>
+                <h4><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-target"/></svg> Key Recommendations</h4>
                 <ul>
                     @if($systemOverview['terminal_uptime'] < 90)
                     <li><strong>Terminal Health:</strong> System uptime is {{ $systemOverview['terminal_uptime'] }}%. Consider increasing maintenance frequency for terminals in maintenance/faulty status.</li>
@@ -767,7 +767,7 @@
                 <div class="service-alerts">
                     <h4>Service Requirements</h4>
                     <div class="alert-item urgent">
-                        <span class="alert-icon">🚨</span>
+                        <span class="alert-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
                         <div class="alert-content">
                             <div class="alert-title">{{ $terminalData['terminals_needing_service'] }} Terminals Need Service</div>
                             <div class="alert-desc">Immediate attention required for optimal performance</div>
@@ -776,7 +776,7 @@
 
                     @if(isset($terminalData['service_due_analysis']))
                     <div class="alert-item warning">
-                        <span class="alert-icon">⚠️</span>
+                        <span class="alert-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
                         <div class="alert-content">
                             <div class="alert-title">{{ $terminalData['service_due_analysis']['due_this_week'] ?? 0 }} Due This Week</div>
                             <div class="alert-desc">Schedule maintenance to prevent issues</div>
@@ -874,7 +874,7 @@
 
                 @if($assetData['low_stock_alerts'] > 0)
                 <div class="alert-box">
-                    <h4>⚠️ Stock Alerts</h4>
+                    <h4><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Stock Alerts</h4>
                     <p>{{ $assetData['low_stock_alerts'] }} assets are below minimum stock levels and require immediate attention.</p>
                     <a href="{{ route('assets.low-stock-alerts') }}" class="btn-secondary">View Low Stock Items</a>
                 </div>
@@ -957,7 +957,7 @@
                     <h4>Project Health Indicators</h4>
                     <div class="project-metrics">
                         <div class="metric-box success">
-                            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
+                            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
                             <div class="metric-info">
                                 <div class="metric-value">{{ $projectData['project_completion_rate'] }}%</div>
                                 <div class="stat-label uppercase tracking-wide">Completion Rate</div>
@@ -966,7 +966,7 @@
 
                         @if(isset($projectData['overdue_projects']) && $projectData['overdue_projects'] > 0)
                         <div class="metric-box danger">
-                            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⚠️</div>
+                            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
                             <div class="metric-info">
                                 <div class="metric-value">{{ $projectData['overdue_projects'] }}</div>
                                 <div class="stat-label uppercase tracking-wide">Overdue Projects</div>
@@ -976,7 +976,7 @@
 
                         @if(isset($projectData['upcoming_deadlines']) && $projectData['upcoming_deadlines'] > 0)
                         <div class="metric-box warning">
-                            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📅</div>
+                            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
                             <div class="metric-info">
                                 <div class="metric-value">{{ $projectData['upcoming_deadlines'] }}</div>
                                 <div class="stat-label uppercase tracking-wide">Due in 30 Days</div>

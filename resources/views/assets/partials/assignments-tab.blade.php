@@ -8,28 +8,28 @@
 <!-- Assignment Statistics Cards -->
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">👥</div>
+        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
         <div class="flex-1 min-w-0">
             <div class="stat-number">{{ $assignmentStats['active_assignments'] ?? 0 }}</div>
             <div class="stat-label">Active Assignments</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">⏰</div>
+        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clock"/></svg></div>
         <div class="flex-1 min-w-0">
             <div class="stat-number">{{ $assignmentStats['overdue_assignments'] ?? 0 }}</div>
             <div class="stat-label">Overdue Returns</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📈</div>
+        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg></div>
         <div class="flex-1 min-w-0">
             <div class="stat-number">{{ $assignmentStats['returned_this_month'] ?? 0 }}</div>
             <div class="stat-label">Returned This Month</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">📊</div>
+        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></div>
         <div class="flex-1 min-w-0">
             <div class="stat-number">{{ $assignmentStats['total_assignments'] ?? 0 }}</div>
             <div class="stat-label">Total Assignments</div>
@@ -116,7 +116,7 @@
                         </td>
                         <td>
                             <div class="asset-info">
-                                <div class="asset-icon">📦</div>
+                                <div class="asset-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg></div>
                                 <div>
                                     <div style="font-weight: 600; color: #333;">{{ $assignment->asset->name }}</div>
                                     <div style="font-size: 12px; color: #666;">{{ $assignment->asset->category }}</div>
@@ -161,15 +161,15 @@
                             <div style="display: flex; gap: 5px;">
                                 <button onclick="openReturnModal({{ $assignment->id }})"
                                         class="btn-small btn-success" title="Return Asset">
-                                    ↩️ Return
+                                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg> Return
                                 </button>
                                 <button onclick="openTransferModal({{ $assignment->id }})"
                                         class="btn-small btn-warning" title="Transfer Asset">
-                                    🔄 Transfer
+                                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Transfer
                                 </button>
                                 <button onclick="viewAssignmentDetails({{ $assignment->id }})"
                                         class="btn-small btn-info" title="View Details">
-                                    👁️ Details
+                                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> Details
                                 </button>
                             </div>
                         </td>
@@ -188,7 +188,7 @@
     </div>
 @else
     <div class="content-card" style="text-align: center; padding: 60px; color: #666;">
-        <div style="font-size: 64px; margin-block-end: 20px;">👥</div>
+        <div style="font-size: 64px; margin-block-end: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
         <h3>No Active Assignments</h3>
         <p>No assets are currently assigned to employees.</p>
         <a href="{{ route('assets.index', ['tab' => 'assign']) }}" class="btn-primary" style="margin-block-start: 15px;">
@@ -205,7 +205,7 @@
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>↩️</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
                 <span>Return Asset</span>
             </h3>
             <button onclick="closeReturnModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
@@ -298,19 +298,19 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
                             <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
                                 <input type="radio" name="update_asset_status" value="available" checked>
-                                <span>📦 Available</span>
+                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Available</span>
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
                                 <input type="radio" name="update_asset_status" value="maintenance">
-                                <span>🔧 Maintenance</span>
+                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Maintenance</span>
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
                                 <input type="radio" name="update_asset_status" value="damaged">
-                                <span>⚠️ Damaged</span>
+                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Damaged</span>
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
                                 <input type="radio" name="update_asset_status" value="retired">
-                                <span>🚫 Retired</span>
+                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ban"/></svg> Retired</span>
                             </label>
                         </div>
                     </div>
@@ -319,7 +319,7 @@
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
                     <button type="submit" class="btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
-                        <span style="font-size: 16px; margin-right: 8px;">↩️</span>
+                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
                         Process Return
                     </button>
                     <button type="button" onclick="closeReturnModal()" style="padding: 10px 20px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">
@@ -337,7 +337,7 @@
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>🔄</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></span>
                 <span>Transfer Asset</span>
             </h3>
             <button onclick="closeTransferModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
@@ -435,7 +435,7 @@
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
                     <button type="submit" class="btn-secondary" style="flex: 1; background: #ff9800; border-color: #ff9800; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
-                        <span style="font-size: 16px; margin-right: 8px;">🔄</span>
+                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></span>
                         Process Transfer
                     </button>
                     <button type="button" onclick="closeTransferModal()" style="padding: 10px 20px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">
@@ -453,7 +453,7 @@
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>📋</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
                 <span id="detailsModalTitle">Assignment Details</span>
             </h3>
             <button onclick="closeDetailsModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
@@ -646,7 +646,7 @@ function openReturnModal(assignmentId) {
             const overdueWarning = document.getElementById('overdue_warning');
             if (data.is_overdue) {
                 overdueWarning.style.display = 'block';
-                overdueWarning.innerHTML = `<strong>⚠️ This asset is ${data.days_overdue} days overdue!</strong>`;
+                overdueWarning.innerHTML = `<strong>This asset is ${data.days_overdue} days overdue!</strong>`;
             } else {
                 overdueWarning.style.display = 'none';
             }
@@ -777,7 +777,7 @@ function viewAssignmentDetails(assignmentId) {
                 <div style="display: grid; gap: 20px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">👤 Employee Details</h4>
+                            <h4 style="margin-block-end: 10px; color: #333;">Employee Details</h4>
                             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <div><strong>Name:</strong> ${assignment.employee.first_name} ${assignment.employee.last_name}</div>
                                 <div><strong>Number:</strong> ${assignment.employee.employee_number}</div>
@@ -785,7 +785,7 @@ function viewAssignmentDetails(assignmentId) {
                             </div>
                         </div>
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">📦 Asset Details</h4>
+                            <h4 style="margin-block-end: 10px; color: #333;">Asset Details</h4>
                             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <div><strong>Name:</strong> ${assignment.asset.name}</div>
                                 <div><strong>Category:</strong> ${assignment.asset.category}</div>
@@ -795,7 +795,7 @@ function viewAssignmentDetails(assignmentId) {
                     </div>
 
                     <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">📋 Assignment Timeline</h4>
+                        <h4 style="margin-block-end: 10px; color: #333;">Assignment Timeline</h4>
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                 <div><strong>Assigned Date:</strong> ${new Date(assignment.assignment_date).toLocaleDateString()}</div>
@@ -808,7 +808,7 @@ function viewAssignmentDetails(assignmentId) {
 
                     ${assignment.assignment_notes ? `
                     <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">📝 Notes</h4>
+                        <h4 style="margin-block-end: 10px; color: #333;">Notes</h4>
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                             ${assignment.assignment_notes}
                         </div>
@@ -849,7 +849,7 @@ document.getElementById('returnAssetForm').addEventListener('submit', function(e
 
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '⏳ Processing...';
+    submitBtn.innerHTML = 'Processing...';
     submitBtn.disabled = true;
 
     fetch(`${BASE}/asset-assignments/${currentAssignmentForReturn}/return`, {
@@ -898,12 +898,12 @@ document.getElementById('transferAssetForm').addEventListener('submit', function
   }
 
   const formData = new FormData(this);
-  // 🔑 Force the value into the payload so Laravel definitely sees it
+  // Force the value into the payload so Laravel definitely sees it
   formData.set('new_employee_id', chosen);
 
   const submitBtn = this.querySelector('button[type="submit"]');
   const originalText = submitBtn.innerHTML;
-  submitBtn.innerHTML = '⏳ Processing...';
+  submitBtn.innerHTML = 'Processing...';
   submitBtn.disabled = true;
 
  fetch(`${BASE}/asset-assignments/${currentAssignmentForTransfer}/transfer`, {

@@ -7,7 +7,7 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
-            <h2 style="margin: 0; color: #333;">🛒 Request Cart</h2>
+            <h2 style="margin: 0; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-cart"/></svg> Request Cart</h2>
             <p style="color: #666; margin: 5px 0 0 0;">Review your selected assets before requesting</p>
         </div>
         <a href="{{ route('asset-requests.catalog') }}" class="btn-secondary">← Continue Request</a>
@@ -27,7 +27,7 @@
                         <img src="{{ $item['image_url'] }}" alt="{{ $item['name'] }}" style="inline-size: 100%; height: 100%; object-fit: cover;">
                     @else
                         <div style="inline-size: 100%; height: 100%; background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
-                            📦
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg>
                         </div>
                     @endif
                 </div>
@@ -62,7 +62,7 @@
                         @method('DELETE')
                         <button type="submit" style="background: none; border: none; color: #f44336; cursor: pointer; font-size: 18px;" 
                                 onclick="return confirm('Remove this item from cart?')">
-                            🗑️
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg>
                         </button>
                     </form>
                 </div>
@@ -114,7 +114,7 @@
     @else
     <!-- Empty Cart -->
     <div class="ui-card p-6" style="text-align: center; padding: 60px;">
-        <div style="font-size: 64px; margin-block-end: 20px;">🛒</div>
+        <div style="font-size: 64px; margin-block-end: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-cart"/></svg></div>
         <h3>Your cart is empty</h3>
         <p style="color: #666; margin-block-end: 30px;">Browse our asset catalog and add items to your cart.</p>
         <a href="{{ route('asset-requests.catalog') }}" class="btn-primary">

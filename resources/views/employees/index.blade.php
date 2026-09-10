@@ -18,28 +18,28 @@
 @endphp
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
     <div class="stat-card">
-        <div class="stat-icon stat-icon-blue">👥</div>
+        <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
         <div>
             <div class="stat-number">{{ $totalEmployees }}</div>
             <div class="stat-label">Total Employees</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-green">✅</div>
+        <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div>
             <div class="stat-number">{{ $activeEmployees }}</div>
             <div class="stat-label">Active Employees</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-orange">🆕</div>
+        <div class="stat-icon stat-icon-orange"></div>
         <div>
             <div class="stat-number">{{ $newThisMonth }}</div>
             <div class="stat-label">New This Month</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-purple">⏳</div>
+        <div class="stat-icon stat-icon-purple"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg></div>
         <div>
             <div class="stat-number">{{ $pendingOnboarding }}</div>
             <div class="stat-label">Pending Onboarding</div>

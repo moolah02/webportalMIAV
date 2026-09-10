@@ -293,7 +293,7 @@ class DashboardController extends Controller
 
         foreach ($recentTerminals as $terminal) {
             $activities->push([
-                'icon' => '🖥️',
+                'icon' => '',
                 'color' => '#4caf50',
                 'title' => 'New Terminal Added',
                 'description' => 'Terminal ' . $terminal->terminal_id . ' added for ' . (optional($terminal->client)->company_name ?? 'Unknown Client'),
@@ -310,7 +310,7 @@ class DashboardController extends Controller
 
         foreach ($recentClients as $client) {
             $activities->push([
-                'icon' => '🏢',
+                'icon' => '',
                 'color' => '#2196f3',
                 'title' => 'New Client Registered',
                 'description' => "{$client->company_name} has been added to the system",
@@ -331,7 +331,7 @@ class DashboardController extends Controller
 
             foreach ($recentLicenses as $license) {
                 $activities->push([
-                    'icon' => '📋',
+                    'icon' => '',
                     'color' => '#2196f3',
                     'title' => 'License Added',
                     'description' => "New {$license->license_type_name}: {$license->license_name}",
@@ -353,7 +353,7 @@ class DashboardController extends Controller
 
             foreach ($recentRenewals as $license) {
                 $activities->push([
-                    'icon' => '🔄',
+                    'icon' => '',
                     'color' => '#4caf50',
                     'title' => 'License Renewed',
                     'description' => "Renewed: {$license->license_name}" . ($license->expiry_date ? ' until ' . $license->expiry_date->format('M Y') : ''),
@@ -371,7 +371,7 @@ class DashboardController extends Controller
 
             foreach ($expiredToday as $license) {
                 $activities->push([
-                    'icon' => '⚠️',
+                    'icon' => '',
                     'color' => '#f44336',
                     'title' => 'License Expired',
                     'description' => "EXPIRED: {$license->license_name}",
@@ -393,7 +393,7 @@ class DashboardController extends Controller
 
             foreach ($recentJobs as $job) {
                 $activities->push([
-                    'icon' => '📋',
+                    'icon' => '',
                     'color' => '#ff9800',
                     'title' => 'Job Assignment Created',
                     'description' => "Assignment {$job->assignment_id} created" . ($job->technician ? " for {$job->technician->first_name} {$job->technician->last_name}" : ''),
@@ -416,7 +416,7 @@ class DashboardController extends Controller
                     $date = $visit->started_at ?? $visit->visit_date;
                     if (!$date) continue;
                     $activities->push([
-                        'icon' => '🔧',
+                        'icon' => '',
                         'color' => '#9c27b0',
                         'title' => 'Technician Visit Completed',
                         'description' => ($visit->technician ? ($visit->technician->first_name . ' ' . $visit->technician->last_name) : 'A technician') . ' visited terminal ' . ($visit->posTerminal->terminal_id ?? 'N/A'),
@@ -458,7 +458,7 @@ class DashboardController extends Controller
             if ($expiredLicenses > 0) {
                 $alerts->push([
                     'type' => 'critical',
-                    'icon' => '⚠️',
+                    'icon' => '',
                     'message' => "{$expiredLicenses} business licenses expired - immediate action required!"
                 ]);
             }
@@ -467,7 +467,7 @@ class DashboardController extends Controller
             if ($expiringSoon > 0) {
                 $alerts->push([
                     'type' => 'warning',
-                    'icon' => '⏰',
+                    'icon' => '',
                     'message' => "{$expiringSoon} business licenses expiring within 30 days"
                 ]);
             }
@@ -477,7 +477,7 @@ class DashboardController extends Controller
             if ($criticalExpired > 0) {
                 $alerts->push([
                     'type' => 'critical',
-                    'icon' => '🚨',
+                    'icon' => '',
                     'message' => "{$criticalExpired} critical business licenses expired - high business impact!"
                 ]);
             }
@@ -490,7 +490,7 @@ class DashboardController extends Controller
             if ($highCostRenewals > 0) {
                 $alerts->push([
                     'type' => 'info',
-                    'icon' => '💰',
+                    'icon' => '',
                     'message' => "{$highCostRenewals} high-cost license renewals (\$5K+) coming up"
                 ]);
             }
@@ -506,7 +506,7 @@ class DashboardController extends Controller
                 if ($complianceRate < 80) {
                     $alerts->push([
                         'type' => 'warning',
-                        'icon' => '📋',
+                        'icon' => '',
                         'message' => "License compliance rate below 80% ({$complianceRate}%) - review needed"
                     ]);
                 }
@@ -518,7 +518,7 @@ class DashboardController extends Controller
         if ($faultyCount > 0) {
             $alerts->push([
                 'type' => 'critical',
-                'icon' => '⚠️',
+                'icon' => '',
                 'message' => "{$faultyCount} terminals are faulty and need immediate attention"
             ]);
         }
@@ -528,7 +528,7 @@ class DashboardController extends Controller
         if ($offlineCount > 5) {
             $alerts->push([
                 'type' => 'warning',
-                'icon' => '📶',
+                'icon' => '',
                 'message' => "{$offlineCount} terminals are offline"
             ]);
         }
@@ -542,7 +542,7 @@ class DashboardController extends Controller
             if ($expiringContracts > 0) {
                 $alerts->push([
                     'type' => 'warning',
-                    'icon' => '📄',
+                    'icon' => '',
                     'message' => "{$expiringContracts} client contracts expiring within 30 days"
                 ]);
             }
@@ -555,7 +555,7 @@ class DashboardController extends Controller
         if ($pendingRequests > 10) {
             $alerts->push([
                 'type' => 'info',
-                'icon' => '📦',
+                'icon' => '',
                 'message' => "{$pendingRequests} asset requests pending approval"
             ]);
         }
@@ -569,7 +569,7 @@ class DashboardController extends Controller
             if ($unassignedJobs > 0) {
                 $alerts->push([
                     'type' => 'warning',
-                    'icon' => '📋',
+                    'icon' => '',
                     'message' => "{$unassignedJobs} overdue job assignments"
                 ]);
             }

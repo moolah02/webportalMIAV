@@ -30,7 +30,7 @@
             <!-- Request Status -->
             <div class="ui-card p-6" style="margin-block-end: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 15px;">
-                    <h4 style="margin: 0; color: #333;">📊 Request Status</h4>
+                    <h4 style="margin: 0; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Request Status</h4>
                     <div style="display: flex; gap: 10px;">
                         <span class="status-badge {{ $assetRequest->status_badge }}">
                             {{ ucfirst($assetRequest->status) }}
@@ -44,17 +44,17 @@
                 <!-- Status Timeline -->
                 <div style="display: flex; align-items: center; gap: 15px; margin-block-end: 15px;">
                     <div class="timeline-step {{ in_array($assetRequest->status, ['pending', 'approved', 'fulfilled', 'rejected']) ? 'completed' : '' }}">
-                        <div class="timeline-circle">📝</div>
+                        <div class="timeline-circle"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg></div>
                         <div class="timeline-label">Submitted</div>
                     </div>
                     <div class="timeline-line {{ in_array($assetRequest->status, ['approved', 'fulfilled']) ? 'completed' : '' }}"></div>
                     <div class="timeline-step {{ in_array($assetRequest->status, ['approved', 'fulfilled']) ? 'completed' : ($assetRequest->status === 'rejected' ? 'rejected' : '') }}">
-                        <div class="timeline-circle">{{ $assetRequest->status === 'rejected' ? '❌' : '✅' }}</div>
+                        <div class="timeline-circle">{{ $assetRequest->status === 'rejected' ? '' : '' }}</div>
                         <div class="timeline-label">{{ $assetRequest->status === 'rejected' ? 'Rejected' : 'Approved' }}</div>
                     </div>
                     <div class="timeline-line {{ $assetRequest->status === 'fulfilled' ? 'completed' : '' }}"></div>
                     <div class="timeline-step {{ $assetRequest->status === 'fulfilled' ? 'completed' : '' }}">
-                        <div class="timeline-circle">📦</div>
+                        <div class="timeline-circle"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg></div>
                         <div class="timeline-label">Fulfilled</div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
 
             <!-- Business Justification -->
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">📝 Business Justification</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Business Justification</h4>
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
                     {{ $assetRequest->business_justification }}
                 </div>
@@ -96,7 +96,7 @@
 
             <!-- Requested Items -->
             <div class="ui-card p-6">
-                <h4 style="margin-block-end: 20px; color: #333;">📦 Requested Items</h4>
+                <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Requested Items</h4>
                 <div style="overflow-x: auto;">
                     <table style="inline-size: 100%; border-collapse: collapse;">
                         <thead>
@@ -149,7 +149,7 @@
         <div>
             <!-- Requester Info -->
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">👤 Requester</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> Requester</h4>
                 <div style="margin-block-end: 10px;">
                     <div style="font-weight: 500;">{{ $assetRequest->employee->full_name }}</div>
                     <div style="font-size: 14px; color: #666;">{{ $assetRequest->employee->role->name ?? 'Employee' }}</div>
@@ -157,7 +157,7 @@
                 </div>
                 @if($assetRequest->employee->email)
                 <div style="font-size: 14px;">
-                    📧 <a href="mailto:{{ $assetRequest->employee->email }}" style="color: #2196f3;">{{ $assetRequest->employee->email }}</a>
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-mail"/></svg> <a href="mailto:{{ $assetRequest->employee->email }}" style="color: #2196f3;">{{ $assetRequest->employee->email }}</a>
                 </div>
                 @endif
             </div>
@@ -165,7 +165,7 @@
             <!-- Approval Info -->
             @if($assetRequest->status === 'approved' || $assetRequest->status === 'fulfilled')
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">✅ Approval Details</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> Approval Details</h4>
                 <div style="margin-block-end: 10px;">
                     <div style="font-weight: 500;">{{ $assetRequest->approver->full_name }}</div>
                     <div style="font-size: 14px; color: #666;">{{ $assetRequest->approved_at->format('M d, Y \a\t g:i A') }}</div>
@@ -178,7 +178,7 @@
             </div>
             @elseif($assetRequest->status === 'rejected')
             <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">❌ Rejection Details</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> Rejection Details</h4>
                 <div style="margin-block-end: 10px;">
                     <div style="font-weight: 500;">{{ $assetRequest->approver->full_name ?? 'System' }}</div>
                     <div style="font-size: 14px; color: #666;">{{ $assetRequest->approved_at ? $assetRequest->approved_at->format('M d, Y \a\t g:i A') : 'Unknown' }}</div>
@@ -194,7 +194,7 @@
             <!-- Fulfillment Info -->
             @if($assetRequest->status === 'fulfilled' && $assetRequest->fulfiller)
             <div class="ui-card p-6">
-                <h4 style="margin-block-end: 15px; color: #333;">📦 Fulfillment Details</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Fulfillment Details</h4>
                 <div style="margin-block-end: 10px;">
                     <div style="font-weight: 500;">{{ $assetRequest->fulfiller->full_name }}</div>
                     <div style="font-size: 14px; color: #666;">{{ $assetRequest->fulfilled_at->format('M d, Y \a\t g:i A') }}</div>

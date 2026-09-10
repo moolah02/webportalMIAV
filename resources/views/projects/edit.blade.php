@@ -39,7 +39,7 @@
 @endphp
 <div class="ui-card mb-5 border-l-4 {{ $editStatusColor }}">
     <div class="px-5 py-4 flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-[#1a3a5c]/10 flex items-center justify-center text-lg flex-shrink-0">✏️</div>
+        <div class="w-10 h-10 rounded-xl bg-[#1a3a5c]/10 flex items-center justify-center text-lg flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg></div>
         <div class="flex-1 min-w-0">
             <h2 class="font-bold text-gray-900 m-0 leading-tight truncate">{{ $project->project_name }}</h2>
             <div class="flex items-center gap-2 mt-1 flex-wrap">
@@ -200,7 +200,7 @@
 {{-- Actions --}}
 <div class="flex justify-between items-center mt-6">
     <a href="{{ route('projects.show', $project) }}" class="btn-secondary">← Cancel Changes</a>
-    <button type="submit" class="btn-primary">💾 Update Project</button>
+    <button type="submit" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Update Project</button>
 </div>
 
 </form>

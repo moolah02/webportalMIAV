@@ -480,7 +480,7 @@ function viewAssignmentDetails(assignmentId) {
                     <div style="display: grid; gap: 20px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div>
-                                <h4 style="margin-block-end: 10px; color: #333;">👤 Employee Details</h4>
+                                <h4 style="margin-block-end: 10px; color: #333;">Employee Details</h4>
                                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                     <div><strong>Name:</strong> ${assignment.employee.first_name} ${assignment.employee.last_name}</div>
                                     <div><strong>Number:</strong> ${assignment.employee.employee_number}</div>
@@ -488,7 +488,7 @@ function viewAssignmentDetails(assignmentId) {
                                 </div>
                             </div>
                             <div>
-                                <h4 style="margin-block-end: 10px; color: #333;">📦 Asset Details</h4>
+                                <h4 style="margin-block-end: 10px; color: #333;">Asset Details</h4>
                                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                     <div><strong>Name:</strong> ${assignment.asset.name}</div>
                                     <div><strong>Category:</strong> ${assignment.asset.category}</div>
@@ -498,7 +498,7 @@ function viewAssignmentDetails(assignmentId) {
                         </div>
                         
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">📋 Assignment Timeline</h4>
+                            <h4 style="margin-block-end: 10px; color: #333;">Assignment Timeline</h4>
                             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                     <div><strong>Assigned Date:</strong> ${new Date(assignment.assignment_date).toLocaleDateString()}</div>
@@ -510,7 +510,7 @@ function viewAssignmentDetails(assignmentId) {
                         </div>
                         
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">🔧 Condition Tracking</h4>
+                            <h4 style="margin-block-end: 10px; color: #333;">Condition Tracking</h4>
                             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <div><strong>Condition When Assigned:</strong> <span style="padding: 4px 8px; background: #e3f2fd; color: #1976d2; border-radius: 12px; font-size: 12px;">${assignment.condition_when_assigned.charAt(0).toUpperCase() + assignment.condition_when_assigned.slice(1)}</span></div>
                             </div>
@@ -518,7 +518,7 @@ function viewAssignmentDetails(assignmentId) {
                         
                         ${assignment.assignment_notes ? `
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">📝 Notes</h4>
+                            <h4 style="margin-block-end: 10px; color: #333;">Notes</h4>
                             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <div><strong>Assignment Notes:</strong><br>${assignment.assignment_notes}</div>
                             </div>
@@ -567,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalText = submitBtn.innerHTML;
             
             // Show loading state
-            submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;">⏳</span>Processing...';
+            submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;"></span>Processing...';
             submitBtn.disabled = true;
             
             fetch(`/asset-assignments/${currentAssignmentForReturn}/return`, {
@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalText = submitBtn.innerHTML;
             
             // Show loading state
-            submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;">⏳</span>Processing...';
+            submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;"></span>Processing...';
             submitBtn.disabled = true;
             
             fetch(`/asset-assignments/${currentAssignmentForTransfer}/transfer`, {

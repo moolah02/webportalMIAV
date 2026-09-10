@@ -215,7 +215,7 @@ public function store(Request $request)
         $logData = $employeeData; unset($logData['password']);
         Log::info('Creating employee with data:', $logData);
 
-        // ✅ CREATE ONCE
+        // CREATE ONCE
         $employee = Employee::create($employeeData);
 
         // Assign primary role
@@ -364,7 +364,7 @@ public function update(Request $request, Employee $employee)
         // Keep only columns that exist
         $payload = $this->filterExistingColumns('employees', $payload);
 
-        // ✅ UPDATE ONCE
+        // UPDATE ONCE
         $employee->update($payload);
 
         // Sync roles: Build complete list of role IDs from primary + additional

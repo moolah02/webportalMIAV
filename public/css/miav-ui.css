@@ -1,0 +1,144 @@
+/* MIAV page components — restyles the shared classes every page already uses
+   (resources/css/app.css: ui-card, stat-card, btn-*, ui-input, badge, ui-table…,
+   plus the Bootstrap ones) to the portal design, so pages change without a
+   rebuild. Loaded after app.css and Bootstrap; tokens live in miav-shell.css. */
+
+/* ── Type ─────────────────────────────────── */
+.mv-page { font-family: var(--mv-sans); color: var(--mv-ink); }
+.mv-page h1, .mv-page h2, .mv-page h3, .mv-page h4, .mv-page h5 { font-family: var(--mv-sans); color: var(--mv-ink); letter-spacing: -.01em; }
+.mv-page .page-title { font-size: 20px; font-weight: 600; color: var(--mv-ink); }
+.mv-page .page-subtitle { font-size: 13.5px; color: var(--mv-muted); }
+.mv-page .section-title { font-size: 11.5px; font-weight: 600; color: var(--mv-muted); letter-spacing: .06em; }
+.mv-page .tabular, .mv-page .stat-number, .mv-page td { font-variant-numeric: tabular-nums; }
+
+/* Icons that replaced emoji */
+.mv-ei { vertical-align: -.2em; }
+h1 .mv-ei, h2 .mv-ei, h3 .mv-ei, h4 .mv-ei { width: 1.05em; height: 1.05em; color: var(--mv-muted); }
+button .mv-ei, .btn .mv-ei, [class*="btn-"] .mv-ei { width: 16px; height: 16px; }
+.badge .mv-ei, .status-badge .mv-ei, .pill .mv-ei { width: 13px; height: 13px; }
+
+/* ── Buttons ──────────────────────────────── */
+.mv-page .btn-primary, .mv-page .btn.btn-primary {
+  background: var(--mv-accent) !important; border: 1px solid var(--mv-accent) !important; color: #FFFFFF !important;
+  border-radius: 8px; font-weight: 500; box-shadow: none; background-image: none !important;
+}
+.mv-page .btn-primary:hover, .mv-page .btn.btn-primary:hover { background: var(--mv-accent-ink) !important; border-color: var(--mv-accent-ink) !important; }
+.mv-page .btn-secondary, .mv-page .btn.btn-secondary, .mv-page .btn-outline-secondary, .mv-page .btn-light, .mv-page .btn-outline-primary {
+  background: var(--mv-surface) !important; border: 1px solid var(--mv-line-strong) !important; color: var(--mv-ink) !important;
+  border-radius: 8px; font-weight: 500; box-shadow: none; background-image: none !important;
+}
+.mv-page .btn-secondary:hover, .mv-page .btn.btn-secondary:hover, .mv-page .btn-outline-secondary:hover, .mv-page .btn-light:hover, .mv-page .btn-outline-primary:hover { background: var(--mv-surface-2) !important; }
+.mv-page .btn-danger, .mv-page .btn.btn-danger { background: var(--mv-surface) !important; border: 1px solid #EBC3C3 !important; color: var(--mv-crit) !important; border-radius: 8px; background-image: none !important; }
+.mv-page .btn-danger:hover, .mv-page .btn.btn-danger:hover { background: var(--mv-crit-soft) !important; }
+.mv-page .btn-success, .mv-page .btn.btn-success { background: var(--mv-good) !important; border: 1px solid var(--mv-good) !important; color: #FFFFFF !important; border-radius: 8px; background-image: none !important; }
+.mv-page .btn-warning, .mv-page .btn.btn-warning { background: var(--mv-surface) !important; border: 1px solid #E8D2A6 !important; color: var(--mv-warn) !important; border-radius: 8px; background-image: none !important; }
+.mv-page .btn-info, .mv-page .btn.btn-info { background: var(--mv-accent-soft) !important; border: 1px solid #C9D9EE !important; color: var(--mv-accent-ink) !important; border-radius: 8px; background-image: none !important; }
+
+/* ── Cards ────────────────────────────────── */
+.mv-page .ui-card, .mv-page .card, .mv-page .form-section, .mv-page .filter-bar {
+  background: var(--mv-surface); border: 1px solid var(--mv-line) !important; border-radius: 10px !important;
+  box-shadow: none !important;
+}
+.mv-page .ui-card-header, .mv-page .card-header {
+  background: transparent; border-bottom: 1px solid var(--mv-line) !important; padding: 14px 18px;
+}
+.mv-page .ui-card-header h2, .mv-page .ui-card-header h3, .mv-page .ui-card-header h4,
+.mv-page .card-header h2, .mv-page .card-header h3, .mv-page .card-header h4, .mv-page .card-title {
+  font-size: 14.5px; font-weight: 600; color: var(--mv-ink); margin: 0;
+}
+.mv-page .ui-card-footer, .mv-page .card-footer { background: transparent; border-top: 1px solid var(--mv-line) !important; }
+
+/* ── Stat tiles ───────────────────────────── */
+.mv-page .stat-card {
+  background: var(--mv-surface); border: 1px solid var(--mv-line) !important; border-radius: 10px !important;
+  box-shadow: none !important; padding: 16px 18px; gap: 14px; transition: border-color .15s ease;
+}
+.mv-page .stat-card:hover { box-shadow: none !important; border-color: var(--mv-line-strong) !important; }
+.mv-page .stat-icon {
+  width: 40px; height: 40px; border-radius: 9px; font-size: 18px;
+  background: var(--mv-surface-2) !important; color: var(--mv-ink-2) !important;
+}
+.mv-page .stat-icon .mv-i, .mv-page .stat-icon svg { width: 20px; height: 20px; }
+.mv-page .stat-icon-blue, .mv-page .stat-icon-indigo, .mv-page .stat-icon-purple, .mv-page .stat-icon-teal { background: var(--mv-accent-soft) !important; color: var(--mv-accent-ink) !important; }
+.mv-page .stat-icon-green { background: var(--mv-good-soft) !important; color: var(--mv-good) !important; }
+.mv-page .stat-icon-red { background: var(--mv-crit-soft) !important; color: var(--mv-crit) !important; }
+.mv-page .stat-icon-orange, .mv-page .stat-icon-yellow { background: var(--mv-warn-soft) !important; color: var(--mv-warn) !important; }
+.mv-page .stat-icon-gray { background: var(--mv-surface-2) !important; color: var(--mv-ink-2) !important; }
+.mv-page .stat-number { font-size: 24px; font-weight: 600; letter-spacing: -.02em; color: var(--mv-ink); line-height: 1.1; }
+.mv-page .stat-label, .mv-page .metric-label { font-size: 12.5px; font-weight: 500; color: var(--mv-muted); text-transform: none; letter-spacing: 0; }
+.mv-page .stat-sub { font-size: 12px; color: var(--mv-muted); }
+
+/* ── Tables ───────────────────────────────── */
+.mv-page .ui-table thead th, .mv-page .rt-table thead th, .mv-page .rh-table thead th, .mv-page .rb-table thead th,
+.mv-page .assignment-table thead th, .mv-page .terminals-table thead th, .mv-page .data-table thead th, .mv-page .table thead th {
+  background: var(--mv-surface-2); color: var(--mv-muted); font-size: 11.5px; font-weight: 600;
+  letter-spacing: .04em; border-bottom: 1px solid var(--mv-line); border-top: 0; padding: 10px 14px;
+}
+.mv-page .ui-table tbody td, .mv-page .rt-table tbody td, .mv-page .rh-table tbody td, .mv-page .rb-table tbody td,
+.mv-page .assignment-table tbody td, .mv-page .terminals-table tbody td, .mv-page .data-table tbody td, .mv-page .table td {
+  border-top: 1px solid var(--mv-line); color: var(--mv-ink-2); padding: 11px 14px; vertical-align: middle;
+}
+.mv-page .ui-table tbody tr:hover, .mv-page .rt-table tbody tr:hover, .mv-page .rh-table tbody tr:hover, .mv-page .rb-table tbody tr:hover,
+.mv-page .assignment-table tbody tr:hover, .mv-page .terminals-table tbody tr:hover, .mv-page .data-table tbody tr:hover, .mv-page .table-hover tbody tr:hover { background: var(--mv-surface-2); }
+.mv-page .cell-primary, .mv-page .company { color: var(--mv-ink); font-weight: 500; }
+.mv-page .code-chip { background: var(--mv-accent-soft) !important; color: var(--mv-accent-ink) !important; font-family: var(--mv-mono); font-weight: 500; border-radius: 5px; }
+.mv-page .id-chip { background: var(--mv-surface-2) !important; color: var(--mv-ink-2) !important; font-family: var(--mv-mono); font-weight: 500; border: 1px solid var(--mv-line); border-radius: 5px; }
+.mv-page .action-btn, .mv-page .action-menu-btn { border-color: var(--mv-line) !important; color: var(--mv-ink-2) !important; border-radius: 7px; }
+.mv-page .action-btn:hover, .mv-page .action-menu-btn:hover { background: var(--mv-surface-2) !important; color: var(--mv-ink) !important; border-color: var(--mv-line-strong) !important; }
+.mv-page .action-delete:hover { background: var(--mv-crit-soft) !important; color: var(--mv-crit) !important; }
+
+/* ── Forms ────────────────────────────────── */
+.mv-page .ui-input, .mv-page .ui-select, .mv-page .ui-textarea, .mv-page .form-input, .mv-page .form-control, .mv-page .form-select {
+  border: 1px solid var(--mv-line-strong) !important; border-radius: 8px !important; color: var(--mv-ink); background-color: var(--mv-surface);
+  box-shadow: none;
+}
+.mv-page .ui-input:focus, .mv-page .ui-select:focus, .mv-page .ui-textarea:focus, .mv-page .form-input:focus, .mv-page .form-control:focus, .mv-page .form-select:focus {
+  border-color: var(--mv-accent) !important; box-shadow: 0 0 0 3px rgba(43, 100, 168, .15) !important; outline: none;
+}
+.mv-page .ui-label, .mv-page .form-label {
+  font-size: 12.5px; font-weight: 500; color: var(--mv-ink-2); text-transform: none; letter-spacing: 0;
+}
+.mv-page .ui-hint, .mv-page .form-text { color: var(--mv-muted); }
+
+/* ── Badges / chips ───────────────────────── */
+.mv-page .badge, .mv-page .status-badge, .mv-page .pill { border-radius: 6px; font-weight: 500; letter-spacing: 0; }
+.mv-page .badge-green, .mv-page .badge-success, .mv-page .pill-success, .mv-page .badge.bg-success { background: var(--mv-good-soft) !important; color: var(--mv-good) !important; }
+.mv-page .badge-blue, .mv-page .badge-info, .mv-page .pill-info, .mv-page .badge-purple, .mv-page .badge-indigo, .mv-page .badge-teal, .mv-page .badge-primary { background: var(--mv-accent-soft) !important; color: var(--mv-accent-ink) !important; }
+.mv-page .badge-yellow, .mv-page .badge-warning, .mv-page .badge-orange, .mv-page .pill-warn { background: var(--mv-warn-soft) !important; color: var(--mv-warn) !important; }
+.mv-page .badge-red, .mv-page .badge-danger, .mv-page .pill-danger { background: var(--mv-crit-soft) !important; color: var(--mv-crit) !important; }
+.mv-page .badge-gray, .mv-page .badge-dark, .mv-page .badge-secondary, .mv-page .badge-light { background: var(--mv-surface-2) !important; color: var(--mv-ink-2) !important; border: 1px solid var(--mv-line); }
+
+/* ── Tabs ─────────────────────────────────── */
+.mv-page .tab-nav { border-bottom: 1px solid var(--mv-line); background: transparent; }
+.mv-page .tab-btn { color: var(--mv-muted); font-weight: 500; }
+.mv-page .tab-btn:hover { color: var(--mv-ink); }
+.mv-page .tab-btn.active { color: var(--mv-accent-ink) !important; border-color: var(--mv-accent) !important; font-weight: 600; }
+.mv-page .nav-tabs .nav-link.active { color: var(--mv-accent-ink); border-color: var(--mv-line) var(--mv-line) var(--mv-surface); }
+
+/* ── Alerts / flashes / empty states ──────── */
+.mv-page .alert-info, .mv-page .flash-info, .mv-page .alert.alert-info { background: var(--mv-accent-soft) !important; border-color: #C9D9EE !important; color: var(--mv-accent-ink) !important; border-radius: 8px; }
+.mv-page .alert-warning, .mv-page .flash-warning, .mv-page .alert.alert-warning { background: var(--mv-warn-soft) !important; border-color: #F0DDB6 !important; color: var(--mv-warn) !important; border-radius: 8px; }
+.mv-page .alert-danger, .mv-page .flash-error, .mv-page .alert.alert-danger { background: var(--mv-crit-soft) !important; border-color: #F2CACA !important; color: var(--mv-crit) !important; border-radius: 8px; }
+.mv-page .alert-success, .mv-page .flash-success, .mv-page .alert.alert-success { background: var(--mv-good-soft) !important; border-color: #C6E6D2 !important; color: var(--mv-good) !important; border-radius: 8px; }
+.mv-page .empty-state { color: var(--mv-muted); }
+.mv-page .empty-state-icon { font-size: 0; margin-bottom: 10px; }
+.mv-page .empty-state-icon .mv-i, .mv-page .empty-state-icon svg { width: 36px; height: 36px; color: var(--mv-line-strong); }
+
+/* ── The old navy brand colour → portal accent ─ */
+.mv-page .bg-\[\#1a3a5c\] { background-color: var(--mv-accent) !important; }
+.mv-page .hover\:bg-\[\#152e4a\]:hover { background-color: var(--mv-accent-ink) !important; }
+.mv-page .text-\[\#1a3a5c\] { color: var(--mv-accent-ink) !important; }
+.mv-page .border-\[\#1a3a5c\] { border-color: var(--mv-accent) !important; }
+
+/* ── Off-palette decoration (purple/indigo/pink) → accent ─ */
+.mv-page .bg-purple-50, .mv-page .bg-indigo-50, .mv-page .bg-violet-50, .mv-page .bg-pink-50 { background-color: var(--mv-accent-soft) !important; }
+.mv-page .bg-purple-100, .mv-page .bg-indigo-100, .mv-page .bg-violet-100, .mv-page .bg-pink-100 { background-color: var(--mv-accent-soft) !important; }
+.mv-page .text-purple-500, .mv-page .text-purple-600, .mv-page .text-purple-700, .mv-page .text-indigo-500, .mv-page .text-indigo-600, .mv-page .text-indigo-700,
+.mv-page .text-violet-600, .mv-page .text-pink-600 { color: var(--mv-accent-ink) !important; }
+.mv-page .bg-purple-500, .mv-page .bg-purple-600, .mv-page .bg-indigo-500, .mv-page .bg-indigo-600, .mv-page .bg-violet-600 { background-color: var(--mv-accent) !important; }
+.mv-page .border-purple-200, .mv-page .border-indigo-200, .mv-page .border-purple-300, .mv-page .border-indigo-300 { border-color: #C9D9EE !important; }
+
+/* Quieter shadows everywhere in page content */
+.mv-page .shadow-lg, .mv-page .shadow-xl, .mv-page .shadow-2xl { box-shadow: 0 8px 24px rgba(22, 32, 44, .08) !important; }
+.mv-page .shadow-md { box-shadow: 0 2px 8px rgba(22, 32, 44, .06) !important; }
+.mv-page .hover\:shadow-md:hover, .mv-page .hover\:shadow-lg:hover { box-shadow: 0 2px 8px rgba(22, 32, 44, .06) !important; }

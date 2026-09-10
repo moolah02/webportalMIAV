@@ -46,42 +46,42 @@
     <div id="stats-cards" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-5">
         @if($direction === 'company_held')
             <div class="stat-card">
-                <div class="stat-icon stat-icon-green">✅</div>
+                <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
                 <div>
                     <div class="stat-number" id="active-count">{{ $stats['active_licenses'] }}</div>
                     <div class="stat-label">Active Licenses</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-yellow">⚠️</div>
+                <div class="stat-icon stat-icon-yellow"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
                 <div>
                     <div class="stat-number" id="expiring-count">{{ $stats['expiring_soon'] }}</div>
                     <div class="stat-label">Expiring Soon</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-red">❌</div>
+                <div class="stat-icon stat-icon-red"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg></div>
                 <div>
                     <div class="stat-number" id="expired-count">{{ $stats['expired_licenses'] }}</div>
                     <div class="stat-label">Expired</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-teal">💰</div>
+                <div class="stat-icon stat-icon-teal"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg></div>
                 <div>
                     <div class="stat-number" id="annual-cost">${{ number_format($stats['total_annual_cost'], 0) }}</div>
                     <div class="stat-label">Annual Cost</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-orange">🚨</div>
+                <div class="stat-icon stat-icon-orange"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
                 <div>
                     <div class="stat-number" id="critical-count">{{ $stats['critical_licenses'] }}</div>
                     <div class="stat-label">Critical Priority</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-blue">📋</div>
+                <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                 <div>
                     <div class="stat-number" id="total-count">{{ $stats['total_licenses'] }}</div>
                     <div class="stat-label">Total Licenses</div>
@@ -89,42 +89,42 @@
             </div>
         @elseif($direction === 'customer_issued')
             <div class="stat-card">
-                <div class="stat-icon stat-icon-green">✅</div>
+                <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
                 <div>
                     <div class="stat-number" id="active-count">{{ $stats['active_licenses'] }}</div>
                     <div class="stat-label">Active Licenses</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-teal">💵</div>
+                <div class="stat-icon stat-icon-teal"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg></div>
                 <div>
                     <div class="stat-number" id="revenue-amount">${{ number_format($stats['total_revenue'], 0) }}</div>
                     <div class="stat-label">Annual Revenue</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-blue">👥</div>
+                <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
                 <div>
                     <div class="stat-number" id="customers-count">{{ $stats['unique_customers'] }}</div>
                     <div class="stat-label">Unique Customers</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-yellow">⚠️</div>
+                <div class="stat-icon stat-icon-yellow"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
                 <div>
                     <div class="stat-number" id="expiring-count">{{ $stats['expiring_soon'] }}</div>
                     <div class="stat-label">Expiring Soon</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-red">❌</div>
+                <div class="stat-icon stat-icon-red"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg></div>
                 <div>
                     <div class="stat-number" id="expired-count">{{ $stats['expired_licenses'] }}</div>
                     <div class="stat-label">Expired</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-gray">📋</div>
+                <div class="stat-icon stat-icon-gray"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                 <div>
                     <div class="stat-number" id="total-count">{{ $stats['total_licenses'] }}</div>
                     <div class="stat-label">Total Licenses</div>
@@ -133,42 +133,42 @@
         @else
             {{-- All / History --}}
             <div class="stat-card">
-                <div class="stat-icon stat-icon-blue">📋</div>
+                <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                 <div>
                     <div class="stat-number">{{ $stats['total_licenses'] }}</div>
                     <div class="stat-label">Total Records</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-green">✅</div>
+                <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
                 <div>
                     <div class="stat-number">{{ $stats['active_licenses'] }}</div>
                     <div class="stat-label">Active</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-red">❌</div>
+                <div class="stat-icon stat-icon-red"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg></div>
                 <div>
                     <div class="stat-number">{{ $stats['expired_licenses'] }}</div>
                     <div class="stat-label">Expired</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-yellow">⚠️</div>
+                <div class="stat-icon stat-icon-yellow"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
                 <div>
                     <div class="stat-number">{{ $stats['expiring_soon'] }}</div>
                     <div class="stat-label">Expiring Soon</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-blue">🏢</div>
+                <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg></div>
                 <div>
                     <div class="stat-number">{{ $stats['company_held'] }}</div>
                     <div class="stat-label">Internal</div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon stat-icon-purple">👤</div>
+                <div class="stat-icon stat-icon-purple"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg></div>
                 <div>
                     <div class="stat-number">{{ $stats['customer_issued'] }}</div>
                     <div class="stat-label">Customer-Issued</div>

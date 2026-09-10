@@ -32,7 +32,7 @@
             <div>
                 <!-- Request Details -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 20px; color: #333;">📋 Request Information</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Request Information</h4>
 
                     <div style="margin-block-end: 20px;">
                         <label style="display: block; margin-block-end: 5px; font-weight: 500;">Business Justification *</label>
@@ -84,7 +84,7 @@
 
                 <!-- Request Items Review -->
                 <div class="ui-card p-6">
-                    <h4 style="margin-block-end: 20px; color: #333;">📦 Items in Your Request</h4>
+                    <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Items in Your Request</h4>
 
                     @foreach($cartItems as $item)
                     <div style="display: flex; align-items: center; gap: 15px; padding: 15px 0; border-block-end: 1px solid #f0f0f0;">
@@ -94,7 +94,7 @@
                                 <img src="{{ $item['image_url'] }}" alt="{{ $item['name'] }}" style="inline-size: 100%; height: 100%; object-fit: cover;">
                             @else
                                 <div style="inline-size: 100%; height: 100%; background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">
-                                    📦
+                                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg>
                                 </div>
                             @endif
                         </div>
@@ -129,7 +129,7 @@
             <div>
                 <!-- Requester Info -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 15px; color: #333;">👤 Requester Information</h4>
+                    <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> Requester Information</h4>
 
                     <div style="margin-block-end: 10px;">
                         <div style="font-weight: 500;">{{ auth()->user()->full_name }}</div>
@@ -140,13 +140,13 @@
                     </div>
 
                     <div style="font-size: 14px;">
-                        📧 {{ auth()->user()->email }}
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-mail"/></svg> {{ auth()->user()->email }}
                     </div>
                 </div>
 
                 <!-- Request Summary -->
                 <div class="ui-card p-6" style="margin-block-end: 20px;">
-                    <h4 style="margin-block-end: 15px; color: #333;">📊 Request Summary</h4>
+                    <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Request Summary</h4>
 
                     <div style="display: flex; justify-content: space-between; margin-block-end: 10px;">
                         <span style="color: #666;">Total Items:</span>
@@ -170,7 +170,7 @@
                 <div class="ui-card p-6">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <button type="submit" class="btn-primary" style="inline-size: 100%; padding: 15px; font-size: 16px;">
-                            📤 Submit Request
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-upload"/></svg> Submit Request
                         </button>
 
                         <a href="{{ route('asset-requests.cart') }}" class="btn-secondary" style="inline-size: 100%; text-align: center;">

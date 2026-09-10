@@ -3,7 +3,7 @@
     
     <!-- Header with Toggle -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h2 style="margin: 0; color: #333; font-size: 20px;">📊 Terminal Analytics Dashboard</h2>
+        <h2 style="margin: 0; color: #333; font-size: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Terminal Analytics Dashboard</h2>
         <div style="display: flex; gap: 10px; align-items: center;">
             <!-- Chart View Toggle -->
             <select id="chart-view-selector" onchange="switchChartView()" style="padding: 6px 12px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 12px;">
@@ -61,7 +61,7 @@
             <!-- Row 1: Service & Location -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">🔧 Service Timeline</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Service Timeline</h3>
                     <div style="position: relative; height: 250px;">
                         <canvas id="serviceDueChart"></canvas>
                     </div>
@@ -71,7 +71,7 @@
                 </div>
 
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">🗺️ Regional Distribution</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg> Regional Distribution</h3>
                     <div style="position: relative; height: 250px;">
                         <canvas id="locationChart"></canvas>
                     </div>
@@ -84,7 +84,7 @@
             <!-- Row 2: Client & Models -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">🏦 Client Distribution</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Client Distribution</h3>
                     <div style="position: relative; height: 250px;">
                         <canvas id="clientChart"></canvas>
                     </div>
@@ -94,7 +94,7 @@
                 </div>
 
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">📱 Device Models</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-phone"/></svg> Device Models</h3>
                     <div style="position: relative; height: 250px;">
                         <canvas id="modelsChart"></canvas>
                     </div>
@@ -107,7 +107,7 @@
             <!-- Row 3: Performance & Trends -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">⚡ Performance Radar</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Performance Radar</h3>
                     <div style="position: relative; height: 250px;">
                         <canvas id="performanceChart"></canvas>
                     </div>
@@ -117,7 +117,7 @@
                 </div>
 
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">📈 Monthly Trends</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg> Monthly Trends</h3>
                     <div style="position: relative; height: 250px;">
                         <canvas id="trendsChart"></canvas>
                     </div>
@@ -132,13 +132,13 @@
         <div id="service-charts" class="chart-view" style="display: none;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">🔧 Service Timeline</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Service Timeline</h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="serviceDueChart2"></canvas>
                     </div>
                 </div>
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">📈 Service Trends</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg> Service Trends</h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="trendsChart2"></canvas>
                     </div>
@@ -150,13 +150,13 @@
         <div id="distribution-charts" class="chart-view" style="display: none;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">🏦 Clients</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Clients</h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="clientChart2"></canvas>
                     </div>
                 </div>
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">🗺️ Locations</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg> Locations</h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="locationChart2"></canvas>
                     </div>
@@ -168,13 +168,13 @@
         <div id="performance-charts" class="chart-view" style="display: none;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">⚡ Performance Overview</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Performance Overview</h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="performanceChart2"></canvas>
                     </div>
                 </div>
                 <div class="chart-container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
-                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">📱 Device Models</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #333; font-size: 16px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-phone"/></svg> Device Models</h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="modelsChart2"></canvas>
                     </div>

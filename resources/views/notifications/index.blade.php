@@ -6,7 +6,7 @@
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
         <div>
-            <h1 class="m-0 text-gray-900 text-2xl font-semibold">🔔 Notifications</h1>
+            <h1 class="m-0 text-gray-900 text-2xl font-semibold"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-bell"/></svg> Notifications</h1>
             <p class="text-gray-500 text-sm mt-1">All system notifications for your account</p>
         </div>
         @if(auth()->user()->unreadNotifications->count() > 0)
@@ -48,7 +48,7 @@
 
             <div class="bg-white rounded-xl border {{ $cc['border'] }} {{ $unread ? 'border-l-4' : '' }} flex items-start gap-4 p-4 {{ $unread ? 'shadow-sm' : 'opacity-75' }} transition-all">
                 {{-- Icon --}}
-                <div class="text-2xl mt-0.5 shrink-0">{{ $data['icon'] ?? '🔔' }}</div>
+                <div class="text-2xl mt-0.5 shrink-0">{{ $data['icon'] ?? '' }}</div>
 
                 {{-- Content --}}
                 <div class="flex-1 min-w-0">
@@ -84,7 +84,7 @@
             </div>
         @empty
             <div class="bg-white rounded-xl border border-gray-200 px-4 py-16 text-center text-gray-400">
-                <div class="text-5xl mb-3">🔔</div>
+                <div class="text-5xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-bell"/></svg></div>
                 <div class="font-medium text-gray-600">You're all caught up!</div>
                 <div class="text-sm mt-1">No notifications yet. They'll appear here as activity happens.</div>
             </div>

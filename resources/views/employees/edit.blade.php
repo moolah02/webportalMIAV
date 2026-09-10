@@ -210,7 +210,7 @@
 {{-- Temp password reveal modal --}}
 <div id="tempPasswordModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.5);">
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 text-center">
-        <div class="text-4xl mb-3">🔑</div>
+        <div class="text-4xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-key"/></svg></div>
         <h3 class="text-base font-semibold text-gray-800 mb-1">Password Reset</h3>
         <p class="text-sm text-gray-500 mb-4">Share this temporary password with <strong id="resetEmpName"></strong>. It is only shown once.</p>
         <div class="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 font-mono text-lg font-bold tracking-widest text-gray-800 mb-4 select-all" id="tempPasswordDisplay"></div>

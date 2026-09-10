@@ -46,16 +46,16 @@
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin:16px 0 32px;">
     @php
     $modules = [
-        ['icon'=>'👥','title'=>'Employee Management','desc'=>'Onboard, manage, and deactivate staff. Assign roles and departments.'],
-        ['icon'=>'📦','title'=>'Asset Management','desc'=>'Track all company assets by category, serial, and assigned employee.'],
-        ['icon'=>'💳','title'=>'POS Terminals','desc'=>'Full terminal lifecycle: import, deploy, track, and link to support tickets.'],
-        ['icon'=>'📋','title'=>'Business Licenses','desc'=>'Track license expiry, renewal dates, and compliance status.'],
-        ['icon'=>'🔧','title'=>'Field Operations','desc'=>'Job assignments, site visits, terminal deployments — tracked end-to-end.'],
-        ['icon'=>'🎫','title'=>'Support Tickets','desc'=>'POS terminal and internal tickets with staged resolution and audit trail.'],
-        ['icon'=>'🏗️','title'=>'Project Management','desc'=>'Create, track, and close projects with milestones and documentation.'],
-        ['icon'=>'🤝','title'=>'Client Management','desc'=>'Client records, assigned terminals, SLA tiers, and dashboards.'],
-        ['icon'=>'📊','title'=>'Reports & Analytics','desc'=>'System reports, custom report builder, PDF and CSV export.'],
-        ['icon'=>'⚙️','title'=>'Administration','desc'=>'System settings, role management, and audit log.'],
+        ['icon'=>'','title'=>'Employee Management','desc'=>'Onboard, manage, and deactivate staff. Assign roles and departments.'],
+        ['icon'=>'','title'=>'Asset Management','desc'=>'Track all company assets by category, serial, and assigned employee.'],
+        ['icon'=>'','title'=>'POS Terminals','desc'=>'Full terminal lifecycle: import, deploy, track, and link to support tickets.'],
+        ['icon'=>'','title'=>'Business Licenses','desc'=>'Track license expiry, renewal dates, and compliance status.'],
+        ['icon'=>'','title'=>'Field Operations','desc'=>'Job assignments, site visits, terminal deployments — tracked end-to-end.'],
+        ['icon'=>'','title'=>'Support Tickets','desc'=>'POS terminal and internal tickets with staged resolution and audit trail.'],
+        ['icon'=>'','title'=>'Project Management','desc'=>'Create, track, and close projects with milestones and documentation.'],
+        ['icon'=>'','title'=>'Client Management','desc'=>'Client records, assigned terminals, SLA tiers, and dashboards.'],
+        ['icon'=>'','title'=>'Reports & Analytics','desc'=>'System reports, custom report builder, PDF and CSV export.'],
+        ['icon'=>'','title'=>'Administration','desc'=>'System settings, role management, and audit log.'],
     ];
     @endphp
     @foreach($modules as $mod)

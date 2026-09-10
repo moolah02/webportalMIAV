@@ -39,7 +39,7 @@ class CheckOverdueTickets extends Command
         foreach ($admins as $admin) {
             try {
                 $admin->notify(new SystemNotification(
-                    "⚠️ {$count} Overdue Ticket" . ($count > 1 ? 's' : ''),
+                    "{$count} Overdue Ticket" . ($count > 1 ? 's' : ''),
                     "{$count} ticket" . ($count > 1 ? 's have' : ' has') . " been open for more than {$thresholdHours} hours without resolution.",
                     'ticket',
                     route('tickets.index')
@@ -51,7 +51,7 @@ class CheckOverdueTickets extends Command
                         "Dear {$admin->name},\n\n{$count} ticket(s) have been open for more than {$thresholdHours} hours:\n\n" .
                         $overdue->map(fn($t) => "- #{$t->ticket_id}: {$t->title} (opened {$t->created_at->diffForHumans()})")->implode("\n") .
                         "\n\nPlease review them at your earliest convenience.",
-                        fn($m) => $m->to($admin->email)->subject("⚠️ {$count} Overdue Ticket(s) – Revival Technologies")
+                        fn($m) => $m->to($admin->email)->subject("{$count} Overdue Ticket(s) – Revival Technologies")
                     );
                 }
             } catch (\Throwable $e) {

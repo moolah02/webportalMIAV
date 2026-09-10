@@ -2,7 +2,7 @@
 @section('title', 'Documentation Manager')
 
 @section('header-actions')
-<a href="{{ url('/docs') }}" target="_blank" class="btn-secondary">🔗 View Live Docs</a>
+<a href="{{ url('/docs') }}" target="_blank" class="btn-secondary">View Live Docs</a>
 @endsection
 
 @section('content')
@@ -43,8 +43,8 @@
                     </td>
                     <td class="text-right">
                         <div class="inline-flex gap-2">
-                            <a href="{{ url('/docs/' . $page->slug) }}" target="_blank" class="btn-secondary btn-sm">👁 View</a>
-                            <a href="{{ route('admin.docs.edit', $page->slug) }}" class="btn-primary btn-sm">✏️ Edit</a>
+                            <a href="{{ url('/docs/' . $page->slug) }}" target="_blank" class="btn-secondary btn-sm">View</a>
+                            <a href="{{ route('admin.docs.edit', $page->slug) }}" class="btn-primary btn-sm">Edit</a>
                         </div>
                     </td>
                 </tr>
@@ -52,7 +52,7 @@
                 <tr>
                     <td colspan="5">
                         <div class="empty-state">
-                            <div class="empty-state-icon">📄</div>
+                            <div class="empty-state-icon"></div>
                             <div class="empty-state-msg">
                                 No documentation pages found.<br>
                                 Run <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">php artisan db:seed --class=DocPageSeeder</code> to populate them.

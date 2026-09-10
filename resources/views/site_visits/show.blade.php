@@ -154,7 +154,7 @@
                     <ul class="space-y-1">
                         @foreach((array)$visit->issues_found as $issue)
                         <li class="flex items-start gap-2 text-sm text-gray-700">
-                            <span class="text-red-400 mt-0.5">⚠</span> {{ $issue }}
+                            <span class="text-red-400 mt-0.5"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span> {{ $issue }}
                         </li>
                         @endforeach
                     </ul>
@@ -314,10 +314,10 @@
                     </div>
                 </div>
                 @if($visit->technician->phone ?? false)
-                <div class="text-xs text-gray-500 mb-1">📞 {{ $visit->technician->phone }}</div>
+                <div class="text-xs text-gray-500 mb-1"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-phone"/></svg> {{ $visit->technician->phone }}</div>
                 @endif
                 @if($visit->technician->email ?? false)
-                <div class="text-xs text-gray-500">✉ {{ $visit->technician->email }}</div>
+                <div class="text-xs text-gray-500"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-mail"/></svg> {{ $visit->technician->email }}</div>
                 @endif
                 @else
                 <p class="text-sm text-gray-400 italic">No technician assigned.</p>

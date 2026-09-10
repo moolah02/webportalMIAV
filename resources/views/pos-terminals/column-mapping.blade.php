@@ -30,7 +30,7 @@
 
     <!-- Create New Mapping Card -->
     <div class="main-card">
-        <h3 class="section-title">📝 Create New Column Mapping</h3>
+        <h3 class="section-title"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Create New Column Mapping</h3>
         <p class="section-description">Configure how CSV columns map to database fields for easier imports</p>
 
         <form action="{{ route('pos-terminals.store-mapping') }}" method="POST" class="mapping-form">
@@ -73,13 +73,13 @@
 
             <!-- Column Mapping Configuration -->
             <div class="mapping-config">
-                <h4 class="config-title">🗂️ Column Mapping Configuration</h4>
+                <h4 class="config-title"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg> Column Mapping Configuration</h4>
                 <p class="config-description">Map CSV columns (0-based index) to database fields. Leave blank to skip a field.</p>
 
                 <div class="mapping-grid">
                     <!-- Terminal Information -->
                     <div class="mapping-section">
-                        <h5 class="section-header">📟 Terminal Information</h5>
+                        <h5 class="section-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-card"/></svg> Terminal Information</h5>
                         <div class="field-mappings">
                             <div class="field-mapping">
                                 <label class="field-label">Terminal ID *</label>
@@ -135,7 +135,7 @@
 
                     <!-- Merchant Information -->
                     <div class="mapping-section">
-                        <h5 class="section-header">🏪 Merchant Information</h5>
+                        <h5 class="section-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Merchant Information</h5>
                         <div class="field-mappings">
                             <div class="field-mapping">
                                 <label class="field-label">Merchant Name *</label>
@@ -181,7 +181,7 @@
 
                     <!-- Location Information -->
                     <div class="mapping-section">
-                        <h5 class="section-header">📍 Location Information</h5>
+                        <h5 class="section-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-pin"/></svg> Location Information</h5>
                         <div class="field-mappings">
                             <div class="field-mapping">
                                 <label class="field-label">Physical Address</label>
@@ -227,7 +227,7 @@
 
                     <!-- Additional Fields -->
                     <div class="mapping-section">
-                        <h5 class="section-header">📋 Additional Fields</h5>
+                        <h5 class="section-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Additional Fields</h5>
                         <div class="field-mappings">
                             <div class="field-mapping">
                                 <label class="field-label">Condition</label>
@@ -293,7 +293,7 @@
 
                     <!-- NEW: Custom Fields Section -->
                     <div class="mapping-section">
-                        <h5 class="section-header">🔧 Custom Fields</h5>
+                        <h5 class="section-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Custom Fields</h5>
                         <p class="section-description">Add mappings for additional columns in your CSV that aren't covered above</p>
                         <div class="field-mappings" id="customFieldsContainer">
                             <!-- Dynamic custom field inputs will be added here -->
@@ -310,7 +310,7 @@
                 <button type="button" class="btn-secondary" onclick="resetMappingForm()">Reset Form</button>
                 <button type="button" class="btn-secondary" onclick="loadDefaultMapping()">Load Default Values</button>
                 <button type="submit" class="btn-primary">
-                    <span class="btn-icon">💾</span>
+                    <span class="btn-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg></span>
                     Save Column Mapping
                 </button>
             </div>
@@ -320,7 +320,7 @@
     <!-- Existing Mappings -->
     @if($mappings->count() > 0)
     <div class="main-card">
-        <h3 class="section-title">📚 Existing Column Mappings</h3>
+        <h3 class="section-title"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-book"/></svg> Existing Column Mappings</h3>
         <p class="section-description">Manage your saved column mappings</p>
 
         <div class="mappings-table-container">
@@ -384,10 +384,10 @@
 
     <!-- Mapping Guide -->
     <div class="main-card">
-        <h3 class="section-title">📖 Column Mapping Guide</h3>
+        <h3 class="section-title"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-book"/></svg> Column Mapping Guide</h3>
         <div class="guide-content">
             <div class="guide-section">
-                <h4>🎯 How Column Mapping Works</h4>
+                <h4><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-target"/></svg> How Column Mapping Works</h4>
                 <ul class="guide-list">
                     <li><strong>Column Index:</strong> Enter the column number (starting from 0) where each field is located in your CSV</li>
                     <li><strong>Required Fields:</strong> Terminal ID and Merchant Name are required for successful imports</li>
@@ -398,7 +398,7 @@
             </div>
 
             <div class="guide-section">
-                <h4>📝 Example CSV Structure</h4>
+                <h4><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Example CSV Structure</h4>
                 <div class="csv-example">
                     <div class="csv-header">Column 0 | Column 1 | Column 2 | Column 3 | Column 4 | Column 5</div>
                     <div class="csv-row">Merchant ID | Terminal ID | Type | Legal Name | Business Name | Address</div>
@@ -407,7 +407,7 @@
             </div>
 
             <div class="guide-section">
-                <h4>💡 Best Practices</h4>
+                <h4><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lightbulb"/></svg> Best Practices</h4>
                 <ul class="guide-list">
                     <li>Create client-specific mappings for different bank formats</li>
                     <li>Use descriptive names like "Standard Bank Format" or "CBZ Monthly Export"</li>

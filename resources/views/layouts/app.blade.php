@@ -30,6 +30,7 @@
 
   <!-- MIAV shell (sidebar, top bar, alerts) — loaded last so it wins -->
   <link rel="stylesheet" href="{{ asset('css/miav-shell.css') }}?v={{ @filemtime(public_path('css/miav-shell.css')) }}">
+  <link rel="stylesheet" href="{{ asset('css/miav-ui.css') }}?v={{ @filemtime(public_path('css/miav-ui.css')) }}">
 
   @stack('styles')
 </head>
@@ -47,12 +48,14 @@
     // [route, icon, label, active-patterns, query, not-active-on]
     // Same sections, order and names as the previous menu, so nobody has to
     // relearn it. Only addition: Assets › Discovered Terminals.
+    // [label, section icon, items, 'flat'?] — sections fold like the old menu;
+    // the one holding the current page opens by itself.
     $nav = [
-      ['Overview', [
+      ['Overview', 'grid', [
         ['dashboard',          'grid',       'Company Dashboard',  ['dashboard']],
         ['employee.dashboard', 'user-check', 'Employee Dashboard', ['employee.dashboard']],
-      ]],
-      ['Assets', [
+      ], 'flat'],
+      ['Assets', 'box', [
         ['assets.index',            'box',          'Internal Assets',      ['assets.*']],
         ['pos-terminals.index',     'card',         'POS Terminals',        ['pos-terminals.*'], []],
         ['pos-terminals.index',     'compass',      'Discovered Terminals', [],                  ['tab' => 'discoveries']],
@@ -61,37 +64,37 @@
         ['asset-approvals.index',   'check-square', 'Asset Approvals',      ['asset-approvals.*']],
         ['business-licenses.index', 'file',         'Business Licenses',    ['business-licenses.*']],
       ]],
-      ['Field Operations', [
+      ['Field Operations', 'route', [
         ['deployment.hierarchical',  'route',       'Terminal Deployment', ['deployment.*']],
         ['jobs.index',               'clipboard',   'Job Assignments',     ['jobs.*'], [], ['jobs.mine']],
         ['visits.index',             'pin',         'Site Visits',         ['visits.*', 'site_visits.show', 'site_visits.completed']],
         ['site_visits.createManual', 'plus-circle', 'Log a Visit',         ['site_visits.createManual']],
         ['tickets.index',            'ticket',      'Support Tickets',     ['tickets.*']],
       ]],
-      ['Projects', [
+      ['Projects', 'folder', [
         ['projects.index',           'folder',      'All Projects',    ['projects.index', 'projects.show', 'projects.edit']],
         ['projects.create',          'plus-circle', 'New Project',     ['projects.create']],
         ['projects.closure-reports', 'file-check',  'Closure Reports', ['projects.closure-reports', 'projects.completion-reports']],
       ]],
-      ['Clients', [
+      ['Clients', 'building', [
         ['clients.index',           'building', 'Clients',           ['clients.*']],
         ['client-dashboards.index', 'layout',   'Client Dashboards', ['client-dashboards.*']],
       ]],
-      ['Employees', [
+      ['Employees', 'users', [
         ['employees.index', 'users',  'Employees',       ['employees.*']],
         ['roles.index',     'shield', 'Role Management', ['roles.*']],
       ]],
-      ['Technician Portal', [
+      ['Technician Portal', 'wrench', [
         // Same page as Overview › Employee Dashboard (as before); highlighted there only.
         ['employee.dashboard', 'user-check', 'My Dashboard',   []],
         ['jobs.mine',          'list-todo',  'My Assignments', ['jobs.mine']],
       ]],
-      ['Reports', [
+      ['Reports', 'chart', [
         ['reports.index',             'chart', 'Reports Dashboard', ['reports.index', 'reports.system']],
         ['reports.technician-visits', 'pin',   'Technician Visits', ['reports.technician-visits*']],
         ['reports.builder',           'table', 'Report Builder',    ['reports.builder', 'reports.history']],
       ]],
-      ['Administration', [
+      ['Administration', 'settings', [
         ['settings.index',    'sliders', 'System Settings', ['settings.*']],
         ['audit-trail.index', 'history', 'Audit Trail',     ['audit-trail.*']],
       ]],
@@ -106,29 +109,68 @@
     </a>
 
     <nav class="mv-nav">
-      @foreach($nav as [$groupLabel, $items])
-      <div class="mv-nav-group">
-        @if($groupLabel)<p class="mv-nav-label">{{ $groupLabel }}</p>@endif
-        @foreach($items as $item)
-          @php
-            [$route, $icon, $label, $patterns] = $item;
-            $query = $item[4] ?? [];
-            $notOn = $item[5] ?? [];
-            if (!empty($query['tab']) && $query['tab'] === 'discoveries') {
-                $isOn = $onDiscoveries;
-            } elseif ($route === 'pos-terminals.index') {
-                $isOn = request()->routeIs('pos-terminals.*') && !$onDiscoveries;
-            } else {
-                $isOn = $patterns && request()->routeIs(...$patterns) && !($notOn && request()->routeIs(...$notOn));
-            }
-          @endphp
-          <a href="{{ route($route, $query) }}" class="{{ $isOn ? 'is-on' : '' }}" @if($isOn) aria-current="page" @endif>
-            <svg class="mv-i"><use href="#i-{{ $icon }}"/></svg>{{ $label }}
-          </a>
-        @endforeach
-      </div>
+      @foreach($nav as $group)
+        @php
+          [$groupLabel, $groupIcon, $items] = $group;
+          $isFlat = ($group[3] ?? null) === 'flat';
+          $rows = [];
+          foreach ($items as $item) {
+              [$route, $icon, $label, $patterns] = $item;
+              $query = $item[4] ?? [];
+              $notOn = $item[5] ?? [];
+              if (!empty($query['tab']) && $query['tab'] === 'discoveries') {
+                  $isOn = $onDiscoveries;
+              } elseif ($route === 'pos-terminals.index') {
+                  $isOn = request()->routeIs('pos-terminals.*') && !$onDiscoveries;
+              } else {
+                  $isOn = $patterns && request()->routeIs(...$patterns) && !($notOn && request()->routeIs(...$notOn));
+              }
+              $rows[] = ['href' => route($route, $query), 'icon' => $icon, 'label' => $label, 'on' => $isOn];
+          }
+          $groupOn = collect($rows)->contains('on', true);
+        @endphp
+        @if($isFlat)
+          <div class="mv-nav-group">
+            <p class="mv-nav-label">{{ $groupLabel }}</p>
+            @foreach($rows as $row)
+              <a href="{{ $row['href'] }}" class="{{ $row['on'] ? 'is-on' : '' }}" @if($row['on']) aria-current="page" @endif>
+                <svg class="mv-i"><use href="#i-{{ $row['icon'] }}"/></svg>{{ $row['label'] }}
+              </a>
+            @endforeach
+          </div>
+        @else
+          <div class="mv-sec{{ $groupOn ? ' is-open is-current' : '' }}" data-sec="{{ \Illuminate\Support\Str::slug($groupLabel) }}">
+            <button type="button" class="mv-sec-btn" aria-expanded="{{ $groupOn ? 'true' : 'false' }}" onclick="mvToggleSec(this)">
+              <svg class="mv-i"><use href="#i-{{ $groupIcon }}"/></svg><span>{{ $groupLabel }}</span>
+              <svg class="mv-i mv-chev"><use href="#i-chevron-down"/></svg>
+            </button>
+            <div class="mv-sec-items">
+              @foreach($rows as $row)
+                <a href="{{ $row['href'] }}" class="{{ $row['on'] ? 'is-on' : '' }}" @if($row['on']) aria-current="page" @endif>{{ $row['label'] }}</a>
+              @endforeach
+            </div>
+          </div>
+        @endif
       @endforeach
     </nav>
+    <script>
+      // Sections fold like the old menu. The current page's section is open;
+      // anything else the user opened stays open on the next page.
+      function mvToggleSec(btn) {
+        var sec = btn.closest('.mv-sec'), open = !sec.classList.contains('is-open');
+        sec.classList.toggle('is-open', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        try { var s = JSON.parse(localStorage.getItem('mvNavOpen') || '{}'); s[sec.dataset.sec] = open; localStorage.setItem('mvNavOpen', JSON.stringify(s)); } catch (e) {}
+      }
+      (function () {
+        try {
+          var s = JSON.parse(localStorage.getItem('mvNavOpen') || '{}');
+          document.querySelectorAll('.mv-sec:not(.is-current)').forEach(function (sec) {
+            if (s[sec.dataset.sec]) { sec.classList.add('is-open'); sec.querySelector('.mv-sec-btn').setAttribute('aria-expanded', 'true'); }
+          });
+        } catch (e) {}
+      })();
+    </script>
 
     <div class="mv-side-foot">
       <div class="mv-nav">

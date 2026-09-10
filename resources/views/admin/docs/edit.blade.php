@@ -27,7 +27,7 @@
         <div class="flex gap-2.5">
             <a href="{{ url('/docs/' . $page->slug) }}" target="_blank"
                class="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-lg no-underline font-medium text-sm hover:bg-gray-200 transition-colors">
-                👁 View Live
+                View Live
             </a>
             <a href="{{ route('admin.docs.index') }}"
                class="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-lg no-underline font-medium text-sm hover:bg-gray-200 transition-colors">
@@ -38,7 +38,7 @@
 
     @if($errors->any())
         <div class="bg-red-50 border border-red-300 text-red-600 px-4 py-3.5 rounded-lg mb-5 text-sm">
-            @foreach($errors->all() as $error) <div>⚠️ {{ $error }}</div> @endforeach
+            @foreach($errors->all() as $error) <div>{{ $error }}</div> @endforeach
         </div>
     @endif
 
@@ -82,7 +82,7 @@
             </a>
             <button type="submit"
                     class="bg-[#1a3a5c] text-white px-8 py-3 border-0 rounded-lg font-semibold text-[15px] cursor-pointer hover:bg-[#152e4a] transition-colors">
-                💾 Save Changes
+                Save Changes
             </button>
         </div>
     </form>

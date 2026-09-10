@@ -4,7 +4,7 @@
     {{-- Header row --}}
     <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-[#1a3a5c]/10 flex items-center justify-center text-base">🖥️</div>
+            <div class="w-8 h-8 rounded-lg bg-[#1a3a5c]/10 flex items-center justify-center text-base"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg></div>
             <div>
                 <h5 class="font-semibold text-gray-800 text-sm m-0 leading-tight">Terminal Assignment
                     @if(isset($project) && $project->exists)
@@ -25,7 +25,7 @@
 
     @if(isset($project) && $project->exists)
     <div class="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 mb-4 text-sm">
-        <span class="text-2xl">🖥️</span>
+        <span class="text-2xl"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg></span>
         <span class="text-gray-700">
             <strong class="text-[#1a3a5c]">{{ $project->projectTerminals()->where('is_active', true)->count() }}</strong>
             terminals currently assigned to this project.
@@ -88,7 +88,7 @@
     {{-- Upload Results Summary --}}
     <div id="terminalUploadSummary" class="mt-3" style="display: none;">
         <div class="flash-success">
-            <span>✅</span>
+            <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></span>
             <span id="terminalUploadSummaryText"></span>
         </div>
     </div>

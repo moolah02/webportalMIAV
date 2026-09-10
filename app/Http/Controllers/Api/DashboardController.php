@@ -237,7 +237,7 @@ class DashboardController extends Controller
                 'title' => 'Job Completed',
                 'description' => "{$job->technician->first_name} {$job->technician->last_name} completed job for {$job->client->company_name}",
                 'time' => $job->actual_end_time->diffForHumans(),
-                'icon' => '✅',
+                'icon' => '',
                 'color' => '#4caf50'
             ]);
         }
@@ -254,7 +254,7 @@ class DashboardController extends Controller
                 'title' => 'New Terminal',
                 'description' => "Terminal {$terminal->terminal_id} added for {$terminal->client->company_name}",
                 'time' => $terminal->created_at->diffForHumans(),
-                'icon' => '🖥️',
+                'icon' => '',
                 'color' => '#2196f3'
             ]);
         }
@@ -271,7 +271,7 @@ class DashboardController extends Controller
                 'title' => 'Ticket Resolved',
                 'description' => "Ticket {$ticket->ticket_id} resolved",
                 'time' => $ticket->resolved_at->diffForHumans(),
-                'icon' => '🎫',
+                'icon' => '',
                 'color' => '#4caf50'
             ]);
         }
@@ -322,7 +322,7 @@ class DashboardController extends Controller
             $alerts->push([
                 'type' => 'critical',
                 'message' => "{$criticalTickets} critical tickets need immediate attention",
-                'icon' => '🚨'
+                'icon' => ''
             ]);
         }
 
@@ -332,7 +332,7 @@ class DashboardController extends Controller
             $alerts->push([
                 'type' => 'warning',
                 'message' => "{$faultyTerminals} terminals are faulty",
-                'icon' => '⚠️'
+                'icon' => ''
             ]);
         }
 
@@ -344,7 +344,7 @@ class DashboardController extends Controller
             $alerts->push([
                 'type' => 'warning',
                 'message' => "{$overdueJobs} jobs are overdue",
-                'icon' => '📅'
+                'icon' => ''
             ]);
         }
 
@@ -356,7 +356,7 @@ class DashboardController extends Controller
             $alerts->push([
                 'type' => 'info',
                 'message' => "{$lowStockAssets} assets are low in stock",
-                'icon' => '📦'
+                'icon' => ''
             ]);
         }
 

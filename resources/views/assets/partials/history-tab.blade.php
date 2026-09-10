@@ -93,7 +93,7 @@
 
             <td>
               <div class="asset-info">
-                <div class="asset-icon">📦</div>
+                <div class="asset-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg></div>
                 <div>
                   <div style="font-weight:600;color:#333;">{{ $assignment->asset->name }}</div>
                   <div style="font-size:12px;color:#666;">{{ $assignment->asset->category }}</div>
@@ -126,11 +126,11 @@
             <td>
               <span class="status-badge {{ $assignment->status_badge }}">
                 @switch($assignment->status)
-                  @case('assigned')    🟢 Active @break
-                  @case('returned')    ✅ Returned @break
-                  @case('transferred') 🔄 Transferred @break
-                  @case('lost')        ❌ Lost @break
-                  @case('damaged')     ⚠️ Damaged @break
+                  @case('assigned')    <svg class="mv-i mv-i-sm mv-ei" style="color:var(--mv-good)" aria-hidden="true"><use href="#i-dot"/></svg> Active @break
+                  @case('returned')    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> Returned @break
+                  @case('transferred') <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Transferred @break
+                  @case('lost')        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> Lost @break
+                  @case('damaged')     <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Damaged @break
                   @default             {{ ucfirst($assignment->status) }}
                 @endswitch
               </span>
@@ -154,7 +154,7 @@
                         onclick="viewAssignmentHistory({{ $assignment->id }})"
                         class="btn-small"
                         style="background:#f0f8ff;color:#1976d2;border:1px solid #1976d2;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;">
-                  📋 Details
+                  <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Details
                 </button>
               </div>
             </td>
@@ -172,7 +172,7 @@
   </div>
 @else
   <div class="content-card" style="text-align:center;padding:60px;color:#666;">
-    <div style="font-size:64px;margin-block-end:20px;">📋</div>
+    <div style="font-size:64px;margin-block-end:20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
     <h3>No Assignment History</h3>
   </div>
 @endif
@@ -182,7 +182,7 @@
   <div style="background:white;border-radius:12px;max-width:800px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.3);position:relative;padding:0;">
     <div style="background:linear-gradient(135deg,#2196f3 0%,#1976d2 100%);color:white;padding:16px 20px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
       <h3 style="margin:0;display:flex;align-items:center;gap:10px;font-size:16px;">
-        <span>📋</span>
+        <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
         <span id="historyModalTitle">Assignment History</span>
       </h3>
       <button id="historyModalClose" type="button" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;line-height:1;">×</button>
@@ -221,7 +221,7 @@
         <div style="display:grid;gap:20px;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
             <div>
-              <h4 style="margin:0 0 10px;color:#333;">👤 Employee</h4>
+              <h4 style="margin:0 0 10px;color:#333;">Employee</h4>
               <div style="background:#f8f9fa;padding:15px;border-radius:8px;">
                 <div><strong>Name:</strong> ${fullName}</div>
                 <div><strong>Number:</strong> ${assignment.employee.employee_number}</div>
@@ -229,7 +229,7 @@
               </div>
             </div>
             <div>
-              <h4 style="margin:0 0 10px;color:#333;">📦 Asset</h4>
+              <h4 style="margin:0 0 10px;color:#333;">Asset</h4>
               <div style="background:#f8f9fa;padding:15px;border-radius:8px;">
                 <div><strong>Name:</strong> ${assignment.asset.name}</div>
                 <div><strong>Category:</strong> ${assignment.asset.category}</div>
@@ -239,7 +239,7 @@
           </div>
 
           <div>
-            <h4 style="margin:0 0 10px;color:#333;">📋 Timeline</h4>
+            <h4 style="margin:0 0 10px;color:#333;">Timeline</h4>
             <div style="background:#f8f9fa;padding:15px;border-radius:8px;">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
                 <div><strong>Assigned:</strong> ${new Date(assignment.assignment_date).toLocaleDateString()}</div>
@@ -253,7 +253,7 @@
           </div>
 
           <div>
-            <h4 style="margin:0 0 10px;color:#333;">🔧 Condition</h4>
+            <h4 style="margin:0 0 10px;color:#333;">Condition</h4>
             <div style="background:#f8f9fa;padding:15px;border-radius:8px;">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
                 <div><strong>When Assigned:</strong> ${assignment.condition_when_assigned}</div>
@@ -264,7 +264,7 @@
 
           ${(assignment.assignment_notes || assignment.return_notes) ? `
             <div>
-              <h4 style="margin:0 0 10px;color:#333;">📝 Notes</h4>
+              <h4 style="margin:0 0 10px;color:#333;">Notes</h4>
               <div style="background:#f8f9fa;padding:15px;border-radius:8px;">
                 ${assignment.assignment_notes ? `<div style="margin-bottom:10px;"><strong>Assignment:</strong><br>${assignment.assignment_notes}</div>` : ''}
                 ${assignment.return_notes ? `<div><strong>Return/Transfer:</strong><br>${assignment.return_notes}</div>` : ''}
@@ -273,7 +273,7 @@
           }
 
           <div>
-            <h4 style="margin:0 0 10px;color:#333;">👥 People</h4>
+            <h4 style="margin:0 0 10px;color:#333;">People</h4>
             <div style="background:#f8f9fa;padding:15px;border-radius:8px;">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
                 <div><strong>Assigned By:</strong> ${assignedBy}</div>

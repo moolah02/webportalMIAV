@@ -91,7 +91,7 @@
                 <tr>
                     <td colspan="7">
                         <div class="empty-state">
-                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                             <div class="empty-state-msg">No visits recorded for this assignment</div>
                         </div>
                     </td>

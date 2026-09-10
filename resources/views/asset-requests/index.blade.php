@@ -5,7 +5,7 @@
 
 {{-- Header actions --}}
 <div class="flex justify-end items-center gap-2 mb-5">
-    <a href="{{ route('asset-requests.cart') }}" class="btn-secondary">🛒 View Cart</a>
+    <a href="{{ route('asset-requests.cart') }}" class="btn-secondary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-cart"/></svg> View Cart</a>
     <a href="{{ route('asset-requests.catalog') }}" class="btn-primary">+ New Request</a>
 </div>
 
@@ -93,10 +93,10 @@
                 @empty
                 <tr>
                     <td colspan="7" class="py-16 text-center text-gray-400">
-                        <div class="text-4xl mb-3">📋</div>
+                        <div class="text-4xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                         <p class="text-sm font-medium text-gray-600 mb-1">No Asset Requests Yet</p>
                         <p class="text-xs text-gray-400 mb-4">Browse the catalog to submit your first request.</p>
-                        <a href="{{ route('asset-requests.catalog') }}" class="btn-primary btn-sm">🛒 Browse Asset Catalog</a>
+                        <a href="{{ route('asset-requests.catalog') }}" class="btn-primary btn-sm"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-cart"/></svg> Browse Asset Catalog</a>
                     </td>
                 </tr>
                 @endforelse

@@ -15,15 +15,15 @@ File: resources/views/roles/show.blade.php
     <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
         <div>
             <h2 style="margin: 0; color: #333;">
-                🔑 {{ ucfirst(str_replace('_', ' ', $role->name)) }}
+                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-key"/></svg> {{ ucfirst(str_replace('_', ' ', $role->name)) }}
                 @if(in_array('all', $rolePermNames))
-                    <span style="color: #f44336; font-size: 16px; margin-left: 10px;">⚡ Super Admin</span>
+                    <span style="color: #f44336; font-size: 16px; margin-left: 10px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Super Admin</span>
                 @endif
             </h2>
             <p style="color: #666; margin: 5px 0 0 0;">Role details and assigned employees</p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="{{ route('roles.edit', $role) }}" class="btn-primary">✏️ Edit Role</a>
+            <a href="{{ route('roles.edit', $role) }}" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit Role</a>
             <a href="{{ route('roles.index') }}" class="btn">← Back to Roles</a>
         </div>
     </div>
@@ -33,7 +33,7 @@ File: resources/views/roles/show.blade.php
         <div>
             <!-- Role Information -->
             <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 20px; color: #333;">📋 Role Information</h4>
+                <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Role Information</h4>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
@@ -64,11 +64,11 @@ File: resources/views/roles/show.blade.php
 
             <!-- Permissions Details -->
             <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 20px; color: #333;">🔐 Permissions</h4>
+                <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lock"/></svg> Permissions</h4>
                 
                 @if(empty($rolePermNames))
                     <div style="text-align: center; padding: 40px; color: #666;">
-                        <div style="font-size: 48px; margin-block-end: 15px;">🔒</div>
+                        <div style="font-size: 48px; margin-block-end: 15px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lock"/></svg></div>
                         <div>No permissions assigned to this role</div>
                     </div>
                 @else
@@ -83,25 +83,25 @@ File: resources/views/roles/show.blade.php
                         <h6 style="color: #333; margin-block-end: 15px; text-transform: capitalize; display: flex; align-items: center; gap: 8px;">
                             @switch($category)
                                 @case('admin')
-                                    <span style="color: #f44336;">⚡</span> Admin
+                                    <span style="color: #f44336;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg></span> Admin
                                     @break
                                 @case('general')
-                                    <span style="color: #2196f3;">👤</span> General
+                                    <span style="color: #2196f3;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg></span> General
                                     @break
                                 @case('assets')
-                                    <span style="color: #4caf50;">📦</span> Assets
+                                    <span style="color: #4caf50;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg></span> Assets
                                     @break
                                 @case('clients')
-                                    <span style="color: #ff9800;">🏢</span> Clients
+                                    <span style="color: #ff9800;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg></span> Clients
                                     @break
                                 @case('management')
-                                    <span style="color: #9c27b0;">👥</span> Management
+                                    <span style="color: #9c27b0;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></span> Management
                                     @break
                                 @case('technical')
-                                    <span style="color: #00bcd4;">🔧</span> Technical
+                                    <span style="color: #00bcd4;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg></span> Technical
                                     @break
                                 @default
-                                    <span>📋</span> {{ ucfirst($category) }}
+                                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span> {{ ucfirst($category) }}
                             @endswitch
                         </h6>
                         
@@ -128,7 +128,7 @@ File: resources/views/roles/show.blade.php
             <!-- Assigned Employees -->
             @if($role->employees->count() > 0)
             <div class="content-card">
-                <h4 style="margin-block-end: 20px; color: #333;">👥 Assigned Employees</h4>
+                <h4 style="margin-block-end: 20px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Assigned Employees</h4>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
                     @foreach($role->employees as $employee)
@@ -145,7 +145,7 @@ File: resources/views/roles/show.blade.php
                         
                         @if($employee->department)
                         <div style="font-size: 12px; color: #666; margin-block-end: 5px;">
-                            🏢 {{ $employee->department->name }}
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> {{ $employee->department->name }}
                         </div>
                         @endif
                         
@@ -168,20 +168,20 @@ File: resources/views/roles/show.blade.php
         <div>
             <!-- Quick Actions -->
             <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">⚡ Quick Actions</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Quick Actions</h4>
                 
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <a href="{{ route('roles.edit', $role) }}" class="btn-primary" style="inline-size: 100%; text-align: center;">
-                        ✏️ Edit Role
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit Role
                     </a>
                     
                     <button onclick="cloneRole({{ $role->id }})" class="btn" style="inline-size: 100%;">
-                        📋 Clone Role
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Clone Role
                     </button>
                     
                     @if(!in_array($role->name, ['super_admin', 'admin', 'manager', 'employee', 'technician']))
                     <button onclick="deleteRole({{ $role->id }}, '{{ $role->name }}')" class="btn" style="inline-size: 100%; color: #f44336; border-color: #f44336;">
-                        🗑️ Delete Role
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Delete Role
                     </button>
                     @endif
                 </div>
@@ -189,7 +189,7 @@ File: resources/views/roles/show.blade.php
 
             <!-- Role Statistics -->
             <div class="content-card" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">📊 Statistics</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Statistics</h4>
                 
                 <div style="margin-block-end: 15px;">
                     <div style="display: flex; justify-content: space-between; margin-block-end: 8px;">
@@ -238,7 +238,7 @@ File: resources/views/roles/show.blade.php
 
             <!-- Recent Activity -->
             <div class="content-card">
-                <h4 style="margin-block-end: 15px; color: #333;">📈 Recent Activity</h4>
+                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg> Recent Activity</h4>
                 
                 <div style="color: #666; font-style: italic; text-align: center; padding: 20px;">
                     Activity tracking coming soon

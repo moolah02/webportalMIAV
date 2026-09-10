@@ -36,12 +36,12 @@
 </div>
 
 <div style="margin-bottom:24px;">
-    <h1 style="margin:0;font-size:20px;font-weight:700;color:#1a3a5c;">🔔 Notification Settings</h1>
+    <h1 style="margin:0;font-size:20px;font-weight:700;color:#1a3a5c;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-bell"/></svg> Notification Settings</h1>
     <p style="margin:6px 0 0;color:#6b7280;font-size:13px;">Control which events trigger in-app and email notifications</p>
 </div>
 
 @if(session('success'))
-    <div class="alert-success">✅ {{ session('success') }}</div>
+    <div class="alert-success"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> {{ session('success') }}</div>
 @endif
 
 @php
@@ -50,7 +50,7 @@
 
 @if(!$mailConfigured)
 <div class="callout-info">
-    ℹ️ Email notifications require SMTP to be configured first.
+    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-info"/></svg> Email notifications require SMTP to be configured first.
     <a href="{{ route('settings.email') }}" style="font-weight:600;color:#1e40af;">Configure Email →</a>
 </div>
 @endif
@@ -133,7 +133,7 @@
             <div class="form-hint">Comma-separated role names that receive admin-level alerts (e.g. admin,manager)</div>
         </div>
 
-        <button type="submit" class="btn-primary">💾 Save Notification Settings</button>
+        <button type="submit" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save Notification Settings</button>
     </form>
 </div>
 

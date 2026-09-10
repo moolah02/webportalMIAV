@@ -6,28 +6,28 @@
 {{-- Stats --}}
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
     <div class="stat-card">
-        <div class="stat-icon stat-icon-blue">📅</div>
+        <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
         <div>
             <div class="stat-number" id="stat-today">{{ $stats['today_visits'] ?? 0 }}</div>
             <div class="stat-label">Today's Visits</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-green">✅</div>
+        <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div>
             <div class="stat-number" id="stat-completed">{{ $stats['completed'] ?? 0 }}</div>
             <div class="stat-label">Completed</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-yellow">⏳</div>
+        <div class="stat-icon stat-icon-yellow"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg></div>
         <div>
             <div class="stat-number" id="stat-pending">{{ $stats['pending'] ?? 0 }}</div>
             <div class="stat-label">Pending</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-navy">📋</div>
+        <div class="stat-icon stat-icon-navy"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
         <div>
             <div class="stat-number" id="stat-total">{{ $stats['total_visits'] ?? 0 }}</div>
             <div class="stat-label">Total Visits</div>
@@ -163,7 +163,7 @@
                         @if($visit->completed_at)
                             <span class="badge badge-green">✓ Completed</span>
                         @else
-                            <span class="badge badge-yellow">⏳ Pending</span>
+                            <span class="badge badge-yellow"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg> Pending</span>
                         @endif
                     </td>
                     <td class="max-w-xs">
@@ -178,7 +178,7 @@
                     </td>
                     <td>
                         @if(count($evidence))
-                            <span class="badge badge-blue">📎 {{ count($evidence) }}</span>
+                            <span class="badge badge-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-paperclip"/></svg> {{ count($evidence) }}</span>
                         @else
                             <span class="text-xs text-gray-400">None</span>
                         @endif
@@ -191,7 +191,7 @@
                 <tr>
                     <td colspan="10">
                         <div class="empty-state">
-                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                             <div class="empty-state-msg">No visits found for the selected filters</div>
                         </div>
                     </td>

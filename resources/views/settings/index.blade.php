@@ -132,7 +132,7 @@
 
 {{-- Page header --}}
 <div style="background:#fff;padding:22px 26px;border-radius:12px;margin-bottom:24px;box-shadow:0 2px 10px rgba(0,0,0,.05);">
-    <h1 style="margin:0;color:#1a3a5c;font-weight:700;font-size:20px;">⚙️ Settings &amp; Configuration</h1>
+    <h1 style="margin:0;color:#1a3a5c;font-weight:700;font-size:20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> Settings &amp; Configuration</h1>
     <p style="margin:6px 0 0;color:#6b7280;font-size:13px;">Manage system categories, lookup values, and configurations</p>
 </div>
 
@@ -164,49 +164,49 @@
     <div class="settings-grid">
 
         <div class="settings-card">
-            <div class="settings-header">📦 Asset Configuration</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Asset Configuration</div>
             <div class="settings-desc">Asset categories, statuses and custom fields</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.category.manage', 'asset_category') }}">
-                    <span>🏷️ Asset Categories</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-tag"/></svg> Asset Categories</span>
                     <span class="badge-count">{{ $categories->get('asset_category', collect())->count() }}</span>
                 </a></li>
                 <li><a href="{{ route('settings.category.manage', 'asset_status') }}">
-                    <span>📊 Asset Statuses</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Asset Statuses</span>
                     <span class="badge-count">{{ $categories->get('asset_status', collect())->count() }}</span>
                 </a></li>
                 <li><a href="{{ route('settings.asset-category-fields.index', $categories->get('asset_category', collect())->first()?->id ?? 1) }}">
-                    <span>⚙️ Category Custom Fields</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> Category Custom Fields</span>
                     <span class="badge-manage">Manage</span>
                 </a></li>
             </ul>
         </div>
 
         <div class="settings-card">
-            <div class="settings-header">🖥️ Terminal Configuration</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg> Terminal Configuration</div>
             <div class="settings-desc">POS terminal statuses and device models</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.category.manage', 'terminal_status') }}">
-                    <span>📶 Terminal Statuses</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wifi"/></svg> Terminal Statuses</span>
                     <span class="badge-count">{{ $categories->get('terminal_status', collect())->count() }}</span>
                 </a></li>
                 <li><a href="{{ route('settings.category.manage', 'terminal_model') }}">
-                    <span>🖥️ Terminal Models / Brands</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg> Terminal Models / Brands</span>
                     <span class="badge-count">{{ $categories->get('terminal_model', collect())->count() }}</span>
                 </a></li>
             </ul>
         </div>
 
         <div class="settings-card">
-            <div class="settings-header">🔧 Service Configuration</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Service Configuration</div>
             <div class="settings-desc">Job and field service type definitions</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.category.manage', 'service_type') }}">
-                    <span>⚙️ Service Types</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> Service Types</span>
                     <span class="badge-count">{{ $categories->get('service_type', collect())->count() }}</span>
                 </a></li>
                 <li><a href="{{ route('settings.category.manage', 'visit_purpose') }}">
-                    <span>🗺️ Visit Purposes</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg> Visit Purposes</span>
                     <span class="badge-count">{{ $categories->get('visit_purpose', collect())->count() }}</span>
                 </a></li>
             </ul>
@@ -223,18 +223,18 @@
     <div class="settings-grid">
 
         <div class="settings-card">
-            <div class="settings-header">🎫 Ticket Categories</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ticket"/></svg> Ticket Categories</div>
             <div class="settings-desc">Issue types raised against terminals or internally</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.category.manage', 'ticket_issue_type') }}">
-                    <span>🔍 Issue Types</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-search"/></svg> Issue Types</span>
                     <span class="badge-count">{{ $categories->get('ticket_issue_type', collect())->count() }}</span>
                 </a></li>
             </ul>
         </div>
 
         <div class="settings-card" style="grid-column: span 2;">
-            <div class="settings-header">📌 Ticket Status &amp; Priority Reference</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-pin"/></svg> Ticket Status &amp; Priority Reference</div>
             <div class="settings-desc">Read-only — these values are system-defined and control ticket workflows</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
                 <div>
@@ -272,33 +272,33 @@
     <div class="settings-grid">
 
         <div class="settings-card">
-            <div class="settings-header">🏢 Departments</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Departments</div>
             <div class="settings-desc">Organisational units and teams</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.departments.manage') }}">
-                    <span>📂 All Departments</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg> All Departments</span>
                     <span class="badge-count">{{ $stats['total_departments'] }}</span>
                 </a></li>
             </ul>
         </div>
 
         <div class="settings-card">
-            <div class="settings-header">🛡️ Roles &amp; Permissions</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-shield"/></svg> Roles &amp; Permissions</div>
             <div class="settings-desc">Access control roles and their permission sets</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.roles.manage') }}">
-                    <span>🔑 Manage Roles</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-key"/></svg> Manage Roles</span>
                     <span class="badge-count">{{ $stats['total_roles'] }}</span>
                 </a></li>
             </ul>
         </div>
 
         <div class="settings-card">
-            <div class="settings-header">👤 Employee Positions</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> Employee Positions</div>
             <div class="settings-desc">Job titles and position classifications</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.category.manage', 'employee_position') }}">
-                    <span>📋 Positions / Job Titles</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Positions / Job Titles</span>
                     <span class="badge-count">{{ $categories->get('employee_position', collect())->count() }}</span>
                 </a></li>
             </ul>
@@ -315,33 +315,33 @@
     <div class="settings-grid">
 
         <div class="settings-card">
-            <div class="settings-header">🤝 Client Classification</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Client Classification</div>
             <div class="settings-desc">Industry tags and merchant/business types</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.category.manage', 'client_industry') }}">
-                    <span>🏭 Client Industries</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Client Industries</span>
                     <span class="badge-count">{{ $categories->get('client_industry', collect())->count() }}</span>
                 </a></li>
                 <li><a href="{{ route('settings.category.manage', 'business_type') }}">
-                    <span>🏪 Business / Merchant Types</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Business / Merchant Types</span>
                     <span class="badge-count">{{ $categories->get('business_type', collect())->count() }}</span>
                 </a></li>
             </ul>
         </div>
 
         <div class="settings-card">
-            <div class="settings-header">📁 Project Configuration</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg> Project Configuration</div>
             <div class="settings-desc">Project type classifications</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.category.manage', 'project_type') }}">
-                    <span>📌 Project Types</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-pin"/></svg> Project Types</span>
                     <span class="badge-count">{{ $categories->get('project_type', collect())->count() }}</span>
                 </a></li>
             </ul>
         </div>
 
         <div class="settings-card">
-            <div class="settings-header">📌 Project Status Reference</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-pin"/></svg> Project Status Reference</div>
             <div class="settings-desc">Read-only system-defined project lifecycle states</div>
             <div class="ref-chips" style="margin-top:4px;">
                 <span class="ref-chip">Planning</span>
@@ -365,7 +365,7 @@
     <div class="settings-grid">
 
         <div class="settings-card">
-            <div class="settings-header">📋 System Categories (All)</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> System Categories (All)</div>
             <div class="settings-desc">Full list of every lookup / category type</div>
             <ul class="settings-list">
                 @foreach($categoryTypes as $type => $label)
@@ -378,30 +378,30 @@
         </div>
 
         <div class="settings-card">
-            <div class="settings-header">⚙️ General Settings</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> General Settings</div>
             <div class="settings-desc">Email, notifications and backup configuration</div>
             <ul class="settings-list">
                 <li><a href="{{ route('settings.email') }}">
-                    <span>📧 Email Settings</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-mail"/></svg> Email Settings</span>
                     <span class="badge-manage">Configure</span>
                 </a></li>
                 <li><a href="{{ route('settings.notifications') }}">
-                    <span>🔔 Notification Rules</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-bell"/></svg> Notification Rules</span>
                     <span class="badge-manage">Configure</span>
                 </a></li>
                 <li><a href="{{ route('settings.backups') }}">
-                    <span>💾 Database Backups</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Database Backups</span>
                     <span class="badge-manage">Manage</span>
                 </a></li>
             </ul>
         </div>
 
         <div class="settings-card">
-            <div class="settings-header">🔍 Audit Trail</div>
+            <div class="settings-header"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-search"/></svg> Audit Trail</div>
             <div class="settings-desc">System activity logs and audit records</div>
             <ul class="settings-list">
                 <li><a href="{{ route('audit-trail.index') }}">
-                    <span>📜 View Audit Trail</span>
+                    <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg> View Audit Trail</span>
                     <span class="badge-manage">Open</span>
                 </a></li>
             </ul>

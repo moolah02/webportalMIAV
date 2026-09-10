@@ -263,7 +263,7 @@ class RoleController extends Controller
                 'description' => 'Complete system access - bypasses all permission checks',
                 'category' => 'admin',
                 'danger' => true,
-                'icon' => '⚡'
+                'icon' => ''
             ],
 
             // ==============================================
@@ -273,13 +273,13 @@ class RoleController extends Controller
                 'name' => 'Company Dashboard',
                 'description' => 'Access main company dashboard with system metrics',
                 'category' => 'dashboard',
-                'icon' => '📊'
+                'icon' => ''
             ],
             'view_own_data' => [
                 'name' => 'Employee Dashboard',
                 'description' => 'Access personal employee dashboard and profile',
                 'category' => 'dashboard',
-                'icon' => '👤'
+                'icon' => ''
             ],
 
             // ==============================================
@@ -289,49 +289,49 @@ class RoleController extends Controller
                 'name' => 'Manage Internal Assets',
                 'description' => 'Full asset management including create, edit, delete',
                 'category' => 'assets',
-                'icon' => '🏢'
+                'icon' => ''
             ],
             'view_assets' => [
                 'name' => 'View Assets',
                 'description' => 'View asset inventory and details',
                 'category' => 'assets',
-                'icon' => '👁️'
+                'icon' => ''
             ],
             'manage_terminals' => [
                 'name' => 'Manage POS Terminals',
                 'description' => 'Full POS terminal management and configuration',
                 'category' => 'assets',
-                'icon' => '💳'
+                'icon' => ''
             ],
             'view_terminals' => [
                 'name' => 'View POS Terminals',
                 'description' => 'View POS terminal information and status',
                 'category' => 'assets',
-                'icon' => '👁️'
+                'icon' => ''
             ],
             'request_assets' => [
                 'name' => 'Request Assets',
                 'description' => 'Submit asset requests through catalog',
                 'category' => 'assets',
-                'icon' => '🛒'
+                'icon' => ''
             ],
             'view_own_requests' => [
                 'name' => 'View My Requests',
                 'description' => 'View personal asset request history',
                 'category' => 'assets',
-                'icon' => '📋'
+                'icon' => ''
             ],
             'approve_requests' => [
                 'name' => 'Approve Asset Requests',
                 'description' => 'Approve or reject asset requests from employees',
                 'category' => 'assets',
-                'icon' => '✅'
+                'icon' => ''
             ],
             'manage_licenses' => [
                 'name' => 'Manage Business Licenses',
                 'description' => 'Manage business licenses and compliance',
                 'category' => 'assets',
-                'icon' => '📄'
+                'icon' => ''
             ],
 
             // ==============================================
@@ -341,55 +341,55 @@ class RoleController extends Controller
                 'name' => 'Terminal Deployment',
                 'description' => 'Plan and manage terminal deployments',
                 'category' => 'operations',
-                'icon' => '🚀'
+                'icon' => ''
             ],
             'manage_jobs' => [
                 'name' => 'All Job Assignments',
                 'description' => 'Create and manage all job assignments',
                 'category' => 'operations',
-                'icon' => '📋'
+                'icon' => ''
             ],
             'assign_jobs' => [
                 'name' => 'Assign Jobs',
                 'description' => 'Assign jobs to technicians',
                 'category' => 'operations',
-                'icon' => '👨‍🔧'
+                'icon' => ''
             ],
             'view_jobs' => [
                 'name' => 'View Jobs',
                 'description' => 'View assigned jobs (technician access)',
                 'category' => 'operations',
-                'icon' => '👁️'
+                'icon' => ''
             ],
             'view_technician_reports' => [
                 'name' => 'View Technician Reports',
                 'description' => 'Access technician visit reports and analytics',
                 'category' => 'operations',
-                'icon' => '📊'
+                'icon' => ''
             ],
             'manage_visits' => [
                 'name' => 'Manage Site Visits',
                 'description' => 'Create and manage site visit records',
                 'category' => 'operations',
-                'icon' => '📝'
+                'icon' => ''
             ],
             'view_visits' => [
                 'name' => 'View Site Visits',
                 'description' => 'View site visit information',
                 'category' => 'operations',
-                'icon' => '👁️'
+                'icon' => ''
             ],
             'manage_tickets' => [
                 'name' => 'Manage Support Tickets',
                 'description' => 'Create, assign and resolve support tickets',
                 'category' => 'operations',
-                'icon' => '🎫'
+                'icon' => ''
             ],
             'view_tickets' => [
                 'name' => 'View Support Tickets',
                 'description' => 'View support ticket information',
                 'category' => 'operations',
-                'icon' => '👁️'
+                'icon' => ''
             ],
 
             // ==============================================
@@ -399,19 +399,19 @@ class RoleController extends Controller
                 'name' => 'Manage Clients',
                 'description' => 'Full client management including create, edit, delete',
                 'category' => 'clients',
-                'icon' => '🏢'
+                'icon' => ''
             ],
             'view_clients' => [
                 'name' => 'View Clients',
                 'description' => 'View client information and details',
                 'category' => 'clients',
-                'icon' => '👁️'
+                'icon' => ''
             ],
             'view_client_dashboards' => [
                 'name' => 'Client Dashboards',
                 'description' => 'Access client-specific dashboards and metrics',
                 'category' => 'clients',
-                'icon' => '📊'
+                'icon' => ''
             ],
 
             // ==============================================
@@ -421,25 +421,25 @@ class RoleController extends Controller
                 'name' => 'Manage Employees',
                 'description' => 'Full employee management including hire, edit, deactivate',
                 'category' => 'management',
-                'icon' => '👥'
+                'icon' => ''
             ],
             'view_employees' => [
                 'name' => 'View Employees',
                 'description' => 'View employee information and profiles',
                 'category' => 'management',
-                'icon' => '👁️'
+                'icon' => ''
             ],
             'manage_roles' => [
                 'name' => 'Manage Roles',
                 'description' => 'Create and modify user roles and permissions',
                 'category' => 'management',
-                'icon' => '🔐'
+                'icon' => ''
             ],
             'manage_team' => [
                 'name' => 'Team Management',
                 'description' => 'Manage team operations and workflows',
                 'category' => 'management',
-                'icon' => '👥'
+                'icon' => ''
             ],
 
             // ==============================================
@@ -449,19 +449,19 @@ class RoleController extends Controller
                 'name' => 'View Schedule',
                 'description' => 'View personal work schedule and appointments',
                 'category' => 'technician',
-                'icon' => '📅'
+                'icon' => ''
             ],
             'create_reports' => [
                 'name' => 'Create Service Reports',
                 'description' => 'Create and submit service reports',
                 'category' => 'technician',
-                'icon' => '📝'
+                'icon' => ''
             ],
             'view_own_reports' => [
                 'name' => 'View My Reports',
                 'description' => 'View personal service report history',
                 'category' => 'technician',
-                'icon' => '📋'
+                'icon' => ''
             ],
 
             // ==============================================
@@ -471,19 +471,19 @@ class RoleController extends Controller
                 'name' => 'System Settings',
                 'description' => 'Manage system configuration and settings',
                 'category' => 'admin',
-                'icon' => '⚙️'
+                'icon' => ''
             ],
             'manage_documents' => [
                 'name' => 'Manage Documents',
                 'description' => 'Upload, organize and manage documents',
                 'category' => 'admin',
-                'icon' => '📁'
+                'icon' => ''
             ],
             'view_documents' => [
                 'name' => 'View Documents',
                 'description' => 'Access and download documents',
                 'category' => 'admin',
-                'icon' => '👁️'
+                'icon' => ''
             ],
 
             // ==============================================
@@ -493,25 +493,25 @@ class RoleController extends Controller
                 'name' => 'Reports Dashboard',
                 'description' => 'Access reporting dashboard and analytics',
                 'category' => 'reports',
-                'icon' => '📈'
+                'icon' => ''
             ],
             'view_technician_visits' => [
                 'name' => 'Technician Visit Reports',
                 'description' => 'View detailed technician visit reports',
                 'category' => 'reports',
-                'icon' => '👨‍🔧'
+                'icon' => ''
             ],
             'use_report_builder' => [
                 'name' => 'Report Builder',
                 'description' => 'Create custom reports using report builder',
                 'category' => 'reports',
-                'icon' => '🏗️'
+                'icon' => ''
             ],
             'export_reports' => [
                 'name' => 'Export Reports',
                 'description' => 'Export reports to various formats',
                 'category' => 'reports',
-                'icon' => '📤'
+                'icon' => ''
             ],
 
             // ==============================================
@@ -521,25 +521,25 @@ class RoleController extends Controller
                 'name' => 'Import Data',
                 'description' => 'Import data from files (Excel, CSV)',
                 'category' => 'special',
-                'icon' => '📥'
+                'icon' => ''
             ],
             'export_data' => [
                 'name' => 'Export Data',
                 'description' => 'Export system data to files',
                 'category' => 'special',
-                'icon' => '📤'
+                'icon' => ''
             ],
             'bulk_operations' => [
                 'name' => 'Bulk Operations',
                 'description' => 'Perform bulk operations on records',
                 'category' => 'special',
-                'icon' => '🔄'
+                'icon' => ''
             ],
             'system_logs' => [
                 'name' => 'System Logs',
                 'description' => 'View system logs and audit trails',
                 'category' => 'special',
-                'icon' => '📝'
+                'icon' => ''
             ]
         ];
     }

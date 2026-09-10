@@ -28,7 +28,7 @@ body > .ts-dropdown .ts-no-results{padding:0.5rem 0.75rem;color:#9ca3af;font-sty
 
     @if($errors->any())
         <div class="flash-error mb-5">
-            <span class="text-lg shrink-0">❌</span>
+            <span class="text-lg shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg></span>
             <div>
                 <strong>Please fix the following:</strong>
                 <ul class="list-disc list-inside mt-1">

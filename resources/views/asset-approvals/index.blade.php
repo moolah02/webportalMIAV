@@ -13,7 +13,7 @@
             <p class="text-sm text-gray-500 mt-1">Review and approve employee asset requests</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('assets.index') }}" class="btn-secondary">📦 Manage Assets</a>
+            <a href="{{ route('assets.index') }}" class="btn-secondary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Manage Assets</a>
         </div>
     </div>
 

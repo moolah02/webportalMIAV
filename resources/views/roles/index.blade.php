@@ -216,7 +216,7 @@ File: resources/views/roles/index.blade.php
         <!-- Modal Header -->
         <div style="background: #F8F9FA; padding: 20px; border-radius: 12px 12px 0 0; border-bottom: 1px solid #E0E0E0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #333;">
-                <span>🔑</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-key"/></svg></span>
                 <span id="modalRoleName">Role Actions</span>
             </h3>
             <button onclick="closeQuickActions()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #666; font-size: 24px; cursor: pointer; padding: 5px; line-height: 1;">×</button>
@@ -227,7 +227,7 @@ File: resources/views/roles/index.blade.php
             <div style="display: grid; gap: 12px;">
                 <!-- View Details -->
                 <button id="viewRoleBtn" class="modal-action-btn" style="background: #E3F2FD; color: #1976D2;">
-                    <span style="font-size: 20px;">👁️</span>
+                    <span style="font-size: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg></span>
                     <div>
                         <div style="font-weight: bold;">View Details</div>
                         <div style="font-size: 12px; opacity: 0.8;">See complete role information</div>
@@ -236,7 +236,7 @@ File: resources/views/roles/index.blade.php
 
                 <!-- Edit Permissions -->
                 <button id="editRoleBtn" class="modal-action-btn" style="background: #E8F5E8; color: #388E3C;">
-                    <span style="font-size: 20px;">✏️</span>
+                    <span style="font-size: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg></span>
                     <div>
                         <div style="font-weight: bold;">Edit Permissions</div>
                         <div style="font-size: 12px; opacity: 0.8;">Modify role permissions</div>
@@ -245,7 +245,7 @@ File: resources/views/roles/index.blade.php
 
                 <!-- Clone Role -->
                 <button id="cloneRoleBtn" class="modal-action-btn" style="background: #FFF3E0; color: #F57C00;">
-                    <span style="font-size: 20px;">📋</span>
+                    <span style="font-size: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
                     <div>
                         <div style="font-weight: bold;">Clone Role</div>
                         <div style="font-size: 12px; opacity: 0.8;">Create a copy of this role</div>
@@ -254,7 +254,7 @@ File: resources/views/roles/index.blade.php
 
                 <!-- Delete Role -->
                 <button id="deleteRoleBtn" class="modal-action-btn" style="background: #FFEBEE; color: #D32F2F;">
-                    <span style="font-size: 20px;">🗑️</span>
+                    <span style="font-size: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg></span>
                     <div>
                         <div style="font-weight: bold;">Delete Role</div>
                         <div style="font-size: 12px; opacity: 0.8;">Remove this role permanently</div>

@@ -4,7 +4,7 @@
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>🔄</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></span>
                 <span>Transfer Asset</span>
             </h3>
             <button onclick="closeTransferModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
@@ -136,7 +136,7 @@
                     <!-- New Assignment Details -->
                     <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffcc02;">
                         <h5 style="margin: 0 0 15px 0; color: #e65100; display: flex; align-items: center; gap: 8px;">
-                            <span>🎯</span>
+                            <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-target"/></svg></span>
                             New Assignment Settings
                         </h5>
 
@@ -189,7 +189,7 @@
                 <!-- Form Actions -->
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
                     <button type="submit" class="btn-secondary" style="flex: 1; background: #ff9800; border-color: #ff9800; color: white;">
-                        <span style="font-size: 16px; margin-right: 8px;">🔄</span>
+                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></span>
                         Process Transfer
                     </button>
                     <button type="button" onclick="closeTransferModal()" class="btn" style="padding: 10px 20px;">
@@ -323,16 +323,16 @@ document.getElementById('transferAssetForm').addEventListener('submit', function
   }
 
   const formData = new FormData(this);
-  // 🔑 Force the value into the payload so Laravel definitely sees it
+  // Force the value into the payload so Laravel definitely sees it
   formData.set('new_employee_id', chosen);
 
   const submitBtn = this.querySelector('button[type="submit"]');
   const originalText = submitBtn.innerHTML;
-  submitBtn.innerHTML = '⏳ Processing...';
+  submitBtn.innerHTML = 'Processing...';
   submitBtn.disabled = true;
 
   fetch(`${BASE}/asset-assignments/${currentAssignmentForTransfer}/transfer`, {
-  method: 'POST',       // ✅ use POST; @method('PATCH') stays in the form
+  method: 'POST',       // use POST; @method('PATCH') stays in the form
   headers: {
     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
     'Accept': 'application/json',

@@ -7,25 +7,25 @@
   <!-- Breadcrumb -->
   <div style="background: #fff; padding: 20px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
     <nav style="font-size: 14px; color: #666;">
-      <a href="{{ route('dashboard') }}" style="color: #1a3a5c; text-decoration: none;">🏠 Dashboard</a>
+      <a href="{{ route('dashboard') }}" style="color: #1a3a5c; text-decoration: none;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-home"/></svg> Dashboard</a>
       <span style="margin: 0 8px;">›</span>
-      <a href="{{ route('settings.index') }}" style="color: #1a3a5c; text-decoration: none;">⚙️ Settings</a>
+      <a href="{{ route('settings.index') }}" style="color: #1a3a5c; text-decoration: none;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> Settings</a>
       <span style="margin: 0 8px;">›</span>
       <span>Role Management</span>
     </nav>
-    <h1 style="margin: 10px 0 0 0; color: #2c3e50; font-weight: 700;">👥 Role Management</h1>
+    <h1 style="margin: 10px 0 0 0; color: #2c3e50; font-weight: 700;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Role Management</h1>
   </div>
 
   <!-- Alerts -->
   @if(session('success'))
     <div class="alert alert-success">
-      ✅ {{ session('success') }}
+      <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> {{ session('success') }}
     </div>
   @endif
 
   @if(session('error'))
     <div class="alert alert-danger">
-      ❌ {{ session('error') }}
+      <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> {{ session('error') }}
     </div>
   @endif
 
@@ -34,7 +34,7 @@
     <div class="table-header">
       <h2 class="table-title">System Roles</h2>
       <button type="button" class="btn-primary" onclick="openAddModal()">
-        ➕ Add Role
+        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Add Role
       </button>
     </div>
 
@@ -88,12 +88,12 @@
               <td>
                 <button type="button" class="btn-sm btn-outline-primary" 
                         onclick="openEditModal({{ $role->id }}, '{{ $role->name }}', '{{ $role->display_name }}', '{{ $role->description }}', {{ json_encode($role->permissions ?? []) }}, {{ $role->is_active ? 'true' : 'false' }})">
-                  ✏️ Edit
+                  <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit
                 </button>
                 @if($role->employees->count() == 0)
                   <button type="button" class="btn-sm btn-outline-danger" 
                           onclick="deleteRole({{ $role->id }}, '{{ $role->name }}')">
-                    🗑️ Delete
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Delete
                   </button>
                 @endif
               </td>
@@ -103,7 +103,7 @@
       </table>
     @else
       <div style="text-align: center; padding: 60px; color: #666;">
-        <div style="font-size: 48px; margin-block-end: 20px;">👥</div>
+        <div style="font-size: 48px; margin-block-end: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
         <h3>No Roles Found</h3>
         <p>Get started by creating your first user role.</p>
       </div>

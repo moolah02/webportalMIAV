@@ -170,7 +170,7 @@
 
     <!-- Executive Summary -->
     <div class="section">
-        <h2>📊 Executive Summary</h2>
+        <h2>Executive Summary</h2>
 
         <div class="metrics-grid">
             <div class="metric-card">
@@ -204,7 +204,7 @@
 
     <!-- Terminal Status Analysis -->
     <div class="section">
-        <h2>🔧 Terminal Status Analysis</h2>
+        <h2>Terminal Status Analysis</h2>
 
         <div class="chart-container">
             <canvas id="statusChart"></canvas>
@@ -226,7 +226,7 @@
                         <td><span class="status-badge status-{{ $status }}">{{ strtoupper($status) }}</span></td>
                         <td>{{ $count }}</td>
                         <td>{{ $terminalStats['total'] > 0 ? round(($count / $terminalStats['total']) * 100, 1) : 0 }}%</td>
-                        <td>{{ $count > ($terminalStats['total'] * 0.1) ? '📈 Above Average' : '📉 Below Average' }}</td>
+                        <td>{{ $count > ($terminalStats['total'] * 0.1) ? 'Above Average' : 'Below Average' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -236,7 +236,7 @@
 
     <!-- Geographic Distribution -->
     <div class="section">
-        <h2>🗺️ Geographic Distribution</h2>
+        <h2>Geographic Distribution</h2>
 
         <div class="chart-container">
             <canvas id="locationChart"></canvas>
@@ -268,7 +268,7 @@
 
     <!-- Service Activity -->
     <div class="section">
-        <h2>⚡ Service Activity Report</h2>
+        <h2>Service Activity Report</h2>
 
         <div class="chart-container">
             <canvas id="serviceChart"></canvas>
@@ -304,24 +304,24 @@
 
     <!-- Recommendations -->
     <div class="section">
-        <h2>💡 Recommendations & Action Items</h2>
+        <h2>Recommendations & Action Items</h2>
 
         @if(($terminalStats['by_status']['maintenance'] ?? 0) + ($terminalStats['by_status']['faulty'] ?? 0) > 0)
         <div class="recommendation">
-            <strong>🔴 Immediate Action Required:</strong>
+            <strong>Immediate Action Required:</strong>
             {{ ($terminalStats['by_status']['maintenance'] ?? 0) + ($terminalStats['by_status']['faulty'] ?? 0) }} terminals need immediate service attention to maintain network reliability.
         </div>
         @endif
 
         @if($terminalStats['total'] > 0 && (($terminalStats['by_status']['active'] ?? 0) / $terminalStats['total']) < 0.9)
         <div class="recommendation">
-            <strong>⚠️ Network Health Alert:</strong>
+            <strong>Network Health Alert:</strong>
             Current uptime is {{ round((($terminalStats['by_status']['active'] ?? 0) / $terminalStats['total']) * 100, 1) }}%. Target should be above 90% for optimal performance.
         </div>
         @endif
 
         <div class="recommendation">
-            <strong>📈 Optimization Opportunities:</strong>
+            <strong>Optimization Opportunities:</strong>
             <ul>
                 <li>Schedule preventive maintenance for terminals approaching service due dates</li>
                 <li>Implement remote monitoring for early issue detection</li>

@@ -4,7 +4,7 @@
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>📦</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg></span>
                 <span id="modalAssetName">Asset Actions</span>
             </h3>
             <button onclick="closeAssetActions()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
@@ -14,7 +14,7 @@
         <div style="padding: 20px;">
             <div style="display: grid; gap: 12px;">
                 <button onclick="viewAsset()" class="modal-action-btn" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white;">
-                    <span style="font-size: 20px;">👁️</span>
+                    <span style="font-size: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg></span>
                     <div>
                         <div style="font-weight: bold;">View Details</div>
                         <div style="font-size: 12px; opacity: 0.9;">See complete asset information</div>
@@ -22,7 +22,7 @@
                 </button>
                 
                 <button onclick="editAsset()" class="modal-action-btn" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
-                    <span style="font-size: 20px;">✏️</span>
+                    <span style="font-size: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg></span>
                     <div>
                         <div style="font-weight: bold;">Edit Asset</div>
                         <div style="font-size: 12px; opacity: 0.9;">Update asset information</div>
@@ -30,7 +30,7 @@
                 </button>
                 
                 <button onclick="updateStock()" class="modal-action-btn" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
-                    <span style="font-size: 20px;">📊</span>
+                    <span style="font-size: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></span>
                     <div>
                         <div style="font-weight: bold;">Update Stock</div>
                         <div style="font-size: 12px; opacity: 0.9;">Adjust stock quantities</div>
@@ -38,7 +38,7 @@
                 </button>
                 
                 <button onclick="deleteAsset()" class="modal-action-btn" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white;">
-                    <span style="font-size: 20px;">🗑️</span>
+                    <span style="font-size: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg></span>
                     <div>
                         <div style="font-weight: bold;">Delete Asset</div>
                         <div style="font-size: 12px; opacity: 0.9;">Remove asset permanently</div>
@@ -55,7 +55,7 @@
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span>📊</span>
+                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></span>
                 <span>Update Stock</span>
             </h3>
             <button onclick="closeStockModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>

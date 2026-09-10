@@ -2,7 +2,7 @@
 @section('title', 'Projects')
 
 @section('header-actions')
-<a href="{{ route('projects.create') }}" class="btn-primary">➕ New Project</a>
+<a href="{{ route('projects.create') }}" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> New Project</a>
 @endsection
 
 @section('content')
@@ -10,28 +10,28 @@
 {{-- Stat Cards --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
     <div class="stat-card">
-        <div class="stat-icon stat-icon-blue">📋</div>
+        <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['total'] }}</div>
             <div class="stat-label">Total Projects</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-green">🟢</div>
+        <div class="stat-icon stat-icon-green"><svg class="mv-i mv-i-sm mv-ei" style="color:var(--mv-good)" aria-hidden="true"><use href="#i-dot"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['active'] }}</div>
             <div class="stat-label">Active</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-teal">✅</div>
+        <div class="stat-icon stat-icon-teal"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['completed'] }}</div>
             <div class="stat-label">Completed</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-yellow">⏸️</div>
+        <div class="stat-icon stat-icon-yellow"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-pause"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['paused'] }}</div>
             <div class="stat-label">Paused / On Hold</div>
@@ -123,12 +123,12 @@
                         default     => 'badge-gray',
                     };
                     $typeIcon = match($project->project_type) {
-                        'maintenance'  => '🔧',
-                        'installation' => '📦',
-                        'support'      => '💬',
-                        'discovery'    => '🔍',
-                        'servicing'    => '⚙️',
-                        default        => '📝',
+                        'maintenance'  => '',
+                        'installation' => '',
+                        'support'      => '',
+                        'discovery'    => '',
+                        'servicing'    => '',
+                        default        => '',
                     };
                 @endphp
                 <tr>
@@ -186,7 +186,7 @@
                 <tr>
                     <td colspan="8">
                         <div class="empty-state">
-                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                             <div class="empty-state-msg">No projects match your current filters.</div>
                         </div>
                     </td>

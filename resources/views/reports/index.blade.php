@@ -14,7 +14,7 @@
 {{-- Key Metrics --}}
 <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-5">
     <div class="stat-card">
-        <div class="stat-icon stat-icon-blue">🏢</div>
+        <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg></div>
         <div>
             <div class="stat-number">{{ $systemOverview['total_clients'] }}</div>
             <div class="stat-label">Total Clients</div>
@@ -22,7 +22,7 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-green">💻</div>
+        <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg></div>
         <div>
             <div class="stat-number">{{ $systemOverview['total_terminals'] }}</div>
             <div class="stat-label">POS Terminals</div>
@@ -30,7 +30,7 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-orange">👥</div>
+        <div class="stat-icon stat-icon-orange"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
         <div>
             <div class="stat-number">{{ $systemOverview['total_employees'] }}</div>
             <div class="stat-label">Employees</div>
@@ -38,7 +38,7 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-purple">📋</div>
+        <div class="stat-icon stat-icon-purple"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
         <div>
             <div class="stat-number">{{ $systemOverview['active_projects'] }}</div>
             <div class="stat-label">Active Projects</div>
@@ -46,7 +46,7 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-red">🎫</div>
+        <div class="stat-icon stat-icon-red"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ticket"/></svg></div>
         <div>
             <div class="stat-number">{{ $systemOverview['open_tickets'] }}</div>
             <div class="stat-label">Open Tickets</div>
@@ -54,7 +54,7 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-teal">💰</div>
+        <div class="stat-icon stat-icon-teal"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg></div>
         <div>
             <div class="stat-number">${{ number_format($systemOverview['revenue_impact'] / 1000) }}K</div>
             <div class="stat-label">Revenue Impact</div>
@@ -105,14 +105,14 @@
     <div class="ui-card overflow-hidden mt-5">
         <!-- Tab Navigation -->
         <div class="tab-navigation border-b border-gray-200 px-5 pt-2">
-            <button class="tab-button active" onclick="switchTab(event, 'overview')">📊 System Overview</button>
-            <button class="tab-button" onclick="switchTab(event, 'clients')">🏢 Client Analytics</button>
-            <button class="tab-button" onclick="switchTab(event, 'terminals')">💻 Terminal Management</button>
-            <button class="tab-button" onclick="switchTab(event, 'service')">🔧 Service Activity</button>
-            <button class="tab-button" onclick="switchTab(event, 'assets')">📦 Asset Management</button>
-            <button class="tab-button" onclick="switchTab(event, 'employees')">👥 Employee Performance</button>
-            <button class="tab-button" onclick="switchTab(event, 'projects')">📋 Project Management</button>
-            <button class="tab-button" onclick="switchTab(event, 'regional')">🗺️ Regional Analysis</button>
+            <button class="tab-button active" onclick="switchTab(event, 'overview')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> System Overview</button>
+            <button class="tab-button" onclick="switchTab(event, 'clients')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Client Analytics</button>
+            <button class="tab-button" onclick="switchTab(event, 'terminals')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-monitor"/></svg> Terminal Management</button>
+            <button class="tab-button" onclick="switchTab(event, 'service')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Service Activity</button>
+            <button class="tab-button" onclick="switchTab(event, 'assets')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Asset Management</button>
+            <button class="tab-button" onclick="switchTab(event, 'employees')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Employee Performance</button>
+            <button class="tab-button" onclick="switchTab(event, 'projects')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Project Management</button>
+            <button class="tab-button" onclick="switchTab(event, 'regional')"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg> Regional Analysis</button>
         </div>
 
         <!-- Tab Content -->
@@ -153,7 +153,7 @@
             </div>
 
             <div class="recommendation-box">
-                <h4>🎯 Key Recommendations</h4>
+                <h4><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-target"/></svg> Key Recommendations</h4>
                 <ul>
                     @if($systemOverview['terminal_uptime'] < 90)
                     <li><strong>Terminal Health:</strong> System uptime is {{ $systemOverview['terminal_uptime'] }}%. Consider increasing maintenance frequency for terminals in maintenance/faulty status.</li>
@@ -233,7 +233,7 @@
                 <div class="service-alerts">
                     <h4>Service Requirements</h4>
                     <div class="alert-item urgent">
-                        <span class="alert-icon">🚨</span>
+                        <span class="alert-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
                         <div class="alert-content">
                             <div class="alert-title">{{ $terminalData['terminals_needing_service'] }} Terminals Need Service</div>
                             <div class="alert-desc">Immediate attention required for optimal performance</div>
@@ -242,7 +242,7 @@
 
                     @if(isset($terminalData['service_due_analysis']))
                     <div class="alert-item warning">
-                        <span class="alert-icon">⚠️</span>
+                        <span class="alert-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></span>
                         <div class="alert-content">
                             <div class="alert-title">{{ $terminalData['service_due_analysis']['due_this_week'] ?? 0 }} Due This Week</div>
                             <div class="alert-desc">Schedule maintenance to prevent issues</div>
@@ -338,7 +338,7 @@
 
                 @if($assetData['low_stock_alerts'] > 0)
                 <div class="alert-box">
-                    <h4>⚠️ Stock Alerts</h4>
+                    <h4><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Stock Alerts</h4>
                     <p>{{ $assetData['low_stock_alerts'] }} assets are below minimum stock levels and require immediate attention.</p>
                     <a href="{{ route('assets.low-stock-alerts') }}" class="btn-secondary">View Low Stock Items</a>
                 </div>
@@ -419,7 +419,7 @@
                     <h4>Project Health Indicators</h4>
                     <div class="project-metrics">
                         <div class="metric-box success">
-                            <div class="metric-icon">✅</div>
+                            <div class="metric-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
                             <div class="metric-info">
                                 <div class="metric-value">{{ $projectData['project_completion_rate'] }}%</div>
                                 <div class="metric-label">Completion Rate</div>
@@ -428,7 +428,7 @@
 
                         @if(isset($projectData['overdue_projects']) && $projectData['overdue_projects'] > 0)
                         <div class="metric-box danger">
-                            <div class="metric-icon">⚠️</div>
+                            <div class="metric-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
                             <div class="metric-info">
                                 <div class="metric-value">{{ $projectData['overdue_projects'] }}</div>
                                 <div class="metric-label">Overdue Projects</div>
@@ -438,7 +438,7 @@
 
                         @if(isset($projectData['upcoming_deadlines']) && $projectData['upcoming_deadlines'] > 0)
                         <div class="metric-box warning">
-                            <div class="metric-icon">📅</div>
+                            <div class="metric-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
                             <div class="metric-info">
                                 <div class="metric-value">{{ $projectData['upcoming_deadlines'] }}</div>
                                 <div class="metric-label">Due in 30 Days</div>

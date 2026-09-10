@@ -88,17 +88,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function getCategoryIcon(categoryName) {
         const icons = {
-            'Vehicles': '🚗',
-            'Computer and IT Equipment': '💻',
-            'IT Equipment': '💻',
-            'POS Terminals': '🖥️',
-            'Licenses': '🔑',
-            'Software': '💾',
-            'Furniture': '🪑',
-            'Office Supplies': '📎',
-            'Electronics': '📱'
+            'Vehicles': '',
+            'Computer and IT Equipment': '',
+            'IT Equipment': '',
+            'POS Terminals': '',
+            'Licenses': '',
+            'Software': '',
+            'Furniture': '',
+            'Office Supplies': '',
+            'Electronics': ''
         };
-        return icons[categoryName] || '📋';
+        return icons[categoryName] || '';
     }
 
     function createFieldElement(field) {
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const notice = document.createElement('div');
                 notice.id = 'individualEntryNotice';
                 notice.style.cssText = 'background: #e3f2fd; color: #1565c0; padding: 10px; border-radius: 4px; margin-block-start: 10px; font-size: 13px;';
-                notice.innerHTML = '<strong>ℹ️ Note:</strong> This category requires individual entry. Each item must be added separately with unique identifiers.';
+                notice.innerHTML = '<strong>Note:</strong> This category requires individual entry. Each item must be added separately with unique identifiers.';
                 stockQuantityInput.parentElement.appendChild(notice);
             }
         } else {

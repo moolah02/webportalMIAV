@@ -22,7 +22,7 @@ File: resources/views/roles/create.blade.php
                 <!-- Basic Information -->
                 <div class="ui-card p-6">
                     <h4 style="margin-bottom: 20px; color: #333; display: flex; align-items: center; gap: 8px;">
-                        📋 Role Information
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Role Information
                     </h4>
 
                     <div>
@@ -31,7 +31,7 @@ File: resources/views/roles/create.blade.php
                                placeholder="e.g., field_technician, office_manager, sales_coordinator"
                                style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px; transition: border-color 0.2s ease;">
                         <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            💡 Use lowercase with underscores. Will display as "Field Technician"
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lightbulb"/></svg> Use lowercase with underscores. Will display as "Field Technician"
                         </div>
                         @error('name')
                             <div style="color: #f44336; font-size: 12px; margin-top: 5px; padding: 8px; background: #ffebee; border-radius: 4px;">{{ $message }}</div>
@@ -60,7 +60,7 @@ File: resources/views/roles/create.blade.php
                 <div class="ui-card p-6">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h4 style="margin: 0; color: #333; display: flex; align-items: center; gap: 8px;">
-                            🔐 Permissions & Access Control
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-lock"/></svg> Permissions & Access Control
                         </h4>
                         <div style="display: flex; gap: 10px;">
                             <button type="button" onclick="expandAllCategories()" class="btn-secondary btn-sm">Expand All</button>
@@ -71,21 +71,21 @@ File: resources/views/roles/create.blade.php
                     @php
                         $groupedPermissions = collect($allPermissions)->groupBy('category', true);
                         $categoryConfig = [
-                            'admin' => ['name' => 'System Administration', 'icon' => '⚡', 'color' => '#f44336'],
-                            'dashboard' => ['name' => 'Dashboard Access', 'icon' => '📊', 'color' => '#2196f3'],
-                            'assets' => ['name' => 'Asset Management', 'icon' => '📦', 'color' => '#4caf50'],
-                            'operations' => ['name' => 'Field Operations', 'icon' => '🔧', 'color' => '#ff9800'],
-                            'clients' => ['name' => 'Client Management', 'icon' => '🏢', 'color' => '#9c27b0'],
-                            'management' => ['name' => 'Employee Management', 'icon' => '👥', 'color' => '#607d8b'],
-                            'technician' => ['name' => 'Technician Portal', 'icon' => '👨‍🔧', 'color' => '#00bcd4'],
-                            'reports' => ['name' => 'Reports & Analytics', 'icon' => '📈', 'color' => '#795548'],
-                            'special' => ['name' => 'Special Operations', 'icon' => '🎯', 'color' => '#e91e63']
+                            'admin' => ['name' => 'System Administration', 'icon' => '', 'color' => '#f44336'],
+                            'dashboard' => ['name' => 'Dashboard Access', 'icon' => '', 'color' => '#2196f3'],
+                            'assets' => ['name' => 'Asset Management', 'icon' => '', 'color' => '#4caf50'],
+                            'operations' => ['name' => 'Field Operations', 'icon' => '', 'color' => '#ff9800'],
+                            'clients' => ['name' => 'Client Management', 'icon' => '', 'color' => '#9c27b0'],
+                            'management' => ['name' => 'Employee Management', 'icon' => '', 'color' => '#607d8b'],
+                            'technician' => ['name' => 'Technician Portal', 'icon' => '', 'color' => '#00bcd4'],
+                            'reports' => ['name' => 'Reports & Analytics', 'icon' => '', 'color' => '#795548'],
+                            'special' => ['name' => 'Special Operations', 'icon' => '', 'color' => '#e91e63']
                         ];
                     @endphp
 
                     @foreach($groupedPermissions as $category => $permissions)
                     @php
-                        $config = $categoryConfig[$category] ?? ['name' => ucfirst($category), 'icon' => '📋', 'color' => '#666'];
+                        $config = $categoryConfig[$category] ?? ['name' => ucfirst($category), 'icon' => '', 'color' => '#666'];
                     @endphp
                     <div class="permission-category" style="margin-bottom: 20px; border: 2px solid #f0f0f0; border-radius: 12px; overflow: hidden; transition: all 0.3s ease;">
                         <!-- Category Header -->
@@ -156,7 +156,7 @@ File: resources/views/roles/create.blade.php
                                                    style="margin-top: 3px;">
                                             <div style="flex: 1;">
                                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                                                    <span style="font-size: 16px;">{{ $permission['icon'] ?? '🔑' }}</span>
+                                                    <span style="font-size: 16px;">{{ $permission['icon'] ?? '' }}</span>
                                                     <div style="font-weight: 600; color: #333; font-size: 14px;">
                                                         {{ $permission['name'] }}
                                                     </div>
@@ -191,7 +191,7 @@ File: resources/views/roles/create.blade.php
                 <!-- Selected Permissions Preview -->
                 <div class="ui-card p-6">
                     <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 8px;">
-                        📋 Selected Permissions
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Selected Permissions
                     </h4>
 
                     <div id="selected-permissions" style="min-height: 120px; max-height: 300px; overflow-y: auto;">
@@ -204,31 +204,31 @@ File: resources/views/roles/create.blade.php
                 <!-- Role Templates -->
                 <div class="ui-card p-6">
                     <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 8px;">
-                        🎨 Quick Templates
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-sliders"/></svg> Quick Templates
                     </h4>
 
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <button type="button" onclick="applyTemplate('super_admin')" class="template-btn danger">
-                            ⚡ Super Administrator
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Super Administrator
                         </button>
                         <button type="button" onclick="applyTemplate('department_manager')" class="template-btn">
-                            👑 Department Manager
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-award"/></svg> Department Manager
                         </button>
                         <button type="button" onclick="applyTemplate('team_lead')" class="template-btn">
-                            👥 Team Lead
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Team Lead
                         </button>
                         <button type="button" onclick="applyTemplate('field_technician')" class="template-btn">
-                            🔧 Field Technician
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Field Technician
                         </button>
                         <button type="button" onclick="applyTemplate('office_staff')" class="template-btn">
-                            🏢 Office Staff
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Office Staff
                         </button>
                         <button type="button" onclick="applyTemplate('basic_employee')" class="template-btn">
-                            👤 Basic Employee
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> Basic Employee
                         </button>
                         <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
                         <button type="button" onclick="clearAll()" class="template-btn clear">
-                            🗑️ Clear All
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Clear All
                         </button>
                     </div>
                 </div>
@@ -236,7 +236,7 @@ File: resources/views/roles/create.blade.php
                 <!-- Permission Summary -->
                 <div class="ui-card p-6">
                     <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 8px;">
-                        📊 Role Summary
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Role Summary
                     </h4>
 
                     <div class="summary-item">
@@ -259,7 +259,7 @@ File: resources/views/roles/create.blade.php
                 <div class="ui-card p-6">
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <button type="submit" class="btn-primary" style="width: 100%; padding: 16px; font-size: 16px;">
-                            🎉 Create Role
+                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> Create Role
                         </button>
                         <a href="{{ route('roles.index') }}" class="btn-secondary" style="width: 100%; text-align: center; padding: 12px;">
                             Cancel
@@ -573,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Show loading state
         const submitBtn = document.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '⏳ Creating Role...';
+        submitBtn.innerHTML = 'Creating Role...';
         submitBtn.disabled = true;
     });
 });

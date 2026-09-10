@@ -6,28 +6,28 @@
 {{-- ── Stats ──────────────────────────────────────────────── --}}
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
     <div class="stat-card">
-        <div class="stat-icon stat-icon-blue">💳</div>
+        <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-card"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['total_terminals'] ?? 0 }}</div>
             <div class="stat-label">Total Terminals</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-green">✅</div>
+        <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['active_terminals'] ?? 0 }}</div>
             <div class="stat-label">Active</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-orange">⚠️</div>
+        <div class="stat-icon stat-icon-orange"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['faulty_terminals'] ?? 0 }}</div>
             <div class="stat-label">Need Attention</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-red">🔴</div>
+        <div class="stat-icon stat-icon-red"><svg class="mv-i mv-i-sm mv-ei" style="color:var(--mv-crit)" aria-hidden="true"><use href="#i-dot"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['offline_terminals'] ?? 0 }}</div>
             <div class="stat-label">Offline</div>
@@ -38,16 +38,16 @@
 {{-- ── Tab Navigation ──────────────────────────────────────── --}}
 <div class="tab-nav mb-5">
     <a href="{{ route('pos-terminals.index') }}" class="tab-btn {{ request('tab') !== 'discoveries' ? 'active' : '' }}">
-        💳 Terminal Overview
+        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-card"/></svg> Terminal Overview
     </a>
     <a href="{{ route('pos-terminals.index', ['tab' => 'discoveries']) }}" class="tab-btn {{ request('tab') === 'discoveries' ? 'active' : '' }}">
-        🔍 Field Discoveries
+        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-search"/></svg> Field Discoveries
         @if(($fieldDiscoveryCount ?? 0) > 0)
             <span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">{{ $fieldDiscoveryCount }}</span>
         @endif
     </a>
     <button class="tab-btn" onclick="switchTab('import', this)">
-        📤 Smart Import
+        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-upload"/></svg> Smart Import
     </button>
 </div>
 
@@ -159,7 +159,7 @@
                     @empty
                     <tr>
                         <td colspan="8" class="py-16 text-center text-gray-400">
-                            <div class="text-4xl mb-3">🔍</div>
+                            <div class="text-4xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-search"/></svg></div>
                             <p class="text-sm">No field-discovered terminals yet.</p>
                         </td>
                     </tr>
@@ -330,7 +330,7 @@
                     @empty
                     <tr>
                         <td colspan="8" class="py-16 text-center text-gray-400">
-                            <div class="text-4xl mb-3">💳</div>
+                            <div class="text-4xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-card"/></svg></div>
                             <p class="text-sm">No terminals found. Try adjusting your filters or
                                 <a href="{{ route('pos-terminals.create') }}" class="link">add your first terminal</a>.
                             </p>
@@ -434,7 +434,7 @@
                         @endif
                     </select>
                     <a href="{{ route('pos-terminals.column-mapping') }}" target="_blank" class="btn-secondary">
-                        ⚙️ Manage
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> Manage
                     </a>
                 </div>
                 <p class="ui-hint">Leave blank for automatic header detection</p>
@@ -447,7 +447,7 @@
             <div id="drop-zone"
                  class="border-2 border-dashed border-[#1a3a5c]/30 rounded-xl p-10 text-center bg-gray-50 hover:bg-blue-50 hover:border-[#1a3a5c]/60 transition-colors cursor-pointer"
                  onclick="document.getElementById('smart-file-input').click()">
-                <div class="text-5xl mb-3">📁</div>
+                <div class="text-5xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg></div>
                 <p class="text-sm font-medium text-gray-700 mb-1">Drop your file here or click to browse</p>
                 <p class="text-xs text-gray-500 mb-5">Supports Excel (.xlsx, .xls), CSV, and TXT files up to 50 MB</p>
                 <div class="flex gap-3 justify-center" onclick="event.stopPropagation()">
@@ -455,10 +455,10 @@
                            accept=".csv,.xlsx,.xls,.txt" required class="hidden">
                     <button type="button" class="btn-primary btn-sm"
                             onclick="document.getElementById('smart-file-input').click()">
-                        📂 Choose File
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg> Choose File
                     </button>
                     <button type="button" id="preview-btn" disabled class="btn-success btn-sm opacity-50 cursor-not-allowed">
-                        👁️ Preview & Analyze
+                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> Preview & Analyze
                     </button>
                 </div>
                 @error('file')
@@ -466,7 +466,7 @@
                 @enderror
                 <div id="file-info" class="hidden mt-4">
                     <div class="flash-success">
-                        <span class="text-lg">✅</span>
+                        <span class="text-lg"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></span>
                         <div>
                             <div id="file-name" class="font-medium text-sm"></div>
                             <div id="file-details" class="text-xs mt-0.5"></div>
@@ -506,10 +506,10 @@
         <div class="flex gap-3 pt-2">
             <button type="submit" id="import-submit-btn" disabled
                     class="btn-primary opacity-50 cursor-not-allowed">
-                🚀 Start Smart Import
+                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-send"/></svg> Start Smart Import
             </button>
             <button type="button" onclick="resetImportForm()" class="btn-secondary">
-                🔄 Reset Form
+                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Reset Form
             </button>
         </div>
     </form>
@@ -520,12 +520,12 @@
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="ui-card w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div class="ui-card-header">
-                <h3 class="text-base font-semibold text-gray-900">👁️ Smart Import Preview & Analysis</h3>
+                <h3 class="text-base font-semibold text-gray-900"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> Smart Import Preview & Analysis</h3>
                 <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none bg-transparent border-none cursor-pointer">&times;</button>
             </div>
             <div id="preview-content" class="ui-card-body">
                 <div class="text-center py-16 text-gray-400">
-                    <div class="text-5xl mb-3">🔄</div>
+                    <div class="text-5xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></div>
                     <p class="text-sm">Analyzing your file…</p>
                 </div>
             </div>
@@ -533,7 +533,7 @@
                 <button onclick="closePreviewModal()" class="btn-secondary">Close Preview</button>
                 <button id="proceed-import-btn" onclick="proceedWithImport()" disabled
                         class="btn-success opacity-50 cursor-not-allowed">
-                    ✅ Looks Good — Proceed with Import
+                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> Looks Good — Proceed with Import
                 </button>
             </div>
         </div>
@@ -544,7 +544,7 @@
 <div id="processing-modal" class="hidden fixed inset-0 bg-black/70 z-[60]">
     <div class="flex items-center justify-center h-full">
         <div class="ui-card p-10 text-center max-w-sm w-full">
-            <div class="text-5xl mb-4">⚡</div>
+            <div class="text-5xl mb-4"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg></div>
             <h4 class="text-base font-semibold text-gray-900 mb-2">Processing Your Smart Import</h4>
             <p class="text-sm text-gray-500 mb-5">Large files are processed in chunks automatically. This may take a few minutes…</p>
             <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -691,7 +691,7 @@ function displayPreviewData(data) {
             <div class="${missing.length ? 'flash-error' : 'flash-success'}">
                 <div>
                     <p class="font-semibold text-sm">Column Mapping</p>
-                    <p class="text-xs mt-1">${mapped.length} mapped · ${missing.length} missing required · ${missing.length === 0 ? 'All required fields found ✅' : 'Missing: ' + missing.join(', ')}</p>
+                    <p class="text-xs mt-1">${mapped.length} mapped · ${missing.length} missing required · ${missing.length === 0 ? 'All required fields found ' : 'Missing: ' + missing.join(', ')}</p>
                 </div>
             </div>
         </div>
@@ -728,7 +728,7 @@ function displayPreviewData(data) {
             </div>
         </div>
         <div class="${canImport ? 'flash-success' : 'flash-error'}">
-            <span class="text-xl">${canImport ? '✅' : '❌'}</span>
+            <span class="text-xl">${canImport ? '' : ''}</span>
             <div>
                 <p class="font-semibold text-sm">${canImport ? 'Ready for Import' : 'Issues Detected'}</p>
                 <p class="text-xs mt-0.5">${canImport ? 'All required fields present and validation passed.' : 'Resolve issues before importing.'}</p>
@@ -747,11 +747,11 @@ function displayPreviewData(data) {
 function displayPreviewError(msg) {
     document.getElementById('preview-content').innerHTML = `
         <div class="text-center py-16">
-            <div class="text-5xl mb-3">❌</div>
+            <div class="text-5xl mb-3"></div>
             <p class="text-sm font-semibold text-gray-800 mb-2">Preview Failed</p>
             <p class="text-sm text-gray-500 mb-5">${msg}</p>
             <div class="flash-warning text-left">
-                <span>⚠️</span>
+                <span></span>
                 <div class="text-xs">
                     <strong>Troubleshooting:</strong><br>
                     • Ensure the file is valid CSV, XLSX, XLS, or TXT<br>

@@ -783,14 +783,14 @@
                              @drop="onDrop($event)">
 
                             <div x-show="fields.length===0" style="text-align:center; padding:18px 12px;">
-                                <div style="font-size:1.6rem; margin-bottom:8px;">📋</div>
+                                <div style="font-size:1.6rem; margin-bottom:8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
                                 <div style="font-weight:600; color:var(--rb-text); margin-bottom:4px;">No columns selected yet</div>
                                 <div style="font-size:0.82rem; color:var(--rb-sub); margin-bottom:12px;">
                                     Not sure where to start? Pick a preset — it fills in the columns for you.
                                 </div>
                                 <button type="button" @click="showTemplateModal=true"
                                     style="font-size:0.82rem; padding:6px 14px; background:var(--rb-accent); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
-                                    ⚡ Choose a Preset
+                                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Choose a Preset
                                 </button>
                                 <div style="font-size:0.78rem; color:var(--rb-sub); margin-top:10px;">
                                     Or double-click any field on the left to add it manually.
@@ -1525,7 +1525,7 @@ document.addEventListener('alpine:init', () => {
     presets: [
       {
         id: 'technician-visits-detail',
-        icon: '🧰',
+        icon: '',
         name: 'Technician Visits Detail',
         desc: 'Every tablet visit: technician, merchant, terminal state and condition, issues found, corrective action, notes and updated contact details.',
         baseTable: 'technician_visits',
@@ -1548,7 +1548,7 @@ document.addEventListener('alpine:init', () => {
       },
       {
         id: 'discovered-terminals',
-        icon: '🧭',
+        icon: '',
         name: 'Discovered Terminals (Extra Work)',
         desc: 'Terminals found on site by technicians that were not on the original list — the extra work done in the field.',
         baseTable: 'pos_terminals',
@@ -1568,7 +1568,7 @@ document.addEventListener('alpine:init', () => {
       },
       {
         id: 'visit-summary',
-        icon: '🗺️',
+        icon: '',
         name: 'Visit Summary Report',
         desc: 'All site visits with technician, merchant, completion time and outcome notes.',
         baseTable: 'visits',
@@ -1585,7 +1585,7 @@ document.addEventListener('alpine:init', () => {
       },
       {
         id: 'terminal-condition',
-        icon: '🖥️',
+        icon: '',
         name: 'Terminal Condition Report',
         desc: 'Detailed per-visit terminal health: condition, issues found and corrective action.',
         baseTable: 'technician_visits',
@@ -1602,7 +1602,7 @@ document.addEventListener('alpine:init', () => {
       },
       {
         id: 'terminal-overview',
-        icon: '📟',
+        icon: '',
         name: 'Terminal Activity Overview',
         desc: 'Master list of POS terminals with location, business type and current operational status.',
         baseTable: 'pos_terminals',
@@ -1617,7 +1617,7 @@ document.addEventListener('alpine:init', () => {
       },
       {
         id: 'job-assignments',
-        icon: '📋',
+        icon: '',
         name: 'Field Assignment Overview',
         desc: 'All job assignments with technician, client, priority, status and scheduled date.',
         baseTable: 'job_assignments',
@@ -1633,7 +1633,7 @@ document.addEventListener('alpine:init', () => {
       },
       {
         id: 'ticket-summary',
-        icon: '🎫',
+        icon: '',
         name: 'Support Ticket Summary',
         desc: 'Open and resolved support tickets with terminal link, priority, status and resolution date.',
         baseTable: 'tickets',
@@ -1649,7 +1649,7 @@ document.addEventListener('alpine:init', () => {
       },
       {
         id: 'client-contracts',
-        icon: '🤝',
+        icon: '',
         name: 'Client Contract Overview',
         desc: 'All clients with contract dates, status and priority — useful for spotting upcoming renewals.',
         baseTable: 'clients',
@@ -1666,7 +1666,7 @@ document.addEventListener('alpine:init', () => {
       },
       {
         id: 'project-pipeline',
-        icon: '📊',
+        icon: '',
         name: 'Project Pipeline',
         desc: 'All projects with type, status, priority and scheduled dates for a full portfolio view.',
         baseTable: 'projects',
@@ -1683,7 +1683,7 @@ document.addEventListener('alpine:init', () => {
       },
       {
         id: 'terminal-visit-log',
-        icon: '🔧',
+        icon: '',
         name: 'Terminal Visit Log',
         desc: 'Per-visit record of terminal device details, condition observed and technician comments.',
         baseTable: 'visit_terminals',

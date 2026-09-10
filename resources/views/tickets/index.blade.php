@@ -755,7 +755,7 @@
             document.body.appendChild(container);
         }
 
-        const icons = { success: '✓', error: '✕', info: 'ℹ' };
+        const icons = { success: '✓', error: '✕', info: '' };
         const titles = { success: 'Success', error: 'Error', info: 'Info' };
         const el = document.createElement('div');
         el.className = `notification-toast ${type}`;

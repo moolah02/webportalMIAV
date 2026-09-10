@@ -39,7 +39,7 @@ class NotificationController extends Controller
                 'title'      => $n->data['title'] ?? '',
                 'body'       => $n->data['body'] ?? '',
                 'type'       => $n->data['type'] ?? 'system',
-                'icon'       => $n->data['icon'] ?? '🔔',
+                'icon'       => $n->data['icon'] ?? '',
                 'url'        => $n->data['url'] ?? null,
                 'created_at' => $n->created_at->diffForHumans(),
             ]);

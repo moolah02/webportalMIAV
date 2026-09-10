@@ -216,7 +216,7 @@ class AssetController extends Controller
         'employee.department:id,name',
         'assignedBy:id,first_name,last_name',
         'returnedTo:id,first_name,last_name'
-    ])->whereIn('status', $pastStatuses);   // 👈 key line
+    ])->whereIn('status', $pastStatuses);   // key line
 
     // (keep your existing filters)
     if ($request->filled('employee_search')) {
@@ -903,7 +903,7 @@ public function getAssignmentData(AssetAssignment $assignment)
             'employee:id,first_name,last_name,employee_number,department_id',
             'employee.department:id,name',
             'assignedBy:id,first_name,last_name',
-            'returnedTo:id,first_name,last_name', // ✅ important for returned/transferred rows
+            'returnedTo:id,first_name,last_name', // important for returned/transferred rows
         ]);
 
         // compute helpers safely
