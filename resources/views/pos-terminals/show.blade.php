@@ -550,8 +550,17 @@ function openNotesModal()   { openModal('notesModal'); }
 
 function showToast(msg, type) {
     const toast = document.createElement('div');
-    const colours = { success: 'bg-green-50 border-green-200 text-green-800', error: 'bg-red-50 border-red-200 text-red-800', info: 'bg-blue-50 border-blue-200 text-blue-800' };
-    toast.className = 'fixed top-5 right-5 z-[9999] flex items-center gap-3 border rounded-lg px-4 py-3 text-sm shadow-lg ' + (colours[type] || colours.info);
+    // Portal tokens (the toast lives on <body>, outside .mv-page)
+    const colours = {
+        success: ['var(--mv-good-soft)', '#C6E6D2', 'var(--mv-good)'],
+        error:   ['var(--mv-crit-soft)', '#F2CACA', 'var(--mv-crit)'],
+        info:    ['var(--mv-accent-soft)', '#C9D9EE', 'var(--mv-accent-ink)']
+    };
+    const [bg, border, fg] = colours[type] || colours.info;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.style.cssText = 'position:fixed;top:16px;right:16px;z-index:9999;display:flex;align-items:center;gap:10px;'
+        + 'padding:11px 14px;border-radius:8px;font:500 13.5px var(--mv-sans);'
+        + 'box-shadow:0 4px 12px rgba(22,32,44,.08);border:1px solid ' + border + ';background:' + bg + ';color:' + fg + ';';
     toast.textContent = msg;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3500);
