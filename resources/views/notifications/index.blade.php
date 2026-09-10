@@ -107,3 +107,18 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+// "View" links call this before navigating. It was referenced but never
+// defined, so opening a notification left it unread. sendBeacon survives the
+// page change; the link still navigates as before.
+function markRead(id) {
+    try {
+        const body = new FormData();
+        body.append('_token', @json(csrf_token()));
+        navigator.sendBeacon(@json(url('/notifications')) + '/' + encodeURIComponent(id) + '/read', body);
+    } catch (e) { /* navigation continues regardless */ }
+}
+</script>
+@endpush
