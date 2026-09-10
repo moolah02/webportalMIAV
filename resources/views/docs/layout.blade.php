@@ -260,14 +260,14 @@
         <a href="{{ url('/docs') }}" class="{{ request()->is('docs') ? 'active' : '' }}">Home</a>
         <a href="{{ url('/docs/system') }}" class="{{ request()->is('docs/system') ? 'active' : '' }}">System Manual</a>
         <a href="{{ url('/docs/srs') }}" class="{{ request()->is('docs/srs') ? 'active' : '' }}">SRS</a>
-        <button onclick="window.print()" class="app-link" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;">&#128438; Download PDF</button>
+        <button onclick="window.print()" class="app-link" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;">Download PDF</button>
         <a href="{{ url('/login') }}" class="app-link">&#8592; App</a>
         @auth
             @if(auth()->user()->roles->whereIn('name', ['super_admin', 'administrator'])->isNotEmpty())
                 @if(!request()->is('docs'))
-                    <a href="{{ url('/admin/docs/' . basename(request()->path()) . '/edit') }}" class="app-link" style="background:#fff3cd;color:#856404;border-color:#ffc107;">&#9998; Edit Page</a>
+                    <a href="{{ url('/admin/docs/' . basename(request()->path()) . '/edit') }}" class="app-link" style="background:#fff3cd;color:#856404;border-color:#ffc107;">Edit Page</a>
                 @endif
-                <a href="{{ url('/admin/docs') }}" class="app-link" style="background:#d1ecf1;color:#0c5460;border-color:#bee5eb;">&#9881; Manage Docs</a>
+                <a href="{{ url('/admin/docs') }}" class="app-link" style="background:#d1ecf1;color:#0c5460;border-color:#bee5eb;">Manage Docs</a>
             @endif
         @endauth
     </div>
@@ -278,26 +278,26 @@
         <div class="sidebar-section">
             <div class="sidebar-section-title">User Manuals</div>
             <a href="{{ url('/docs/system') }}" class="{{ request()->is('docs/system') ? 'active' : '' }}">
-                <span class="icon">&#9881;&#65039;</span> System Manual
+                <span class="icon"></span> System Manual
             </a>
             <a href="{{ url('/docs/mobile') }}" class="{{ request()->is('docs/mobile') ? 'active' : '' }}">
-                <span class="icon">&#128241;</span> Mobile App Guide
+                <span class="icon"></span> Mobile App Guide
             </a>
             <a href="{{ url('/docs/reports') }}" class="{{ request()->is('docs/reports') ? 'active' : '' }}">
-                <span class="icon">&#128202;</span> Reports Manual
+                <span class="icon"></span> Reports Manual
             </a>
             <a href="{{ url('/docs/projects') }}" class="{{ request()->is('docs/projects') ? 'active' : '' }}">
-                <span class="icon">&#128203;</span> Project Flow Guide
+                <span class="icon"></span> Project Flow Guide
             </a>
         </div>
         <div class="sidebar-divider"></div>
         <div class="sidebar-section">
             <div class="sidebar-section-title">Reference</div>
             <a href="{{ url('/docs/srs') }}" class="{{ request()->is('docs/srs') ? 'active' : '' }}">
-                <span class="icon">&#128196;</span> SRS Document
+                <span class="icon"></span> SRS Document
             </a>
             <a href="{{ url('/docs/overview') }}" class="{{ request()->is('docs/overview') ? 'active' : '' }}">
-                <span class="icon">&#127962;</span> Business Overview
+                <span class="icon"></span> Business Overview
             </a>
         </div>
     </aside>

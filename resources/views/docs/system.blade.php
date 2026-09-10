@@ -16,7 +16,7 @@
 </p>
 
 <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:20px 24px;margin-bottom:32px;">
-    <div style="font-weight:700;font-size:13px;margin-bottom:12px;color:#0c4a6e;">&#128209; Table of Contents</div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:12px;color:#0c4a6e;">Table of Contents</div>
     <ol style="columns:2;column-gap:32px;list-style-position:inside;font-size:13.5px;color:#0369a1;">
         <li><a href="#getting-started" style="color:#0369a1;text-decoration:none;">Getting Started</a></li>
         <li><a href="#company-dashboard" style="color:#0369a1;text-decoration:none;">Company Dashboard</a></li>

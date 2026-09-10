@@ -16,12 +16,12 @@
 </p>
 
 <div style="background:#fff8f0;border:1px solid #fed7aa;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
-    <strong>&#128202; Who uses reports?</strong> The reporting module is available to Managers, Supervisors, Administrators, and Super Admins.
+    <strong>Who uses reports?</strong> The reporting module is available to Managers, Supervisors, Administrators, and Super Admins.
     Standard employees can view their own personal work summaries only.
 </div>
 
 <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:20px 24px;margin-bottom:32px;">
-    <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:#0c4a6e;">&#128209; Report Types In This Manual</div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:#0c4a6e;">Report Types In This Manual</div>
     <ol style="columns:2;column-gap:28px;list-style-position:inside;font-size:13.5px;">
         <li><a href="#accessing" style="color:#0369a1;text-decoration:none;">Accessing Reports</a></li>
         <li><a href="#employee-report" style="color:#0369a1;text-decoration:none;">Employee Activity Report</a></li>

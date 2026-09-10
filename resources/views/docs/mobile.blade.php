@@ -38,7 +38,7 @@
     <li><strong>Recent Visits</strong> &mdash; your last logged site visits</li>
     <li><strong>Staged Steps Due</strong> &mdash; any staged resolution steps waiting for your action</li>
 </ul>
-<p>Use the hamburger menu (&#9776;) at the top left to navigate to other sections.</p>
+<p>Use the hamburger menu () at the top left to navigate to other sections.</p>
 
 <h2 id="viewing-tickets">3. Viewing &amp; Working Your Tickets</h2>
 

@@ -1,449 +1,456 @@
 @extends('layouts.app')
 @section('title', 'Company Dashboard')
 
+@push('styles')
+<style>
+  .db { display: flex; flex-direction: column; gap: 20px; }
+  .db-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .db-hello { font-size: 20px; font-weight: 600; letter-spacing: -.01em; color: var(--mv-ink); margin: 0; }
+  .db-date { font-size: 13.5px; color: var(--mv-muted); margin-top: 2px; }
+  .db-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* KPI strip: one object, cells divided by hairlines */
+  .db-kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; background: var(--mv-line); border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
+  .db-kpi { background: var(--mv-surface); padding: 16px 18px; display: flex; flex-direction: column; gap: 3px; text-decoration: none !important; color: inherit; min-width: 0; }
+  a.db-kpi:hover { background: var(--mv-surface-2); }
+  .db-kpi-label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 500; color: var(--mv-muted); }
+  .db-kpi-label .mv-i { width: 15px; height: 15px; }
+  .db-kpi-value { font-size: 26px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+  .db-kpi-sub { font-size: 12.5px; color: var(--mv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .t-good { color: var(--mv-good) !important; } .t-warn { color: var(--mv-warn) !important; } .t-crit { color: var(--mv-crit) !important; } .t-accent { color: var(--mv-accent-ink) !important; }
+
+  .db-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); gap: 20px; align-items: start; }
+  .db-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+  .db-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; min-width: 0; }
+  .db-card-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--mv-line); }
+  .db-card-head h2 { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--mv-ink); }
+  .db-card-head .db-meta { font-size: 12.5px; color: var(--mv-muted); }
+  .db-card-head .db-link { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--mv-accent-ink); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+  .db-card-head .db-link:hover { text-decoration: underline; }
+  .db-card-body { padding: 16px 18px; }
+
+  /* Needs attention */
+  .db-alert { display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 11px 18px; text-decoration: none !important; color: var(--mv-ink-2); }
+  .db-alert + .db-alert { border-top: 1px solid var(--mv-line); }
+  .db-alert:hover { background: var(--mv-surface-2); }
+  .db-alert .db-go { font-size: 13px; font-weight: 500; color: var(--mv-accent-ink); display: inline-flex; align-items: center; gap: 4px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; justify-self: start; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+  .chip.crit { background: var(--mv-crit-soft); color: var(--mv-crit); }
+  .chip.warn { background: var(--mv-warn-soft); color: var(--mv-warn); }
+  .chip.good { background: var(--mv-good-soft); color: var(--mv-good); }
+  .chip.info { background: var(--mv-accent-soft); color: var(--mv-accent-ink); }
+  .chip.neutral { background: var(--mv-surface-2); color: var(--mv-ink-2); border: 1px solid var(--mv-line); }
+
+  /* Fleet status: one stacked bar + legend table */
+  .db-fleet-total { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .db-fleet-total b { font-size: 22px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .db-fleet-total span { font-size: 13px; color: var(--mv-muted); }
+  .db-stack { display: flex; gap: 2px; height: 12px; border-radius: 6px; overflow: hidden; background: var(--mv-surface-2); }
+  .db-stack span { display: block; min-width: 3px; }
+  .db-legend { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 2px 18px; }
+  .db-legend a { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 7px 0; text-decoration: none !important; color: var(--mv-ink-2); font-size: 13.5px; border-bottom: 1px solid var(--mv-line); }
+  .db-legend a:hover { color: var(--mv-ink); }
+  .db-legend i { width: 10px; height: 10px; border-radius: 3px; display: block; }
+  .db-legend b { font-weight: 600; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+  .db-legend em { font-style: normal; font-size: 12.5px; color: var(--mv-muted); min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Tables and meters */
+  .db-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .db-table th { text-align: left; font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--mv-muted); padding: 9px 18px; background: var(--mv-surface-2); border-bottom: 1px solid var(--mv-line); }
+  .db-table td { padding: 10px 18px; border-top: 1px solid var(--mv-line); color: var(--mv-ink-2); font-variant-numeric: tabular-nums; }
+  .db-table tr:first-child td { border-top: 0; }
+  .db-table td.num, .db-table th.num { text-align: right; }
+  .db-table a { color: var(--mv-ink); font-weight: 500; text-decoration: none; }
+  .db-table a:hover { color: var(--mv-accent-ink); text-decoration: underline; }
+  .db-meter { height: 6px; border-radius: 3px; background: var(--mv-surface-2); overflow: hidden; border: 1px solid var(--mv-line); }
+  .db-meter i { display: block; height: 100%; border-radius: 3px; background: var(--mv-accent); }
+  .db-meter.good i { background: var(--mv-good); } .db-meter.warn i { background: #C28A2C; } .db-meter.crit i { background: var(--mv-crit); }
+  .db-upt { display: grid; grid-template-columns: minmax(60px, 1fr) 48px; gap: 10px; align-items: center; }
+
+  .db-chart { position: relative; height: 240px; }
+
+  /* Lists in the side column */
+  .db-list { display: flex; flex-direction: column; }
+  .db-row { display: flex; align-items: center; gap: 12px; padding: 10px 18px; text-decoration: none !important; color: var(--mv-ink-2); font-size: 13.5px; }
+  .db-row + .db-row { border-top: 1px solid var(--mv-line); }
+  a.db-row:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+  .db-row .db-ic { width: 32px; height: 32px; border-radius: 8px; background: var(--mv-surface-2); color: var(--mv-ink-2); display: grid; place-items: center; flex-shrink: 0; }
+  .db-row .db-ic .mv-i { width: 17px; height: 17px; }
+  .db-row .db-grow { flex: 1; min-width: 0; }
+  .db-row .db-title { color: var(--mv-ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .db-row .db-sub { font-size: 12.5px; color: var(--mv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .db-row .db-chev { color: var(--mv-line-strong); width: 16px; height: 16px; }
+  .db-rank { width: 22px; font-size: 12.5px; color: var(--mv-muted); font-variant-numeric: tabular-nums; text-align: right; flex-shrink: 0; }
+
+  .db-dl { display: flex; flex-direction: column; }
+  .db-dl div { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: 13.5px; color: var(--mv-ink-2); }
+  .db-dl div + div { border-top: 1px solid var(--mv-line); }
+  .db-dl b { font-weight: 600; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+  .db-sec + .db-sec { border-top: 1px solid var(--mv-line); }
+  .db-sec-title { font-size: 12px; font-weight: 600; color: var(--mv-muted); letter-spacing: .04em; text-transform: uppercase; margin: 0 0 4px; }
+
+  .db-health { display: flex; flex-direction: column; gap: 14px; }
+  .db-health-row { display: flex; flex-direction: column; gap: 6px; }
+  .db-health-row div { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--mv-ink-2); }
+  .db-health-row b { font-weight: 600; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+
+  .db-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 18px; color: var(--mv-muted); font-size: 13.5px; }
+  .db-empty strong { color: var(--mv-ink); font-weight: 500; }
+  .db-empty a { color: var(--mv-accent-ink); font-weight: 500; text-decoration: none; }
+
+  .db-activity { max-height: 420px; overflow-y: auto; }
+
+  @media (max-width: 1280px) { .db-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 1100px) { .db-grid { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 640px) { .db-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .db-alert { grid-template-columns: minmax(0, 1fr); } }
+</style>
+@endpush
+
 @section('content')
-<div>
-    {{-- Welcome Header --}}
-    <div class="mb-5">
+@php
+    $s = $stats;
+    $total = (int) $s['total_terminals'];
+    $segments = [
+        ['label' => 'Active',         'count' => (int) $s['active_terminals'],               'color' => '#1D7F46', 'status' => 'active'],
+        ['label' => 'Offline',        'count' => (int) $s['offline_terminals'],              'color' => '#C28A2C', 'status' => 'offline'],
+        ['label' => 'Maintenance',    'count' => (int) $s['maintenance_terminals'],          'color' => '#2B64A8', 'status' => 'maintenance'],
+        ['label' => 'Faulty',         'count' => (int) $s['faulty_terminals'],               'color' => '#B83232', 'status' => 'faulty'],
+        ['label' => 'Decommissioned', 'count' => (int) ($s['decommissioned_terminals'] ?? 0), 'color' => '#9AA6B4', 'status' => 'decommissioned'],
+    ];
+    $other = max(0, $total - array_sum(array_column($segments, 'count')));
+    if ($other > 0) {
+        $segments[] = ['label' => 'Status not set', 'count' => $other, 'color' => '#CBD3DD', 'status' => null];
+    }
+    $lic = $s['license_stats'];
+    $uptime = (float) $s['network_uptime'];
+    $tone = fn ($v) => $v >= 90 ? 'good' : ($v >= 70 ? 'warn' : 'crit');
+    $trend = $s['monthly_trends'];
+    $hasTrend = (array_sum($trend['terminals']) + array_sum($trend['clients']) + array_sum($trend['licenses'])) > 0;
+    $maxClient = max(1, (int) collect($s['top_clients'])->max('terminals'));
+    $hour = now()->hour;
+    $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+    $activityIcon = function (string $title): array {
+        return match (true) {
+            str_contains($title, 'Expired')  => ['alert-triangle', 't-crit'],
+            str_contains($title, 'Renewed')  => ['refresh', ''],
+            str_contains($title, 'License')  => ['file-check', ''],
+            str_contains($title, 'Terminal') => ['card', ''],
+            str_contains($title, 'Client')   => ['building', ''],
+            str_contains($title, 'Job')      => ['clipboard', ''],
+            str_contains($title, 'Visit')    => ['pin', ''],
+            default                          => ['activity', ''],
+        };
+    };
+@endphp
+
+<div class="db">
+
+    <div class="db-head">
+        <div>
+            <p class="db-hello">{{ $greeting }}, {{ auth()->user()->first_name }}</p>
+            <div class="db-date">{{ now()->format('l j F Y') }} · {{ number_format($total) }} terminals across {{ number_format($s['total_clients']) }} active {{ \Illuminate\Support\Str::plural('client', $s['total_clients']) }}</div>
+        </div>
+        <div class="db-actions">
+            <a href="{{ route('pos-terminals.index') }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm"><use href="#i-card"/></svg>POS Terminals</a>
+            <a href="{{ route('reports.index') }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm"><use href="#i-chart"/></svg>Reports Dashboard</a>
+        </div>
     </div>
 
-    {{-- System Alerts --}}
-    @if($stats['alerts']->count() > 0)
-    <div class="mb-5 flex flex-col gap-1.5">
-        @foreach($stats['alerts'] as $alert)
-        @php
-            $alertUrl = match(true) {
-                str_contains($alert['message'], 'licenses expiring') => route('business-licenses.expiring'),
-                str_contains($alert['message'], 'licenses expired') => route('business-licenses.index', ['status' => 'expired']),
-                str_contains($alert['message'], 'critical licenses') => route('business-licenses.index', ['priority' => 'critical']),
-                str_contains($alert['message'], 'license renewals') => route('business-licenses.compliance'),
-                str_contains($alert['message'], 'faulty') => route('pos-terminals.index', ['status' => 'faulty']),
-                str_contains($alert['message'], 'offline') => route('pos-terminals.index', ['status' => 'offline']),
-                str_contains($alert['message'], 'contracts expiring') => route('clients.index', ['expiring' => true]),
-                str_contains($alert['message'], 'asset requests') => route('asset-approvals.index'),
-                str_contains($alert['message'], 'job assignments') => route('jobs.assignment'),
-                default => '#'
-            };
-            $alertClass = match($alert['type']) {
-                'critical' => 'bg-red-50 border-red-400 text-red-800 hover:bg-red-100',
-                'warning'  => 'bg-amber-50 border-amber-400 text-amber-800 hover:bg-amber-100',
-                default    => 'bg-blue-50 border-blue-400 text-blue-800 hover:bg-blue-100',
-            };
-        @endphp
-        <a href="{{ $alertUrl }}" class="alert-{{ $alert['type'] }} border rounded-lg px-3 py-2 flex items-center gap-2 text-sm no-underline transition-all hover:-translate-y-px hover:shadow-sm {{ $alertClass }}">
-            <span class="text-sm">{{ $alert['icon'] }}</span>
-            <span class="flex-1">{{ $alert['message'] }}</span>
-            <span class="text-xs opacity-70">&#8594;</span>
+    {{-- Key figures --}}
+    <div class="db-kpis">
+        <a href="{{ route('pos-terminals.index') }}" class="db-kpi">
+            <span class="db-kpi-label"><svg class="mv-i"><use href="#i-card"/></svg>Total Terminals</span>
+            <span class="db-kpi-value">{{ number_format($total) }}</span>
+            <span class="db-kpi-sub">+{{ $s['new_terminals_this_month'] }} this month</span>
         </a>
-        @endforeach
+        <a href="{{ route('pos-terminals.index', ['status' => 'active']) }}" class="db-kpi">
+            <span class="db-kpi-label"><svg class="mv-i"><use href="#i-check-circle"/></svg>Active Terminals</span>
+            <span class="db-kpi-value">{{ number_format($s['active_terminals']) }}</span>
+            <span class="db-kpi-sub t-{{ $tone($uptime) }}">{{ $uptime }}% uptime</span>
+        </a>
+        <a href="{{ route('pos-terminals.index', ['status' => 'faulty']) }}" class="db-kpi">
+            <span class="db-kpi-label"><svg class="mv-i"><use href="#i-alert-triangle"/></svg>Need Attention</span>
+            <span class="db-kpi-value">{{ number_format($s['need_attention']) }}</span>
+            <span class="db-kpi-sub {{ $s['urgent_issues'] > 0 ? 't-crit' : '' }}">{{ $s['urgent_issues'] }} urgent</span>
+        </a>
+        <a href="{{ route('clients.index') }}" class="db-kpi">
+            <span class="db-kpi-label"><svg class="mv-i"><use href="#i-building"/></svg>Active Clients</span>
+            <span class="db-kpi-value">{{ number_format($s['total_clients']) }}</span>
+            <span class="db-kpi-sub">{{ $s['new_clients_this_month'] }} new this month</span>
+        </a>
+        <a href="{{ route('business-licenses.index') }}" class="db-kpi">
+            <span class="db-kpi-label"><svg class="mv-i"><use href="#i-file-check"/></svg>Business Licenses</span>
+            <span class="db-kpi-value">{{ number_format($lic['total_licenses']) }}</span>
+            <span class="db-kpi-sub">{{ $lic['active_licenses'] }} active</span>
+        </a>
+        <a href="{{ route('business-licenses.compliance') }}" class="db-kpi">
+            <span class="db-kpi-label"><svg class="mv-i"><use href="#i-shield"/></svg>License Compliance</span>
+            <span class="db-kpi-value">{{ number_format($lic['compliance_rate']) }}%</span>
+            <span class="db-kpi-sub {{ $lic['expiring_soon'] > 0 ? 't-warn' : '' }}">{{ $lic['expiring_soon'] }} expiring soon</span>
+        </a>
+    </div>
+
+    {{-- Needs attention --}}
+    @if($s['alerts']->count() > 0)
+    <div class="db-card">
+        <div class="db-card-head">
+            <h2>Needs attention</h2>
+            <span class="db-meta">{{ $s['alerts']->count() }} {{ \Illuminate\Support\Str::plural('item', $s['alerts']->count()) }}</span>
+        </div>
+        <div>
+            @foreach($s['alerts'] as $alert)
+            @php
+                $alertUrl = match(true) {
+                    str_contains($alert['message'], 'licenses expiring') => route('business-licenses.expiring'),
+                    str_contains($alert['message'], 'licenses expired') => route('business-licenses.index', ['status' => 'expired']),
+                    str_contains($alert['message'], 'critical licenses') => route('business-licenses.index', ['priority' => 'critical']),
+                    str_contains($alert['message'], 'license renewals') => route('business-licenses.compliance'),
+                    str_contains($alert['message'], 'faulty') => route('pos-terminals.index', ['status' => 'faulty']),
+                    str_contains($alert['message'], 'offline') => route('pos-terminals.index', ['status' => 'offline']),
+                    str_contains($alert['message'], 'contracts expiring') => route('clients.index', ['expiring' => true]),
+                    str_contains($alert['message'], 'asset requests') => route('asset-approvals.index'),
+                    str_contains($alert['message'], 'job assignments') => route('jobs.index'),
+                    default => '#'
+                };
+                [$chipClass, $chipText] = match($alert['type']) {
+                    'critical' => ['crit', 'Critical'],
+                    'warning'  => ['warn', 'Warning'],
+                    default    => ['info', 'Info'],
+                };
+            @endphp
+            <a href="{{ $alertUrl }}" class="db-alert">
+                <span class="chip {{ $chipClass }}">{{ $chipText }}</span>
+                <span>{{ $alert['message'] }}</span>
+                <span class="db-go">Review<svg class="mv-i mv-i-sm"><use href="#i-chevron-right"/></svg></span>
+            </a>
+            @endforeach
+        </div>
     </div>
     @endif
 
-    {{-- Main Stats Grid --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <a href="{{ route('pos-terminals.index') }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="stat-icon stat-icon-blue">&#x1F5A5;&#xFE0F;</div>
-            <div>
-                <div class="stat-number">{{ number_format($stats['total_terminals']) }}</div>
-                <div class="stat-label">Total Terminals</div>
-                <div class="stat-sub text-green-600">&#8599; +{{ $stats['new_terminals_this_month'] }} this month</div>
-            </div>
-        </a>
+    <div class="db-grid">
+        <div class="db-col">
 
-        <a href="{{ route('pos-terminals.index', ['status' => 'active']) }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="stat-icon stat-icon-green">&#x2705;</div>
-            <div>
-                <div class="stat-number">{{ number_format($stats['active_terminals']) }}</div>
-                <div class="stat-label">Active Terminals</div>
-                <div class="stat-sub text-green-600">{{ $stats['network_uptime'] }}% uptime</div>
-            </div>
-        </a>
-
-        <a href="{{ route('business-licenses.index') }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="stat-icon stat-icon-teal">&#x1F4CB;</div>
-            <div>
-                <div class="stat-number">{{ number_format($stats['license_stats']['total_licenses']) }}</div>
-                <div class="stat-label">Business Licenses</div>
-                <div class="stat-sub text-green-600">{{ $stats['license_stats']['active_licenses'] }} active</div>
-            </div>
-        </a>
-
-        <a href="{{ route('pos-terminals.index') }}?status=faulty&status=offline&status=maintenance" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="stat-icon stat-icon-red">&#x26A0;&#xFE0F;</div>
-            <div>
-                <div class="stat-number">{{ number_format($stats['need_attention']) }}</div>
-                <div class="stat-label">Need Attention</div>
-                <div class="stat-sub text-red-500">{{ $stats['urgent_issues'] }} urgent</div>
-            </div>
-        </a>
-
-        <a href="{{ route('clients.index') }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="stat-icon stat-icon-purple">&#x1F3E2;</div>
-            <div>
-                <div class="stat-number">{{ number_format($stats['total_clients']) }}</div>
-                <div class="stat-label">Active Clients</div>
-                <div class="stat-sub">{{ $stats['new_clients_this_month'] }} new this month</div>
-            </div>
-        </a>
-
-        <a href="{{ route('business-licenses.compliance') }}" class="stat-card text-gray-900 no-underline hover:shadow-md transition-all hover:-translate-y-0.5">
-            <div class="stat-icon stat-icon-yellow">&#x2705;</div>
-            <div>
-                <div class="stat-number">{{ number_format($stats['license_stats']['compliance_rate']) }}%</div>
-                <div class="stat-label">License Compliance</div>
-                <div class="stat-sub">{{ $stats['license_stats']['expiring_soon'] }} expiring soon</div>
-            </div>
-        </a>
-    </div>
-
-    {{-- Main 2-column layout --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-        {{-- Main Content (2/3 width) --}}
-        <div class="lg:col-span-2 flex flex-col gap-5">
-
-            {{-- License Compliance Alert --}}
-            @if($stats['license_stats']['expiring_soon'] > 0 || $stats['license_stats']['expired'] > 0)
-            <div class="ui-card border-l-4 border-amber-400 bg-amber-50">
-                <div class="px-5 py-4 border-b border-amber-200 flex items-center justify-between">
-                    <h4 class="text-sm font-semibold text-amber-800 m-0">&#x1F4CB; License Compliance Alert</h4>
-                    <a href="{{ route('business-licenses.compliance') }}" class="btn-sm px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 no-underline transition-colors">View All</a>
+            {{-- Terminal fleet --}}
+            <div class="db-card">
+                <div class="db-card-head">
+                    <h2>Terminal Status Distribution</h2>
+                    <a href="{{ route('pos-terminals.index') }}" class="db-link">All terminals<svg class="mv-i mv-i-sm"><use href="#i-chevron-right"/></svg></a>
                 </div>
-                <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    @if($stats['license_stats']['expired'] > 0)
-                    <a href="{{ route('business-licenses.index', ['status' => 'expired']) }}" class="bg-red-50 border border-red-400 p-3 rounded-lg no-underline text-inherit hover:-translate-y-px hover:shadow-sm transition-all block">
-                        <div class="flex items-center gap-2 mb-1.5">
-                            <span class="text-base">&#x26A0;&#xFE0F;</span>
-                            <span class="font-semibold text-red-600 text-sm">{{ $stats['license_stats']['expired'] }} Expired</span>
-                        </div>
-                        <div class="text-xs text-gray-500">Immediate action required</div>
-                    </a>
-                    @endif
-
-                    @if($stats['license_stats']['expiring_soon'] > 0)
-                    <a href="{{ route('business-licenses.expiring') }}" class="bg-amber-50 border border-amber-400 p-3 rounded-lg no-underline text-inherit hover:-translate-y-px hover:shadow-sm transition-all block">
-                        <div class="flex items-center gap-2 mb-1.5">
-                            <span class="text-base">&#x23F0;</span>
-                            <span class="font-semibold text-amber-700 text-sm">{{ $stats['license_stats']['expiring_soon'] }} Expiring Soon</span>
-                        </div>
-                        <div class="text-xs text-gray-500">Within next 30 days</div>
-                    </a>
-                    @endif
-
-                    @if($stats['license_stats']['critical_expired'] > 0)
-                    <a href="{{ route('business-licenses.index', ['priority' => 'critical', 'status' => 'expired']) }}" class="bg-red-50 border border-red-400 p-3 rounded-lg no-underline text-inherit hover:-translate-y-px hover:shadow-sm transition-all block">
-                        <div class="flex items-center gap-2 mb-1.5">
-                            <span class="text-base">&#x1F6A8;</span>
-                            <span class="font-semibold text-red-600 text-sm">{{ $stats['license_stats']['critical_expired'] }} Critical Expired</span>
-                        </div>
-                        <div class="text-xs text-gray-500">High business impact</div>
-                    </a>
-                    @endif
-                </div>
-            </div>
-            @endif
-
-            {{-- Terminal Status Chart --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4CA; Terminal Status Distribution</h4>
-                    <div class="flex flex-wrap gap-3 text-xs text-gray-500">
-                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Active: {{ $stats['active_terminals'] }}</span>
-                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Offline: {{ $stats['offline_terminals'] }}</span>
-                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span> Maintenance: {{ $stats['maintenance_terminals'] }}</span>
-                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> Faulty: {{ $stats['faulty_terminals'] }}</span>
+                <div class="db-card-body">
+                    @if($total > 0)
+                    <div class="db-fleet-total"><b>{{ number_format($total) }}</b><span>terminals in the fleet</span></div>
+                    <div class="db-stack" role="img" aria-label="Terminal status breakdown">
+                        @foreach($segments as $seg)
+                            @if($seg['count'] > 0)
+                            <span style="flex: {{ $seg['count'] }}; background: {{ $seg['color'] }}" title="{{ $seg['label'] }}: {{ $seg['count'] }}"></span>
+                            @endif
+                        @endforeach
                     </div>
-                </div>
-                <div class="ui-card-body">
-                    <div class="h-[300px] relative">
-                        <canvas id="statusChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            {{-- License Status Chart --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4CB; License Status Overview</h4>
-                    <a href="{{ route('business-licenses.index') }}" class="btn-secondary btn-sm">View All Licenses</a>
-                </div>
-                <div class="ui-card-body">
-                    <div class="h-[250px] relative">
-                        <canvas id="licenseChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Monthly Trends Chart --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4C8; Monthly Growth Trends</h4>
-                </div>
-                <div class="ui-card-body">
-                    <div class="h-[250px] relative">
-                        <canvas id="trendsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Regional Distribution --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F5FA;&#xFE0F; Regional Distribution</h4>
-                </div>
-                <div class="ui-card-body">
-                    @if($stats['regional_data']->isNotEmpty())
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        @foreach($stats['regional_data'] as $region => $data)
-                        <a href="{{ route('pos-terminals.index', ['region' => $region]) }}" class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500 no-underline text-gray-900 transition-all hover:bg-blue-50 hover:border-blue-700 hover:-translate-y-0.5 hover:shadow-md block">
-                            <div class="flex items-center justify-between mb-2.5">
-                                <h5 class="text-sm font-semibold text-gray-800 m-0">{{ $region }}</h5>
-                                <span class="badge badge-blue">{{ $data['total'] }}</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-gray-500 mb-2">
-                                <span>Active: {{ $data['active'] }}</span>
-                                <span>Issues: {{ $data['issues'] }}</span>
-                            </div>
-                            <div class="bg-gray-200 rounded-full h-1 overflow-hidden">
-                                <div class="bg-green-500 h-full rounded-full" style="width: {{ $data['uptime_percentage'] }}%"></div>
-                            </div>
-                            <div class="text-center mt-1 text-xs text-gray-500">{{ $data['uptime_percentage'] }}% uptime</div>
+                    <div class="db-legend">
+                        @foreach($segments as $seg)
+                        <a href="{{ $seg['status'] ? route('pos-terminals.index', ['status' => $seg['status']]) : route('pos-terminals.index') }}">
+                            <i style="background: {{ $seg['color'] }}"></i>
+                            <span>{{ $seg['label'] }}</span>
+                            <b>{{ number_format($seg['count']) }}</b>
+                            <em>{{ $total > 0 ? round($seg['count'] / $total * 100) : 0 }}%</em>
                         </a>
                         @endforeach
                     </div>
                     @else
-                    <div class="empty-state">
-                        <div class="empty-state-icon">&#x1F5FA;&#xFE0F;</div>
-                        <p class="empty-state-msg">No regional data available yet</p>
-                        <p class="text-xs text-gray-400 mt-1">Regions will appear here once POS terminals are added with region information</p>
-                    </div>
+                    <div class="db-empty"><strong>No terminals yet</strong>Terminals appear here once they are imported or added.<a href="{{ route('pos-terminals.create') }}">Add New Terminal</a></div>
                     @endif
                 </div>
             </div>
 
-            {{-- Recent Activity Feed --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4CB; Recent Activity</h4>
+            {{-- Regional distribution --}}
+            <div class="db-card">
+                <div class="db-card-head">
+                    <h2>Regional Distribution</h2>
+                    @if($s['regional_data']->isNotEmpty())<span class="db-meta">{{ $s['regional_data']->count() }} {{ \Illuminate\Support\Str::plural('region', $s['regional_data']->count()) }}</span>@endif
                 </div>
-                <div class="ui-card-body overflow-y-auto max-h-[400px]">
-                    @forelse($stats['recent_activity'] as $activity)
-                    <div class="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0" style="background: {{ $activity['color'] }};">
-                            {{ $activity['icon'] }}
+                @if($s['regional_data']->isNotEmpty())
+                <div style="overflow-x:auto">
+                    <table class="db-table">
+                        <thead><tr><th>Region</th><th class="num">Terminals</th><th class="num">Active</th><th class="num">Issues</th><th style="width:34%">Uptime</th></tr></thead>
+                        <tbody>
+                        @foreach($s['regional_data'] as $region => $data)
+                            <tr>
+                                <td><a href="{{ route('pos-terminals.index', ['region' => $region]) }}">{{ $region }}</a></td>
+                                <td class="num">{{ number_format($data['total']) }}</td>
+                                <td class="num">{{ number_format($data['active']) }}</td>
+                                <td class="num {{ $data['issues'] > 0 ? 't-warn' : '' }}">{{ number_format($data['issues']) }}</td>
+                                <td><div class="db-upt"><div class="db-meter {{ $tone($data['uptime_percentage']) }}"><i style="width: {{ $data['uptime_percentage'] }}%"></i></div><span>{{ $data['uptime_percentage'] }}%</span></div></td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                <div class="db-empty"><strong>No regional data yet</strong>Regions appear here once terminals have a region set.</div>
+                @endif
+            </div>
+
+            {{-- Growth --}}
+            <div class="db-card">
+                <div class="db-card-head">
+                    <h2>Monthly Growth Trends</h2>
+                    <span class="db-meta">Last 6 months</span>
+                </div>
+                <div class="db-card-body">
+                    @if($hasTrend)
+                    <div class="db-chart"><canvas id="trendsChart" aria-label="New terminals, clients and licenses per month"></canvas></div>
+                    @else
+                    <div class="db-empty"><strong>Nothing new in the last 6 months</strong>New terminals, clients and licenses will be charted here.</div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Recent activity --}}
+            <div class="db-card">
+                <div class="db-card-head"><h2>Recent Activity</h2></div>
+                <div class="db-list db-activity">
+                    @forelse($s['recent_activity'] as $activity)
+                    @php [$aIcon, $aTone] = $activityIcon($activity['title']); @endphp
+                    <div class="db-row">
+                        <span class="db-ic {{ $aTone }}"><svg class="mv-i"><use href="#i-{{ $aIcon }}"/></svg></span>
+                        <div class="db-grow">
+                            <div class="db-title">{{ $activity['title'] }}</div>
+                            <div class="db-sub">{{ $activity['description'] }}</div>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm font-medium text-gray-900">{{ $activity['title'] }}</div>
-                            <div class="text-sm text-gray-500 mt-0.5">{{ $activity['description'] }}</div>
-                            <div class="text-xs text-gray-400 mt-1">{{ $activity['time'] }}</div>
-                        </div>
+                        <span class="db-sub" style="flex-shrink:0">{{ $activity['time'] }}</span>
                         @if(isset($activity['action']))
-                        <a href="{{ $activity['action']['url'] }}" class="btn-secondary btn-sm flex-shrink-0">{{ $activity['action']['label'] }}</a>
+                        <a href="{{ $activity['action']['url'] }}" class="btn-secondary btn-sm" style="flex-shrink:0">{{ $activity['action']['label'] }}</a>
                         @endif
                     </div>
                     @empty
-                    <div class="empty-state">
-                        <div class="empty-state-icon">&#x1F4DD;</div>
-                        <p class="empty-state-msg">No recent activity</p>
-                    </div>
+                    <div class="db-empty"><strong>No recent activity</strong></div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        <div class="db-col">
+
+            {{-- Quick actions --}}
+            <div class="db-card">
+                <div class="db-card-head"><h2>Quick Actions</h2></div>
+                <div class="db-list">
+                    @foreach([
+                        [route('pos-terminals.create'), 'plus-circle', 'Add New Terminal'],
+                        [route('business-licenses.create'), 'file-check', 'Add Business License'],
+                        [route('clients.create'), 'building', 'Add New Client'],
+                        [route('pos-terminals.index', ['status' => 'faulty']), 'wrench', 'View Faulty Terminals'],
+                        [route('business-licenses.expiring'), 'clock', 'Expiring Licenses'],
+                        [route('pos-terminals.column-mapping'), 'table', 'Column Mapping'],
+                    ] as [$qaUrl, $qaIcon, $qaLabel])
+                    <a href="{{ $qaUrl }}" class="db-row">
+                        <span class="db-ic"><svg class="mv-i"><use href="#i-{{ $qaIcon }}"/></svg></span>
+                        <span class="db-grow db-title">{{ $qaLabel }}</span>
+                        <svg class="mv-i db-chev"><use href="#i-chevron-right"/></svg>
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Top clients --}}
+            <div class="db-card">
+                <div class="db-card-head">
+                    <h2>Top Clients</h2>
+                    <a href="{{ route('clients.index') }}" class="db-link">All clients<svg class="mv-i mv-i-sm"><use href="#i-chevron-right"/></svg></a>
+                </div>
+                <div class="db-list">
+                    @forelse($s['top_clients'] as $client)
+                    <a href="{{ route('clients.show', $client['id']) }}" class="db-row">
+                        <span class="db-rank">{{ $loop->iteration }}</span>
+                        <div class="db-grow">
+                            <div class="db-title">{{ $client['name'] }}</div>
+                            <div class="db-meter" style="margin-top:6px"><i style="width: {{ round($client['terminals'] / $maxClient * 100) }}%"></i></div>
+                        </div>
+                        <span style="text-align:right;flex-shrink:0">
+                            <span class="db-title" style="display:block;font-variant-numeric:tabular-nums">{{ number_format($client['terminals']) }}</span>
+                            <span class="db-sub">terminals</span>
+                        </span>
+                    </a>
+                    @empty
+                    <div class="db-empty"><strong>No clients yet</strong><a href="{{ route('clients.create') }}">Add New Client</a></div>
                     @endforelse
                 </div>
             </div>
 
-        </div>
-
-        {{-- Sidebar (1/3 width) --}}
-        <div class="flex flex-col gap-5">
-
-            {{-- Quick Actions --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x26A1; Quick Actions</h4>
-                </div>
-                <div class="ui-card-body flex flex-col gap-2">
-                    <a href="{{ route('pos-terminals.create') }}" class="flex items-center gap-2.5 px-3 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm text-gray-700 no-underline transition-all hover:border-[#1a3a5c] hover:text-[#1a3a5c] hover:bg-blue-50 hover:-translate-y-px">
-                        <span>&#x1F5A5;&#xFE0F;</span><span>Add New Terminal</span>
-                    </a>
-                    <a href="{{ route('business-licenses.create') }}" class="flex items-center gap-2.5 px-3 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm text-gray-700 no-underline transition-all hover:border-[#1a3a5c] hover:text-[#1a3a5c] hover:bg-blue-50 hover:-translate-y-px">
-                        <span>&#x1F4CB;</span><span>Add Business License</span>
-                    </a>
-                    <a href="{{ route('clients.create') }}" class="flex items-center gap-2.5 px-3 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm text-gray-700 no-underline transition-all hover:border-[#1a3a5c] hover:text-[#1a3a5c] hover:bg-blue-50 hover:-translate-y-px">
-                        <span>&#x1F3E2;</span><span>Add New Client</span>
-                    </a>
-                    <a href="{{ route('pos-terminals.index') }}?status=faulty" class="flex items-center gap-2.5 px-3 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm text-gray-700 no-underline transition-all hover:border-[#1a3a5c] hover:text-[#1a3a5c] hover:bg-blue-50 hover:-translate-y-px">
-                        <span>&#x1F527;</span><span>View Faulty Terminals</span>
-                    </a>
-                    <a href="{{ route('business-licenses.expiring') }}" class="flex items-center gap-2.5 px-3 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm text-gray-700 no-underline transition-all hover:border-[#1a3a5c] hover:text-[#1a3a5c] hover:bg-blue-50 hover:-translate-y-px">
-                        <span>&#x23F0;</span><span>Expiring Licenses</span>
-                    </a>
-                    <a href="{{ route('pos-terminals.column-mapping') }}" class="flex items-center gap-2.5 px-3 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm text-gray-700 no-underline transition-all hover:border-[#1a3a5c] hover:text-[#1a3a5c] hover:bg-blue-50 hover:-translate-y-px">
-                        <span>&#x2699;&#xFE0F;</span><span>Column Mapping</span>
-                    </a>
+            {{-- System health --}}
+            <div class="db-card">
+                <div class="db-card-head"><h2>System Health</h2></div>
+                <div class="db-card-body db-health">
+                    <div class="db-health-row">
+                        <div><span>Network Uptime</span><b>{{ $uptime }}%</b></div>
+                        <div class="db-meter {{ $tone($uptime) }}"><i style="width: {{ $uptime }}%"></i></div>
+                    </div>
+                    <div class="db-health-row">
+                        <div><span>License Compliance</span><b>{{ $lic['compliance_rate'] }}%</b></div>
+                        <div class="db-meter"><i style="width: {{ $lic['compliance_rate'] }}%"></i></div>
+                    </div>
+                    <div class="db-health-row">
+                        <div><span>Service Level</span><b>{{ $s['service_level'] }}%</b></div>
+                        <div class="db-meter"><i style="width: {{ $s['service_level'] }}%"></i></div>
+                    </div>
+                    <div class="db-dl"><div><span>Avg Response Time</span><b>{{ $s['avg_response_time'] }} h</b></div></div>
                 </div>
             </div>
 
-            {{-- License Summary --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4CB; License Summary</h4>
+            {{-- Licenses --}}
+            <div class="db-card">
+                <div class="db-card-head">
+                    <h2>License Summary</h2>
+                    <a href="{{ route('business-licenses.index') }}" class="db-link">View All<svg class="mv-i mv-i-sm"><use href="#i-chevron-right"/></svg></a>
                 </div>
-                <div class="ui-card-body flex flex-col gap-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Total Licenses</span>
-                        <span class="text-sm font-semibold text-gray-900">{{ $stats['license_stats']['total_licenses'] }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Active</span>
-                        <span class="text-sm font-semibold text-green-600">{{ $stats['license_stats']['active_licenses'] }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Expiring Soon</span>
-                        <span class="text-sm font-semibold text-amber-600">{{ $stats['license_stats']['expiring_soon'] }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Expired</span>
-                        <span class="text-sm font-semibold text-red-600">{{ $stats['license_stats']['expired'] }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Critical Priority</span>
-                        <span class="text-sm font-semibold text-purple-600">{{ $stats['license_stats']['critical_licenses'] }}</span>
-                    </div>
-                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-                        <span class="text-sm text-gray-500">Annual Cost</span>
-                        <span class="text-sm font-semibold text-blue-600">${{ number_format($stats['license_stats']['annual_cost'], 0) }}</span>
+                @if($lic['total_licenses'] > 0)
+                <div class="db-card-body" style="padding-top:8px;padding-bottom:8px">
+                    <div class="db-dl">
+                        <div><span>Total Licenses</span><b>{{ $lic['total_licenses'] }}</b></div>
+                        <div><span>Active</span><b>{{ $lic['active_licenses'] }}</b></div>
+                        <div><span>Expiring Soon</span><b class="{{ $lic['expiring_soon'] > 0 ? 't-warn' : '' }}">{{ $lic['expiring_soon'] }}</b></div>
+                        <div><span>Expired</span><b class="{{ $lic['expired'] > 0 ? 't-crit' : '' }}">{{ $lic['expired'] }}</b></div>
+                        <div><span>Critical Priority</span><b>{{ $lic['critical_licenses'] }}</b></div>
+                        <div><span>Annual Cost</span><b>${{ number_format($lic['annual_cost'], 0) }}</b></div>
                     </div>
                 </div>
-            </div>
-
-            {{-- Upcoming Renewals --}}
-            @if(isset($stats['upcoming_renewals']) && $stats['upcoming_renewals']->count() > 0)
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F504; Upcoming Renewals</h4>
-                </div>
-                <div class="ui-card-body flex flex-col gap-2.5">
-                    @foreach($stats['upcoming_renewals']->take(5) as $license)
-                    <div class="flex items-center gap-2.5 p-2.5 bg-gray-50 rounded-lg">
-                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0 {{ $license->is_expired ? 'bg-red-500' : 'bg-amber-500' }}">
-                            {{ $license->is_expired ? '!' : '~' }}
+                @if(isset($s['upcoming_renewals']) && $s['upcoming_renewals']->count() > 0)
+                <div class="db-list" style="border-top:1px solid var(--mv-line)">
+                    @foreach($s['upcoming_renewals']->take(5) as $license)
+                    <div class="db-row">
+                        <span class="chip {{ $license->is_expired ? 'crit' : 'warn' }}">{{ $license->is_expired ? 'Expired' : 'Due' }}</span>
+                        <div class="db-grow">
+                            <div class="db-title">{{ $license->license_name }}</div>
+                            <div class="db-sub">{{ $license->is_expired ? 'Expired' : 'Expires' }} {{ optional($license->expiry_date)->format('j M Y') }}</div>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm font-medium text-gray-900 truncate">{{ Str::limit($license->license_name, 20) }}</div>
-                            <div class="text-xs text-gray-500">
-                                {{ $license->is_expired ? 'Expired' : 'Expires' }} {{ $license->expiry_date->format('M d') }}
-                            </div>
-                        </div>
-                        <a href="{{ route('business-licenses.renew', $license) }}" class="btn-sm px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 no-underline transition-colors flex-shrink-0">Renew</a>
+                        <a href="{{ route('business-licenses.renew', $license) }}" class="btn-secondary btn-sm" style="flex-shrink:0">Renew</a>
                     </div>
                     @endforeach
                 </div>
-            </div>
-            @endif
-
-            {{-- System Health --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F49A; System Health</h4>
-                </div>
-                <div class="ui-card-body flex flex-col gap-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Network Uptime</span>
-                        <span class="text-sm font-semibold text-green-600">{{ $stats['network_uptime'] }}%</span>
-                    </div>
-                    <div class="bg-gray-200 rounded-full h-1.5 overflow-hidden -mt-1">
-                        <div class="bg-green-500 h-full rounded-full" style="width: {{ $stats['network_uptime'] }}%"></div>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">License Compliance</span>
-                        <span class="text-sm font-semibold text-blue-600">{{ $stats['license_stats']['compliance_rate'] }}%</span>
-                    </div>
-                    <div class="bg-gray-200 rounded-full h-1.5 overflow-hidden -mt-1">
-                        <div class="bg-blue-500 h-full rounded-full" style="width: {{ $stats['license_stats']['compliance_rate'] }}%"></div>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Service Level</span>
-                        <span class="text-sm font-semibold text-blue-600">{{ $stats['service_level'] }}%</span>
-                    </div>
-                    <div class="bg-gray-200 rounded-full h-1.5 overflow-hidden -mt-1">
-                        <div class="bg-blue-500 h-full rounded-full" style="width: {{ $stats['service_level'] }}%"></div>
-                    </div>
-
-                    <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-                        <span class="text-sm text-gray-500">Avg Response Time</span>
-                        <span class="text-sm font-semibold text-amber-600">{{ $stats['avg_response_time'] }}h</span>
-                    </div>
-                </div>
+                @endif
+                @else
+                <div class="db-empty"><strong>No business licenses recorded</strong>Track licenses and renewal dates here.<a href="{{ route('business-licenses.create') }}">Add Business License</a></div>
+                @endif
             </div>
 
-            {{-- Top Clients --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F3C6; Top Clients</h4>
-                </div>
-                <div class="ui-card-body flex flex-col gap-2.5">
-                    @foreach($stats['top_clients'] as $client)
-                    @php
-                        $clientStatusClass = match($client['status']) {
-                            'active'   => 'badge-green',
-                            'inactive' => 'badge-red',
-                            default    => 'badge-gray',
-                        };
-                    @endphp
-                    <div class="flex items-center gap-2.5 p-2.5 bg-gray-50 rounded-lg">
-                        <div class="w-6 h-6 rounded-full bg-[#1a3a5c] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                            {{ $loop->iteration }}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm font-medium text-gray-900 truncate">{{ $client['name'] }}</div>
-                            <div class="text-xs text-gray-500">{{ $client['terminals'] }} terminals</div>
-                        </div>
-                        <span class="badge {{ $clientStatusClass }} flex-shrink-0">{{ ucfirst($client['status']) }}</span>
-                        <a href="{{ route('clients.show', $client['id']) }}" class="btn-secondary btn-sm flex-shrink-0">View</a>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-
-            {{-- Contract Status --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F4C4; Contract Status</h4>
-                </div>
-                <div class="ui-card-body flex flex-col gap-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Active Contracts</span>
-                        <span class="text-sm font-semibold text-green-600">{{ $stats['contract_stats']['active'] }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Expiring Soon</span>
-                        <span class="text-sm font-semibold text-amber-600">{{ $stats['contract_stats']['expiring_soon'] }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Expired</span>
-                        <span class="text-sm font-semibold text-red-600">{{ $stats['contract_stats']['expired'] }}</span>
+            {{-- Contracts and team --}}
+            <div class="db-card">
+                <div class="db-card-body db-sec" style="padding-bottom:10px">
+                    <p class="db-sec-title">Contract Status</p>
+                    <div class="db-dl">
+                        <div><span>Active Contracts</span><b>{{ $s['contract_stats']['active'] }}</b></div>
+                        <div><span>Expiring Soon</span><b class="{{ $s['contract_stats']['expiring_soon'] > 0 ? 't-warn' : '' }}">{{ $s['contract_stats']['expiring_soon'] }}</b></div>
+                        <div><span>Expired</span><b class="{{ $s['contract_stats']['expired'] > 0 ? 't-crit' : '' }}">{{ $s['contract_stats']['expired'] }}</b></div>
                     </div>
                 </div>
-            </div>
-
-            {{-- Team Overview --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">&#x1F465; Team Overview</h4>
-                </div>
-                <div class="ui-card-body flex flex-col gap-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Total Employees</span>
-                        <span class="text-sm font-semibold text-gray-900">{{ $stats['employee_stats']['total'] }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Field Technicians</span>
-                        <span class="text-sm font-semibold text-blue-600">{{ $stats['employee_stats']['technicians'] }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500">Managers</span>
-                        <span class="text-sm font-semibold text-purple-600">{{ $stats['employee_stats']['managers'] }}</span>
+                <div class="db-card-body db-sec" style="padding-bottom:10px">
+                    <p class="db-sec-title">Team Overview</p>
+                    <div class="db-dl">
+                        <div><span>Total Employees</span><b>{{ $s['employee_stats']['total'] }}</b></div>
+                        <div><span>Field Technicians</span><b>{{ $s['employee_stats']['technicians'] }}</b></div>
+                        <div><span>Managers</span><b>{{ $s['employee_stats']['managers'] }}</b></div>
                     </div>
                 </div>
             </div>
@@ -452,173 +459,46 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@if($hasTrend)
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var el = document.getElementById('trendsChart');
+    if (!el || typeof Chart === 'undefined') return;
+    Chart.defaults.font.family = '"IBM Plex Sans", "Segoe UI", system-ui, sans-serif';
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = '#6A7686';
+    var bar = { borderRadius: 4, maxBarThickness: 18, borderSkipped: 'bottom' };
+    new Chart(el, {
+        type: 'bar',
+        data: {
+            labels: @json($trend['months']),
+            datasets: [
+                Object.assign({ label: 'New Terminals', data: @json($trend['terminals']), backgroundColor: '#2B64A8' }, bar),
+                Object.assign({ label: 'New Clients',   data: @json($trend['clients']),   backgroundColor: '#8DB3E2' }, bar),
+                Object.assign({ label: 'New Licenses',  data: @json($trend['licenses']),  backgroundColor: '#5B6B7F' }, bar)
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, useBorderRadius: true, borderRadius: 2, padding: 16 } },
+                tooltip: { backgroundColor: '#16202C', padding: 10, cornerRadius: 6, boxPadding: 4, titleFont: { weight: '600' } }
+            },
+            scales: {
+                x: { grid: { display: false }, border: { color: '#E1E6EC' } },
+                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#EEF1F4' }, border: { display: false } }
+            }
+        }
+    });
+})();
+</script>
+@endif
 
 <script>
-// Terminal Status Chart
-const ctx = document.getElementById('statusChart').getContext('2d');
-const statusChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-        labels: ['Active', 'Offline', 'Maintenance', 'Faulty', 'Decommissioned'],
-        datasets: [{
-            data: [
-                {{ $stats['active_terminals'] }},
-                {{ $stats['offline_terminals'] }},
-                {{ $stats['maintenance_terminals'] }},
-                {{ $stats['faulty_terminals'] }},
-                {{ $stats['decommissioned_terminals'] ?? 0 }}
-            ],
-            backgroundColor: [
-                '#4caf50',
-                '#ff9800',
-                '#2196f3',
-                '#f44336',
-                '#9e9e9e'
-            ],
-            borderWidth: 3,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    padding: 20,
-                    usePointStyle: true,
-                    font: { size: 12 }
-                }
-            }
-        }
-    }
-});
-
-// License Status Chart
-const licenseCtx = document.getElementById('licenseChart').getContext('2d');
-const licenseChart = new Chart(licenseCtx, {
-    type: 'bar',
-    data: {
-        labels: ['Active', 'Expired', 'Expiring Soon', 'Suspended', 'Cancelled'],
-        datasets: [{
-            label: 'License Count',
-            data: [
-                {{ $stats['license_stats']['active_licenses'] }},
-                {{ $stats['license_stats']['expired'] }},
-                {{ $stats['license_stats']['expiring_soon'] }},
-                {{ $stats['license_stats']['suspended'] ?? 0 }},
-                {{ $stats['license_stats']['cancelled'] ?? 0 }}
-            ],
-            backgroundColor: ['#4caf50', '#f44336', '#ff9800', '#9e9e9e', '#607d8b'],
-            borderColor: ['#388e3c', '#d32f2f', '#f57c00', '#757575', '#455a64'],
-            borderWidth: 2,
-            borderRadius: 4
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } },
-            x: { ticks: { font: { size: 11 } } }
-        }
-    }
-});
-
-// Monthly Trends Chart
-const trendsCtx = document.getElementById('trendsChart').getContext('2d');
-const trendsChart = new Chart(trendsCtx, {
-    type: 'line',
-    data: {
-        labels: {!! json_encode($stats['monthly_trends']['months']) !!},
-        datasets: [{
-            label: 'New Terminals',
-            data: {!! json_encode($stats['monthly_trends']['terminals']) !!},
-            borderColor: '#2196f3',
-            backgroundColor: 'rgba(33, 150, 243, 0.1)',
-            tension: 0.4,
-            fill: true
-        }, {
-            label: 'New Clients',
-            data: {!! json_encode($stats['monthly_trends']['clients']) !!},
-            borderColor: '#4caf50',
-            backgroundColor: 'rgba(76, 175, 80, 0.1)',
-            tension: 0.4,
-            fill: true
-        }, {
-            label: 'New Licenses',
-            data: {!! json_encode($stats['monthly_trends']['licenses']) !!},
-            borderColor: '#ff9800',
-            backgroundColor: 'rgba(255, 152, 0, 0.1)',
-            tension: 0.4,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: { usePointStyle: true, font: { size: 12 } }
-            }
-        },
-        scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } }
-        }
-    }
-});
-
-// License expiration notifications
-function showLicenseNotifications() {
-    const expiredCount = {{ $stats['license_stats']['expired'] }};
-    const expiringCount = {{ $stats['license_stats']['expiring_soon'] }};
-
-    if (expiredCount > 0) {
-        setTimeout(() => {
-            if (confirm(`You have ${expiredCount} expired license(s). Would you like to view them now?`)) {
-                window.open('{{ route("business-licenses.index", ["status" => "expired"]) }}', '_blank');
-            }
-        }, 2000);
-    } else if (expiringCount > 0) {
-        setTimeout(() => {
-            if (confirm(`You have ${expiringCount} license(s) expiring soon. Would you like to review them?`)) {
-                window.open('{{ route("business-licenses.expiring") }}', '_blank');
-            }
-        }, 5000);
-    }
-}
-
-// Auto-refresh every 5 minutes
-setInterval(() => {
-    if (document.visibilityState === 'visible') {
-        location.reload();
-    }
-}, 300000);
-
-// Real-time clock
-function updateClock() {
-    const now = new Date();
-    document.title = `Revival Technologies - ${now.toLocaleTimeString()}`;
-}
-setInterval(updateClock, 1000);
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    showLicenseNotifications();
-});
-
-// Pulse animation for critical alerts
-const criticalAlerts = document.querySelectorAll('.alert-critical');
-criticalAlerts.forEach(alert => {
-    alert.style.animation = 'pulse 2s infinite';
-});
-
-const style = document.createElement('style');
-style.textContent = `@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }`;
-document.head.appendChild(style);
+// Keep the figures fresh while the dashboard is on screen.
+setInterval(function () { if (document.visibilityState === 'visible') location.reload(); }, 300000);
 </script>
 @endsection

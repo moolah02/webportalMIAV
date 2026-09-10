@@ -16,7 +16,7 @@
 </p>
 
 <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
-    <strong>&#128203; Project Lifecycle at a Glance:</strong>
+    <strong>Project Lifecycle at a Glance:</strong>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;">
         <span style="background:#7c3aed;color:#fff;padding:5px 14px;border-radius:99px;font-size:12px;font-weight:600;">1. Create</span>
         <span style="color:#7c3aed;font-size:16px;">&#8594;</span>
@@ -31,7 +31,7 @@
 </div>
 
 <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:20px 24px;margin-bottom:32px;">
-    <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:#0c4a6e;">&#128209; Contents</div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:#0c4a6e;">Contents</div>
     <ol style="columns:2;column-gap:28px;list-style-position:inside;font-size:13.5px;">
         <li><a href="#creating" style="color:#0369a1;text-decoration:none;">Creating a Project</a></li>
         <li><a href="#team" style="color:#0369a1;text-decoration:none;">Assigning Team Members</a></li>

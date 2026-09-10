@@ -29,7 +29,7 @@
                     transition:all .2s;cursor:pointer;border-top:4px solid #0969da;"
              onmouseover="this.style.boxShadow='0 4px 20px rgba(9,105,218,.12)';this.style.transform='translateY(-2px)'"
              onmouseout="this.style.boxShadow='none';this.style.transform='none'">
-            <div style="font-size:28px;margin-bottom:10px;">&#9881;&#65039;</div>
+            <div style="font-size:28px;margin-bottom:10px;"></div>
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#0969da;margin-bottom:4px;">
                 ALL STAFF &mdash; FULL SYSTEM
             </div>
@@ -49,7 +49,7 @@
                     transition:all .2s;cursor:pointer;border-top:4px solid #1a7f37;"
              onmouseover="this.style.boxShadow='0 4px 20px rgba(26,127,55,.12)';this.style.transform='translateY(-2px)'"
              onmouseout="this.style.boxShadow='none';this.style.transform='none'">
-            <div style="font-size:28px;margin-bottom:10px;">&#128241;</div>
+            <div style="font-size:28px;margin-bottom:10px;"></div>
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1a7f37;margin-bottom:4px;">
                 TECHNICIANS &amp; FIELD STAFF
             </div>
@@ -69,7 +69,7 @@
                     transition:all .2s;cursor:pointer;border-top:4px solid #9a3412;"
              onmouseover="this.style.boxShadow='0 4px 20px rgba(154,52,18,.12)';this.style.transform='translateY(-2px)'"
              onmouseout="this.style.boxShadow='none';this.style.transform='none'">
-            <div style="font-size:28px;margin-bottom:10px;">&#128202;</div>
+            <div style="font-size:28px;margin-bottom:10px;"></div>
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9a3412;margin-bottom:4px;">
                 MANAGERS &amp; ADMINS
             </div>
@@ -89,7 +89,7 @@
                     transition:all .2s;cursor:pointer;border-top:4px solid #7c3aed;"
              onmouseover="this.style.boxShadow='0 4px 20px rgba(124,58,237,.12)';this.style.transform='translateY(-2px)'"
              onmouseout="this.style.boxShadow='none';this.style.transform='none'">
-            <div style="font-size:28px;margin-bottom:10px;">&#128203;</div>
+            <div style="font-size:28px;margin-bottom:10px;"></div>
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#7c3aed;margin-bottom:4px;">
                 PROJECT MANAGERS
             </div>
@@ -119,7 +119,7 @@
                     transition:background .15s;"
              onmouseover="this.style.background='#f6f8fa'"
              onmouseout="this.style.background='transparent'">
-            <div style="font-size:22px;flex-shrink:0;">&#128196;</div>
+            <div style="font-size:22px;flex-shrink:0;"></div>
             <div>
                 <div style="font-weight:600;color:#0d1117;font-size:14px;">Software Requirements Specification (SRS)</div>
                 <div style="font-size:13px;color:#57606a;margin-top:2px;">
@@ -135,7 +135,7 @@
                     transition:background .15s;"
              onmouseover="this.style.background='#f6f8fa'"
              onmouseout="this.style.background='transparent'">
-            <div style="font-size:22px;flex-shrink:0;">&#127962;</div>
+            <div style="font-size:22px;flex-shrink:0;"></div>
             <div>
                 <div style="font-weight:600;color:#0d1117;font-size:14px;">Business Overview</div>
                 <div style="font-size:13px;color:#57606a;margin-top:2px;">
@@ -159,7 +159,7 @@
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
         <span style="background:#fff;border:1px solid #d0d7de;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;color:#57606a;">
-            &#127760; 51.21.252.67
+            51.21.252.67
         </span>
         <a href="{{ url('/login') }}"
            style="background:#1a3a5c;padding:7px 18px;border-radius:6px;font-size:12px;font-weight:600;
