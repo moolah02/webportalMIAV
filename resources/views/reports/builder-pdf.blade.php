@@ -24,13 +24,18 @@
 
         /* Table */
         .table-wrap { padding: 12px 20px 20px; }
-        table.data { width: 100%; border-collapse: collapse; font-size: 10px; }
+        /* Fixed layout: every column always fits the page width. Wide reports used
+           to run off the right edge and silently lose their last columns. */
+        table.data { width: 100%; border-collapse: collapse; font-size: 10px; table-layout: fixed; }
         table.data thead tr { background: #1a3a5c; color: #fff; }
         table.data thead th { padding: 7px 9px; text-align: left; font-weight: 600;
-                              letter-spacing: .3px; white-space: nowrap; }
+                              letter-spacing: .3px; vertical-align: bottom; word-wrap: break-word; }
         table.data tbody tr:nth-child(even) { background: #f8fafc; }
         table.data tbody tr:nth-child(odd)  { background: #ffffff; }
-        table.data tbody td { padding: 5px 9px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+        table.data tbody td { padding: 5px 9px; border-bottom: 1px solid #e5e7eb; vertical-align: top; word-wrap: break-word; }
+        /* Many columns: smaller type and padding so rows stay readable */
+        table.data.wide { font-size: 8px; }
+        table.data.wide thead th, table.data.wide tbody td { padding: 4px 5px; letter-spacing: 0; }
 
         /* Footer */
         .footer { padding: 8px 20px; border-top: 1px solid #e5e7eb; }
@@ -72,11 +77,12 @@
         @if($results->isEmpty())
             <div class="no-data">No data to display.</div>
         @else
-            <table class="data">
+            @php $colWidth = round(100 / max(count($columns), 1), 2); @endphp
+            <table class="data{{ count($columns) > 8 ? ' wide' : '' }}">
                 <thead>
                     <tr>
                         @foreach($columns as $col)
-                            <th>{{ ucwords(str_replace('_', ' ', $col)) }}</th>
+                            <th style="width: {{ $colWidth }}%">{{ ucwords(str_replace('_', ' ', $col)) }}</th>
                         @endforeach
                     </tr>
                 </thead>
