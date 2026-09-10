@@ -1,374 +1,88 @@
 @extends('layouts.app')
 @section('title', 'Asset Category Fields')
 
-@section('content')
+@section('header-actions')
+<a href="{{ route('settings.index') }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Settings</a>
+<button type="button" class="btn-primary btn-sm" onclick="openAddModal()"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Add Field</button>
+@endsection
+
+@push('styles')
 <style>
-  .table-container {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.05);
-  }
+/* Top-bar actions sit outside .mv-page, so give the primary button the portal accent here */
+.mv-header-actions .btn-primary { background: var(--mv-accent) !important; border-color: var(--mv-accent) !important; color: #fff !important; }
+.mv-header-actions .btn-primary:hover { background: var(--mv-accent-ink) !important; border-color: var(--mv-accent-ink) !important; }
+.cf { display: grid; gap: 16px; }
+.cf-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.cf-toolbar label { font-size: 13px; font-weight: 500; color: var(--mv-ink-2); }
+.cf-toolbar select { width: 280px; max-width: 100%; flex: 0 0 auto; height: 36px; min-width: 240px; padding: 0 30px 0 11px; font: inherit; font-size: 13.5px; color: var(--mv-ink); background-color: var(--mv-surface); border: 1px solid var(--mv-line-strong); border-radius: 8px; cursor: pointer; }
+.cf-toolbar select:focus { outline: none; border-color: var(--mv-accent); box-shadow: 0 0 0 3px rgba(43,100,168,.15); }
+.cf-toolbar p { margin: 0 0 0 auto; font-size: 13px; color: var(--mv-muted); }
 
-  .table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-block-end: 25px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #f1f3f4;
-  }
+.cf-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
+.cf-card-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--mv-line); }
+.cf-card-head h2, .cf-card-head h3 { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+.cf-count { font-size: 12px; font-weight: 500; color: var(--mv-ink-2); background: var(--mv-surface-2); border: 1px solid var(--mv-line); border-radius: 6px; padding: 0 7px; }
 
-  .table-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin: 0;
-  }
+.cf-setting { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.cf-setting strong { display: block; font-size: 13.5px; font-weight: 500; color: var(--mv-ink); }
+.cf-setting p { margin: 2px 0 0; font-size: 12.5px; color: var(--mv-muted); }
+.toggle-switch { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
+.toggle-switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
+.toggle-slider { position: absolute; inset: 0; border-radius: 11px; background: var(--mv-line-strong); transition: background .15s; }
+.toggle-slider::before { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(22,32,44,.2); transition: transform .15s; }
+.toggle-switch input:checked + .toggle-slider { background: var(--mv-accent); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
 
-  .btn-primary {
-    background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%);
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    color: white;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
+.category-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.category-table th { text-align: left; white-space: nowrap; }
+.cf-num { color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.cf-key { font-family: var(--mv-mono); font-size: 12.5px; color: var(--mv-ink); }
+.cf-label { color: var(--mv-ink); font-weight: 500; }
+.cf-help { display: block; font-size: 12px; color: var(--mv-muted); margin-top: 2px; }
+.options-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.option-tag { font-size: 11.5px; color: var(--mv-ink-2); background: var(--mv-surface-2); border: 1px solid var(--mv-line); border-radius: 5px; padding: 0 6px; }
+.field-type-badge { font-family: var(--mv-mono); font-size: 12px; color: var(--mv-ink-2); background: var(--mv-surface-2); border: 1px solid var(--mv-line); border-radius: 5px; padding: 1px 6px; }
+.cf-muted { color: var(--mv-muted); }
+.cf-actions { display: flex; gap: 6px; justify-content: flex-end; white-space: nowrap; }
+.cf-btn { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--mv-line-strong); background: var(--mv-surface); font: inherit; font-size: 12.5px; font-weight: 500; color: var(--mv-ink-2); cursor: pointer; }
+.cf-btn .mv-i { width: 13px; height: 13px; }
+.cf-btn:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.cf-btn-danger { color: var(--mv-crit); border-color: #EBC3C3; }
+.cf-btn-danger:hover { background: var(--mv-crit-soft); color: var(--mv-crit); }
+.cf-empty { padding: 44px 16px; text-align: center; color: var(--mv-muted); font-size: 13.5px; }
+.cf-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); display: block; margin: 0 auto 8px; }
+.cf-empty h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+.cf-empty p { margin: 0; }
 
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-    color: white;
-    text-decoration: none;
-  }
-
-  .category-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-
-  .category-table th {
-    background: #f8f9fa;
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-    color: #495057;
-    border-bottom: 2px solid #dee2e6;
-  }
-
-  .category-table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-    vertical-align: middle;
-  }
-
-  .category-table tr:hover {
-    background: #f8f9fa;
-  }
-
-  .status-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-
-  .status-active {
-    background: #d4edda;
-    color: #155724;
-  }
-
-  .status-inactive {
-    background: #f8d7da;
-    color: #721c24;
-  }
-
-  .btn-sm {
-    padding: 6px 12px;
-    font-size: 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    margin-right: 5px;
-    transition: all 0.3s ease;
-  }
-
-  .btn-outline-primary {
-    border: 1px solid #1a3a5c;
-    color: #1a3a5c;
-    background: transparent;
-  }
-
-  .btn-outline-primary:hover {
-    background: #1a3a5c;
-    color: white;
-  }
-
-  .btn-outline-danger {
-    border: 1px solid #dc3545;
-    color: #dc3545;
-    background: transparent;
-  }
-
-  .btn-outline-danger:hover {
-    background: #dc3545;
-    color: white;
-  }
-
-  .alert {
-    padding: 15px;
-    border-radius: 8px;
-    margin-block-end: 20px;
-    border: none;
-  }
-
-  .alert-success {
-    background: #d4edda;
-    color: #155724;
-  }
-
-  .alert-danger {
-    background: #f8d7da;
-    color: #721c24;
-  }
-
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-  }
-
-  .modal.show {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-content {
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .form-group {
-    margin-block-end: 20px;
-  }
-
-  .form-label {
-    display: block;
-    margin-block-end: 8px;
-    font-weight: 600;
-    color: #495057;
-  }
-
-  .form-control {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.3s ease;
-    box-sizing: border-box;
-  }
-
-  .form-control:focus {
-    outline: none;
-    border-color: #1a3a5c;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  }
-
-  .modal-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 1px solid #dee2e6;
-  }
-
-  .btn-secondary {
-    background: #6c757d;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  .btn-secondary:hover {
-    background: #5a6268;
-  }
-
-  .category-selector {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 12px;
-    margin-block-end: 25px;
-  }
-
-  .category-selector select {
-    padding: 12px 20px;
-    font-size: 16px;
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    min-width: 250px;
-    cursor: pointer;
-  }
-
-  .field-type-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    background: #e9ecef;
-    color: #495057;
-  }
-
-  .required-badge {
-    background: #fff3cd;
-    color: #856404;
-  }
-
-  .options-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-top: 5px;
-  }
-
-  .option-tag {
-    background: #e9ecef;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-  }
-
-  .options-container {
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 10px;
-  }
-
-  .option-item {
-    display: flex;
-    gap: 10px;
-    margin-block-end: 10px;
-    align-items: center;
-  }
-
-  .option-item input {
-    flex: 1;
-  }
-
-  .btn-remove-option {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .btn-add-option {
-    background: #28a745;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 10px;
-  }
-
-  .category-settings {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    margin-block-end: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  }
-
-  .toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 26px;
-  }
-
-  .toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .toggle-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-    border-radius: 26px;
-  }
-
-  .toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-  }
-
-  input:checked + .toggle-slider {
-    background-color: #1a3a5c;
-  }
-
-  input:checked + .toggle-slider:before {
-    transform: translateX(24px);
-  }
+/* Modals (JS toggles .show on .modal) */
+#addModal.modal, #editModal.modal { display: none; position: fixed; inset: 0; z-index: 1100; width: auto; height: auto; background: rgba(22,32,44,.45); align-items: center; justify-content: center; padding: 16px; overflow: auto; }
+#addModal.modal.show, #editModal.modal.show { display: flex; }
+.modal .modal-content { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; box-shadow: 0 20px 48px rgba(22,32,44,.18); width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; padding: 0; display: block; }
+.modal .modal-content > h3 { margin: 0; padding: 14px 20px; border-bottom: 1px solid var(--mv-line); font-size: 15px; font-weight: 600; color: var(--mv-ink); }
+.modal .modal-content form { padding: 18px 20px 0; }
+.modal .mb-4 { margin-bottom: 14px; }
+.modal .form-label { display: block; margin-bottom: 5px; }
+.modal .ui-input { width: 100%; height: 36px; padding: 0 11px; font-size: 13.5px; }
+.modal small { display: block; margin-top: 4px; font-size: 12px; color: var(--mv-muted); }
+.modal input[readonly].ui-input { background: var(--mv-surface-2) !important; color: var(--mv-muted); font-family: var(--mv-mono); }
+.modal input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--mv-accent); }
+.options-container { border: 1px solid var(--mv-line); border-radius: 8px; padding: 12px; margin-bottom: 14px; background: var(--mv-surface-2); }
+.option-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.option-item input { flex: 1; }
+.btn-remove-option { width: 32px; height: 32px; flex-shrink: 0; border-radius: 7px; border: 1px solid #EBC3C3; background: var(--mv-surface); color: var(--mv-crit); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.btn-remove-option:hover { background: var(--mv-crit-soft); }
+.btn-add-option { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; margin-top: 2px; border-radius: 7px; border: 1px solid var(--mv-line-strong); background: var(--mv-surface); color: var(--mv-ink); font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer; }
+.btn-add-option:hover { background: var(--mv-surface-2); }
+.modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin: 18px -20px 0; padding: 12px 20px; border-top: 1px solid var(--mv-line); background: var(--mv-surface-2); }
 </style>
+@endpush
 
-<div class="">
-  <!-- Breadcrumb -->
-  <div style="background: #fff; padding: 20px; border-radius: 12px; margin-block-end: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-    <nav style="font-size: 14px; color: #666;">
-      <a href="{{ route('dashboard') }}" style="color: #1a3a5c; text-decoration: none;">Dashboard</a>
-      <span style="margin: 0 8px;">></span>
-      <a href="{{ route('settings.index') }}" style="color: #1a3a5c; text-decoration: none;">Settings</a>
-      <span style="margin: 0 8px;">></span>
-      <span>Category Custom Fields</span>
-    </nav>
-    <h1 style="margin: 10px 0 0 0; color: #2c3e50; font-weight: 700;">Category Custom Fields</h1>
-    <p style="color: #666; margin-top: 5px;">Define custom fields for each asset category</p>
-  </div>
+@section('content')
+<div class="cf">
 
-  <!-- Category Selector -->
-  <div class="category-selector">
-    <label style="font-weight: 600; margin-right: 15px;">Select Category:</label>
+  {{-- Category selector --}}
+  <div class="cf-toolbar">
+    <label for="categorySelector">Select Category:</label>
     <select id="categorySelector" onchange="changeCategory(this.value)">
       @foreach($categories as $cat)
         <option value="{{ $cat->id }}" {{ $category->id == $cat->id ? 'selected' : '' }}>
@@ -376,24 +90,12 @@
         </option>
       @endforeach
     </select>
+    <p>Define custom fields for each asset category</p>
   </div>
 
-  <!-- Alerts -->
-  @if(session('success'))
-    <div class="alert alert-success">
-      {{ session('success') }}
-    </div>
-  @endif
-
-  @if(session('error'))
-    <div class="alert alert-danger">
-      {{ session('error') }}
-    </div>
-  @endif
-
   @if($errors->any())
-    <div class="alert alert-danger">
-      <ul style="margin: 0; padding-left: 20px;">
+    <div class="alert alert-danger" style="padding:11px 14px;border:1px solid;">
+      <ul style="margin: 0; padding-left: 18px;">
         @foreach($errors->all() as $error)
           <li>{{ $error }}</li>
         @endforeach
@@ -401,59 +103,56 @@
     </div>
   @endif
 
-  <!-- Category Settings -->
-  <div class="category-settings">
-    <h3 style="margin-top: 0; margin-block-end: 20px;">{{ $category->name }} Settings</h3>
+  {{-- Category settings --}}
+  <div class="cf-card">
+    <div class="cf-card-head"><h3>{{ $category->name }} Settings</h3></div>
     <form method="POST" action="{{ route('settings.asset-category-fields.update-category', $category) }}">
       @csrf
       @method('PUT')
-      <div style="display: flex; align-items: center; gap: 15px;">
+      <div class="cf-setting">
         <label class="toggle-switch">
           <input type="checkbox" name="requires_individual_entry" value="1" {{ $category->requires_individual_entry ? 'checked' : '' }}>
           <span class="toggle-slider"></span>
         </label>
         <div>
           <strong>Requires Individual Entry</strong>
-          <p style="margin: 0; color: #666; font-size: 13px;">
-            Each item must be entered separately (stock quantity = 1). Enable for vehicles, IT equipment, etc.
-          </p>
+          <p>Each item must be entered separately (stock quantity = 1). Enable for vehicles, IT equipment, etc.</p>
         </div>
-        <button type="submit" class="btn-sm btn-outline-primary" style="margin-left: auto;">Save Setting</button>
+        <button type="submit" class="btn-secondary btn-sm" style="margin-left:auto;white-space:nowrap;">Save Setting</button>
       </div>
     </form>
   </div>
 
-  <!-- Fields Table -->
-  <div class="table-container">
-    <div class="table-header">
+  {{-- Fields --}}
+  <div class="cf-card">
+    <div class="cf-card-head">
       <h2 class="table-title">Custom Fields for "{{ $category->name }}"</h2>
-      <button type="button" class="btn-primary" onclick="openAddModal()">
-        + Add Field
-      </button>
+      <span class="cf-count">{{ $fields->count() }}</span>
     </div>
 
     @if($fields->count() > 0)
-      <table class="category-table">
+    <div style="overflow-x:auto;">
+      <table class="category-table ui-table">
         <thead>
           <tr>
-            <th style="width: 30px;">#</th>
+            <th style="width: 40px;">#</th>
             <th>Field Name</th>
             <th>Label</th>
             <th>Type</th>
             <th>Required</th>
             <th>Status</th>
-            <th style="width: 150px;">Actions</th>
+            <th style="text-align:right;">Actions</th>
           </tr>
         </thead>
         <tbody>
           @foreach($fields as $index => $field)
             <tr>
-              <td>{{ $index + 1 }}</td>
-              <td><code>{{ $field->field_name }}</code></td>
+              <td class="cf-num">{{ $index + 1 }}</td>
+              <td><span class="cf-key">{{ $field->field_name }}</span></td>
               <td>
-                <strong>{{ $field->field_label }}</strong>
+                <span class="cf-label">{{ $field->field_label }}</span>
                 @if($field->help_text)
-                  <br><small style="color: #666;">{{ $field->help_text }}</small>
+                  <span class="cf-help">{{ $field->help_text }}</span>
                 @endif
                 @if($field->field_type === 'select' && $field->options)
                   <div class="options-list">
@@ -466,33 +165,36 @@
               <td><span class="field-type-badge">{{ ucfirst($field->field_type) }}</span></td>
               <td>
                 @if($field->is_required)
-                  <span class="status-badge required-badge">Required</span>
+                  <span class="badge badge-yellow">Required</span>
                 @else
-                  <span style="color: #999;">Optional</span>
+                  <span class="cf-muted">Optional</span>
                 @endif
               </td>
               <td>
-                <span class="status-badge {{ $field->is_active ? 'status-active' : 'status-inactive' }}">
+                <span class="badge {{ $field->is_active ? 'badge-green' : 'badge-gray' }}">
                   {{ $field->is_active ? 'Active' : 'Inactive' }}
                 </span>
               </td>
               <td>
-                <button type="button" class="btn-sm btn-outline-primary"
-                        onclick="openEditModal({{ json_encode($field) }})">
-                  Edit
-                </button>
-                <button type="button" class="btn-sm btn-outline-danger"
-                        onclick="deleteField({{ $field->id }}, '{{ $field->field_label }}')">
-                  Delete
-                </button>
+                <div class="cf-actions">
+                  <button type="button" class="cf-btn"
+                          onclick="openEditModal({{ json_encode($field) }})">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-edit"/></svg> Edit
+                  </button>
+                  <button type="button" class="cf-btn cf-btn-danger"
+                          onclick="deleteField({{ $field->id }}, '{{ $field->field_label }}')">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-trash"/></svg> Delete
+                  </button>
+                </div>
               </td>
             </tr>
           @endforeach
         </tbody>
       </table>
+    </div>
     @else
-      <div style="text-align: center; padding: 60px; color: #666;">
-        <div style="font-size: 48px; margin-block-end: 20px;">+</div>
+      <div class="cf-empty">
+        <svg class="mv-i" aria-hidden="true"><use href="#i-sliders"/></svg>
         <h3>No Custom Fields Defined</h3>
         <p>Add custom fields to capture category-specific information for "{{ $category->name }}" assets.</p>
       </div>
@@ -503,14 +205,14 @@
 <!-- Add Field Modal -->
 <div id="addModal" class="modal">
   <div class="modal-content">
-    <h3 style="margin-top: 0;">Add Custom Field</h3>
+    <h3>Add Custom Field</h3>
     <form id="addForm" method="POST" action="{{ route('settings.asset-category-fields.store', $category) }}">
       @csrf
       <div class="mb-4">
         <label class="form-label">Field Name (snake_case) *</label>
         <input type="text" name="field_name" class="ui-input" required
                pattern="[a-z][a-z0-9_]*" placeholder="e.g., license_plate">
-        <small style="color: #666;">Use lowercase letters, numbers, and underscores only</small>
+        <small>Use lowercase letters, numbers, and underscores only</small>
       </div>
       <div class="mb-4">
         <label class="form-label">Display Label *</label>
@@ -532,7 +234,7 @@
       <div id="add_options_container" class="options-container" style="display: none;">
         <label class="form-label">Dropdown Options</label>
         <div id="add_options_list"></div>
-        <button type="button" class="btn-add-option" onclick="addOption('add')">+ Add Option</button>
+        <button type="button" class="btn-add-option" onclick="addOption('add')"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Add Option</button>
       </div>
       <div class="mb-4">
         <label class="form-label">Placeholder Text</label>
@@ -543,8 +245,8 @@
         <input type="text" name="help_text" class="ui-input" placeholder="e.g., Vehicle license plate number">
       </div>
       <div class="mb-4">
-        <label class="form-label">
-          <input type="checkbox" name="is_required" value="1" style="margin-right: 8px;">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="is_required" value="1">
           Required Field
         </label>
       </div>
@@ -559,14 +261,14 @@
 <!-- Edit Field Modal -->
 <div id="editModal" class="modal">
   <div class="modal-content">
-    <h3 style="margin-top: 0;">Edit Custom Field</h3>
+    <h3>Edit Custom Field</h3>
     <form id="editForm" method="POST">
       @csrf
       @method('PUT')
       <div class="mb-4">
         <label class="form-label">Field Name</label>
-        <input type="text" id="edit_field_name" class="ui-input" readonly style="background: #f5f5f5;">
-        <small style="color: #666;">Field name cannot be changed</small>
+        <input type="text" id="edit_field_name" class="ui-input" readonly>
+        <small>Field name cannot be changed</small>
       </div>
       <div class="mb-4">
         <label class="form-label">Display Label *</label>
@@ -588,7 +290,7 @@
       <div id="edit_options_container" class="options-container" style="display: none;">
         <label class="form-label">Dropdown Options</label>
         <div id="edit_options_list"></div>
-        <button type="button" class="btn-add-option" onclick="addOption('edit')">+ Add Option</button>
+        <button type="button" class="btn-add-option" onclick="addOption('edit')"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Add Option</button>
       </div>
       <div class="mb-4">
         <label class="form-label">Placeholder Text</label>
@@ -599,14 +301,14 @@
         <input type="text" name="help_text" id="edit_help_text" class="ui-input">
       </div>
       <div class="mb-4">
-        <label class="form-label">
-          <input type="checkbox" name="is_required" id="edit_is_required" value="1" style="margin-right: 8px;">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="is_required" id="edit_is_required" value="1">
           Required Field
         </label>
       </div>
       <div class="mb-4">
-        <label class="form-label">
-          <input type="checkbox" name="is_active" id="edit_is_active" value="1" style="margin-right: 8px;">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="is_active" id="edit_is_active" value="1">
           Active
         </label>
       </div>
@@ -674,7 +376,7 @@ function addOption(prefix, value = '') {
   div.className = 'option-item';
   div.innerHTML = `
     <input type="text" name="options[]" class="ui-input" value="${value}" placeholder="Option ${index + 1}" required>
-    <button type="button" class="btn-remove-option" onclick="this.parentElement.remove()">X</button>
+    <button type="button" class="btn-remove-option" onclick="this.parentElement.remove()" title="Remove option">X</button>
   `;
   list.appendChild(div);
 }

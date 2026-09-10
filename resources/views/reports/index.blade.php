@@ -6,8 +6,8 @@
 {{-- Actions --}}
 <div class="flex justify-end items-center mb-6">
     <div class="flex items-center gap-2">
-        <button onclick="exportFullReport()" class="btn-primary">&#x1F4CA; Export Full Report</button>
-        <button onclick="printDashboard()" class="btn-secondary">&#x1F5A8;&#xFE0F; Print</button>
+        <button onclick="exportFullReport()" class="btn-primary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export Full Report</button>
+        <button onclick="printDashboard()" class="btn-secondary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-printer"/></svg> Print</button>
     </div>
 </div>
 

@@ -1,89 +1,78 @@
 {{-- resources/views/admin/docs/edit.blade.php --}}
 @extends('layouts.app')
+@section('title', 'Edit: ' . $page->title)
+
+@section('header-actions')
+<a href="{{ route('admin.docs.index') }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Back</a>
+<a href="{{ url('/docs/' . $page->slug) }}" target="_blank" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-external"/></svg> View Live</a>
+@endsection
 
 @push('styles')
 {{-- Summernote CSS --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css">
 <style>
-    .note-editor.note-frame { border-radius: 0 0 0.5rem 0.5rem; }
-    .note-toolbar { border-radius: 0.5rem 0.5rem 0 0; background: #f9fafb; }
-    .note-editable { min-height: 500px; font-size: 15px; line-height: 1.7; }
-    .note-statusbar { border-radius: 0 0 0.5rem 0.5rem; }
+    .de { display: grid; gap: 16px; }
+    .de-crumb { font-size: 13px; color: var(--mv-muted); }
+    .de-crumb a { color: var(--mv-accent-ink); text-decoration: none; }
+    .de-crumb a:hover { text-decoration: underline; }
+    .de-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 16px; }
+    .de-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 16px; }
+    .de .ui-label { display: block; margin-bottom: 5px; }
+    .de .ui-input { width: 100%; height: 38px; padding: 0 12px; font-size: 14px; }
+    .de-meta { font-size: 12.5px; color: var(--mv-muted); margin: 0; }
+    .de-foot { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+    .de-foot .de-meta { margin-right: auto; }
+    .de .note-editor.note-frame { border: 1px solid var(--mv-line-strong); border-radius: 8px; box-shadow: none; }
+    .de .note-toolbar { border-radius: 8px 8px 0 0; background: var(--mv-surface-2); border-bottom: 1px solid var(--mv-line); }
+    .de .note-editable { min-height: 500px; font-size: 15px; line-height: 1.7; color: var(--mv-ink); }
+    .de .note-statusbar { border-radius: 0 0 8px 8px; }
+    @media (max-width: 800px) { .de-row { grid-template-columns: minmax(0, 1fr); } }
 </style>
 @endpush
 
 @section('content')
-<div>
-    {{-- Breadcrumb / header --}}
-    <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-        <div>
-            <div class="text-xs text-gray-500 mb-1">
-                <a href="{{ route('admin.docs.index') }}" class="text-[#1a3a5c] hover:underline">Documentation Manager</a>
-                <span class="mx-1.5">›</span>
-                <span>Editing: {{ $page->title }}</span>
-            </div>
-            <h1 class="m-0 text-gray-900 text-2xl font-semibold">{{ $page->title }}</h1>
-        </div>
-        <div class="flex gap-2.5">
-            <a href="{{ url('/docs/' . $page->slug) }}" target="_blank"
-               class="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-lg no-underline font-medium text-sm hover:bg-gray-200 transition-colors">
-                View Live
-            </a>
-            <a href="{{ route('admin.docs.index') }}"
-               class="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-lg no-underline font-medium text-sm hover:bg-gray-200 transition-colors">
-                ← Back
-            </a>
-        </div>
+<div class="de">
+    <div class="de-crumb">
+        <a href="{{ route('admin.docs.index') }}">Documentation Manager</a>
+        <span aria-hidden="true"> / </span>
+        <span>Editing: {{ $page->title }}</span>
     </div>
 
     @if($errors->any())
-        <div class="bg-red-50 border border-red-300 text-red-600 px-4 py-3.5 rounded-lg mb-5 text-sm">
+        <div class="alert alert-danger" style="padding:11px 14px;border:1px solid;font-size:13.5px;">
             @foreach($errors->all() as $error) <div>{{ $error }}</div> @endforeach
         </div>
     @endif
 
-    <form action="{{ route('admin.docs.update', $page->slug) }}" method="POST">
+    <form action="{{ route('admin.docs.update', $page->slug) }}" method="POST" class="de-card">
         @csrf
         @method('PUT')
 
         {{-- Title + Subtitle row --}}
-        <div class="grid grid-cols-[1fr_2fr] gap-4 mb-5">
+        <div class="de-row">
             <div>
-                <label class="block font-semibold text-gray-700 mb-1.5 text-sm">Page Title</label>
-                <input type="text" name="title" value="{{ old('title', $page->title) }}"
-                       class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-[15px] outline-none focus:ring-2 focus:ring-[#1a3a5c]/30 focus:border-[#1a3a5c] transition"
-                       required>
+                <label class="ui-label">Page Title</label>
+                <input type="text" name="title" value="{{ old('title', $page->title) }}" class="ui-input" required>
             </div>
             <div>
-                <label class="block font-semibold text-gray-700 mb-1.5 text-sm">Subtitle / Description</label>
-                <input type="text" name="subtitle" value="{{ old('subtitle', $page->subtitle) }}"
-                       class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-[15px] outline-none focus:ring-2 focus:ring-[#1a3a5c]/30 focus:border-[#1a3a5c] transition">
+                <label class="ui-label">Subtitle / Description</label>
+                <input type="text" name="subtitle" value="{{ old('subtitle', $page->subtitle) }}" class="ui-input">
             </div>
         </div>
 
         {{-- Content WYSIWYG --}}
-        <div class="mb-6">
-            <label class="block font-semibold text-gray-700 mb-2 text-sm">Page Content</label>
+        <div>
+            <label class="ui-label">Page Content</label>
             <textarea id="summernote-editor" name="content">{{ old('content', $page->content) }}</textarea>
         </div>
 
-        {{-- Last edit info --}}
-        @if($page->updated_at && $page->editor)
-            <p class="text-gray-400 text-xs mb-4">
-                Last saved {{ $page->updated_at->diffForHumans() }} by {{ $page->editor->name }}
-            </p>
-        @endif
-
         {{-- Save buttons --}}
-        <div class="flex gap-3 justify-end">
-            <a href="{{ route('admin.docs.index') }}"
-               class="bg-gray-100 text-gray-700 px-7 py-3 rounded-lg no-underline font-medium text-[15px] hover:bg-gray-200 transition-colors">
-                Cancel
-            </a>
-            <button type="submit"
-                    class="bg-[#1a3a5c] text-white px-8 py-3 border-0 rounded-lg font-semibold text-[15px] cursor-pointer hover:bg-[#152e4a] transition-colors">
-                Save Changes
-            </button>
+        <div class="de-foot">
+            @if($page->updated_at && $page->editor)
+                <p class="de-meta">Last saved {{ $page->updated_at->diffForHumans() }} by {{ $page->editor->name }}</p>
+            @endif
+            <a href="{{ route('admin.docs.index') }}" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary">Save Changes</button>
         </div>
     </form>
 </div>

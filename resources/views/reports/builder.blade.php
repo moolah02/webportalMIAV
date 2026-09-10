@@ -5,522 +5,349 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <style>
+/* Report Builder — portal design tokens (miav-shell.css). Class names are
+   unchanged because the Alpine component and templates rely on them. */
 :root {
-    --rb-accent:   #1a3a5c;
-    --rb-accent-h: #152e4a;
-    --rb-dim-bg:   #eff6ff;
-    --rb-dim-fg:   #1e40af;
-    --rb-dim-bd:   #bfdbfe;
-    --rb-mes-bg:   #fdf4ff;
-    --rb-mes-fg:   #7e22ce;
-    --rb-mes-bd:   #e9d5ff;
-    --rb-surface:  #ffffff;
-    --rb-muted:    #f8fafc;
-    --rb-border:   #e2e8f0;
-    --rb-text:     #0f172a;
-    --rb-sub:      #64748b;
-    --rb-radius:   12px;
-    --rb-shadow:   0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --rb-accent:   var(--mv-accent);
+    --rb-accent-h: var(--mv-accent-ink);
+    --rb-dim-bg:   var(--mv-surface);
+    --rb-dim-fg:   var(--mv-ink-2);
+    --rb-dim-bd:   var(--mv-line);
+    --rb-mes-bg:   var(--mv-surface);
+    --rb-mes-fg:   var(--mv-ink-2);
+    --rb-mes-bd:   var(--mv-line);
+    --rb-surface:  var(--mv-surface);
+    --rb-muted:    var(--mv-surface-2);
+    --rb-border:   var(--mv-line);
+    --rb-text:     var(--mv-ink);
+    --rb-sub:      var(--mv-muted);
+    --rb-radius:   10px;
+    --rb-shadow:   none;
 }
 
 [x-cloak] { display:none !important; }
+.rb-page .mv-i, .rb-backdrop .mv-i, .rb-chart-modal .mv-i { width:16px; height:16px; }
 
 /* ─── Page shell ─────────────────────────────────────────────── */
 .rb-page {
     display: grid;
     grid-template-rows: auto auto 1fr;
-    height: calc(100vh - 150px);
+    height: calc(100vh - 124px);
     min-height: 600px;
     gap: 0;
 }
 
-/* ─── Top bar ────────────────────────────────────────────────── */
+/* ─── Toolbar ────────────────────────────────────────────────── */
 .rb-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 0 16px;
-    border-bottom: 1px solid var(--rb-border);
-    margin-bottom: 0;
-    gap: 12px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; padding: 0 0 14px;
 }
-.rb-topbar-left { display:flex; align-items:center; gap:12px; }
-.rb-topbar-left h2 { margin:0; font-size:18px; font-weight:700; color:var(--rb-text); }
-.rb-topbar-left p  { margin:0; font-size:12px; color:var(--rb-sub); }
+.rb-topbar-left { display:flex; align-items:center; gap:12px; min-width:0; }
+.rb-topbar-left p { margin:0; font-size:13px; color:var(--rb-sub); }
 .rb-topbar-right { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 
 /* ─── Filter strip ───────────────────────────────────────────── */
 .rb-strip {
-    display: flex;
-    align-items: flex-end;
-    gap: 6px;
-    padding: 12px 16px;
-    background: var(--rb-muted);
-    border: 1px solid var(--rb-border);
-    border-radius: var(--rb-radius);
-    margin: 12px 0;
+    display: flex; align-items: flex-end; gap: 10px;
+    padding: 12px 14px; margin: 0 0 12px;
+    background: var(--rb-surface); border: 1px solid var(--rb-border); border-radius: var(--rb-radius);
     flex-wrap: wrap;
 }
-.rb-strip-group { display:flex; flex-direction:column; gap:3px; }
+.rb-strip-group { display:flex; flex-direction:column; gap:4px; }
 .rb-strip-group label {
-    font-size:10px; font-weight:700; color:var(--rb-sub);
-    text-transform:uppercase; letter-spacing:.07em;
-    display:flex; align-items:center; gap:4px;
+    font-size:12px; font-weight:500; color:var(--mv-ink-2);
+    display:flex; align-items:center; gap:6px;
 }
-.rb-strip-group label span { font-size:11px; }
 .rb-strip-select,
 .rb-strip-input {
-    height:34px;
-    padding: 0 10px;
-    border: 1px solid var(--rb-border);
-    border-radius: 8px;
-    font-size: 13px;
-    color: var(--rb-text);
-    background: var(--rb-surface);
-    cursor: pointer;
-    min-width: 120px;
-    transition: border-color .15s, box-shadow .15s;
+    height: 34px; padding: 0 10px; min-width: 120px;
+    border: 1px solid var(--mv-line-strong); border-radius: 8px;
+    font: inherit; font-size: 13px; color: var(--rb-text); background: var(--rb-surface);
+    cursor: pointer; transition: border-color .15s, box-shadow .15s;
 }
 .rb-strip-select:focus,
-.rb-strip-input:focus {
-    outline: none;
-    border-color: var(--rb-accent);
-    box-shadow: 0 0 0 3px rgba(26,58,92,.12);
-}
-.rb-strip-input[disabled] { opacity:.35; cursor:default; }
-.rb-strip-sep {
-    width:1px; height:34px; background:var(--rb-border);
-    margin: 0 4px; align-self: flex-end;
-}
-.rb-strip-input[type="date"] { min-width:130px; }
-.rb-strip-input[type="number"] { min-width:70px; max-width:80px; }
+.rb-strip-input:focus { outline: none; border-color: var(--rb-accent); box-shadow: 0 0 0 3px rgba(43,100,168,.15); }
+.rb-strip-input[disabled] { background: var(--rb-muted); color: var(--rb-sub); cursor: default; }
+.rb-strip-sep { width:1px; height:34px; background:var(--rb-border); margin:0 2px; align-self:flex-end; }
+.rb-strip-input[type="date"] { min-width:136px; }
+.rb-strip-input[type="number"] { min-width:72px; max-width:84px; font-variant-numeric: tabular-nums; }
+.rb-strip-note { font-size:12.5px; color:var(--rb-sub); padding:4px 0; }
 
 /* ─── Main body ──────────────────────────────────────────────── */
-.rb-body {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 12px;
-    overflow: hidden;
-    min-height: 0;
-}
+.rb-body { display:grid; grid-template-columns:256px minmax(0,1fr); gap:12px; overflow:hidden; min-height:0; }
 
 /* ─── Field panel ────────────────────────────────────────────── */
 .rb-fields-panel {
-    background: var(--rb-surface);
-    border: 1px solid var(--rb-border);
-    border-radius: var(--rb-radius);
-    box-shadow: var(--rb-shadow);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    background: var(--rb-surface); border: 1px solid var(--rb-border); border-radius: var(--rb-radius);
+    display: flex; flex-direction: column; overflow: hidden;
 }
-.rb-fields-head {
-    padding: 12px 14px 10px;
-    border-bottom: 1px solid var(--rb-border);
-    background: var(--rb-muted);
-    flex-shrink: 0;
-}
-.rb-fields-head h4 {
-    margin:0 0 8px;
-    font-size:11px; font-weight:700;
-    color:var(--rb-sub);
-    text-transform:uppercase; letter-spacing:.07em;
-}
+.rb-fields-head { padding: 12px 12px 10px; border-bottom: 1px solid var(--rb-border); flex-shrink: 0; }
+.rb-fields-head h4 { margin:0 0 8px; font-size:13px; font-weight:600; color:var(--rb-text); }
+.rb-search-wrap { position:relative; }
+.rb-search-wrap .mv-i { position:absolute; left:9px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--rb-sub); pointer-events:none; }
 .rb-search {
-    width:100%;
-    height:32px;
-    padding:0 10px;
-    border:1px solid var(--rb-border);
-    border-radius:7px;
-    font-size:12px;
-    color:var(--rb-text);
-    background:var(--rb-surface);
-    box-sizing:border-box;
-    transition:border-color .15s;
+    width:100%; height:32px; padding:0 10px 0 30px; box-sizing:border-box;
+    border:1px solid var(--mv-line-strong); border-radius:8px;
+    font:inherit; font-size:13px; color:var(--rb-text); background:var(--rb-surface);
 }
-.rb-search:focus { outline:none; border-color:var(--rb-accent); box-shadow:0 0 0 3px rgba(26,58,92,.1); }
-.rb-fields-body { flex:1; overflow-y:auto; padding:10px 10px 14px; }
+.rb-search:focus { outline:none; border-color:var(--rb-accent); box-shadow:0 0 0 3px rgba(43,100,168,.15); }
+.rb-fields-body { flex:1; overflow-y:auto; padding:6px 8px 12px; }
 .rb-cat-label {
-    font-size:10px; font-weight:700;
-    color:var(--rb-sub);
-    text-transform:uppercase; letter-spacing:.07em;
-    padding:8px 6px 4px;
-    display:flex; align-items:center; gap:5px;
-}
-.rb-cat-label::before {
-    content:'';
-    flex:1; height:1px; background:var(--rb-border);
+    font-size:11.5px; font-weight:600; color:var(--rb-sub); letter-spacing:.04em;
+    padding:12px 6px 4px;
 }
 .rb-chip {
-    display:block; width:100%;
-    padding:6px 10px; margin-bottom:2px;
-    border:1px solid transparent;
-    border-radius:7px;
-    font-size:12px; font-weight:500;
-    cursor:grab; user-select:none;
-    transition:all .12s;
-    text-align:left; background:none;
+    display:flex; align-items:center; gap:8px; width:100%;
+    padding:5px 8px; margin:0; border:1px solid transparent; border-radius:6px;
+    font:inherit; font-size:13px; font-weight:400; color:var(--mv-ink-2);
+    cursor:grab; user-select:none; text-align:left; background:none;
 }
+.rb-chip::before { content:''; width:6px; height:6px; border-radius:2px; flex-shrink:0; background:var(--mv-line-strong); }
 .rb-chip:active { cursor:grabbing; }
-.rb-chip-dim { background:var(--rb-dim-bg); color:var(--rb-dim-fg); border-color:var(--rb-dim-bd); }
-.rb-chip-dim:hover { background:#dbeafe; transform:translateX(2px); }
-.rb-chip-mes { background:var(--rb-mes-bg); color:var(--rb-mes-fg); border-color:var(--rb-mes-bd); }
-.rb-chip-mes:hover { background:#f3e8ff; transform:translateX(2px); }
-.rb-legend { display:flex; gap:10px; padding:6px 14px 10px; border-top:1px solid var(--rb-border); flex-shrink:0; }
-.rb-legend span { font-size:10px; font-weight:600; display:flex; align-items:center; gap:4px; }
-.rb-dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
-.rb-dot-dim { background:var(--rb-accent); }
-.rb-dot-mes { background:#9333ea; }
+.rb-chip:hover { background:var(--rb-muted); color:var(--rb-text); border-color:var(--rb-border); }
+.rb-chip-dim::before { background:#9AA6B4; }
+.rb-chip-mes::before { background:var(--rb-accent); }
+.rb-legend {
+    display:flex; align-items:center; gap:12px; padding:8px 12px;
+    border-top:1px solid var(--rb-border); flex-shrink:0; font-size:12px;
+}
+.rb-legend > span { display:flex; align-items:center; gap:5px; color:var(--rb-sub); }
+.rb-dot { width:7px; height:7px; border-radius:2px; display:inline-block; }
+.rb-dot-dim { background:#9AA6B4; }
+.rb-dot-mes { background:var(--rb-accent); }
+.rb-link-btn { margin-left:auto; background:none; border:none; padding:0; cursor:pointer; font:inherit; font-size:12px; color:var(--mv-accent-ink); }
+.rb-link-btn:hover { text-decoration:underline; }
 
 /* ─── Right panel ────────────────────────────────────────────── */
-.rb-right {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow: hidden;
-    min-height: 0;
-}
+.rb-right { display:flex; flex-direction:column; gap:12px; overflow:hidden; min-height:0; }
 
 /* ─── Columns bar ────────────────────────────────────────────── */
-.rb-columns-bar {
-    background: var(--rb-surface);
-    border: 1px solid var(--rb-border);
-    border-radius: var(--rb-radius);
-    box-shadow: var(--rb-shadow);
-    flex-shrink: 0;
-    overflow: hidden;
-}
-.rb-columns-head {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 14px;
-    border-bottom:1px solid var(--rb-border);
-    background:var(--rb-muted);
-}
-.rb-columns-head-left {
-    display:flex; align-items:center; gap:8px;
-    font-size:12px; font-weight:700; color:var(--rb-sub);
-    text-transform:uppercase; letter-spacing:.06em;
-}
+.rb-columns-bar { background:var(--rb-surface); border:1px solid var(--rb-border); border-radius:var(--rb-radius); flex-shrink:0; overflow:hidden; }
+.rb-columns-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; border-bottom:1px solid var(--rb-border); }
+.rb-columns-head-left { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--rb-text); }
 .rb-col-count {
-    background:var(--rb-accent); color:#fff;
-    font-size:10px; font-weight:700;
-    padding:1px 7px; border-radius:20px;
+    background:var(--mv-accent-soft); color:var(--mv-accent-ink);
+    font-size:12px; font-weight:600; padding:0 7px; border-radius:6px; font-variant-numeric:tabular-nums;
 }
-.rb-columns-body {
-    padding:10px 12px;
-    min-height:50px;
-}
+.rb-columns-body { padding:10px 12px; min-height:50px; }
 .rb-dropzone {
-    min-height:44px;
-    border:2px dashed var(--rb-border);
-    border-radius:8px;
-    padding:8px 10px;
-    background:var(--rb-muted);
-    transition:all .2s;
-    display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+    min-height:44px; padding:8px; border:1px dashed var(--mv-line-strong); border-radius:8px;
+    background:var(--rb-muted); display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+    transition:border-color .15s, background .15s;
 }
-.rb-dropzone.over { border-color:var(--rb-accent); background:rgba(26,58,92,.04); }
-.rb-dz-hint { color:#94a3b8; font-size:12px; }
+.rb-dropzone.over { border-color:var(--rb-accent); background:var(--mv-accent-soft); }
+.rb-dz-empty { width:100%; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:6px 6px; flex-wrap:wrap; }
+.rb-dz-empty-title { font-size:13.5px; font-weight:600; color:var(--rb-text); }
+.rb-dz-empty-sub { font-size:12.5px; color:var(--rb-sub); margin-top:2px; }
 .rb-pill {
-    display:inline-flex; align-items:center;
-    padding:4px 8px 4px 10px;
-    border-radius:20px; font-size:12px; font-weight:500;
-    border:1px solid transparent;
-    gap:4px;
+    display:inline-flex; align-items:center; gap:6px; padding:3px 6px 3px 10px;
+    border-radius:6px; font-size:12.5px; font-weight:500;
+    background:var(--rb-surface); color:var(--rb-text); border:1px solid var(--mv-line-strong);
 }
-.rb-pill-dim { background:var(--rb-dim-bg); color:var(--rb-dim-fg); border-color:var(--rb-dim-bd); }
-.rb-pill-mes { background:var(--rb-mes-bg); color:var(--rb-mes-fg); border-color:var(--rb-mes-bd); }
+.rb-pill-dim { border-left:3px solid #9AA6B4; }
+.rb-pill-mes { border-left:3px solid var(--rb-accent); }
 .rb-pill select {
-    border:none; background:transparent;
-    font-size:10px; color:inherit; cursor:pointer;
-    outline:none; padding:0;
+    border:1px solid var(--rb-border); border-radius:4px; background:var(--rb-muted);
+    font:inherit; font-size:11.5px; color:var(--mv-ink-2); cursor:pointer; outline:none; padding:0 2px;
 }
 .rb-pill-x {
-    background:none; border:none; cursor:pointer;
-    font-size:13px; line-height:1; padding:0;
-    opacity:.5; color:inherit;
+    width:20px; height:20px; display:grid; place-items:center; border-radius:4px;
+    background:none; border:none; cursor:pointer; font-size:15px; line-height:1; padding:0; color:var(--rb-sub);
 }
-.rb-pill-x:hover { opacity:1; }
-.rb-agg-hint { font-size:10px; color:var(--rb-sub); padding:0 4px; }
+.rb-pill-x:hover { background:var(--mv-crit-soft); color:var(--mv-crit); }
+.rb-agg-hint { display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--rb-sub); }
+.rb-agg-hint .mv-i { width:14px; height:14px; }
 
 /* ─── Results ────────────────────────────────────────────────── */
 .rb-results {
-    flex:1;
-    background:var(--rb-surface);
-    border:1px solid var(--rb-border);
-    border-radius:var(--rb-radius);
-    box-shadow:var(--rb-shadow);
-    display:flex; flex-direction:column;
-    overflow:hidden; min-height:0;
+    flex:1; background:var(--rb-surface); border:1px solid var(--rb-border); border-radius:var(--rb-radius);
+    display:flex; flex-direction:column; overflow:hidden; min-height:0;
 }
-.rb-results-head {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 14px;
-    border-bottom:1px solid var(--rb-border);
-    background:var(--rb-muted);
-    flex-shrink:0;
-}
-.rb-results-title {
-    font-size:12px; font-weight:700; color:var(--rb-sub);
-    text-transform:uppercase; letter-spacing:.06em;
-    display:flex; align-items:center; gap:8px;
-}
+.rb-results-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; border-bottom:1px solid var(--rb-border); flex-shrink:0; }
+.rb-results-title { font-size:13px; font-weight:600; color:var(--rb-text); display:flex; align-items:center; gap:8px; }
+.rb-results-meta { font-size:12.5px; color:var(--rb-sub); font-variant-numeric:tabular-nums; }
 .rb-row-badge {
-    background:#dcfce7; color:#15803d;
-    font-size:11px; font-weight:700;
-    padding:2px 9px; border-radius:20px;
-    border:1px solid #86efac;
+    background:var(--mv-good-soft); color:var(--mv-good);
+    font-size:12px; font-weight:500; padding:1px 8px; border-radius:6px; font-variant-numeric:tabular-nums;
 }
 .rb-results-body { flex:1; overflow:auto; min-height:0; }
 .rb-results-empty {
-    flex:1; display:flex; align-items:center; justify-content:center;
-    flex-direction:column; gap:10px;
-    color:#94a3b8; padding:50px 20px; text-align:center;
+    flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;
+    color:var(--rb-sub); padding:48px 20px; text-align:center;
 }
-.rb-results-empty-icon { font-size:44px; }
-.rb-results-empty-title { font-size:15px; font-weight:600; color:#475569; margin:0; }
-.rb-results-empty-sub { font-size:13px; margin:0; color:#94a3b8; }
+.rb-results-empty-icon { width:40px; height:40px; border-radius:10px; display:grid; place-items:center; background:var(--rb-muted); border:1px solid var(--rb-border); color:var(--rb-sub); margin-bottom:6px; }
+.rb-results-empty-icon .mv-i { width:20px; height:20px; }
+.rb-results-empty-title { font-size:14px; font-weight:600; color:var(--rb-text); margin:0; }
+.rb-results-empty-sub { font-size:13px; margin:0; color:var(--rb-sub); }
 
 /* ─── Table ──────────────────────────────────────────────────── */
-.rb-table { width:100%; border-collapse:collapse; font-size:13px; }
+.rb-table { width:100%; border-collapse:collapse; font-size:13px; font-variant-numeric:tabular-nums; }
 .rb-table thead { position:sticky; top:0; z-index:2; }
 .rb-table th {
-    padding:10px 14px;
-    background:#f1f5f9;
-    border-bottom:2px solid var(--rb-border);
-    text-align:left;
-    font-size:11px; font-weight:700;
-    color:#374151;
-    text-transform:uppercase; letter-spacing:.06em;
-    white-space:nowrap;
+    padding:9px 14px; background:var(--rb-muted); border-bottom:1px solid var(--rb-border);
+    text-align:left; font-size:12px; font-weight:600; color:var(--rb-sub); white-space:nowrap;
 }
-.rb-table td {
-    padding:9px 14px;
-    border-bottom:1px solid #f1f5f9;
-    color:var(--rb-text);
-    font-size:13px;
-}
-.rb-table tbody tr:hover td { background:#fafbfc; }
+.rb-table td { padding:9px 14px; border-bottom:1px solid var(--rb-border); color:var(--mv-ink-2); font-size:13px; }
+.rb-table tbody tr:hover td { background:var(--rb-muted); }
 
 /* ─── Buttons ────────────────────────────────────────────────── */
 .rb-btn {
-    display:inline-flex; align-items:center; gap:6px;
-    padding:8px 16px;
+    display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 14px;
     border-radius:8px; border:1px solid transparent;
-    font-size:13px; font-weight:600; cursor:pointer;
-    transition:all .15s; white-space:nowrap;
-    line-height:1.4;
+    font:inherit; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; line-height:1;
+    text-decoration:none; transition:background .15s, border-color .15s;
 }
-.rb-btn:disabled { opacity:.4; cursor:not-allowed; }
+.rb-btn:disabled { opacity:.45; cursor:not-allowed; }
 .rb-btn-primary  { background:var(--rb-accent); color:#fff; border-color:var(--rb-accent); }
-.rb-btn-primary:hover:not(:disabled)  { background:var(--rb-accent-h); }
-/* Run Report gets extra size so it's immediately obvious */
-.rb-btn-run {
-    padding: 10px 22px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: .02em;
-    box-shadow: 0 2px 6px rgba(26,58,92,.35);
-}
-.rb-btn-run:disabled {
-    opacity: 1;
-    background: #c7d2fe;
-    border-color: #c7d2fe;
-    color: #6366f1;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-.rb-btn-export   { background:#059669; color:#fff; border-color:#059669; }
-.rb-btn-export:hover:not(:disabled)   { background:#047857; }
-.rb-btn-outline  { background:#fff; color:#374151; border-color:var(--rb-border); }
-.rb-btn-outline:hover:not(:disabled)  { background:var(--rb-muted); border-color:#cbd5e1; }
+.rb-btn-primary:hover:not(:disabled)  { background:var(--rb-accent-h); border-color:var(--rb-accent-h); color:#fff; }
+.rb-btn-run { padding:0 16px; font-weight:600; }
+.rb-btn-run:disabled { opacity:1; background:var(--mv-accent-soft); border-color:#C9D9EE; color:var(--mv-accent-ink); }
+.rb-btn-export   { background:var(--rb-surface); color:var(--rb-text); border-color:var(--mv-line-strong); }
+.rb-btn-export:hover:not(:disabled)   { background:var(--rb-muted); }
+.rb-btn-outline, .rb-btn-secondary { background:var(--rb-surface); color:var(--rb-text); border-color:var(--mv-line-strong); }
+.rb-btn-outline:hover:not(:disabled), .rb-btn-secondary:hover:not(:disabled) { background:var(--rb-muted); }
 .rb-btn-ghost    { background:transparent; color:var(--rb-sub); border-color:transparent; }
 .rb-btn-ghost:hover:not(:disabled)    { background:var(--rb-muted); color:var(--rb-text); }
-.rb-btn-danger   { background:#fff5f5; color:#dc2626; border-color:#fecaca; }
-.rb-btn-danger:hover:not(:disabled)   { background:#fee2e2; }
+.rb-btn-danger   { background:var(--rb-surface); color:var(--mv-crit); border-color:#EBC3C3; }
+.rb-btn-danger:hover:not(:disabled)   { background:var(--mv-crit-soft); }
+.rb-btn-sm { height:30px; padding:0 10px; font-size:12.5px; }
+.rb-btn-icon { width:30px; padding:0; justify-content:center; }
+.rb-caret { width:14px !important; height:14px !important; margin-left:-2px; }
+
+/* x-show removes inline display, so the label layout lives in a class */
+.rb-run-label { display:inline-flex; align-items:center; gap:7px; }
+.rb-fields-head .rb-search { padding-left:30px !important; }
+.rb-link-btn { white-space:nowrap; }
+.rb-strip-select { max-width:240px; }
 
 /* ─── Spinner ────────────────────────────────────────────────── */
 .rb-spinner {
-    width:32px; height:32px;
-    border:3px solid var(--rb-border);
-    border-top-color:var(--rb-accent);
-    border-radius:50%;
-    animation:rb-spin .7s linear infinite;
-    margin:0 auto 10px;
+    width:28px; height:28px; border:3px solid var(--rb-border); border-top-color:var(--rb-accent);
+    border-radius:50%; animation:rb-spin .7s linear infinite; margin:0 auto 10px;
 }
 @keyframes rb-spin { to { transform:rotate(360deg); } }
 
 /* ─── Alerts ─────────────────────────────────────────────────── */
-.rb-alert {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 14px; border-radius:9px;
-    font-size:13px; margin-bottom:10px;
-}
-.rb-alert-err { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; }
-.rb-alert-ok  { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
-.rb-alert button { background:none; border:none; cursor:pointer; font-size:17px; opacity:.6; color:inherit; padding:0 0 0 10px; }
+.rb-alert { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-radius:8px; font-size:13.5px; margin-bottom:12px; border:1px solid transparent; }
+.rb-alert-err { background:var(--mv-crit-soft); border-color:#F2CACA; color:var(--mv-crit); }
+.rb-alert-ok  { background:var(--mv-good-soft); border-color:#C6E6D2; color:var(--mv-good); }
+.rb-alert button { background:none; border:none; cursor:pointer; font-size:18px; line-height:1; opacity:.7; color:inherit; padding:0 2px; }
 .rb-alert button:hover { opacity:1; }
 
 /* ─── Dropdown menu ──────────────────────────────────────────── */
 .rb-menu {
-    position:absolute; right:0; top:calc(100% + 5px);
-    background:#fff;
-    border:1px solid var(--rb-border);
-    border-radius:10px;
-    box-shadow:0 10px 30px rgba(0,0,0,.1);
-    z-index:99; min-width:160px; overflow:hidden;
+    position:absolute; right:0; top:calc(100% + 6px); z-index:99; min-width:180px; padding:6px;
+    background:var(--rb-surface); border:1px solid var(--rb-border); border-radius:10px;
+    box-shadow:0 12px 32px rgba(22,32,44,.12);
 }
 .rb-menu button {
-    display:flex; align-items:center; gap:8px;
-    width:100%; padding:10px 14px;
-    border:none; background:none;
-    font-size:13px; color:var(--rb-text);
-    cursor:pointer; text-align:left;
+    display:flex; align-items:center; gap:10px; width:100%; padding:8px 10px; border-radius:6px;
+    border:none; background:none; font:inherit; font-size:13.5px; color:var(--mv-ink-2); cursor:pointer; text-align:left;
 }
-.rb-menu button:hover { background:var(--rb-muted); }
+.rb-menu button .mv-i { color:var(--rb-sub); }
+.rb-menu button:hover { background:var(--rb-muted); color:var(--rb-text); }
 
 /* ─── Modal ──────────────────────────────────────────────────── */
 .rb-backdrop {
-    position:fixed; inset:0;
-    background:rgba(15,23,42,.5);
-    backdrop-filter:blur(2px);
-    display:flex; align-items:center; justify-content:center;
-    z-index:500;
+    position:fixed; inset:0; background:rgba(22,32,44,.45);
+    display:flex; align-items:center; justify-content:center; z-index:1100;
 }
-.rb-modal {
-    background:var(--rb-surface);
-    border-radius:14px;
-    box-shadow:0 20px 60px rgba(0,0,0,.2);
-    padding:24px;
-    width:460px; max-width:92vw;
+.rb-modal, .rb-modal-lg {
+    background:var(--rb-surface); border:1px solid var(--rb-border); border-radius:12px;
+    box-shadow:0 20px 48px rgba(22,32,44,.18); padding:20px 22px; width:460px; max-width:92vw;
 }
-.rb-modal-lg {
-    background:var(--rb-surface);
-    border-radius:14px;
-    box-shadow:0 20px 60px rgba(0,0,0,.2);
-    padding:24px;
-    width:580px; max-width:92vw;
-    max-height:85vh;
-    display:flex; flex-direction:column;
-    overflow:hidden;
-}
-.rb-modal h3 { margin:0 0 18px; font-size:16px; font-weight:700; color:var(--rb-text); }
-.rb-label { font-size:10px; font-weight:700; color:var(--rb-sub); text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; display:block; }
+.rb-modal-lg { width:640px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden; }
+.rb-modal h3, .rb-modal-lg h3 { margin:0 0 16px; font-size:15px; font-weight:600; color:var(--rb-text); }
+.rb-label { font-size:12.5px; font-weight:500; color:var(--mv-ink-2); margin-bottom:5px; display:block; }
 .rb-input {
-    width:100%; padding:9px 12px;
-    border:1px solid var(--rb-border); border-radius:8px;
-    font-size:14px; box-sizing:border-box;
-    transition:border-color .15s;
+    width:100%; padding:8px 11px; box-sizing:border-box;
+    border:1px solid var(--mv-line-strong); border-radius:8px;
+    font:inherit; font-size:13.5px; color:var(--rb-text);
 }
-.rb-input:focus { outline:none; border-color:var(--rb-accent); box-shadow:0 0 0 3px rgba(26,58,92,.1); }
+.rb-input:focus { outline:none; border-color:var(--rb-accent); box-shadow:0 0 0 3px rgba(43,100,168,.15); }
+.rb-modal-foot { display:flex; justify-content:flex-end; gap:8px; }
+.rb-section-label { font-size:12px; font-weight:600; color:var(--rb-sub); letter-spacing:.04em; margin-bottom:10px; position:sticky; top:0; background:var(--rb-surface); padding-bottom:4px; }
 
 /* ─── Template card ──────────────────────────────────────────── */
-.rb-tpl {
-    border:1px solid var(--rb-border);
-    border-radius:10px; padding:14px;
-    cursor:pointer; transition:all .15s;
-    margin-bottom:8px;
-}
-.rb-tpl:hover { border-color:var(--rb-accent); background:rgba(26,58,92,.03); }
-.rb-tpl-name { font-size:14px; font-weight:600; color:var(--rb-text); }
-.rb-tpl-desc { font-size:12px; color:var(--rb-sub); margin-top:3px; }
-.rb-tpl-meta { font-size:11px; color:#94a3b8; margin-top:5px; }
-.rb-badge-global { background:#f0fdf4; color:#15803d; border:1px solid #86efac; border-radius:4px; font-size:9px; font-weight:700; padding:2px 6px; text-transform:uppercase; letter-spacing:.05em; }
+.rb-tpl { border:1px solid var(--rb-border); border-radius:8px; padding:12px 14px; cursor:pointer; margin-bottom:8px; }
+.rb-tpl:hover { border-color:var(--mv-line-strong); background:var(--rb-muted); }
+.rb-tpl-name { font-size:13.5px; font-weight:600; color:var(--rb-text); }
+.rb-tpl-desc { font-size:12.5px; color:var(--rb-sub); margin-top:3px; }
+.rb-tpl-meta { font-size:12px; color:var(--rb-sub); margin-top:5px; }
+.rb-badge-global { background:var(--mv-good-soft); color:var(--mv-good); border-radius:5px; font-size:11px; font-weight:500; padding:1px 6px; }
 
 /* ─── Confirm dialog ─────────────────────────────────────────── */
-.rb-confirm { max-width:380px; }
-.rb-confirm-icon { font-size:36px; text-align:center; margin-bottom:12px; }
-.rb-confirm p { font-size:14px; color:var(--rb-sub); margin:0 0 20px; line-height:1.6; }
+.rb-confirm { max-width:400px; }
+.rb-confirm-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.rb-confirm-head h3 { margin:0 !important; }
+.rb-confirm-icon { width:32px; height:32px; border-radius:8px; display:grid; place-items:center; background:var(--mv-warn-soft); color:var(--mv-warn); flex-shrink:0; }
+.rb-confirm p { font-size:13.5px; color:var(--mv-ink-2); margin:0 0 18px; line-height:1.55; }
 
-/* ─── Chart fullscreen modal ─────────────────────────────────── */
+/* ─── Chart panel (overlay) ──────────────────────────────────── */
 .rb-chart-modal {
-    position: fixed; inset: 0; z-index: 9999;
-    background: rgba(10,20,40,0.92);
-    display: flex; flex-direction: column;
-    animation: rbChartFadeIn .18s ease;
+    position:fixed; inset:24px; z-index:1100;
+    background:var(--rb-surface); border:1px solid var(--rb-border); border-radius:12px;
+    box-shadow:0 0 0 100vmax rgba(22,32,44,.45), 0 20px 48px rgba(22,32,44,.18);
+    display:flex; flex-direction:column; overflow:hidden;
 }
-@keyframes rbChartFadeIn { from { opacity:0; } to { opacity:1; } }
 .rb-chart-modal-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 20px;
-    background: #0f1e35;
-    flex-shrink: 0;
-    gap: 10px; flex-wrap: wrap;
-    border-bottom: 1px solid rgba(255,255,255,.1);
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    padding:12px 16px; border-bottom:1px solid var(--rb-border); flex-shrink:0;
 }
-.rb-chart-modal-title {
-    font-size: 14px; font-weight: 700; color: #e2e8f0;
-    letter-spacing: .04em;
+.rb-chart-modal-title { font-size:14px; font-weight:600; color:var(--rb-text); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.rb-chart-modal-title .rb-results-meta { font-weight:400; }
+.rb-chart-mode {
+    display:none; font-size:12px; font-weight:500; background:var(--mv-warn-soft); color:var(--mv-warn);
+    border-radius:5px; padding:1px 7px;
 }
-.rb-chart-modal-body {
-    flex: 1; min-height: 0; padding: 24px 32px; position: relative;
-    display: flex; align-items: center; justify-content: center;
-}
-.rb-chart-modal-body canvas {
-    max-width: 100%; max-height: 100%;
-}
+.rb-chart-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.rb-chart-controls-label { font-size:12px; color:var(--rb-sub); }
+.rb-chart-hint { width:100%; font-size:12px; color:var(--mv-warn); }
+.rb-chart-modal-body { flex:1; min-height:0; padding:20px 28px; position:relative; display:flex; align-items:center; justify-content:center; }
+.rb-chart-modal-body canvas { max-width:100%; max-height:100%; }
 .rb-chart-select {
-    height: 30px; padding: 0 8px;
-    border: 1px solid rgba(255,255,255,.2); border-radius: 6px;
-    font-size: 12px; color: #e2e8f0; background: rgba(255,255,255,.08);
-    cursor: pointer; max-width: 160px;
+    height:30px; padding:0 8px; max-width:180px; cursor:pointer;
+    border:1px solid var(--mv-line-strong); border-radius:7px;
+    font:inherit; font-size:12.5px; color:var(--rb-text); background:var(--rb-surface);
 }
-.rb-chart-select option { background:#1e3050; color:#e2e8f0; }
-.rb-chart-type-group {
-    display: flex; align-items: center; gap: 2px;
-    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
-    border-radius: 7px; padding: 2px;
-}
+.rb-chart-type-group { display:flex; align-items:center; gap:2px; background:var(--rb-muted); border:1px solid var(--rb-border); border-radius:8px; padding:2px; }
 .rb-btn-export-chart {
-    display:inline-flex;align-items:center;gap:4px;
-    height:30px;padding:0 12px;font-size:12px;font-weight:600;
-    border:1px solid rgba(255,255,255,.2);border-radius:6px;
-    background:rgba(255,255,255,.1);color:#e2e8f0;cursor:pointer;
-    transition:background .15s;white-space:nowrap;
+    display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 12px;
+    font:inherit; font-size:12.5px; font-weight:500; cursor:pointer; white-space:nowrap;
+    border:1px solid var(--mv-line-strong); border-radius:7px; background:var(--rb-surface); color:var(--rb-text);
 }
-.rb-btn-export-chart:hover { background:rgba(255,255,255,.2); }
+.rb-btn-export-chart:hover { background:var(--rb-muted); }
 .rb-chart-type-btn {
-    padding: 4px 12px; border: none; background: none; border-radius: 5px;
-    cursor: pointer; font-size: 13px; font-weight: 500; transition: all .12s;
-    color: #94a3b8; font-family: inherit;
+    padding:4px 11px; border:none; background:none; border-radius:6px; cursor:pointer;
+    font:inherit; font-size:12.5px; font-weight:500; color:var(--rb-sub);
 }
-.rb-chart-type-btn:hover { background: rgba(255,255,255,.15); color: #e2e8f0; }
-.rb-chart-type-active { background: #fff !important; color: #1a3a5c !important; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
-.rb-btn-chart-on { background: #eff6ff !important; color: #1d4ed8 !important; border-color: #93c5fd !important; }
+.rb-chart-type-btn:hover { color:var(--rb-text); }
+.rb-chart-type-active { background:var(--rb-surface) !important; color:var(--mv-accent-ink) !important; box-shadow:0 0 0 1px var(--rb-border); }
+.rb-btn-chart-on { background:var(--mv-accent-soft) !important; color:var(--mv-accent-ink) !important; border-color:#C9D9EE !important; }
 
-/* ─── Preset cards ───────────────────────────────────────────── */
-.rb-preset-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 2px 0 4px;
-}
-@media (max-width: 540px) { .rb-preset-grid { grid-template-columns: 1fr; } }
+/* ─── Preset list ────────────────────────────────────────────── */
+.rb-preset-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:2px 0 4px; }
+@media (max-width: 540px) { .rb-preset-grid { grid-template-columns:1fr; } }
 .rb-preset-card {
-    border: 1px solid var(--rb-border);
-    border-radius: 12px;
-    padding: 16px;
-    cursor: pointer;
-    transition: border-color .15s, box-shadow .15s, background .15s;
-    background: var(--rb-surface);
-    text-align: left;
+    display:grid; grid-template-columns:32px minmax(0,1fr); gap:4px 12px; align-items:start;
+    border:1px solid var(--rb-border); border-radius:10px; padding:12px 14px; cursor:pointer;
+    background:var(--rb-surface); text-align:left; font:inherit;
 }
-.rb-preset-card:hover {
-    border-color: var(--rb-accent);
-    box-shadow: 0 0 0 3px rgba(26,58,92,.08);
-    background: rgba(26,58,92,.02);
-}
-.rb-preset-icon { font-size: 28px; margin-bottom: 8px; line-height: 1; }
-.rb-preset-name { font-size: 14px; font-weight: 700; color: var(--rb-text); margin-bottom: 4px; }
-.rb-preset-desc { font-size: 12px; color: var(--rb-sub); line-height: 1.5; }
-.rb-preset-cols { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
-.rb-preset-col-tag {
-    font-size: 10px; font-weight: 600;
-    background: var(--rb-dim-bg); color: var(--rb-dim-fg);
-    border: 1px solid var(--rb-dim-bd);
-    border-radius: 4px; padding: 2px 6px;
-}
+.rb-preset-card:hover { border-color:var(--mv-line-strong); background:var(--rb-muted); }
+.rb-preset-card:focus-visible { outline:2px solid var(--rb-accent); outline-offset:2px; }
+.rb-preset-icon { grid-row:span 3; width:32px; height:32px; border-radius:8px; display:grid; place-items:center; background:var(--mv-accent-soft); color:var(--mv-accent-ink); }
+.rb-preset-name { font-size:13.5px; font-weight:600; color:var(--rb-text); }
+.rb-preset-desc { font-size:12.5px; color:var(--rb-sub); line-height:1.45; }
+.rb-preset-cols { margin-top:6px; display:flex; flex-wrap:wrap; gap:4px; }
+.rb-preset-col-tag { font-size:11.5px; background:var(--rb-muted); color:var(--mv-ink-2); border:1px solid var(--rb-border); border-radius:5px; padding:0 6px; }
+
+/* ─── Having (aggregate filter) rows ─────────────────────────── */
+.rb-having-head { width:100%; display:flex; align-items:center; gap:10px; }
+.rb-having-head label { font-size:13px !important; font-weight:600 !important; color:var(--rb-text) !important; }
+.rb-having-row { display:flex; gap:6px; align-items:center; flex-direction:row !important; }
+.rb-having-paren { color:var(--rb-sub); }
+
+@media (max-width: 1100px) { .rb-body { grid-template-columns:200px minmax(0,1fr); } }
 </style>
 
 <div x-data="reportBuilder()" x-cloak>
@@ -529,35 +356,32 @@
     <template x-if="errorMessage">
         <div class="rb-alert rb-alert-err" x-transition>
             <span x-text="errorMessage"></span>
-            <button @click="errorMessage=''">&times;</button>
+            <button @click="errorMessage=''" aria-label="Dismiss">&times;</button>
         </div>
     </template>
     <template x-if="successMessage">
         <div class="rb-alert rb-alert-ok" x-transition>
             <span x-text="successMessage"></span>
-            <button @click="successMessage=''">&times;</button>
+            <button @click="successMessage=''" aria-label="Dismiss">&times;</button>
         </div>
     </template>
 
     <div class="rb-page">
 
         {{-- ═══════════════════════════════════════════════
-             TOP BAR
+             TOOLBAR
         ════════════════════════════════════════════════ --}}
         <div class="rb-topbar">
             <div class="rb-topbar-left">
-                <div>
-                    <h2>&#128202; Report Builder</h2>
-                    <p>Pick a data source, add columns, apply filters — then run your report.</p>
-                </div>
+                <p>Pick a data source, add columns, apply filters — then run your report.</p>
             </div>
             <div class="rb-topbar-right">
 
                 <span :title="fields.length === 0 ? 'Add at least one column from the left panel first' : 'Run your report'">
                 <button @click="runReport()" :disabled="loading || fields.length === 0" class="rb-btn rb-btn-primary rb-btn-run">
-                    <span x-show="!loading">&#9654;&nbsp;Run Report</span>
-                    <span x-show="loading" style="display:flex;align-items:center;gap:6px;">
-                        <span style="width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:rb-spin .7s linear infinite;display:inline-block;"></span>
+                    <span x-show="!loading" class="rb-run-label"><svg class="mv-i" aria-hidden="true"><use href="#i-play"/></svg>Run Report</span>
+                    <span x-show="loading" class="rb-run-label">
+                        <span style="width:13px;height:13px;border:2px solid rgba(31,79,135,.25);border-top-color:currentColor;border-radius:50%;animation:rb-spin .7s linear infinite;display:inline-block;"></span>
                         Running…
                     </span>
                 </button>
@@ -567,14 +391,14 @@
                     <button @click="open=!open"
                             :disabled="!reportData || reportData.length===0"
                             class="rb-btn rb-btn-export">
-                        &#11015;&nbsp;Export&nbsp;&#9662;
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg>Export<svg class="mv-i rb-caret" aria-hidden="true"><use href="#i-chevron-down"/></svg>
                     </button>
                     <div x-show="open" @click.outside="open=false" x-transition class="rb-menu">
                         <button @click="exportReport('csv');open=false">
-                            <span>&#128196;</span> Download CSV
+                            <svg class="mv-i" aria-hidden="true"><use href="#i-table"/></svg> Download CSV
                         </button>
                         <button @click="exportReport('pdf');open=false">
-                            <span>&#128240;</span> Download PDF
+                            <svg class="mv-i" aria-hidden="true"><use href="#i-file"/></svg> Download PDF
                         </button>
                     </div>
                 </div>
@@ -584,19 +408,19 @@
                         :class="{ 'rb-btn-chart-on': showChart }"
                         class="rb-btn rb-btn-outline"
                         :title="showChart ? 'Hide chart' : 'Show chart'">
-                    &#128200;&nbsp;Chart
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-chart"/></svg>Chart
                 </button>
 
                 <button @click="openTemplateModal()" class="rb-btn rb-btn-outline">
-                    &#128193;&nbsp;Templates
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-layers"/></svg>Templates
                 </button>
 
                 <a href="{{ route('reports.history') }}" class="rb-btn rb-btn-outline">
-                    &#128221;&nbsp;History
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-history"/></svg>History
                 </a>
 
                 <button x-show="fields.length > 0" @click="clearAll()" class="rb-btn rb-btn-danger">
-                    &#128465;&nbsp;Clear
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-trash"/></svg>Clear
                 </button>
 
             </div>
@@ -608,7 +432,7 @@
         <div class="rb-strip">
 
             <div class="rb-strip-group">
-                <label><span>&#128200;</span> Data Source</label>
+                <label>Data Source</label>
                 <select class="rb-strip-select" x-model="config.baseTable" @change="onDataSourceChange()" style="min-width:160px;">
                     <template x-for="(t,tn) in availableFields" :key="tn">
                         <option :value="tn" x-text="t.label"></option>
@@ -619,7 +443,7 @@
             <div class="rb-strip-sep"></div>
 
             <div class="rb-strip-group">
-                <label><span>&#127759;</span> Region</label>
+                <label>Region</label>
                 <select class="rb-strip-select" x-model="config.regionId">
                     <option value="">All Regions</option>
                     <template x-for="(name,id) in availableFilters.regions" :key="id">
@@ -629,7 +453,7 @@
             </div>
 
             <div class="rb-strip-group">
-                <label><span>&#128100;</span> Client</label>
+                <label>Client</label>
                 <select class="rb-strip-select" x-model="config.clientId">
                     <option value="">All Clients</option>
                     <template x-for="(name,id) in availableFilters.clients" :key="id">
@@ -639,7 +463,7 @@
             </div>
 
             <div class="rb-strip-group">
-                <label><span>&#128205;</span> Terminals</label>
+                <label>Terminals</label>
                 <select class="rb-strip-select" x-model="config.terminalSource"
                         title="Terminals found on site by technicians are extra work — they were not on the original list">
                     <option value="">All terminals</option>
@@ -651,7 +475,7 @@
             <div class="rb-strip-sep"></div>
 
             <div class="rb-strip-group">
-                <label><span>&#128197;</span> Date Column</label>
+                <label>Date Column</label>
                 <select class="rb-strip-select" x-model="config.dateColumn" style="min-width:160px;">
                     <option value="">No date filter</option>
                     <template x-for="(t,tn) in availableFields" :key="tn">
@@ -675,7 +499,7 @@
             <div class="rb-strip-sep"></div>
 
             <div class="rb-strip-group">
-                <label>&#9776; Rows</label>
+                <label>Rows</label>
                 <input type="number" class="rb-strip-input" x-model.number="config.limit" min="1" max="10000" style="text-align:center;">
             </div>
 
@@ -684,39 +508,39 @@
         {{-- ═══════════════════════════════════════════════
              HAVING FILTER STRIP (shown when aggregates used)
         ════════════════════════════════════════════════ --}}
-        <div class="rb-strip" x-show="hasAggregates()" x-cloak style="flex-wrap:wrap; gap:8px; align-items:flex-start;">
-            <div class="rb-strip-group" style="width:100%; padding-bottom:4px;">
-                <label style="font-weight:600; color:#1a3a5c;">&#931; Aggregate Filters (HAVING)</label>
-                <button type="button" class="rb-btn rb-btn-secondary" style="margin-left:auto;"
-                    @click="having.push({ fn:'COUNT', column:'*', operator:'>', value:'' })">+ Add Filter</button>
+        <div class="rb-strip" x-show="hasAggregates()" x-cloak style="gap:8px; align-items:flex-start;">
+            <div class="rb-having-head">
+                <label>Aggregate Filters (HAVING)</label>
+                <button type="button" class="rb-btn rb-btn-secondary rb-btn-sm" style="margin-left:auto;"
+                    @click="having.push({ fn:'COUNT', column:'*', operator:'>', value:'' })"><svg class="mv-i" aria-hidden="true"><use href="#i-plus"/></svg> Add Filter</button>
             </div>
             <template x-for="(h, idx) in having" :key="idx">
-                <div class="rb-strip-group" style="gap:6px; align-items:center;">
+                <div class="rb-strip-group rb-having-row">
                     <select class="rb-strip-select" x-model="h.fn">
                         <template x-for="fn in havingFunctions" :key="fn">
                             <option :value="fn" x-text="fn"></option>
                         </template>
                     </select>
-                    <span style="color:#6b7280;">(</span>
+                    <span class="rb-having-paren">(</span>
                     <select class="rb-strip-select" x-model="h.column">
                         <option value="*">* (all)</option>
                         <template x-for="f in fields" :key="f.expression">
                             <option :value="f.expression" x-text="f.label"></option>
                         </template>
                     </select>
-                    <span style="color:#6b7280;">)</span>
-                    <select class="rb-strip-select" x-model="h.operator" style="width:60px;">
+                    <span class="rb-having-paren">)</span>
+                    <select class="rb-strip-select" x-model="h.operator" style="min-width:64px;width:64px;">
                         <template x-for="op in havingOperators" :key="op">
                             <option :value="op" x-text="op"></option>
                         </template>
                     </select>
-                    <input type="number" class="rb-strip-input" x-model="h.value" placeholder="value" style="width:80px;">
-                    <button type="button" class="rb-btn" style="background:#fee2e2; color:#dc2626; padding:2px 8px;"
+                    <input type="number" class="rb-strip-input" x-model="h.value" placeholder="value" style="width:84px;">
+                    <button type="button" class="rb-btn rb-btn-danger rb-btn-sm rb-btn-icon" title="Remove filter"
                         @click="having.splice(idx, 1)">&times;</button>
                 </div>
             </template>
-            <div x-show="having.length === 0" style="color:#9ca3af; font-size:0.85rem; padding:4px 0;">
-                No aggregate filters. Click "+ Add Filter" to filter by aggregate values (e.g. COUNT() &gt; 5).
+            <div x-show="having.length === 0" class="rb-strip-note">
+                No aggregate filters. Click "Add Filter" to filter by aggregate values (e.g. COUNT() &gt; 5).
             </div>
         </div>
 
@@ -729,7 +553,10 @@
             <div class="rb-fields-panel">
                 <div class="rb-fields-head">
                     <h4>Report Fields</h4>
-                    <input type="text" class="rb-search" x-model="fieldSearch" placeholder="&#128269;  Search fields…">
+                    <div class="rb-search-wrap">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-search"/></svg>
+                        <input type="text" class="rb-search" x-model="fieldSearch" placeholder="Search fields…" aria-label="Search fields">
+                    </div>
                 </div>
                 <div class="rb-fields-body">
                     <template x-for="(table, tableName) in availableFields" :key="tableName">
@@ -749,15 +576,10 @@
                     </template>
                 </div>
                 <div class="rb-legend">
-                    <span style="color:var(--rb-dim-fg);">
-                        <span class="rb-dot rb-dot-dim"></span> Text
-                    </span>
-                    <span style="color:var(--rb-mes-fg);">
-                        <span class="rb-dot rb-dot-mes"></span> Number
-                    </span>
-                    <button type="button"
+                    <span><span class="rb-dot rb-dot-dim"></span> Text</span>
+                    <span><span class="rb-dot rb-dot-mes"></span> Number</span>
+                    <button type="button" class="rb-link-btn"
                         @click="showHiddenFields = !showHiddenFields"
-                        style="margin-left:auto; font-size:0.75rem; color:var(--rb-sub); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;"
                         x-text="showHiddenFields ? 'Hide technical fields' : 'Show technical fields'">
                     </button>
                 </div>
@@ -770,10 +592,10 @@
                 <div class="rb-columns-bar">
                     <div class="rb-columns-head">
                         <div class="rb-columns-head-left">
-                            &#9776; Report Columns
+                            Report Columns
                             <span x-show="fields.length > 0" class="rb-col-count" x-text="fields.length"></span>
                         </div>
-                        <span x-show="hasAggregates()" class="rb-agg-hint">&#9432; Non-aggregated fields will be grouped</span>
+                        <span x-show="hasAggregates()" class="rb-agg-hint"><svg class="mv-i" aria-hidden="true"><use href="#i-info"/></svg> Non-aggregated fields will be grouped</span>
                     </div>
                     <div class="rb-columns-body">
                         <div class="rb-dropzone"
@@ -782,19 +604,14 @@
                              @dragleave="draggingOver=false"
                              @drop="onDrop($event)">
 
-                            <div x-show="fields.length===0" style="text-align:center; padding:18px 12px;">
-                                <div style="font-size:1.6rem; margin-bottom:8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
-                                <div style="font-weight:600; color:var(--rb-text); margin-bottom:4px;">No columns selected yet</div>
-                                <div style="font-size:0.82rem; color:var(--rb-sub); margin-bottom:12px;">
-                                    Not sure where to start? Pick a preset — it fills in the columns for you.
+                            <div x-show="fields.length===0" class="rb-dz-empty">
+                                <div>
+                                    <div class="rb-dz-empty-title">No columns selected yet</div>
+                                    <div class="rb-dz-empty-sub">Not sure where to start? Pick a preset — it fills in the columns for you. Or double-click any field on the left to add it manually.</div>
                                 </div>
-                                <button type="button" @click="showTemplateModal=true"
-                                    style="font-size:0.82rem; padding:6px 14px; background:var(--rb-accent); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
-                                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Choose a Preset
+                                <button type="button" @click="showTemplateModal=true" class="rb-btn rb-btn-primary rb-btn-sm">
+                                    <svg class="mv-i" aria-hidden="true"><use href="#i-zap"/></svg> Choose a Preset
                                 </button>
-                                <div style="font-size:0.78rem; color:var(--rb-sub); margin-top:10px;">
-                                    Or double-click any field on the left to add it manually.
-                                </div>
                             </div>
 
                             <template x-for="(field, i) in fields" :key="i">
@@ -810,37 +627,34 @@
                                             <option value="MAX">MAX</option>
                                         </select>
                                     </template>
-                                    <button class="rb-pill-x" @click="removeField(i)">&times;</button>
+                                    <button class="rb-pill-x" @click="removeField(i)" title="Remove column">&times;</button>
                                 </div>
                             </template>
                         </div>
                     </div>
                 </div>
 
-                {{-- Chart Fullscreen Modal --}}
+                {{-- Chart overlay --}}
                 <div class="rb-chart-modal" x-show="showChart && reportData && reportData.length > 0"
                      x-transition:enter="transition ease-out duration-150"
                      @keydown.escape.window="showChart=false;destroyChart()"
                      style="display:none;">
                     <div class="rb-chart-modal-head">
-                        <div class="rb-chart-modal-title">&#128200; Chart Visualisation
-                            <span x-show="reportData" style="font-weight:400;font-size:12px;color:#94a3b8;margin-left:8px;"
+                        <div class="rb-chart-modal-title">Chart Visualisation
+                            <span x-show="reportData" class="rb-results-meta"
                                   x-text="reportData ? reportData.length + ' rows' : ''"></span>
-                            <span id="rb-chart-mode-badge"
-                                  style="display:none;font-size:10px;font-weight:600;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44;border-radius:4px;padding:2px 7px;margin-left:8px;">
-                                COUNT MODE — no numeric column selected
-                            </span>
+                            <span id="rb-chart-mode-badge" class="rb-chart-mode">COUNT MODE — no numeric column selected</span>
                         </div>
-                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;" x-show="reportColumns.length > 0">
-                                <span style="font-size:11px;color:#94a3b8;">Label</span>
+                        <div class="rb-chart-controls">
+                            <div class="rb-chart-controls" x-show="reportColumns.length > 0">
+                                <span class="rb-chart-controls-label">Label</span>
                                 <select x-model="chartLabelCol" @change="renderChart()" class="rb-chart-select" title="Label / X-axis column">
                                     <template x-for="col in reportColumns" :key="col">
                                         <option :value="col" x-text="col"></option>
                                     </template>
                                 </select>
-                                <span style="font-size:13px;color:#64748b;">&#8594;</span>
-                                <span style="font-size:11px;color:#94a3b8;">Value</span>
+                                <svg class="mv-i" aria-hidden="true" style="color:var(--rb-sub);"><use href="#i-arrow-right"/></svg>
+                                <span class="rb-chart-controls-label">Value</span>
                                 <select x-model="chartValueCol" @change="renderChart()" class="rb-chart-select" title="Value / Y-axis column">
                                     <option value="__count__">Count rows</option>
                                     <template x-for="col in chartNumCols" :key="col">
@@ -848,9 +662,6 @@
                                     </template>
                                 </select>
                             </div>
-                            <div x-show="chartHint"
-                                 style="width:100%;font-size:11px;color:#f59e0b;padding:4px 0 0 0;"
-                                 x-text="chartHint"></div>
                             <div class="rb-chart-type-group">
                                 <button @click="chartType='bar';renderChart()"      :class="{'rb-chart-type-active':chartType==='bar'}"      class="rb-chart-type-btn">Bar</button>
                                 <button @click="chartType='h-bar';renderChart()"    :class="{'rb-chart-type-active':chartType==='h-bar'}"    class="rb-chart-type-btn">H-Bar</button>
@@ -859,11 +670,11 @@
                                 <button @click="chartType='pie';renderChart()"      :class="{'rb-chart-type-active':chartType==='pie'}"      class="rb-chart-type-btn">Pie</button>
                                 <button @click="chartType='doughnut';renderChart()" :class="{'rb-chart-type-active':chartType==='doughnut'}" class="rb-chart-type-btn">Ring</button>
                             </div>
-                            <button @click="exportChart()" class="rb-btn-export-chart" title="Download chart as PNG">&#8659; Export PNG</button>
-                            <button @click="showChart=false;destroyChart()"
-                                    style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#e2e8f0;border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;">
-                                &#215; Close
+                            <button @click="exportChart()" class="rb-btn-export-chart" title="Download chart as PNG"><svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export PNG</button>
+                            <button @click="showChart=false;destroyChart()" class="rb-btn rb-btn-outline rb-btn-sm">
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg> Close
                             </button>
+                            <div x-show="chartHint" class="rb-chart-hint" x-text="chartHint"></div>
                         </div>
                     </div>
                     <div class="rb-chart-modal-body">
@@ -882,14 +693,14 @@
                             </span>
                         </div>
                         <span x-show="reportData && reportData.length > 0"
-                              style="font-size:11px;color:var(--rb-sub);"
+                              class="rb-results-meta"
                               x-text="fields.length + ' column' + (fields.length===1?'':'s')">
                         </span>
                     </div>
 
                     {{-- Idle --}}
                     <div x-show="!reportData && !loading" class="rb-results-empty">
-                        <div class="rb-results-empty-icon">&#128202;</div>
+                        <div class="rb-results-empty-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-table"/></svg></div>
                         <p class="rb-results-empty-title">Your report will appear here</p>
                         <p class="rb-results-empty-sub">Add columns from the left panel, set filters above, then hit <strong>Run Report</strong></p>
                     </div>
@@ -903,7 +714,7 @@
 
                     {{-- No rows --}}
                     <div x-show="reportData && reportData.length===0 && !loading" class="rb-results-empty">
-                        <div class="rb-results-empty-icon">&#128269;</div>
+                        <div class="rb-results-empty-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-search"/></svg></div>
                         <p class="rb-results-empty-title">No results found</p>
                         <p class="rb-results-empty-sub">Try broadening your filters or choosing a different data source</p>
                     </div>
@@ -940,7 +751,7 @@
     {{-- Save template --}}
     <div x-show="showSaveModal" x-transition class="rb-backdrop" @click.self="showSaveModal=false">
         <div class="rb-modal">
-            <h3>&#128190; Save as Template</h3>
+            <h3>Save as Template</h3>
             <div style="margin-bottom:12px;">
                 <label class="rb-label">Name *</label>
                 <input type="text" x-model="saveForm.name" class="rb-input"
@@ -949,16 +760,16 @@
             </div>
             <div style="margin-bottom:14px;">
                 <label class="rb-label">Description</label>
-                <textarea x-model="saveForm.description" rows="2" class="rb-input" style="resize:vertical;height:60px;"></textarea>
+                <textarea x-model="saveForm.description" rows="2" class="rb-input" style="resize:vertical;height:64px;"></textarea>
             </div>
             @if($canMakeGlobal)
-            <div style="margin-bottom:20px;">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--rb-text);">
+            <div style="margin-bottom:18px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px;color:var(--rb-text);">
                     <input type="checkbox" x-model="saveForm.isGlobal"> Make visible to all users
                 </label>
             </div>
             @endif
-            <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <div class="rb-modal-foot">
                 <button @click="showSaveModal=false" class="rb-btn rb-btn-outline">Cancel</button>
                 <button @click="saveTemplate()" :disabled="!saveForm.name" class="rb-btn rb-btn-primary">Save Template</button>
             </div>
@@ -967,16 +778,16 @@
 
     {{-- Load template (includes built-in presets at top) --}}
     <div x-show="showTemplateModal" x-transition class="rb-backdrop" @click.self="showTemplateModal=false">
-        <div class="rb-modal-lg" style="width:660px;max-height:85vh;">
-            <h3>&#128193; Templates</h3>
+        <div class="rb-modal-lg">
+            <h3>Templates</h3>
 
             {{-- ── Built-in Presets ── --}}
-            <div style="margin-bottom:18px;flex-shrink:0;max-height:260px;overflow-y:auto;">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rb-sub);margin-bottom:10px;position:sticky;top:0;background:var(--rb-surface);padding-bottom:4px;">&#9889; Built-in Presets</div>
+            <div style="margin-bottom:16px;min-height:0;max-height:60vh;overflow-y:auto;">
+                <div class="rb-section-label">Built-in Presets</div>
                 <div class="rb-preset-grid">
                     <template x-for="preset in presets" :key="preset.id">
                         <button class="rb-preset-card" @click="applyPreset(preset)">
-                            <div class="rb-preset-icon" x-text="preset.icon"></div>
+                            <div class="rb-preset-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-table"/></svg></div>
                             <div class="rb-preset-name" x-text="preset.name"></div>
                             <div class="rb-preset-desc" x-text="preset.desc"></div>
                             <div class="rb-preset-cols">
@@ -989,7 +800,7 @@
                 </div>
             </div>
 
-            <div style="display:flex;justify-content:flex-end;flex-shrink:0;padding-top:12px;border-top:1px solid var(--rb-border);">
+            <div class="rb-modal-foot" style="flex-shrink:0;padding-top:12px;border-top:1px solid var(--rb-border);">
                 <button @click="showTemplateModal=false" class="rb-btn rb-btn-outline">Close</button>
             </div>
         </div>
@@ -998,10 +809,12 @@
     {{-- Data source confirm --}}
     <div x-show="showSourceConfirm" x-transition class="rb-backdrop">
         <div class="rb-modal rb-confirm">
-            <div class="rb-confirm-icon">&#9888;&#65039;</div>
-            <h3 style="text-align:center;">Change Data Source?</h3>
+            <div class="rb-confirm-head">
+                <div class="rb-confirm-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
+                <h3>Change Data Source?</h3>
+            </div>
             <p>Switching data sources will clear your current column selection. This can't be undone.</p>
-            <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <div class="rb-modal-foot">
                 <button @click="cancelDataSourceChange()" class="rb-btn rb-btn-outline">Cancel</button>
                 <button @click="confirmDataSourceChange()" class="rb-btn rb-btn-danger">Yes, Switch It</button>
             </div>
@@ -1211,8 +1024,8 @@ document.addEventListener('alpine:init', () => {
         const isHBar = (this.chartType === 'h-bar');
         const isArea = (this.chartType === 'area');
         const chartJsType = isHBar ? 'bar' : isArea ? 'line' : this.chartType;
-        const pal   = ['#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6',
-                        '#ec4899','#14b8a6','#f97316','#6366f1','#0ea5e9','#84cc16','#a855f7','#1a3a5c'];
+        const pal   = ['#2B64A8','#9AA6B4','#1D7F46','#C28A2C','#5B87BE','#6A7686',
+                        '#B83232','#CBD3DD','#1F4F87','#445162','#8FB0D6','#E1E6EC','#16202C'];
 
         // Detect if value column has real numeric data (explicit __count__ forces count mode)
         const hasNumericValues = this.chartValueCol &&
@@ -1288,6 +1101,7 @@ document.addEventListener('alpine:init', () => {
 
         const manyLabels = isPie && labels.length > 6;
 
+        Chart.defaults.font.family = '"IBM Plex Sans", "Segoe UI", system-ui, sans-serif';
         this.chartInstance = new Chart(canvas.getContext('2d'), {
           type: chartJsType,
           data: {
@@ -1296,17 +1110,14 @@ document.addEventListener('alpine:init', () => {
               label:           datasetLabel,
               data:            values,
               backgroundColor: isPie
-                ? labels.map((_,i) => pal[i % pal.length] + 'dd')
-                : isArea
-                  ? pal[0] + '33'
-                  : labels.map((_,i) => pal[i % pal.length] + 'aa'),
-              borderColor:     isPie
                 ? labels.map((_,i) => pal[i % pal.length])
                 : isArea
-                  ? pal[0]
-                  : labels.map((_,i) => pal[i % pal.length]),
-              borderWidth:     isPie ? 2 : 1.5,
-              borderRadius:    (isPie || isArea) ? 0 : 5,
+                  ? 'rgba(43,100,168,.10)'
+                  : '#2B64A8',
+              borderColor:     isPie ? '#ffffff' : '#2B64A8',
+              borderWidth:     isPie ? 2 : (chartJsType === 'line' ? 2 : 0),
+              borderRadius:    (isPie || isArea) ? 0 : 4,
+              maxBarThickness: 28,
               tension:         0.35,
               fill:            isArea,
               pointRadius:     isArea ? 3 : undefined,
@@ -1316,14 +1127,16 @@ document.addEventListener('alpine:init', () => {
             responsive:          true,
             maintainAspectRatio: false,
             indexAxis:           isHBar ? 'y' : 'x',
+            cutout:              this.chartType === 'doughnut' ? '68%' : 0,
             plugins: {
               legend: isPie ? {
                 display:  true,
-                position: manyLabels ? 'bottom' : 'right',
+                position: 'bottom',
                 labels:   {
-                  color:    '#e2e8f0',
-                  font:     { size: manyLabels ? 11 : 13 },
-                  boxWidth: 14,
+                  color:    '#445162',
+                  font:     { size: manyLabels ? 11 : 12 },
+                  usePointStyle: true, pointStyle: 'rect',
+                  boxWidth: 8,
                   padding:  manyLabels ? 10 : 16,
                   generateLabels(chart) {
                     return Chart.defaults.plugins.legend.labels.generateLabels(chart).map(item => {
@@ -1336,10 +1149,10 @@ document.addEventListener('alpine:init', () => {
               tooltip: {
                 mode:            'index',
                 intersect:       false,
-                backgroundColor: 'rgba(10,20,40,0.92)',
-                titleColor:      '#e2e8f0',
-                bodyColor:       '#94a3b8',
-                borderColor:     'rgba(255,255,255,.1)',
+                backgroundColor: '#16202C',
+                titleColor:      '#ffffff',
+                bodyColor:       '#E1E6EC',
+                borderColor:     'transparent',
                 borderWidth:     1,
                 padding:         10,
                 callbacks: {
@@ -1359,22 +1172,22 @@ document.addEventListener('alpine:init', () => {
             },
             scales: isPie ? {} : isHBar ? {
               x: {
-                ticks: { font: { size: 11 }, color: '#94a3b8' },
-                grid:  { color: 'rgba(255,255,255,.07)' },
+                ticks: { font: { size: 11 }, color: '#6A7686' },
+                grid:  { color: '#E1E6EC', drawBorder: false },
                 beginAtZero: true,
               },
               y: {
-                ticks: { font: { size: 11 }, color: '#94a3b8', maxTicksLimit: 20 },
-                grid:  { color: 'rgba(255,255,255,.05)' },
+                ticks: { font: { size: 11 }, color: '#6A7686', maxTicksLimit: 20 },
+                grid:  { display: false, drawBorder: false },
               },
             } : {
               x: {
-                ticks: { maxRotation: 40, font: { size: 11 }, color: '#94a3b8' },
-                grid:  { color: 'rgba(255,255,255,.05)' },
+                ticks: { maxRotation: 40, font: { size: 11 }, color: '#6A7686' },
+                grid:  { display: false, drawBorder: false },
               },
               y: {
-                ticks: { font: { size: 11 }, color: '#94a3b8' },
-                grid:  { color: 'rgba(255,255,255,.07)' },
+                ticks: { font: { size: 11 }, color: '#6A7686' },
+                grid:  { color: '#E1E6EC', drawBorder: false },
                 beginAtZero: true,
               },
             }

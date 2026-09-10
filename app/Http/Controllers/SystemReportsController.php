@@ -522,7 +522,7 @@ class SystemReportsController extends Controller
         if ($faultyTerminals > 0) {
             $alerts[] = [
                 'type'    => 'danger',
-                'icon'    => '',
+                'icon'    => 'monitor',
                 'title'   => "{$faultyTerminals} Terminal(s) Need Attention",
                 'desc'    => 'Terminals in maintenance or faulty state require service.',
                 'link'    => route('pos-terminals.index'),
@@ -536,7 +536,7 @@ class SystemReportsController extends Controller
         if ($overdueTickets > 0) {
             $alerts[] = [
                 'type'    => 'warning',
-                'icon'    => '',
+                'icon'    => 'ticket',
                 'title'   => "{$overdueTickets} Overdue Ticket(s)",
                 'desc'    => 'Open tickets older than 48 hours need follow-up.',
                 'link'    => route('tickets.index'),
@@ -548,7 +548,7 @@ class SystemReportsController extends Controller
         if ($lowStock > 0) {
             $alerts[] = [
                 'type'    => 'warning',
-                'icon'    => '',
+                'icon'    => 'box',
                 'title'   => "{$lowStock} Asset(s) Low on Stock",
                 'desc'    => 'Some assets are at or below their minimum stock level.',
                 'link'    => route('assets.index'),
@@ -562,7 +562,7 @@ class SystemReportsController extends Controller
         if ($expiringLicenses > 0) {
             $alerts[] = [
                 'type'    => 'warning',
-                'icon'    => '',
+                'icon'    => 'file-check',
                 'title'   => "{$expiringLicenses} License(s) Expiring Soon",
                 'desc'    => 'Business licenses expiring within 30 days.',
                 'link'    => route('business-licenses.index'),
@@ -576,7 +576,7 @@ class SystemReportsController extends Controller
         if ($overdueProjects > 0) {
             $alerts[] = [
                 'type'    => 'danger',
-                'icon'    => '',
+                'icon'    => 'folder',
                 'title'   => "{$overdueProjects} Overdue Project(s)",
                 'desc'    => 'Active projects past their end date.',
                 'link'    => route('projects.index'),

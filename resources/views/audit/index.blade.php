@@ -1,72 +1,109 @@
 @extends('layouts.app')
 @section('title', 'Audit Trail')
 
+@push('styles')
+<style>
+    .au { display: grid; gap: 16px; }
+    .au .mv-i { width: 16px; height: 16px; }
+    .au-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .au-toolbar p { margin: 0; font-size: 13px; color: var(--mv-muted); }
+    .au-toolbar a { display: inline-flex; align-items: center; gap: 6px; }
+
+    .au-summary { display: grid; grid-template-columns: 200px 200px minmax(0, 1fr); gap: 1px; background: var(--mv-line); border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
+    .au-summary > div { background: var(--mv-surface); padding: 14px 18px; min-width: 0; }
+    .au-fig-value { font-size: 22px; font-weight: 600; letter-spacing: -.02em; color: var(--mv-ink); line-height: 1.15; font-variant-numeric: tabular-nums; }
+    .au-fig-label { font-size: 12.5px; color: var(--mv-muted); margin-top: 2px; }
+    .au-areas-label { font-size: 12.5px; color: var(--mv-muted); margin-bottom: 8px; }
+    .au-areas { display: flex; flex-wrap: wrap; gap: 6px; }
+    .au-area { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--mv-line); background: var(--mv-surface); color: var(--mv-ink-2); font-size: 12.5px; text-decoration: none; }
+    .au-area b { font-weight: 600; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+    .au-area:hover { border-color: var(--mv-line-strong); background: var(--mv-surface-2); color: var(--mv-ink); }
+    .au-area.is-on { border-color: #C9D9EE; background: var(--mv-accent-soft); color: var(--mv-accent-ink); }
+    .au-area.is-on b { color: var(--mv-accent-ink); }
+
+    .au-filters { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; padding: 12px 14px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+    .au-filters .filter-group { display: flex; flex-direction: column; gap: 4px; }
+    .au-filters .filter-group-grow { flex: 1; min-width: 200px; }
+    .au-filters .ui-label { margin: 0; }
+    .au-filters .ui-input, .au-filters .ui-select { height: 36px; font-size: 13.5px; padding-top: 0 !important; padding-bottom: 0 !important; line-height: 34px; }
+    .au-filters .filter-actions { display: flex; gap: 8px; margin-left: auto; }
+
+    .au-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
+    .au .ui-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .au .ui-table th { text-align: left; white-space: nowrap; }
+    .au-when { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .au-when div:first-child { color: var(--mv-ink); }
+    .au-sub { font-size: 12px; color: var(--mv-muted); }
+    .au-who { color: var(--mv-ink); font-weight: 500; white-space: nowrap; }
+    .au-mono { font-family: var(--mv-mono); font-size: 12px; }
+    .au-desc { max-width: 420px; color: var(--mv-ink-2); line-height: 1.45; }
+    .au-toggle { margin-left: 6px; background: none; border: 0; padding: 0; font: inherit; font-size: 12.5px; color: var(--mv-accent-ink); cursor: pointer; }
+    .au-toggle:hover { text-decoration: underline; }
+    .au-diff { margin-top: 8px; display: grid; gap: 6px; }
+    .au-diff > div { font-family: var(--mv-mono); font-size: 12px; line-height: 1.5; border-radius: 6px; padding: 8px 10px; border: 1px solid var(--mv-line); background: var(--mv-surface-2); color: var(--mv-ink-2); word-break: break-word; }
+    .au-diff strong { display: block; font-family: var(--mv-sans); font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .au-diff .is-before strong { color: var(--mv-crit); }
+    .au-diff .is-after strong { color: var(--mv-good); }
+    .au .badge { white-space: nowrap; }
+    .au-empty { padding: 48px 16px; text-align: center; }
+    .au-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); display: block; margin: 0 auto 8px; }
+    .au-empty-title { font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+    .au-empty-sub { font-size: 13px; color: var(--mv-muted); margin-top: 4px; }
+    .au-pagination { padding: 12px 16px; border-top: 1px solid var(--mv-line); }
+
+    @media (max-width: 1000px) { .au-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .au-summary > div:last-child { grid-column: 1 / -1; } }
+</style>
+@endpush
+
 @section('content')
-<div>
-    {{-- Header --}}
-    <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-        <div>
-            <h1 class="m-0 text-gray-900 text-2xl font-semibold">&#x1F50D; Audit Trail</h1>
-            <p class="text-gray-500 text-sm mt-1">Complete history of all system actions, categorised by area</p>
-        </div>
-        <div>
-            <a href="{{ route('audit-trail.export-analysis', request()->only(['date_from','date_to'])) }}"
-               style="display:inline-flex;align-items:center;gap:6px;background:#1a3a5c;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">
-                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export Analysis PDF
-            </a>
-        </div>
-    </div>
-
-    {{-- Top stats --}}
-    <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="stat-card">
-            <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></div>
-            <div>
-                <div class="stat-number">{{ number_format($stats['total']) }}</div>
-                <div class="stat-label">Total Events Logged</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
-            <div>
-                <div class="stat-number">{{ number_format($stats['today']) }}</div>
-                <div class="stat-label">Events Today</div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Category breakdown --}}
-    @php
-    $catColors = [
-        'Assets'            => ['border' => 'border-blue-400',   'text' => 'text-blue-700',   'bg' => 'bg-blue-50'],
-        'Tickets'           => ['border' => 'border-orange-400', 'text' => 'text-orange-700', 'bg' => 'bg-orange-50'],
-        'Employees'         => ['border' => 'border-purple-400', 'text' => 'text-purple-700', 'bg' => 'bg-purple-50'],
-        'Job Assignments'   => ['border' => 'border-green-400',  'text' => 'text-green-700',  'bg' => 'bg-green-50'],
-        'Site Visits'       => ['border' => 'border-teal-400',   'text' => 'text-teal-700',   'bg' => 'bg-teal-50'],
-        'Clients'           => ['border' => 'border-yellow-400', 'text' => 'text-yellow-700', 'bg' => 'bg-yellow-50'],
-        'Terminals'         => ['border' => 'border-gray-400',   'text' => 'text-gray-700',   'bg' => 'bg-gray-100'],
-        'Business Licenses' => ['border' => 'border-red-400',    'text' => 'text-red-700',    'bg' => 'bg-red-50'],
-        'Settings'          => ['border' => 'border-slate-400',  'text' => 'text-slate-700',  'bg' => 'bg-slate-100'],
-        'System'            => ['border' => 'border-zinc-400',   'text' => 'text-zinc-700',   'bg' => 'bg-zinc-100'],
-        'Other'             => ['border' => 'border-gray-300',   'text' => 'text-gray-600',   'bg' => 'bg-gray-50'],
+@php
+    $actionBadges = [
+        'approved'       => 'badge-green',
+        'completed'      => 'badge-green',
+        'created'        => 'badge-blue',
+        'status_changed' => 'badge-blue',
+        'updated'        => 'badge-gray',
+        'rejected'       => 'badge-red',
+        'deleted'        => 'badge-red',
+        'cancelled'      => 'badge-gray',
     ];
-    @endphp
-    <div class="grid grid-cols-5 gap-3 mb-6">
-        @foreach($stats['byCategory'] as $cat => $count)
-            @if($count > 0)
-            @php $cc = $catColors[$cat] ?? ['border' => 'border-gray-300', 'text' => 'text-gray-600', 'bg' => 'bg-gray-50']; @endphp
-            <a href="?category={{ urlencode($cat) }}"
-               class="bg-white rounded-xl border-l-4 {{ $cc['border'] }} border border-gray-200 p-3 no-underline hover:shadow-sm transition {{ request('category') === $cat ? 'ring-2 ring-offset-1 ring-blue-400' : '' }}">
-                <div class="text-xl font-bold {{ $cc['text'] }}">{{ number_format($count) }}</div>
-                <div class="text-xs text-gray-500 mt-0.5">{{ $cat }}</div>
-            </a>
-            @endif
-        @endforeach
+@endphp
+<div class="au">
+
+    <div class="au-toolbar">
+        <p>Complete history of all system actions, categorised by area</p>
+        <a href="{{ route('audit-trail.export-analysis', request()->only(['date_from','date_to'])) }}" class="btn-primary">
+            <svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export Analysis PDF
+        </a>
+    </div>
+
+    {{-- Summary --}}
+    <div class="au-summary">
+        <div>
+            <div class="au-fig-value">{{ number_format($stats['total']) }}</div>
+            <div class="au-fig-label">Total Events Logged</div>
+        </div>
+        <div>
+            <div class="au-fig-value">{{ number_format($stats['today']) }}</div>
+            <div class="au-fig-label">Events Today</div>
+        </div>
+        <div>
+            <div class="au-areas-label">By area</div>
+            <div class="au-areas">
+                @foreach($stats['byCategory'] as $cat => $count)
+                    @if($count > 0)
+                    <a href="?category={{ urlencode($cat) }}" class="au-area {{ request('category') === $cat ? 'is-on' : '' }}">
+                        {{ $cat }} <b>{{ number_format($count) }}</b>
+                    </a>
+                    @endif
+                @endforeach
+            </div>
+        </div>
     </div>
 
     {{-- Filters --}}
-    <form method="GET" class="filter-bar">
-        <div class="filter-group">
+    <form method="GET" class="au-filters">
+        <div class="filter-group filter-group-grow">
             <label class="ui-label">Search</label>
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search description…" class="ui-input">
         </div>
@@ -118,7 +155,8 @@
     </form>
 
     {{-- Table --}}
-    <div class="ui-card overflow-hidden">
+    <div class="au-card">
+        <div style="overflow-x:auto;">
         <table class="ui-table">
             <thead>
                 <tr>
@@ -131,74 +169,57 @@
                     <th>IP</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody>
                 @forelse($logs as $log)
-                    @php
-                    $cc = $catColors[$log->category] ?? ['border' => 'border-gray-300', 'text' => 'text-gray-600', 'bg' => 'bg-gray-50'];
-                    $actionColors = [
-                        'approved'       => 'bg-green-100 text-green-700',
-                        'rejected'       => 'bg-red-100 text-red-700',
-                        'created'        => 'bg-blue-100 text-blue-700',
-                        'updated'        => 'bg-yellow-100 text-yellow-700',
-                        'deleted'        => 'bg-red-200 text-red-800',
-                        'status_changed' => 'bg-indigo-100 text-indigo-700',
-                        'completed'      => 'bg-green-100 text-green-800',
-                        'cancelled'      => 'bg-gray-200 text-gray-600',
-                    ];
-                    $actionColor = $actionColors[$log->action] ?? 'bg-gray-100 text-gray-700';
-                    @endphp
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            <div class="text-xs font-medium text-gray-800">{{ $log->created_at->format('d M Y') }}</div>
-                            <div class="text-xs text-gray-400">{{ $log->created_at->format('H:i:s') }}</div>
+                    <tr>
+                        <td class="au-when">
+                            <div>{{ $log->created_at->format('d M Y') }}</div>
+                            <div class="au-sub">{{ $log->created_at->format('H:i:s') }}</div>
                         </td>
-                        <td class="px-4 py-3">
+                        <td>
                             @if($log->employee)
-                                <div class="text-xs font-medium text-gray-800">{{ $log->employee->first_name }} {{ $log->employee->last_name }}</div>
-                                <div class="text-xs text-gray-400">{{ $log->employee->employee_number ?? '' }}</div>
+                                <div class="au-who">{{ $log->employee->first_name }} {{ $log->employee->last_name }}</div>
+                                <div class="au-sub au-mono">{{ $log->employee->employee_number ?? '' }}</div>
                             @else
-                                <span class="text-xs text-gray-400">System</span>
+                                <span class="au-sub">System</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $cc['bg'] }} {{ $cc['text'] }}">
-                                {{ $log->category }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $actionColor }}">
+                        <td><span class="badge badge-gray">{{ $log->category }}</span></td>
+                        <td>
+                            <span class="badge {{ $actionBadges[$log->action] ?? 'badge-gray' }}">
                                 {{ ucfirst(str_replace('_', ' ', $log->action)) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3">
+                        <td>
                             @if($log->model_type)
-                                <div class="text-xs font-medium text-gray-600">{{ $log->model_type }}</div>
+                                <div style="color:var(--mv-ink-2);">{{ $log->model_type }}</div>
                                 @if($log->model_id)
-                                    <div class="text-xs text-gray-400">#{{ $log->model_id }}</div>
+                                    <div class="au-sub au-mono">#{{ $log->model_id }}</div>
                                 @endif
                             @else
-                                <span class="text-gray-400">&#x2014;</span>
+                                <span class="au-sub">—</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 max-w-xs">
-                            <span class="text-gray-700 text-xs">{{ $log->description }}</span>
+                        <td>
+                            <div class="au-desc">
+                                {{ $log->description }}
+                                @if($log->old_values || $log->new_values)
+                                    <button type="button" onclick="toggleChanges({{ $log->id }})" class="au-toggle">View changes</button>
+                                @endif
+                            </div>
                             @if($log->old_values || $log->new_values)
-                                <button onclick="toggleChanges({{ $log->id }})"
-                                        class="ml-2 text-xs text-blue-500 hover:text-blue-700 underline">
-                                    View changes
-                                </button>
-                                <div id="changes-{{ $log->id }}" class="hidden mt-2">
+                                <div id="changes-{{ $log->id }}" class="hidden au-diff">
                                     @if($log->old_values)
-                                        <div class="bg-red-50 rounded p-2 mb-1 text-xs font-mono">
-                                            <strong class="text-red-600">Before:</strong>
+                                        <div class="is-before">
+                                            <strong>Before:</strong>
                                             @foreach($log->old_values as $k => $v)
                                                 <div>{{ $k }}: {{ is_array($v) ? json_encode($v) : $v }}</div>
                                             @endforeach
                                         </div>
                                     @endif
                                     @if($log->new_values)
-                                        <div class="bg-green-50 rounded p-2 text-xs font-mono">
-                                            <strong class="text-green-600">After:</strong>
+                                        <div class="is-after">
+                                            <strong>After:</strong>
                                             @foreach($log->new_values as $k => $v)
                                                 <div>{{ $k }}: {{ is_array($v) ? json_encode($v) : $v }}</div>
                                             @endforeach
@@ -207,22 +228,25 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{{ $log->ip_address ?? '&#x2014;' }}</td>
+                        <td class="au-mono au-sub" style="white-space:nowrap;">{{ $log->ip_address ?? '—' }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-12 text-center text-gray-400">
-                            <div class="text-4xl mb-3">&#x1F4CB;</div>
-                            <div class="font-medium">No audit log entries found</div>
-                            <div class="text-sm mt-1">Activity will appear here as users perform actions.</div>
+                        <td colspan="7">
+                            <div class="au-empty">
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-history"/></svg>
+                                <div class="au-empty-title">No audit log entries found</div>
+                                <div class="au-empty-sub">Activity will appear here as users perform actions.</div>
+                            </div>
                         </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+        </div>
 
         @if($logs->hasPages())
-            <div class="ui-card-footer justify-center">
+            <div class="au-pagination">
                 {{ $logs->links() }}
             </div>
         @endif
