@@ -1,36 +1,151 @@
 @extends('layouts.app')
 @section('title', 'Import Terminals')
 
+@push('styles')
+<style>
+/* ── POS terminals · import ────────────────────────────── */
+.mv-page > .mv-flash .mv-flash-text { white-space: pre-line; }
+
+.pt-imp .ui-card-header { padding: 12px 18px; gap: 12px; }
+.pt-imp .ui-card-header h2, .pt-imp .ui-card-header h3 { font-size: 14px; font-weight: 600; margin: 0; }
+.pt-imp .ui-card-body { padding: 18px; }
+.pt-imp .pt-stack > * + * { margin-top: 18px; }
+.pt-imp .pt-btn { height: 34px; padding: 0 12px; font-size: 13px; }
+.pt-imp .pt-btn-sm { height: 30px; padding: 0 10px; font-size: 12.5px; }
+.pt-imp .ui-label { margin-bottom: 6px; }
+.pt-imp .required::after { content: " *"; color: var(--mv-crit); }
+.pt-imp .ui-hint { display: block; font-size: 12px; margin-top: 5px; }
+.pt-imp .ui-input { height: 38px; padding: 0 12px; font-size: 13.5px; }
+.pt-imp .ui-select { height: 38px; padding: 0 32px 0 12px; font-size: 13.5px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236A7686' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; }
+.pt-imp .is-invalid { border-color: var(--mv-crit) !important; }
+.pt-imp .invalid-feedback { display: block; margin-top: 5px; font-size: 12px; color: var(--mv-crit); }
+.pt-imp button:disabled { opacity: .5; cursor: not-allowed; }
+
+.pt-imp .pt-errors { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; border: 1px solid #F2CACA; border-radius: 8px; background: var(--mv-crit-soft); color: var(--mv-crit); font-size: 13px; }
+.pt-imp .pt-errors ul { margin: 0; padding-left: 16px; }
+.pt-imp .pt-errors .mv-i { margin-top: 1px; }
+
+/* File picker (Bootstrap custom-file kept for the script) */
+.pt-imp .pt-file-row { display: flex; gap: 8px; align-items: stretch; }
+.pt-imp .custom-file { position: relative; flex: 1; min-width: 0; height: 38px; margin: 0; }
+.pt-imp .custom-file-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; opacity: 0; z-index: 2; cursor: pointer; }
+.pt-imp .custom-file-label { position: absolute; inset: 0; z-index: 1; height: 38px; margin: 0; display: flex; align-items: center; padding: 0 96px 0 12px; border: 1px solid var(--mv-line-strong); border-radius: 8px; background: var(--mv-surface); font-size: 13.5px; font-weight: 400; color: var(--mv-ink-2); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pt-imp .custom-file-label::after { content: "Browse"; position: absolute; top: 0; right: 0; bottom: 0; height: auto; display: flex; align-items: center; padding: 0 14px; border-left: 1px solid var(--mv-line); border-radius: 0 8px 8px 0; background: var(--mv-surface-2); color: var(--mv-ink); font-size: 13px; font-weight: 500; line-height: 1; }
+.pt-imp .custom-file-input:focus ~ .custom-file-label { border-color: var(--mv-accent); box-shadow: 0 0 0 3px rgba(43, 100, 168, .15); }
+.pt-imp .custom-file-input.is-invalid ~ .custom-file-label { border-color: var(--mv-crit); }
+.pt-imp .pt-file-row .btn-secondary { height: 38px; }
+
+/* Options */
+.pt-imp .pt-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pt-imp .pt-option { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 0; border: 1px solid var(--mv-line); border-radius: 8px; background: var(--mv-surface); }
+.pt-imp .pt-option:hover { border-color: var(--mv-line-strong); }
+.pt-imp .pt-option .form-check-input { position: static; width: 16px; height: 16px; margin: 0; accent-color: var(--mv-accent); flex-shrink: 0; }
+.pt-imp .pt-option .form-check-label { flex: 1; font-size: 13px; color: var(--mv-ink); cursor: pointer; margin: 0; }
+@media (max-width: 700px) { .pt-imp .pt-options { grid-template-columns: 1fr; } }
+.pt-imp .pt-footer-end { justify-content: flex-end; gap: 8px; padding: 12px 18px; }
+
+/* Side cards */
+.pt-imp .pt-side { display: flex; flex-direction: column; gap: 16px; }
+.pt-imp .pt-side-label { margin: 0 0 6px; font-size: 12px; font-weight: 500; color: var(--mv-muted); }
+.pt-imp .pt-list { list-style: none; margin: 0 0 14px; padding: 0; }
+.pt-imp .pt-list:last-child { margin-bottom: 0; }
+.pt-imp .pt-list li { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13px; color: var(--mv-ink-2); }
+.pt-imp .pt-list .mv-i { width: 14px; height: 14px; color: var(--mv-muted); }
+.pt-imp .pt-list-dots li::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--mv-line-strong); flex-shrink: 0; }
+.pt-imp .pt-req { color: var(--mv-crit); font-weight: 600; }
+.pt-imp .pt-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+.pt-imp .pt-formats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.pt-imp .pt-code { display: inline-block; padding: 1px 6px; border-radius: 5px; background: var(--mv-surface-2); border: 1px solid var(--mv-line); font-family: var(--mv-mono); font-size: 12px; color: var(--mv-ink); }
+.pt-imp .pt-note { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; padding: 9px 12px; border: 1px solid var(--mv-line); border-radius: 8px; background: var(--mv-surface-2); font-size: 12.5px; color: var(--mv-ink-2); }
+.pt-imp .pt-note .mv-i { width: 15px; height: 15px; margin-top: 1px; color: var(--mv-muted); }
+.pt-imp .pt-kv-list li strong { font-weight: 500; color: var(--mv-ink); }
+
+/* Modals (Bootstrap) */
+.pt-imp .modal-content { border: 1px solid var(--mv-line); border-radius: 12px; box-shadow: 0 16px 40px rgba(22, 32, 44, .14); overflow: hidden; }
+.pt-imp .modal-header { align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--mv-line); }
+.pt-imp .modal-title { font-size: 14.5px; font-weight: 600; color: var(--mv-ink); margin: 0; }
+.pt-imp .modal-body { padding: 18px; }
+.pt-imp .modal-footer { padding: 12px 18px; border-top: 1px solid var(--mv-line); gap: 8px; }
+.pt-imp .modal-footer > * { margin: 0; }
+.pt-imp #loadingModal .modal-dialog { max-width: 420px; }
+.modal-backdrop.show { opacity: 1; background: rgba(22, 32, 44, .45); }
+.pt-imp .pt-icon-btn { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: var(--mv-muted); cursor: pointer; }
+.pt-imp .pt-icon-btn:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+
+/* Progress / states (rendered by the script) */
+.pt-imp .pt-state { padding: 16px 8px; text-align: center; }
+.pt-imp .pt-state-icon { display: block; width: 22px; height: 22px; margin: 0 auto 12px; color: var(--mv-accent); }
+.pt-imp .pt-state-title { margin: 0 0 4px; font-size: 14.5px; font-weight: 600; color: var(--mv-ink); }
+.pt-imp .pt-state-text { margin: 0 0 16px; font-size: 13px; color: var(--mv-muted); }
+.pt-imp .pt-state-meta { display: block; margin: 8px 0 0; font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.pt-imp .pt-progress-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.pt-imp .pt-progress-row.is-end { justify-content: flex-end; }
+.pt-imp .pt-progress { height: 6px; border-radius: 6px; background: var(--mv-line); overflow: hidden; box-shadow: none; }
+.pt-imp .pt-progress .progress-bar { background-color: var(--mv-accent); background-image: none; transition: width .2s ease; }
+.pt-imp .pt-progress .progress-bar.bg-success { background-color: var(--mv-good) !important; }
+.pt-imp .pt-bar { position: relative; height: 4px; border-radius: 4px; background: var(--mv-line); overflow: hidden; }
+.pt-imp .pt-bar span { position: absolute; top: 0; bottom: 0; left: -35%; width: 35%; border-radius: 4px; background: var(--mv-accent); animation: pt-slide 1.4s ease-in-out infinite; }
+.pt-imp .pt-state .btn-danger { margin-top: 14px; }
+.pt-imp .pt-spin { animation: pt-spin 1s linear infinite; }
+@keyframes pt-spin { to { transform: rotate(360deg); } }
+@keyframes pt-slide { to { left: 100%; } }
+@media (prefers-reduced-motion: reduce) { .pt-imp .pt-spin, .pt-imp .pt-bar span { animation: none; } }
+.pt-imp .pt-upload-wrap { padding: 14px 18px; background: var(--mv-surface); border-top: 1px solid var(--mv-line); }
+
+.pt-imp .pt-alert { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--mv-line); background: var(--mv-surface-2); color: var(--mv-ink-2); font-size: 13px; }
+.pt-imp .pt-alert.is-crit { background: var(--mv-crit-soft); border-color: #F2CACA; color: var(--mv-crit); }
+.pt-imp .pt-alert.is-warn { background: var(--mv-warn-soft); border-color: #F0DDB6; color: var(--mv-warn); }
+.pt-imp .pt-alert.is-info { background: var(--mv-accent-soft); border-color: #C9D9EE; color: var(--mv-accent-ink); }
+.pt-imp .pt-alert .mv-i { margin-top: 1px; }
+.pt-imp .pt-alert-title { margin: 0; font-weight: 600; }
+.pt-imp .pt-alert-text { margin: 2px 0 0; }
+
+.pt-imp .pt-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.pt-imp .pt-summary-box { padding: 12px 14px; border: 1px solid var(--mv-line); border-radius: 8px; background: var(--mv-surface-2); }
+.pt-imp .pt-summary-title { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--mv-ink); }
+.pt-imp .pt-summary-list { list-style: none; margin: 0; padding: 0; font-size: 12.5px; color: var(--mv-ink-2); font-variant-numeric: tabular-nums; }
+.pt-imp .pt-summary-list li { padding: 1px 0; }
+.pt-imp .pt-summary-list strong { font-weight: 500; color: var(--mv-ink); }
+.pt-imp .pt-text-crit, .pt-imp .pt-text-crit strong { color: var(--mv-crit); }
+.pt-imp .pt-text-good, .pt-imp .pt-text-good strong { color: var(--mv-good); }
+.pt-imp .pt-preview-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 12px; margin-bottom: 16px; }
+.pt-imp .pt-subcard { border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
+.pt-imp .pt-subcard-head { padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--mv-ink); border-bottom: 1px solid var(--mv-line); }
+.pt-imp .pt-scroll { max-height: 220px; overflow: auto; }
+.pt-imp .pt-subcard .ui-table thead th { padding: 8px 12px; position: sticky; top: 0; }
+.pt-imp .pt-subcard .ui-table tbody td { padding: 8px 12px; font-size: 13px; }
+.pt-imp .status-badge { gap: 6px; padding: 2px 8px; font-size: 12px; line-height: 18px; }
+.pt-imp .status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.pt-imp .pt-row-error { display: block; margin-top: 3px; font-size: 12px; color: var(--mv-crit); }
+@media (max-width: 760px) { .pt-imp .pt-summary, .pt-imp .pt-preview-grid { grid-template-columns: 1fr; } }
+</style>
+@endpush
+
 @section('content')
-<div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div>
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h3 class="ui-card-title">
-                        <i class="fas fa-upload mr-2"></i>
-                        Smart POS Terminal Import
-                    </h3>
-                    <div class="ui-card-tools">
-                        <a href="{{ route('pos-terminals.download-template') }}" class="btn-secondary btn-sm">
-                            <i class="fas fa-download mr-1"></i>
-                            Download Template
-                        </a>
-                    </div>
-                </div>
+<div class="pt-imp">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
 
-                <div class="ui-card-body">
+        {{-- Import form --}}
+        <div class="ui-card lg:col-span-2">
+            <div class="ui-card-header">
+                <h2>Smart POS Terminal Import</h2>
+                <a href="{{ route('pos-terminals.download-template') }}" class="btn-secondary pt-btn">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg>
+                    Download Template
+                </a>
+            </div>
 
-                    {{-- FLASH & VALIDATION MESSAGES --}}
-                    @if (session('success'))
-                      <div class="alert alert-success">{{ session('success') }}</div>
-                    @endif
-                    @if (session('error'))
-                      <div class="alert alert-danger" style="white-space: pre-line;">{{ session('error') }}</div>
-                    @endif
+            <form id="importForm" action="{{ route('pos-terminals.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+
+                <div class="ui-card-body pt-stack">
+                    {{-- Validation messages (success / error flashes are shown by the layout) --}}
                     @if ($errors->any())
-                      <div class="alert alert-danger">
-                        <ul class="mb-0">
+                      <div class="pt-errors" role="alert">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-alert-circle"/></svg>
+                        <ul>
                           @foreach ($errors->all() as $err)
                             <li>{{ $err }}</li>
                           @endforeach
@@ -38,215 +153,181 @@
                       </div>
                     @endif
 
-                    <!-- System Template Information -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <div class="ui-card bg-light">
-                                <div class="ui-card-header">
-                                    <h5 class="ui-card-title mb-0">
-                                        <i class="fas fa-table mr-2"></i>
-                                        Expected Template Columns
-                                    </h5>
-                                </div>
-                                <div class="ui-card-body">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                        <div>
-                                            <h6 class="text-primary">Required Fields:</h6>
-                                            <ul class="list-unstyled mb-2">
-                                                <li><span class="badge badge-danger mr-1">*</span>Terminal ID</li>
-                                                <li><span class="badge badge-danger mr-1">*</span>Merchant Name</li>
-                                            </ul>
-
-                                            <h6 class="text-success">Optional Fields:</h6>
-                                            <ul class="list-unstyled small">
-                                                <li>• Merchant ID</li>
-                                                <li>• Legal Name</li>
-                                                <li>• Contact Person</li>
-                                                <li>• Phone Number</li>
-                                                <li>• Email Address</li>
-                                                <li>• Physical Address</li>
-                                                <li>• City, Province, Region</li>
-                                            </ul>
-                                        </div>
-                                        <div>
-                                            <h6 class="text-info">Technical Fields:</h6>
-                                            <ul class="list-unstyled small">
-                                                <li>• Business Type</li>
-                                                <li>• Terminal Model</li>
-                                                <li>• Serial Number</li>
-                                                <li>• Installation Date</li>
-                                                <li>• Status/Condition</li>
-                                                <li>• Issues/Comments</li>
-                                                <li>• Corrective Actions</li>
-                                            </ul>
-
-                                            <div class="alert alert-info alert-sm mt-2 p-2">
-                                                <small>
-                                                    <i class="fas fa-magic mr-1"></i>
-                                                    <strong>Smart Detection:</strong> Column names are automatically detected regardless of order!
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <label for="client_id" class="ui-label required">Client</label>
+                            <select name="client_id" id="client_id" class="ui-select @error('client_id') is-invalid @enderror" required>
+                                <option value="">Select Client</option>
+                                @foreach($clients as $client)
+                                    <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
+                                        {{ $client->company_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('client_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div>
-                            <div class="ui-card bg-light">
-                                <div class="ui-card-header">
-                                    <h5 class="ui-card-title mb-0">
-                                        <i class="fas fa-info-circle mr-2"></i>
-                                        Import Specifications
-                                    </h5>
-                                </div>
-                                <div class="ui-card-body">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                        <div>
-                                            <h6 class="text-primary">Supported Formats:</h6>
-                                            <div class="mb-2">
-                                                <span class="badge badge-primary mr-1">CSV</span>
-                                                <span class="badge badge-primary mr-1">XLSX</span>
-                                                <span class="badge badge-primary mr-1">XLS</span>
-                                                <span class="badge badge-primary">TXT</span>
-                                            </div>
-
-                                            <h6 class="text-success">File Size Limits:</h6>
-                                            <ul class="list-unstyled">
-                                                <li><strong>Maximum:</strong> 40MB+ (Large file support)</li>
-                                                <li><strong>Recommended:</strong> Up to 30MB for optimal speed</li>
-                                                <li><strong>Processing:</strong> Chunked for large files</li>
-                                            </ul>
-
-                                            <h6 class="text-info">Smart Features:</h6>
-                                            <ul class="list-unstyled small">
-                                                <li>✓ Auto-detects column headers</li>
-                                                <li>✓ Processes any column order</li>
-                                                <li>✓ Stores extra columns as metadata</li>
-                                                <li>✓ Memory-optimized for large files</li>
-                                                <li>✓ Real-time preview and validation</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <label for="mapping_id" class="ui-label">Column Mapping (Optional)</label>
+                            <select name="mapping_id" id="mapping_id" class="ui-select">
+                                <option value="">Use Smart Auto-Detection</option>
+                                @foreach($mappings as $mapping)
+                                    <option value="{{ $mapping->id }}" {{ old('mapping_id') == $mapping->id ? 'selected' : '' }}>
+                                        {{ $mapping->mapping_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="ui-hint">Leave blank for automatic header detection</small>
                         </div>
                     </div>
 
-                    <!-- Import Form -->
-                    <form id="importForm" action="{{ route('pos-terminals.import') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <div class="mb-4">
-                                    <label for="client_id" class="required">Client</label>
-                                    <select name="client_id" id="client_id" class="ui-input @error('client_id') is-invalid @enderror" required>
-                                        <option value="">Select Client</option>
-                                        @foreach($clients as $client)
-                                            <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
-                                                {{ $client->company_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('client_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                    <div>
+                        <label for="file" class="ui-label required">Import File</label>
+                        <div class="pt-file-row">
+                            <div class="custom-file">
+                                <input type="file"
+                                       name="file"
+                                       id="file"
+                                       class="custom-file-input @error('file') is-invalid @enderror"
+                                       accept=".csv,.xlsx,.xls,.txt"
+                                       required>
+                                <label class="custom-file-label" for="file">Choose Excel, CSV, or TXT file...</label>
                             </div>
-
-                            <div>
-                                <div class="mb-4">
-                                    <label for="mapping_id">Column Mapping (Optional)</label>
-                                    <select name="mapping_id" id="mapping_id" class="ui-input">
-                                        <option value="">Use Smart Auto-Detection</option>
-                                        @foreach($mappings as $mapping)
-                                            <option value="{{ $mapping->id }}" {{ old('mapping_id') == $mapping->id ? 'selected' : '' }}>
-                                                {{ $mapping->mapping_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <small class="form-text text-muted">
-                                        Leave blank for automatic header detection
-                                    </small>
-                                </div>
-                            </div>
+                            <button type="button" id="previewBtn" class="btn-secondary" disabled>
+                                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg>
+                                Preview
+                            </button>
                         </div>
+                        @error('file')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="ui-hint">
+                            Supported: CSV, XLSX, XLS, TXT files up to 40MB. Large files are processed in chunks automatically.
+                        </small>
+                    </div>
 
-                        <div class="mb-4">
-                            <label for="file" class="required">Import File</label>
-                            <div class="input-group">
-                                <div class="custom-file">
-                                    <input type="file"
-                                           name="file"
-                                           id="file"
-                                           class="custom-file-input @error('file') is-invalid @enderror"
-                                           accept=".csv,.xlsx,.xls,.txt"
-                                           required>
-                                    <label class="custom-file-label" for="file">Choose Excel, CSV, or TXT file...</label>
-                                </div>
-                                <div class="input-group-append">
-                                    <button type="button" id="previewBtn" class="btn-secondary-info" disabled>
-                                        <i class="fas fa-eye mr-1"></i>
-                                        Preview
-                                    </button>
-                                </div>
-                            </div>
-                            @error('file')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">
-                                Supported: CSV, XLSX, XLS, TXT files up to 40MB. Large files are processed in chunks automatically.
-                            </small>
-                        </div>
-
-                        <div class="mb-4">
-                            <label>Import Options</label>
-                            <div class="form-check">
+                    <div>
+                        <p class="ui-label">Import Options</p>
+                        <div class="pt-options">
+                            <div class="form-check pt-option">
                                 <input type="checkbox" name="options[]" value="skip_duplicates" id="skip_duplicates" class="form-check-input" {{ in_array('skip_duplicates', old('options', [])) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="skip_duplicates">
                                     Skip Duplicate Terminal IDs
                                 </label>
                             </div>
-                            <div class="form-check">
+                            <div class="form-check pt-option">
                                 <input type="checkbox" name="options[]" value="update_existing" id="update_existing" class="form-check-input" {{ in_array('update_existing', old('options', [])) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="update_existing">
                                     Update Existing Records
                                 </label>
                             </div>
-                            <small class="form-text text-muted">
-                                If neither option is selected, duplicate terminal IDs will cause import errors.
-                            </small>
                         </div>
+                        <small class="ui-hint">
+                            If neither option is selected, duplicate terminal IDs will cause import errors.
+                        </small>
+                    </div>
+                </div>
 
-                        <div class="mb-4">
-                            <button type="submit" class="btn-primary" id="importBtn" disabled>
-                                <i class="fas fa-upload mr-1"></i>
-                                Start Smart Import
-                            </button>
-                            <a href="{{ route('pos-terminals.index') }}" class="btn-secondary ml-2">
-                                <i class="fas fa-arrow-left mr-1"></i>
-                                Cancel
-                            </a>
+                <div class="ui-card-footer pt-footer-end">
+                    <a href="{{ route('pos-terminals.index') }}" class="btn-secondary">Cancel</a>
+                    <button type="submit" class="btn-primary" id="importBtn" disabled>
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-upload"/></svg>
+                        Start Smart Import
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {{-- System Template Information --}}
+        <div class="pt-side">
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h3>Expected Template Columns</h3>
+                </div>
+                <div class="ui-card-body">
+                    <p class="pt-side-label">Required Fields</p>
+                    <ul class="pt-list">
+                        <li><span class="pt-req" aria-hidden="true">*</span> Terminal ID</li>
+                        <li><span class="pt-req" aria-hidden="true">*</span> Merchant Name</li>
+                    </ul>
+
+                    <div class="pt-cols">
+                        <div>
+                            <p class="pt-side-label">Optional Fields</p>
+                            <ul class="pt-list pt-list-dots">
+                                <li>Merchant ID</li>
+                                <li>Legal Name</li>
+                                <li>Contact Person</li>
+                                <li>Phone Number</li>
+                                <li>Email Address</li>
+                                <li>Physical Address</li>
+                                <li>City, Province, Region</li>
+                            </ul>
                         </div>
-                    </form>
+                        <div>
+                            <p class="pt-side-label">Technical Fields</p>
+                            <ul class="pt-list pt-list-dots">
+                                <li>Business Type</li>
+                                <li>Terminal Model</li>
+                                <li>Serial Number</li>
+                                <li>Installation Date</li>
+                                <li>Status/Condition</li>
+                                <li>Issues/Comments</li>
+                                <li>Corrective Actions</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="pt-note">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-info"/></svg>
+                        <span><strong>Smart Detection:</strong> Column names are automatically detected regardless of order.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <h3>Import Specifications</h3>
+                </div>
+                <div class="ui-card-body">
+                    <p class="pt-side-label">Supported Formats</p>
+                    <div class="pt-formats">
+                        <span class="pt-code">CSV</span>
+                        <span class="pt-code">XLSX</span>
+                        <span class="pt-code">XLS</span>
+                        <span class="pt-code">TXT</span>
+                    </div>
+
+                    <p class="pt-side-label">File Size Limits</p>
+                    <ul class="pt-list pt-list-dots pt-kv-list">
+                        <li><span><strong>Maximum:</strong> 40MB+ (Large file support)</span></li>
+                        <li><span><strong>Recommended:</strong> Up to 30MB for optimal speed</span></li>
+                        <li><span><strong>Processing:</strong> Chunked for large files</span></li>
+                    </ul>
+
+                    <p class="pt-side-label">Smart Features</p>
+                    <ul class="pt-list">
+                        <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Auto-detects column headers</li>
+                        <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Processes any column order</li>
+                        <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Stores extra columns as metadata</li>
+                        <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Memory-optimized for large files</li>
+                        <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Real-time preview and validation</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 <!-- Preview Modal -->
 <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="previewModalLabel">
-                    <i class="fas fa-eye mr-2"></i>
-                    File Preview & Column Mapping
-                </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <h5 class="modal-title" id="previewModalLabel">File Preview & Column Mapping</h5>
+                <button type="button" class="pt-icon-btn" data-dismiss="modal" aria-label="Close" title="Close">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg>
                 </button>
             </div>
             <div class="modal-body">
@@ -256,8 +337,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" data-dismiss="modal">Close Preview</button>
-                <button type="button" class="btn-success" id="proceedImport">
-                    <i class="fas fa-check mr-1"></i>
+                <button type="button" class="btn-primary" id="proceedImport">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-check"/></svg>
                     Looks Good - Proceed with Import
                 </button>
             </div>
@@ -265,16 +346,16 @@
     </div>
 </div>
 <!-- Upload Progress (shown during preview upload) -->
-<div id="upload-progress-wrap" style="display:none; padding:16px 20px; background:#fff; border-top:1px solid #eee;">
-  <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-    <small id="upload-progress-label" style="color:#6c757d">Uploading…</small>
-    <small id="upload-progress-percent" style="color:#6c757d">0%</small>
+<div id="upload-progress-wrap" class="pt-upload-wrap" style="display:none;">
+  <div class="pt-progress-row">
+    <small id="upload-progress-label">Uploading…</small>
+    <small id="upload-progress-percent">0%</small>
   </div>
-  <div style="width:100%; height:10px; background:#e9ecef; border-radius:6px; overflow:hidden;">
-    <div id="upload-progress-bar" style="width:0%; height:100%; background:linear-gradient(90deg,#007bff,#28a745)"></div>
+  <div class="progress pt-progress">
+    <div id="upload-progress-bar" class="progress-bar" style="width:0%"></div>
   </div>
-  <small id="upload-speed" style="color:#6c757d; display:block; margin-top:6px;"></small>
-  <button id="cancel-upload-btn" type="button" style="margin-top:10px; padding:6px 10px; background:#dc3545; color:#fff; border:none; border-radius:4px; font-size:12px; cursor:pointer; display:none;">
+  <small id="upload-speed" class="pt-state-meta"></small>
+  <button id="cancel-upload-btn" type="button" class="btn-danger pt-btn-sm" style="display:none; margin-top:10px;">
     Cancel upload
   </button>
 </div>
@@ -283,20 +364,19 @@
 <div class="modal fade" id="loadingModal" tabindex="-1" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-body text-center p-4">
-                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                    <span class="sr-only">Processing...</span>
-                </div>
-                <h5>Processing Your Import</h5>
-                <p class="mb-0">Large files are processed in chunks. This may take a few minutes...</p>
-                <div class="progress mt-3">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+            <div class="modal-body">
+                <div class="pt-state">
+                    <svg class="mv-i pt-spin pt-state-icon" aria-hidden="true"><use href="#i-refresh"/></svg>
+                    <h5 class="pt-state-title">Processing Your Import</h5>
+                    <p class="pt-state-text">Large files are processed in chunks. This may take a few minutes...</p>
+                    <div class="pt-bar"><span></span></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+</div>
 @endsection
 
 @push('scripts')
@@ -377,18 +457,16 @@ $(document).ready(function() {
         // Show modal with initial upload progress
         $('#previewModal').modal('show');
         $('#previewContent').html(`
-            <div class="text-center" id="uploadProgressContainer">
-                <h5 class="mb-3">Uploading File...</h5>
-                <p class="text-muted">File size: ${fileSizeMB} MB</p>
-                <div class="progress mb-3" style="height: 30px;">
-                    <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
-                         role="progressbar" style="width: 0%">
-                        <span id="uploadPercentText">0%</span>
-                    </div>
+            <div class="pt-state" id="uploadProgressContainer">
+                <h5 class="pt-state-title">Uploading File...</h5>
+                <p class="pt-state-text">File size: ${fileSizeMB} MB</p>
+                <div class="pt-progress-row is-end"><span id="uploadPercentText">0%</span></div>
+                <div class="progress pt-progress">
+                    <div id="uploadProgressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
                 </div>
-                <p id="uploadSpeedText" class="text-muted small"></p>
-                <button type="button" id="cancelUploadBtn" class="btn-sm btn-danger mt-2">
-                    <i class="fas fa-times mr-1"></i> Cancel Upload
+                <p id="uploadSpeedText" class="pt-state-meta"></p>
+                <button type="button" id="cancelUploadBtn" class="btn-danger pt-btn-sm">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-x"/></svg> Cancel Upload
                 </button>
             </div>
         `);
@@ -425,18 +503,12 @@ $(document).ready(function() {
         xhr.upload.addEventListener('load', function() {
             if (!uploadCancelled) {
                 $('#previewContent').html(`
-                    <div class="text-center">
-                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                            <span class="sr-only">Processing...</span>
-                        </div>
-                        <h5>Analyzing File...</h5>
-                        <p class="text-muted">Processing ${fileSizeMB} MB file. This may take a moment...</p>
-                        <div class="progress mb-3" style="height: 20px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                                 role="progressbar" style="width: 100%">
-                                Analyzing columns and validating data...
-                            </div>
-                        </div>
+                    <div class="pt-state">
+                        <svg class="mv-i pt-spin pt-state-icon" aria-hidden="true"><use href="#i-refresh"/></svg>
+                        <h5 class="pt-state-title">Analyzing File...</h5>
+                        <p class="pt-state-text">Processing ${fileSizeMB} MB file. This may take a moment...</p>
+                        <div class="pt-bar"><span></span></div>
+                        <p class="pt-state-meta">Analyzing columns and validating data...</p>
                     </div>
                 `);
             }
@@ -451,17 +523,17 @@ $(document).ready(function() {
                         displayPreview(response);
                     } else {
                         $('#previewContent').html(`
-                            <div class="alert alert-danger">
-                                <h5><i class="fas fa-exclamation-circle mr-2"></i>Preview Error</h5>
-                                <p>${response.message}</p>
+                            <div class="pt-alert is-crit">
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-alert-circle"/></svg>
+                                <div><p class="pt-alert-title">Preview Error</p><p class="pt-alert-text">${response.message}</p></div>
                             </div>
                         `);
                     }
                 } catch (e) {
                     $('#previewContent').html(`
-                        <div class="alert alert-danger">
-                            <h5><i class="fas fa-exclamation-circle mr-2"></i>Processing Error</h5>
-                            <p>Failed to parse server response. Please try again.</p>
+                        <div class="pt-alert is-crit">
+                            <svg class="mv-i" aria-hidden="true"><use href="#i-alert-circle"/></svg>
+                            <div><p class="pt-alert-title">Processing Error</p><p class="pt-alert-text">Failed to parse server response. Please try again.</p></div>
                         </div>
                     `);
                 }
@@ -474,9 +546,9 @@ $(document).ready(function() {
                     // Use default message
                 }
                 $('#previewContent').html(`
-                    <div class="alert alert-danger">
-                        <h5><i class="fas fa-exclamation-circle mr-2"></i>Preview Failed</h5>
-                        <p>${message}</p>
+                    <div class="pt-alert is-crit">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-alert-circle"/></svg>
+                        <div><p class="pt-alert-title">Preview Failed</p><p class="pt-alert-text">${message}</p></div>
                     </div>
                 `);
             }
@@ -486,9 +558,9 @@ $(document).ready(function() {
         xhr.addEventListener('error', function() {
             if (!uploadCancelled) {
                 $('#previewContent').html(`
-                    <div class="alert alert-danger">
-                        <h5><i class="fas fa-exclamation-circle mr-2"></i>Upload Failed</h5>
-                        <p>Network error occurred. Please check your connection and try again.</p>
+                    <div class="pt-alert is-crit">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-alert-circle"/></svg>
+                        <div><p class="pt-alert-title">Upload Failed</p><p class="pt-alert-text">Network error occurred. Please check your connection and try again.</p></div>
                     </div>
                 `);
             }
@@ -497,9 +569,9 @@ $(document).ready(function() {
         // Handle timeout
         xhr.addEventListener('timeout', function() {
             $('#previewContent').html(`
-                <div class="alert alert-warning">
-                    <h5><i class="fas fa-clock mr-2"></i>Upload Timeout</h5>
-                    <p>The upload took too long. Please try a smaller file or contact support.</p>
+                <div class="pt-alert is-warn">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-clock"/></svg>
+                    <div><p class="pt-alert-title">Upload Timeout</p><p class="pt-alert-text">The upload took too long. Please try a smaller file or contact support.</p></div>
                 </div>
             `);
         });
@@ -509,9 +581,9 @@ $(document).ready(function() {
             uploadCancelled = true;
             xhr.abort();
             $('#previewContent').html(`
-                <div class="alert alert-info">
-                    <h5><i class="fas fa-info-circle mr-2"></i>Upload Cancelled</h5>
-                    <p>The upload was cancelled by user.</p>
+                <div class="pt-alert is-info">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-info"/></svg>
+                    <div><p class="pt-alert-title">Upload Cancelled</p><p class="pt-alert-text">The upload was cancelled by user.</p></div>
                 </div>
             `);
         });
@@ -545,19 +617,15 @@ $(document).ready(function() {
 
         // Update modal content to show progress
         $('#loadingModal .modal-body').html(`
-            <div class="text-center">
-                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-                    <span class="sr-only">Processing...</span>
+            <div class="pt-state">
+                <svg class="mv-i pt-spin pt-state-icon" aria-hidden="true"><use href="#i-refresh"/></svg>
+                <h5 id="importStatusTitle" class="pt-state-title">Uploading...</h5>
+                <p id="importStatusText" class="pt-state-text">Uploading ${fileSizeMB} MB file...</p>
+                <div class="pt-progress-row is-end"><span id="importPercentText">0%</span></div>
+                <div class="progress pt-progress">
+                    <div id="importProgressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
                 </div>
-                <h5 id="importStatusTitle">Uploading...</h5>
-                <p id="importStatusText" class="mb-3">Uploading ${fileSizeMB} MB file...</p>
-                <div class="progress" style="height: 30px;">
-                    <div id="importProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
-                         role="progressbar" style="width: 0%">
-                        <span id="importPercentText">0%</span>
-                    </div>
-                </div>
-                <p id="importSpeedText" class="text-muted small mt-2"></p>
+                <p id="importSpeedText" class="pt-state-meta"></p>
             </div>
         `);
 
@@ -627,39 +695,35 @@ $(document).ready(function() {
 
     function displayPreview(response) {
         let html = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-3">
-                <div>
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle mr-1"></i> File Analysis</h6>
-                        <ul class="mb-0">
-                            <li><strong>Mapping:</strong> ${response.mapping_name}</li>
-                            <li><strong>Columns Found:</strong> ${response.headers.length}</li>
-                            <li><strong>Preview Rows:</strong> ${response.preview_data.length}</li>
-                        </ul>
-                    </div>
+            <div class="pt-summary">
+                <div class="pt-summary-box">
+                    <p class="pt-summary-title">File Analysis</p>
+                    <ul class="pt-summary-list">
+                        <li><strong>Mapping:</strong> ${response.mapping_name}</li>
+                        <li><strong>Columns Found:</strong> ${response.headers.length}</li>
+                        <li><strong>Preview Rows:</strong> ${response.preview_data.length}</li>
+                    </ul>
                 </div>
-                <div>
-                    <div class="alert alert-success">
-                        <h6><i class="fas fa-check-circle mr-1"></i> Column Mapping</h6>
-                        <ul class="mb-0">
-                            <li><strong>Mapped Fields:</strong> ${response.column_mapping_info.mapped_fields.length}</li>
-                            <li><strong>Extra Fields:</strong> ${response.column_mapping_info.extra_fields.length}</li>
-                            ${
-                                response.column_mapping_info.missing_required.length > 0
-                                ? `<li class="text-danger"><strong>Missing Required:</strong> ${response.column_mapping_info.missing_required.join(', ')}</li>`
-                                : '<li class="text-success"><strong>All Required Fields Found!</strong></li>'
-                            }
-                        </ul>
-                    </div>
+                <div class="pt-summary-box">
+                    <p class="pt-summary-title">Column Mapping</p>
+                    <ul class="pt-summary-list">
+                        <li><strong>Mapped Fields:</strong> ${response.column_mapping_info.mapped_fields.length}</li>
+                        <li><strong>Extra Fields:</strong> ${response.column_mapping_info.extra_fields.length}</li>
+                        ${
+                            response.column_mapping_info.missing_required.length > 0
+                            ? `<li class="pt-text-crit"><strong>Missing Required:</strong> ${response.column_mapping_info.missing_required.join(', ')}</li>`
+                            : '<li class="pt-text-good"><strong>All Required Fields Found</strong></li>'
+                        }
+                    </ul>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-3">
-                <div>
-                    <h6>Detected Columns in Your File:</h6>
-                    <div class="table-responsive" style="max-height: 200px;">
-                        <table class="table table-sm table-bordered">
-                            <thead class="bg-light">
+            <div class="pt-preview-grid">
+                <div class="pt-subcard">
+                    <div class="pt-subcard-head">Detected Columns in Your File</div>
+                    <div class="pt-scroll">
+                        <table class="ui-table">
+                            <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Column Header</th>
@@ -672,7 +736,7 @@ $(document).ready(function() {
             html += `
                 <tr>
                     <td>${index + 1}</td>
-                    <td><code>${header}</code></td>
+                    <td><span class="pt-code">${header}</span></td>
                 </tr>
             `;
         });
@@ -682,11 +746,11 @@ $(document).ready(function() {
                         </table>
                     </div>
                 </div>
-                <div>
-                    <h6>Preview Data (First ${response.preview_data.length} rows):</h6>
-                    <div class="table-responsive" style="max-height: 200px;">
-                        <table class="table table-sm table-striped">
-                            <thead class="bg-primary text-white">
+                <div class="pt-subcard">
+                    <div class="pt-subcard-head">Preview Data (First ${response.preview_data.length} rows)</div>
+                    <div class="pt-scroll">
+                        <table class="ui-table">
+                            <thead>
                                 <tr>
                                     <th>Row</th>
                                     <th>Terminal ID</th>
@@ -699,18 +763,18 @@ $(document).ready(function() {
 
         response.preview_data.forEach(row => {
             const statusBadge = row.validation_status === 'valid'
-                ? '<span class="badge badge-success">Valid</span>'
-                : '<span class="badge badge-danger">Error</span>';
+                ? '<span class="status-badge badge-green">Valid</span>'
+                : '<span class="status-badge badge-red">Error</span>';
 
             html += `
                 <tr>
                     <td>${row.row_number}</td>
-                    <td><code>${row.mapped_data?.terminal_id || 'N/A'}</code></td>
+                    <td><span class="pt-code">${row.mapped_data?.terminal_id || 'N/A'}</span></td>
                     <td>${row.mapped_data?.merchant_name || 'N/A'}</td>
                     <td>${row.mapped_data?.status || 'N/A'}</td>
                     <td>
                         ${statusBadge}
-                        ${row.validation_status !== 'valid' ? `<br><small class="text-danger">${row.validation_message}</small>` : ''}
+                        ${row.validation_status !== 'valid' ? `<span class="pt-row-error">${row.validation_message}</span>` : ''}
                     </td>
                 </tr>
             `;
@@ -726,10 +790,13 @@ $(document).ready(function() {
 
         if (response.column_mapping_info.extra_fields.length > 0) {
             html += `
-                <div class="alert alert-info">
-                    <h6><i class="fas fa-plus-circle mr-1"></i> Extra Fields Found</h6>
-                    <p>These columns will be stored as additional metadata:</p>
-                    <p><strong>${response.column_mapping_info.extra_fields.join(', ')}</strong></p>
+                <div class="pt-alert is-info">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-plus-circle"/></svg>
+                    <div>
+                        <p class="pt-alert-title">Extra Fields Found</p>
+                        <p class="pt-alert-text">These columns will be stored as additional metadata:</p>
+                        <p class="pt-alert-text"><strong>${response.column_mapping_info.extra_fields.join(', ')}</strong></p>
+                    </div>
                 </div>
             `;
         }
@@ -738,54 +805,4 @@ $(document).ready(function() {
     }
 });
 </script>
-@endpush
-
-@push('styles')
-<style>
-.required::after {
-    content: " *";
-    color: red;
-}
-
-.card-header {
-    background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%);
-    color: white;
-}
-
-.bg-light .card-header {
-    background: #f8f9fa !important;
-    color: #333 !important;
-}
-
-.table th {
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.table td {
-    font-size: 0.85rem;
-}
-
-.progress {
-    height: 8px;
-}
-
-.spinner-border {
-    width: 1.5rem;
-    height: 1.5rem;
-}
-
-.alert-sm {
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-}
-
-code {
-    font-size: 0.8rem;
-    padding: 0.2rem 0.4rem;
-    background-color: #f8f9fa;
-    border-radius: 0.25rem;
-}
-</style>
 @endpush

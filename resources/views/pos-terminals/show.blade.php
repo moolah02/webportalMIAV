@@ -1,6 +1,84 @@
 @extends('layouts.app')
 @section('title', 'Terminal — ' . $posTerminal->terminal_id)
 
+@push('styles')
+<style>
+/* ── POS terminals · show ──────────────────────────────── */
+.pt-show .pt-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.pt-show .pt-head-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.pt-show .pt-id-chip { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 6px; background: var(--mv-surface); border: 1px solid var(--mv-line-strong); font-size: 13px; font-weight: 500; color: var(--mv-ink); white-space: nowrap; flex-shrink: 0; }
+.pt-show .pt-head-name { font-size: 15px; font-weight: 600; color: var(--mv-ink); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt-show .pt-head-sub { font-size: 12.5px; color: var(--mv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt-show .pt-head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.pt-show .pt-btn { height: 34px; padding: 0 12px; font-size: 13px; }
+.pt-show .pt-btn-sm { height: 30px; padding: 0 10px; font-size: 12.5px; }
+.pt-show .pt-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.pt-show .ui-card-header { padding: 12px 18px; }
+.pt-show .ui-card-header h2 { font-size: 14px; font-weight: 600; margin: 0; }
+
+/* Key / value grid */
+.pt-show .pt-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 24px; padding: 16px 18px 18px; margin: 0; }
+.pt-show .pt-kv dt, .pt-show .pt-k { font-size: 12px; font-weight: 400; color: var(--mv-muted); margin: 0 0 3px; }
+.pt-show .pt-kv dd, .pt-show .pt-v { font-size: 13.5px; color: var(--mv-ink); margin: 0; overflow-wrap: anywhere; }
+.pt-show .pt-kv-wide { grid-column: 1 / -1; padding-top: 14px; border-top: 1px solid var(--mv-line); }
+.pt-show .pt-empty-val { color: var(--mv-muted); }
+.pt-show .pt-link { color: var(--mv-accent-ink); text-decoration: none; }
+.pt-show .pt-link:hover { text-decoration: underline; }
+@media (max-width: 640px) { .pt-show .pt-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.pt-show .pt-stack > * + * { margin-top: 16px; }
+.pt-show .pt-v-sub { font-size: 12px; color: var(--mv-muted); margin-top: 2px; }
+.pt-show .pt-v-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.pt-show .pt-v-crit { color: var(--mv-crit); font-weight: 600; }
+.pt-show .pt-v-warn { color: var(--mv-warn); font-weight: 600; }
+.pt-show .pt-text { margin: 0; font-size: 13.5px; color: var(--mv-ink-2); white-space: pre-line; }
+
+/* Status chips */
+.pt-show .status-badge { gap: 6px; padding: 2px 8px; font-size: 12px; line-height: 18px; }
+.pt-show .status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* Quick actions */
+.pt-show .pt-qa { display: flex; flex-direction: column; padding: 6px; }
+.pt-show .pt-qa button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 7px; background: transparent; font: inherit; font-size: 13.5px; color: var(--mv-ink); text-align: left; cursor: pointer; }
+.pt-show .pt-qa button:hover { background: var(--mv-surface-2); }
+.pt-show .pt-qa button > .mv-i:first-child { color: var(--mv-muted); }
+.pt-show .pt-qa span { flex: 1; }
+.pt-show .pt-qa .pt-qa-chev { width: 15px; height: 15px; color: var(--mv-line-strong); }
+
+/* Statistics list */
+.pt-show .pt-stat-list { margin: 0; }
+.pt-show .pt-stat-list > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 18px; font-size: 13px; }
+.pt-show .pt-stat-list > div + div { border-top: 1px solid var(--mv-line); }
+.pt-show .pt-stat-list dt { font-weight: 400; color: var(--mv-ink-2); margin: 0; }
+.pt-show .pt-stat-list dd { margin: 0; font-weight: 600; color: var(--mv-ink); font-variant-numeric: tabular-nums; }
+
+/* Empty state */
+.pt-show .pt-empty { padding: 32px 16px; text-align: center; color: var(--mv-muted); font-size: 13px; }
+.pt-show .pt-empty .mv-i { display: block; width: 32px; height: 32px; margin: 0 auto 8px; color: var(--mv-line-strong); }
+
+/* Modals */
+.pt-show .pt-modal { position: fixed; inset: 0; z-index: 1100; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: rgba(22, 32, 44, .45); }
+.pt-show .pt-modal-card { width: 100%; max-width: 520px; max-height: calc(100vh - 48px); display: flex; flex-direction: column; background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; box-shadow: 0 16px 40px rgba(22, 32, 44, .14); overflow: hidden; }
+.pt-show .pt-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--mv-line); }
+.pt-show .pt-modal-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.pt-show .pt-modal-form { display: flex; flex-direction: column; flex: 1; min-height: 0; margin: 0; }
+.pt-show .pt-modal-body { padding: 18px; overflow-y: auto; }
+.pt-show .pt-modal-body > * + * { margin-top: 14px; }
+.pt-show .pt-modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--mv-line); }
+.pt-show .pt-icon-btn { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: var(--mv-muted); cursor: pointer; }
+.pt-show .pt-icon-btn:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.pt-show .pt-req { color: var(--mv-crit); }
+.pt-show .ui-input { height: 38px; padding: 0 12px; font-size: 13.5px; }
+.pt-show .ui-select { height: 38px; padding: 0 32px 0 12px; font-size: 13.5px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236A7686' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; }
+.pt-show .ui-textarea { padding: 9px 12px; font-size: 13.5px; }
+.pt-show .pt-check { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; color: var(--mv-ink-2); cursor: pointer; }
+.pt-show .pt-check input { width: 16px; height: 16px; margin: 0; accent-color: var(--mv-accent); }
+</style>
+@endpush
+
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -14,174 +92,160 @@ $statusBadge = [
 ][$posTerminal->status ?? 'inactive'] ?? 'badge-gray';
 @endphp
 
+<div class="pt-show">
+
 {{-- Header --}}
-<div class="flex flex-wrap items-center justify-between gap-3 mb-5">
-    <div class="flex items-center gap-3 min-w-0">
-        <span class="inline-block px-2.5 py-1 rounded-md bg-[#1a3a5c] text-white text-sm font-semibold font-mono shrink-0">
-            {{ $posTerminal->terminal_id }}
-        </span>
+<div class="pt-head">
+    <div class="pt-head-main">
+        <span class="pt-id-chip mv-mono">{{ $posTerminal->terminal_id }}</span>
         <div class="min-w-0">
-            <p class="text-sm font-semibold text-gray-800 truncate">{{ $posTerminal->merchant_name ?? '—' }}</p>
-            <p class="text-xs text-gray-400 truncate">{{ $posTerminal->client->company_name ?? '—' }}</p>
+            <div class="pt-head-name">{{ $posTerminal->merchant_name ?? '—' }}</div>
+            <div class="pt-head-sub">{{ $posTerminal->client->company_name ?? '—' }}</div>
         </div>
-        <span class="badge {{ $statusBadge }} shrink-0">{{ ucfirst($posTerminal->status ?? 'unknown') }}</span>
+        <span class="status-badge {{ $statusBadge }}">{{ ucfirst($posTerminal->status ?? 'unknown') }}</span>
     </div>
-    <div class="flex gap-2 flex-wrap">
-        <a href="{{ route('pos-terminals.edit', $posTerminal) }}" class="btn-primary btn-sm">Edit</a>
-        <button onclick="confirmDelete()" class="btn-danger btn-sm">Delete</button>
-        <a href="{{ route('pos-terminals.index') }}" class="btn-secondary btn-sm">&#x2190; Back</a>
+    <div class="pt-head-actions">
+        <a href="{{ route('pos-terminals.index') }}" class="btn-secondary pt-btn">
+            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Back
+        </a>
+        <button type="button" onclick="confirmDelete()" class="btn-danger pt-btn">
+            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-trash"/></svg> Delete
+        </button>
+        <a href="{{ route('pos-terminals.edit', $posTerminal) }}" class="btn-primary pt-btn">
+            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg> Edit
+        </a>
     </div>
 </div>
 
-{{-- Flash --}}
-@if(session('success'))
-    <div class="flash-success mb-5"><span>&#x2713;</span> {{ session('success') }}</div>
-@endif
-@if(session('error'))
-    <div class="flash-error mb-5"><span>&#x26A0;</span> {{ session('error') }}</div>
-@endif
-
 {{-- Main grid --}}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
 
     {{-- ===== LEFT / MAIN (2 cols) ===== --}}
-    <div class="lg:col-span-2 space-y-5">
+    <div class="lg:col-span-2 pt-col">
 
         {{-- Terminal Information --}}
         <div class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold text-gray-800">Terminal Information</span>
+                <h2>Terminal Information</h2>
             </div>
-            <div class="ui-card-body grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
+            <dl class="pt-kv">
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Terminal ID</div>
-                    <div class="text-sm text-gray-800 font-mono font-medium">{{ $posTerminal->terminal_id }}</div>
+                    <dt>Terminal ID</dt>
+                    <dd class="mv-mono">{{ $posTerminal->terminal_id }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Status</div>
-                    <span class="badge {{ $statusBadge }}">{{ ucfirst($posTerminal->status ?? 'unknown') }}</span>
+                    <dt>Status</dt>
+                    <dd><span class="status-badge {{ $statusBadge }}">{{ ucfirst($posTerminal->status ?? 'unknown') }}</span></dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Model</div>
-                    <div class="text-sm text-gray-800">{{ $posTerminal->terminal_model ?: '—' }}</div>
+                    <dt>Model</dt>
+                    <dd>{{ $posTerminal->terminal_model ?: '—' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Serial Number</div>
-                    <div class="text-sm text-gray-800 font-mono">{{ $posTerminal->serial_number ?: '—' }}</div>
+                    <dt>Serial Number</dt>
+                    <dd class="mv-mono">{{ $posTerminal->serial_number ?: '—' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Installation Date</div>
-                    <div class="text-sm text-gray-800">
-                        {{ $posTerminal->installation_date ? $posTerminal->installation_date->format('M d, Y') : '—' }}
-                    </div>
+                    <dt>Installation Date</dt>
+                    <dd>{{ $posTerminal->installation_date ? $posTerminal->installation_date->format('M d, Y') : '—' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Last Service</div>
-                    <div class="text-sm text-gray-800">
-                        {{ $posTerminal->last_service_date ? $posTerminal->last_service_date->format('M d, Y') : 'Never' }}
-                    </div>
+                    <dt>Last Service</dt>
+                    <dd>{{ $posTerminal->last_service_date ? $posTerminal->last_service_date->format('M d, Y') : 'Never' }}</dd>
                 </div>
                 @if($posTerminal->physical_address)
-                <div class="col-span-2 sm:col-span-3 border-t border-gray-100 pt-3">
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Physical Address</div>
-                    <div class="text-sm text-gray-800">{{ $posTerminal->physical_address }}</div>
+                <div class="pt-kv-wide">
+                    <dt>Physical Address</dt>
+                    <dd>{{ $posTerminal->physical_address }}</dd>
                 </div>
                 @endif
-            </div>
+            </dl>
         </div>
 
         {{-- Merchant Information --}}
         <div class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold text-gray-800">Merchant Information</span>
+                <h2>Merchant Information</h2>
             </div>
-            <div class="ui-card-body grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
+            <dl class="pt-kv">
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Business Name</div>
-                    <div class="text-sm text-gray-800 font-medium">{{ $posTerminal->merchant_name ?? '—' }}</div>
+                    <dt>Business Name</dt>
+                    <dd>{{ $posTerminal->merchant_name ?? '—' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Contact Person</div>
-                    <div class="text-sm text-gray-800">{{ $posTerminal->merchant_contact_person ?: '—' }}</div>
+                    <dt>Contact Person</dt>
+                    <dd>{{ $posTerminal->merchant_contact_person ?: '—' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Phone</div>
-                    <div class="text-sm text-gray-800">
+                    <dt>Phone</dt>
+                    <dd>
                         @if($posTerminal->merchant_phone)
-                            <a href="tel:{{ $posTerminal->merchant_phone }}" class="text-[#1a3a5c] hover:underline">
-                                {{ $posTerminal->merchant_phone }}
-                            </a>
+                            <a href="tel:{{ $posTerminal->merchant_phone }}" class="pt-link">{{ $posTerminal->merchant_phone }}</a>
                         @else —
                         @endif
-                    </div>
+                    </dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Email</div>
-                    <div class="text-sm text-gray-800 truncate">
+                    <dt>Email</dt>
+                    <dd>
                         @if($posTerminal->merchant_email)
-                            <a href="mailto:{{ $posTerminal->merchant_email }}" class="text-[#1a3a5c] hover:underline">
-                                {{ $posTerminal->merchant_email }}
-                            </a>
+                            <a href="mailto:{{ $posTerminal->merchant_email }}" class="pt-link">{{ $posTerminal->merchant_email }}</a>
                         @else —
                         @endif
-                    </div>
+                    </dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Business Type</div>
-                    <div class="text-sm text-gray-800">{{ $posTerminal->business_type ?: '—' }}</div>
+                    <dt>Business Type</dt>
+                    <dd>{{ $posTerminal->business_type ?: '—' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Region</div>
-                    <div class="text-sm text-gray-800">{{ $posTerminal->region ?: '—' }}</div>
+                    <dt>Region</dt>
+                    <dd>{{ $posTerminal->region ?: '—' }}</dd>
                 </div>
                 @if($posTerminal->city || $posTerminal->province)
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">City / Province</div>
-                    <div class="text-sm text-gray-800">
-                        {{ $posTerminal->city ?? '' }}@if($posTerminal->city && $posTerminal->province), @endif{{ $posTerminal->province ?? '' }}
-                    </div>
+                    <dt>City / Province</dt>
+                    <dd>{{ $posTerminal->city ?? '' }}@if($posTerminal->city && $posTerminal->province), @endif{{ $posTerminal->province ?? '' }}</dd>
                 </div>
                 @endif
-            </div>
+            </dl>
         </div>
 
         {{-- Client Information --}}
         <div class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold text-gray-800">Client Information</span>
+                <h2>Client Information</h2>
             </div>
-            <div class="ui-card-body grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
+            <dl class="pt-kv">
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Bank / Client</div>
-                    <div class="text-sm font-medium">
-                        <a href="{{ route('clients.show', $posTerminal->client) }}" class="text-[#1a3a5c] hover:underline">
-                            {{ $posTerminal->client->company_name }}
-                        </a>
-                    </div>
+                    <dt>Bank / Client</dt>
+                    <dd>
+                        <a href="{{ route('clients.show', $posTerminal->client) }}" class="pt-link">{{ $posTerminal->client->company_name }}</a>
+                    </dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Client Code</div>
-                    <div class="text-sm text-gray-800 font-mono">{{ $posTerminal->client->client_code ?? '—' }}</div>
+                    <dt>Client Code</dt>
+                    <dd class="mv-mono">{{ $posTerminal->client->client_code ?? '—' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Contact Person</div>
-                    <div class="text-sm text-gray-800">{{ $posTerminal->client->contact_person ?? '—' }}</div>
+                    <dt>Contact Person</dt>
+                    <dd>{{ $posTerminal->client->contact_person ?? '—' }}</dd>
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Client Status</div>
-                    <span class="badge badge-gray">{{ ucfirst($posTerminal->client->status ?? 'active') }}</span>
+                    <dt>Client Status</dt>
+                    <dd><span class="status-badge {{ ($posTerminal->client->status ?? 'active') === 'active' ? 'badge-green' : 'badge-gray' }}">{{ ucfirst($posTerminal->client->status ?? 'active') }}</span></dd>
                 </div>
-            </div>
+            </dl>
         </div>
 
         @if($posTerminal->contract_details)
         {{-- Contract Details --}}
         <div class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold text-gray-800">Contract Details</span>
+                <h2>Contract Details</h2>
             </div>
             <div class="ui-card-body">
-                <p class="text-sm text-gray-700 whitespace-pre-line">{{ $posTerminal->contract_details }}</p>
+                <p class="pt-text">{{ $posTerminal->contract_details }}</p>
             </div>
         </div>
         @endif
@@ -189,10 +253,13 @@ $statusBadge = [
         {{-- Service History --}}
         <div class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold text-gray-800">Service History</span>
-                <button onclick="openServiceModal()" class="btn-primary btn-sm">+ Schedule Service</button>
+                <h2>Service History</h2>
+                <button type="button" onclick="openServiceModal()" class="btn-secondary pt-btn-sm">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Schedule Service
+                </button>
             </div>
-            <div id="service-history-list" class="p-5 text-center text-sm text-gray-400">
+            <div id="service-history-list" class="pt-empty">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-history"/></svg>
                 No service records found.
             </div>
         </div>
@@ -200,88 +267,93 @@ $statusBadge = [
     </div>
 
     {{-- ===== RIGHT SIDEBAR ===== --}}
-    <div class="space-y-5">
+    <div class="pt-col">
 
         {{-- Quick Actions --}}
         <div class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold text-gray-800">Quick Actions</span>
+                <h2>Quick Actions</h2>
             </div>
-            <div class="ui-card-body flex flex-col gap-2">
-                <button onclick="updateStatus('active')"      class="btn-secondary text-left text-sm w-full justify-start">&#x2705; Mark as Active</button>
-                <button onclick="updateStatus('maintenance')" class="btn-secondary text-left text-sm w-full justify-start">&#x1F527; Mark for Maintenance</button>
-                <button onclick="updateStatus('offline')"     class="btn-secondary text-left text-sm w-full justify-start">&#x26AB; Mark as Offline</button>
-                <button onclick="updateStatus('faulty')"      class="btn-danger    text-left text-sm w-full justify-start">&#x26A0; Mark as Faulty</button>
-                <div class="border-t border-gray-100 my-1"></div>
-                <button onclick="openTicketModal()"  class="btn-secondary text-left text-sm w-full justify-start">&#x1F3AB; Create Ticket</button>
-                <button onclick="openServiceModal()" class="btn-secondary text-left text-sm w-full justify-start">&#x1F4C5; Schedule Service</button>
-                <button onclick="openNotesModal()"   class="btn-secondary text-left text-sm w-full justify-start">&#x1F4DD; Add Notes</button>
+            <div class="pt-qa">
+                <button type="button" onclick="openTicketModal()">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-ticket"/></svg>
+                    <span>Create Ticket</span>
+                    <svg class="mv-i pt-qa-chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                </button>
+                <button type="button" onclick="openServiceModal()">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-calendar"/></svg>
+                    <span>Schedule Service</span>
+                    <svg class="mv-i pt-qa-chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                </button>
+                <button type="button" onclick="openNotesModal()">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-file"/></svg>
+                    <span>Add Notes</span>
+                    <svg class="mv-i pt-qa-chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                </button>
             </div>
         </div>
 
         {{-- Service Information --}}
         <div class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold text-gray-800">Service Information</span>
+                <h2>Service Information</h2>
             </div>
-            <div class="ui-card-body space-y-4">
+            <div class="ui-card-body pt-stack">
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Last Service</div>
-                    <div class="text-sm text-gray-800">
+                    <div class="pt-k">Last Service</div>
+                    <div class="pt-v">
                         {{ $posTerminal->last_service_date ? $posTerminal->last_service_date->format('M d, Y') : 'Never serviced' }}
                     </div>
                     @if($posTerminal->last_service_date)
-                        <div class="text-xs text-gray-400 mt-0.5">{{ $posTerminal->last_service_date->diffForHumans() }}</div>
+                        <div class="pt-v-sub">{{ $posTerminal->last_service_date->diffForHumans() }}</div>
                     @endif
                 </div>
                 <div>
-                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Next Service Due</div>
+                    <div class="pt-k">Next Service Due</div>
                     @if($posTerminal->next_service_due)
                         @php
                         $isOverdue = $posTerminal->next_service_due <= now();
                         $isDueSoon = !$isOverdue && $posTerminal->next_service_due <= now()->addDays(7);
                         @endphp
-                        <div class="text-sm {{ $isOverdue ? 'text-red-600 font-semibold' : ($isDueSoon ? 'text-amber-600 font-semibold' : 'text-gray-800') }}">
-                            {{ $posTerminal->next_service_due->format('M d, Y') }}
+                        <div class="pt-v pt-v-row">
+                            <span class="{{ $isOverdue ? 'pt-v-crit' : ($isDueSoon ? 'pt-v-warn' : '') }}">{{ $posTerminal->next_service_due->format('M d, Y') }}</span>
+                            @if($isOverdue)
+                                <span class="status-badge badge-red">Overdue</span>
+                            @elseif($isDueSoon)
+                                <span class="status-badge badge-yellow">Due Soon</span>
+                            @endif
                         </div>
-                        @if($isOverdue)
-                            <span class="badge badge-red mt-1">Overdue</span>
-                        @elseif($isDueSoon)
-                            <span class="badge badge-yellow mt-1">Due Soon</span>
-                        @endif
                     @else
-                        <div class="text-sm text-gray-400">Not scheduled</div>
+                        <div class="pt-v pt-empty-val">Not scheduled</div>
                     @endif
                 </div>
-                <button onclick="openServiceModal()" class="btn-primary btn-sm w-full justify-center">Schedule Service</button>
+                <button type="button" onclick="openServiceModal()" class="btn-secondary pt-btn w-full justify-center">Schedule Service</button>
             </div>
         </div>
 
         {{-- Statistics --}}
         <div class="ui-card">
             <div class="ui-card-header">
-                <span class="text-sm font-semibold text-gray-800">Statistics</span>
+                <h2>Statistics</h2>
             </div>
-            <div class="divide-y divide-gray-100">
-                <div class="flex justify-between items-center px-5 py-3 text-sm">
-                    <span class="text-gray-600">Total Jobs</span>
-                    <span id="total-jobs" class="font-semibold text-gray-800">—</span>
+            <dl class="pt-stat-list">
+                <div>
+                    <dt>Total Jobs</dt>
+                    <dd id="total-jobs">—</dd>
                 </div>
-                <div class="flex justify-between items-center px-5 py-3 text-sm">
-                    <span class="text-gray-600">Service Reports</span>
-                    <span id="service-reports" class="font-semibold text-gray-800">—</span>
+                <div>
+                    <dt>Service Reports</dt>
+                    <dd id="service-reports">—</dd>
                 </div>
-                <div class="flex justify-between items-center px-5 py-3 text-sm">
-                    <span class="text-gray-600">Open Tickets</span>
-                    <span id="open-tickets" class="font-semibold text-gray-800">—</span>
+                <div>
+                    <dt>Open Tickets</dt>
+                    <dd id="open-tickets">—</dd>
                 </div>
-                <div class="flex justify-between items-center px-5 py-3 text-sm">
-                    <span class="text-gray-600">Days Since Last Service</span>
-                    <span class="font-semibold text-gray-800">
-                        {{ $posTerminal->last_service_date ? $posTerminal->last_service_date->diffInDays(now()) : '—' }}
-                    </span>
+                <div>
+                    <dt>Days Since Last Service</dt>
+                    <dd>{{ $posTerminal->last_service_date ? (int) $posTerminal->last_service_date->diffInDays(now()) : '—' }}</dd>
                 </div>
-            </div>
+            </dl>
         </div>
 
     </div>
@@ -290,15 +362,17 @@ $statusBadge = [
 {{-- ===== MODALS ===== --}}
 
 {{-- Create Ticket --}}
-<div id="ticketModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h3 class="text-sm font-semibold text-gray-800">Create Support Ticket</h3>
-            <button onclick="closeModal('ticketModal')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+<div id="ticketModal" class="pt-modal hidden" role="dialog" aria-modal="true" aria-labelledby="ticketModalHeading">
+    <div class="pt-modal-card">
+        <div class="pt-modal-head">
+            <h3 id="ticketModalHeading">Create Support Ticket</h3>
+            <button type="button" onclick="closeModal('ticketModal')" class="pt-icon-btn" title="Close" aria-label="Close">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg>
+            </button>
         </div>
-        <form id="ticketForm" onsubmit="submitTicket(event)" class="flex flex-col flex-1 overflow-y-auto">
+        <form id="ticketForm" onsubmit="submitTicket(event)" class="pt-modal-form">
             @csrf
-            <div class="ui-card-body space-y-4">
+            <div class="pt-modal-body">
                 <div>
                     <label class="ui-label">Priority</label>
                     <select name="priority" required class="ui-select">
@@ -322,19 +396,21 @@ $statusBadge = [
                     </select>
                 </div>
                 <div>
-                    <label class="ui-label">Issue Description <span class="text-red-500">*</span></label>
+                    <label class="ui-label">Issue Description <span class="pt-req">*</span></label>
                     <textarea name="description" rows="4" required class="ui-textarea" placeholder="Describe the issue in detail…"></textarea>
                 </div>
-                <div>
-                    <label class="ui-label">Reported By</label>
-                    <input type="text" name="reported_by" class="ui-input" value="{{ $posTerminal->merchant_contact_person }}">
-                </div>
-                <div>
-                    <label class="ui-label">Contact Number</label>
-                    <input type="tel" name="contact_number" class="ui-input" value="{{ $posTerminal->merchant_phone }}">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="ui-label">Reported By</label>
+                        <input type="text" name="reported_by" class="ui-input" value="{{ $posTerminal->merchant_contact_person }}">
+                    </div>
+                    <div>
+                        <label class="ui-label">Contact Number</label>
+                        <input type="tel" name="contact_number" class="ui-input" value="{{ $posTerminal->merchant_phone }}">
+                    </div>
                 </div>
             </div>
-            <div class="px-5 py-4 border-t border-gray-100 flex justify-end gap-3">
+            <div class="pt-modal-foot">
                 <button type="button" onclick="closeModal('ticketModal')" class="btn-secondary">Cancel</button>
                 <button type="submit" class="btn-primary">Create Ticket</button>
             </div>
@@ -343,17 +419,19 @@ $statusBadge = [
 </div>
 
 {{-- Schedule Service --}}
-<div id="serviceModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h3 class="text-sm font-semibold text-gray-800">Schedule Service</h3>
-            <button onclick="closeModal('serviceModal')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+<div id="serviceModal" class="pt-modal hidden" role="dialog" aria-modal="true" aria-labelledby="serviceModalHeading">
+    <div class="pt-modal-card">
+        <div class="pt-modal-head">
+            <h3 id="serviceModalHeading">Schedule Service</h3>
+            <button type="button" onclick="closeModal('serviceModal')" class="pt-icon-btn" title="Close" aria-label="Close">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg>
+            </button>
         </div>
-        <form id="serviceForm" onsubmit="submitService(event)" class="flex flex-col flex-1 overflow-y-auto">
+        <form id="serviceForm" onsubmit="submitService(event)" class="pt-modal-form">
             @csrf
-            <div class="ui-card-body space-y-4">
+            <div class="pt-modal-body">
                 <div>
-                    <label class="ui-label">Service Type <span class="text-red-500">*</span></label>
+                    <label class="ui-label">Service Type <span class="pt-req">*</span></label>
                     <select name="service_type" required class="ui-select">
                         <option value="">— Select type —</option>
                         <option value="preventive">Preventive Maintenance</option>
@@ -366,11 +444,11 @@ $statusBadge = [
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="ui-label">Scheduled Date <span class="text-red-500">*</span></label>
+                        <label class="ui-label">Scheduled Date <span class="pt-req">*</span></label>
                         <input type="date" name="scheduled_date" required class="ui-input" min="{{ date('Y-m-d') }}">
                     </div>
                     <div>
-                        <label class="ui-label">Scheduled Time <span class="text-red-500">*</span></label>
+                        <label class="ui-label">Scheduled Time <span class="pt-req">*</span></label>
                         <input type="time" name="scheduled_time" required class="ui-input">
                     </div>
                 </div>
@@ -379,7 +457,7 @@ $statusBadge = [
                     <textarea name="notes" rows="3" class="ui-textarea" placeholder="Special instructions or notes…"></textarea>
                 </div>
             </div>
-            <div class="px-5 py-4 border-t border-gray-100 flex justify-end gap-3">
+            <div class="pt-modal-foot">
                 <button type="button" onclick="closeModal('serviceModal')" class="btn-secondary">Cancel</button>
                 <button type="submit" class="btn-primary">Schedule Service</button>
             </div>
@@ -388,15 +466,17 @@ $statusBadge = [
 </div>
 
 {{-- Add Notes --}}
-<div id="notesModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h3 class="text-sm font-semibold text-gray-800">Add Notes</h3>
-            <button onclick="closeModal('notesModal')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+<div id="notesModal" class="pt-modal hidden" role="dialog" aria-modal="true" aria-labelledby="notesModalHeading">
+    <div class="pt-modal-card">
+        <div class="pt-modal-head">
+            <h3 id="notesModalHeading">Add Notes</h3>
+            <button type="button" onclick="closeModal('notesModal')" class="pt-icon-btn" title="Close" aria-label="Close">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg>
+            </button>
         </div>
-        <form id="notesForm" onsubmit="submitNotes(event)" class="flex flex-col flex-1 overflow-y-auto">
+        <form id="notesForm" onsubmit="submitNotes(event)" class="pt-modal-form">
             @csrf
-            <div class="ui-card-body space-y-4">
+            <div class="pt-modal-body">
                 <div>
                     <label class="ui-label">Note Type</label>
                     <select name="note_type" required class="ui-select">
@@ -408,15 +488,15 @@ $statusBadge = [
                     </select>
                 </div>
                 <div>
-                    <label class="ui-label">Notes <span class="text-red-500">*</span></label>
+                    <label class="ui-label">Notes <span class="pt-req">*</span></label>
                     <textarea name="notes" rows="5" required class="ui-textarea" placeholder="Enter your notes here…"></textarea>
                 </div>
-                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" name="is_important" class="rounded border-gray-300">
+                <label class="pt-check">
+                    <input type="checkbox" name="is_important">
                     Mark as Important
                 </label>
             </div>
-            <div class="px-5 py-4 border-t border-gray-100 flex justify-end gap-3">
+            <div class="pt-modal-foot">
                 <button type="button" onclick="closeModal('notesModal')" class="btn-secondary">Cancel</button>
                 <button type="submit" class="btn-primary">Save Notes</button>
             </div>
@@ -432,6 +512,8 @@ $statusBadge = [
 <form id="deleteForm" action="{{ route('pos-terminals.destroy', $posTerminal) }}" method="POST" class="hidden">
     @csrf @method('DELETE')
 </form>
+
+</div>
 
 @push('scripts')
 <script>
