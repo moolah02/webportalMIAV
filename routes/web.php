@@ -932,11 +932,6 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
         Route::get('/technician-visits/export', [TechnicianReportsController::class, 'export'])
             ->middleware('permission:export_reports,all')
             ->name('technician-visits.export');
-
-        // API endpoints for real-time data
-        Route::get('/api/system-health', [SystemReportsController::class, 'getSystemHealth']);
-        Route::get('/api/terminal-status', [SystemReportsController::class, 'getTerminalStatus']);
-        Route::get('/api/service-metrics', [SystemReportsController::class, 'getServiceMetrics']);
     });
 
     // ==============================================
@@ -1140,14 +1135,13 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
     Route::middleware('auth')->group(function () {
         Route::get('/reports/builder', [ReportBuilderController::class, 'index'])->name('reports.builder');
         Route::get('/reports/history', [ReportController::class, 'history'])->name('reports.history');
-        Route::post('/reports/run', [ReportBuilderController::class, 'run'])->name('reports.run');
-        Route::get('/reports/export/csv', [ReportBuilderController::class, 'exportCsv'])->name('reports.export.csv');
-        Route::post('/reports/run-custom', [ReportBuilderController::class, 'runCustom'])->name('reports.run.custom');
+        // Report runs/exports go through /api/report/* (below). The old
+        // run / run-custom / run-simple / export/csv routes pointed at methods
+        // that never existed and nothing linked to them, so they were removed.
         Route::get('/reports/options/clients', [ReportBuilderController::class, 'optClients'])->name('reports.options.clients');
         Route::get('/reports/options/projects', [ReportBuilderController::class, 'optProjects'])->name('reports.options.projects');
         Route::get('/reports/options/regions', [ReportBuilderController::class, 'optRegions'])->name('reports.options.regions');
         Route::get('/reports/options/terminals', [ReportBuilderController::class, 'optTerminals'])->name('reports.options.terminals');
-        Route::post('/reports/run-simple', [ReportBuilderController::class, 'runSimple'])->name('reports.run.simple');
     });
 
     // API endpoints for reports - Open to all authenticated users
