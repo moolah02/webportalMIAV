@@ -67,9 +67,9 @@ class JobAssignmentController extends Controller
             'technicians' => $technicians->pluck('name', 'id')->toArray()
         ]);
 
-        // Get regions - Use the actual regions table
-        $regions = Region::where('is_active', true)
-            ->orderBy('name')
+        // Get regions. The regions table has no is_active column (only
+        // id, name, description, timestamps), so list them all.
+        $regions = Region::orderBy('name')
             ->get()
             ->map(function($region) {
                 $region->code = $region->region_code ?? strtoupper(substr($region->name, 0, 3));
@@ -161,15 +161,15 @@ public function getRegionTerminals($regionId, Request $request)
             'client_id' => $request->get('client_id')
         ]);
 
-        $query = PosTerminal::where('region_id', $regionId)
-            ->where('is_active', true); // Add this if you have an active status
+        // pos_terminals has no is_active / address columns — the address lives in physical_address
+        $query = PosTerminal::where('region_id', $regionId);
 
         if ($request->get('client_id')) {
             $query->where('client_id', $request->get('client_id'));
         }
 
         $terminals = $query->with(['client:id,company_name'])
-            ->select('id', 'terminal_id', 'merchant_name', 'client_id', 'status', 'address', 'physical_address')
+            ->select('id', 'terminal_id', 'merchant_name', 'client_id', 'status', 'current_status', 'physical_address')
             ->orderBy('terminal_id')
             ->get();
 
@@ -408,33 +408,123 @@ public function generateReport($assignmentId)
     // Generate PDF or return view - implement as needed
     return view('jobs.reports.assignment', compact('assignment', 'terminals'));
 }
-    public function show($assignmentId)
+    /**
+     * Assignment summary. JSON for the "View" dialog on the Job Assignment
+     * page; a normal browser visit goes to the full assignment page.
+     * (Previously selected a non-existent employees.specialization column and
+     * rendered a jobs.partials view that was never created.)
+     */
+    public function show($assignmentId, Request $request)
     {
         $assignment = JobAssignment::with([
-            'technician:id,first_name,last_name,phone,specialization',
+            'technician:id,first_name,last_name,phone,role_id',
+            'technician.role:id,name',
             'region:id,name',
             'client:id,company_name'
         ])->findOrFail($assignmentId);
 
-        // Add computed name
-        if ($assignment->technician) {
-            $assignment->technician->name = $assignment->technician->first_name . ' ' . $assignment->technician->last_name;
+        if (!($request->expectsJson() || $request->ajax())) {
+            return redirect()->route('jobs.show', $assignment->id);
         }
 
-        // Get terminal details
-        $terminals = PosTerminal::whereIn('id', $assignment->pos_terminals)
-            ->with('client')
-            ->get();
-
-        // NEW: Get service type category details
         $serviceTypeCategory = Category::findBySlugAndType($assignment->service_type, Category::TYPE_SERVICE_TYPE);
-
-        $html = view('jobs.partials.assignment-details', compact('assignment', 'terminals', 'serviceTypeCategory'))->render();
+        $terminalIds = is_array($assignment->pos_terminals) ? $assignment->pos_terminals : [];
 
         return response()->json([
-            'success' => true,
-            'html' => $html
+            'success'           => true,
+            'id'                => $assignment->id,
+            'assignment_id'     => $assignment->assignment_id,
+            'status'            => $assignment->status,
+            'priority'          => $assignment->priority,
+            'service_type'      => $serviceTypeCategory->name ?? \Illuminate\Support\Str::headline((string) $assignment->service_type),
+            'scheduled_date'    => optional($assignment->scheduled_date)->format('M j, Y'),
+            'estimated_duration_hours' => $assignment->estimated_duration_hours,
+            'notes'             => $assignment->notes,
+            'terminals_count'   => count($terminalIds),
+            'pos_terminals'     => $terminalIds,
+            'client'            => $assignment->client ? ['name' => $assignment->client->company_name] : null,
+            'region'            => $assignment->region ? ['name' => $assignment->region->name] : null,
+            'technician'        => $assignment->technician ? [
+                'name'           => $assignment->technician->first_name . ' ' . $assignment->technician->last_name,
+                'specialization' => $assignment->technician->role->name ?? 'General',
+                'phone'          => $assignment->technician->phone,
+            ] : null,
+            'url'               => route('jobs.show', $assignment->id),
         ]);
+    }
+
+    /**
+     * Edit an assignment that has not started yet (the Job Assignment page
+     * links here from its "Edit" button).
+     */
+    public function edit($assignmentId)
+    {
+        $assignment = JobAssignment::with(['technician:id,first_name,last_name', 'region:id,name', 'client:id,company_name'])
+            ->findOrFail($assignmentId);
+
+        $technicians = Employee::active()->fieldTechnicians()
+            ->select('id', 'first_name', 'last_name')
+            ->orderBy('first_name')
+            ->get();
+
+        // keep the currently assigned technician selectable
+        if ($assignment->technician && !$technicians->contains('id', $assignment->technician_id)) {
+            $technicians->prepend($assignment->technician);
+        }
+
+        $serviceTypes = Category::getServiceTypesWithDetails();
+
+        return view('jobs.edit', compact('assignment', 'technicians', 'serviceTypes'));
+    }
+
+    /**
+     * Save changes from the edit form. Terminals, region and client stay as
+     * assigned; this covers the scheduling fields.
+     */
+    public function update($assignmentId, Request $request)
+    {
+        $assignment = JobAssignment::findOrFail($assignmentId);
+
+        if ($assignment->status !== 'assigned') {
+            return redirect()->route('jobs.show', $assignment->id)
+                ->with('error', 'Only assignments that have not started can be edited.');
+        }
+
+        $validServiceTypes = Category::getSelectOptions(Category::TYPE_SERVICE_TYPE)->keys()->toArray();
+        if (empty($validServiceTypes)) {
+            $validServiceTypes = [
+                'routine_maintenance', 'emergency_repair', 'software_update',
+                'hardware_replacement', 'network_configuration', 'installation', 'decommission'
+            ];
+        }
+        // keep the current value valid even if its category was since removed
+        $validServiceTypes[] = $assignment->service_type;
+
+        $validated = $request->validate([
+            'technician_id'            => 'required|exists:employees,id',
+            'scheduled_date'           => 'required|date',
+            'service_type'             => 'required|in:' . implode(',', array_filter($validServiceTypes)),
+            'priority'                 => 'required|in:low,normal,high,emergency',
+            'estimated_duration_hours' => 'nullable|numeric|min:0.5|max:8',
+            'notes'                    => 'nullable|string|max:1000',
+        ]);
+
+        $previousTechnician = $assignment->technician_id;
+        $assignment->update($validated);
+
+        ActivityLog::log('updated', "Job assignment '{$assignment->assignment_id}' updated", $assignment);
+
+        if ((int) $previousTechnician !== (int) $assignment->technician_id) {
+            Employee::find($assignment->technician_id)?->notify(new SystemNotification(
+                "New job assignment: {$assignment->assignment_id}",
+                "You have been assigned a job. Scheduled: " . ($assignment->scheduled_date?->format('M j, Y') ?? 'TBD'),
+                'job',
+                route('jobs.show', $assignment->id)
+            ));
+        }
+
+        return redirect()->route('jobs.assignment')
+            ->with('success', "Assignment {$assignment->assignment_id} updated.");
     }
 
     /**

@@ -283,13 +283,14 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         Route::get('/assignment', [JobAssignmentController::class, 'index'])->name('assignment');
         Route::post('/assignment', [JobAssignmentController::class, 'store'])->name('assignment.store');
         Route::get('/regions/{region}/terminals', [JobAssignmentController::class, 'getRegionTerminals'])->name('regions.terminals');
+        // export must be registered before /assignment/{assignment} or "export" is taken as an id
+        Route::get('/assignment/export', [JobAssignmentController::class, 'export'])->name('assignment.export');
         Route::get('/assignment/{assignment}', [JobAssignmentController::class, 'show'])->name('assignment.show');
         Route::get('/assignment/{assignment}/edit', [JobAssignmentController::class, 'edit'])->name('assignment.edit');
         Route::put('/assignment/{assignment}', [JobAssignmentController::class, 'update'])->name('assignment.update');
         Route::post('/assignment/{assignment}/cancel', [JobAssignmentController::class, 'cancel'])->name('assignment.cancel');
         Route::post('/assignment/{assignment}/status', [JobAssignmentController::class, 'updateStatus'])->name('assignment.updateStatus');
         Route::post('/assignment/{assignment}/complete', [JobAssignmentController::class, 'complete'])->name('assignment.complete');
-        Route::get('/assignment/export', [JobAssignmentController::class, 'export'])->name('assignment.export');
     });
 
     // Job assignments list pages
@@ -771,64 +772,27 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
 
         // Project management
         Route::post('/projects/create', [TerminalDeploymentController::class, 'createProject'])->name('projects.create');
-        Route::patch('/projects/{project}', [TerminalDeploymentController::class, 'updateProject'])->name('projects.update');
 
-        // Export & work orders
+        // Export
         Route::get('/export/{format}', [TerminalDeploymentController::class, 'exportAssignments'])->name('export');
-        Route::post('/work-orders', [TerminalDeploymentController::class, 'generateWorkOrders'])->name('work-orders');
-        Route::get('/mobile-sync', [TerminalDeploymentController::class, 'mobileSync'])->name('mobile-sync');
-// Add this route inside your deployment routes group
-Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'downloadWorkOrder'])
-    ->name('download-work-order');
+        Route::post('/export-assignments', [TerminalDeploymentController::class, 'exportAssignments'])->name('export-assignments');
+
         // Assignment management
-        Route::get('/assignments/{assignment}', [TerminalDeploymentController::class, 'getAssignmentDetails'])->name('assignments.show');
-        Route::patch('/assignments/{assignment}', [TerminalDeploymentController::class, 'updateAssignment'])->name('assignments.update');
-        Route::delete('/assignments/{assignment}', [TerminalDeploymentController::class, 'cancelAssignment'])->name('assignments.cancel');
         Route::get('/assigned-terminals', [TerminalDeploymentController::class, 'getAssignedTerminals'])->name('assigned-terminals');
 
         // Quick actions
         Route::post('/quick-assign', [TerminalDeploymentController::class, 'quickAssignTerminal'])->name('quick-assign');
         Route::post('/auto-assign', [TerminalDeploymentController::class, 'autoAssignTerminals'])->name('auto-assign');
-        Route::get('/unassigned', [TerminalDeploymentController::class, 'getUnassignedTerminals'])->name('unassigned');
 
-        // Deployment tracking
+        // Drafts & initial data
         Route::post('/drafts', [TerminalDeploymentController::class, 'saveAsDraft'])->name('drafts.store');
-        Route::get('/drafts/{draft}', [TerminalDeploymentController::class, 'loadDraft'])->name('drafts.show');
-        Route::post('/deploy', [TerminalDeploymentController::class, 'deployAll'])->name('deploy');
-        Route::get('/progress/{deployment}', [TerminalDeploymentController::class, 'getDeploymentProgress'])->name('progress');
         Route::get('/initial-data', [TerminalDeploymentController::class, 'getInitialData'])->name('initial-data');
 
-        // Statistics & reporting
-        Route::get('/stats', [TerminalDeploymentController::class, 'getStatistics'])->name('stats');
-        Route::get('/technician-workload', [TerminalDeploymentController::class, 'getTechnicianWorkload'])->name('technician-workload');
-        Route::get('/regional-summary', [TerminalDeploymentController::class, 'getRegionalSummary'])->name('regional-summary');
-    // Add these routes to your existing deployment routes group in web.php
-
-
-
-    // Work Orders
-    Route::post('/generate-work-orders', [TerminalDeploymentController::class, 'generateWorkOrders'])
-        ->name('generate-work-orders');
-    Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'downloadWorkOrder'])
-        ->name('download-work-order');
-
-    // Deployment Finalization
-    Route::post('/deploy-all', [TerminalDeploymentController::class, 'deployAllAssignments'])
-        ->name('deploy-all');
-    Route::post('/finalize-deployment', [TerminalDeploymentController::class, 'finalizeDeployment'])
-        ->name('finalize-deployment');
-
-// Add this route in your deployment routes group (around line 380 in your routes file)
-Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'downloadWorkOrder'])
-    ->name('download-work-order');
-    // Export
-    Route::post('/export-assignments', [TerminalDeploymentController::class, 'exportAssignments'])
-        ->name('export-assignments');
-    Route::get('/download-export/{filename}', [TerminalDeploymentController::class, 'downloadExport'])
-        ->name('download-export');
-
-
-
+        // (Removed: routes to controller methods that were never written and that
+        //  nothing in the UI calls — assignments show/update/cancel, unassigned,
+        //  drafts/{draft}, deploy, progress, stats, technician-workload,
+        //  regional-summary, work orders, mobile-sync, deploy-all,
+        //  finalize-deployment, download-export, projects/{project} update.)
     });
 
     // ==============================================
@@ -1073,19 +1037,9 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
     // ==============================================
 
     Route::middleware('permission:view_jobs')->prefix('technician')->name('technician.')->group(function () {
-        Route::get('/jobs', function () {
-            return view('technician.jobs', ['title' => 'Job Assignments']);
-        })->name('jobs');
-
-        Route::get('/reports', function () {
-            return view('technician.reports', ['title' => 'Service Reports']);
-        })->middleware('permission:create_reports,view_own_reports')
-          ->name('reports');
-
-        Route::get('/schedule', function () {
-            return view('technician.schedule', ['title' => 'My Schedule']);
-        })->middleware('permission:view_schedule')
-          ->name('schedule');
+        // (Removed: /technician/jobs, /technician/reports, /technician/schedule —
+        //  closures rendering views that never existed; nothing links to them.
+        //  Technicians use jobs.mine and the mobile app.)
 
         Route::get('/jobs/assignments/{assignment}/terminal/{terminal}/visits', [SiteVisitController::class, 'listForTerminal'])
             ->middleware('permission:view_visits,all')
