@@ -15,7 +15,7 @@
     .tv-filters form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
     .tv-field { display: flex; flex-direction: column; gap: 4px; }
     .tv-field .ui-label { margin: 0; }
-    .tv-field .ui-input, .tv-field .ui-select { height: 36px; font-size: 13.5px; }
+    .tv-field .ui-input, .tv-field .ui-select { height: 36px; font-size: 13.5px; padding-top: 0 !important; padding-bottom: 0 !important; line-height: 34px; }
     .tv-field-grow { flex: 1; min-width: 220px; }
     .tv-actions { display: flex; gap: 8px; margin-left: auto; }
     .tv-actions a, .tv-actions button { display: inline-flex; align-items: center; gap: 6px; height: 36px; white-space: nowrap; }

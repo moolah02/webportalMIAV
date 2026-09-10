@@ -25,7 +25,7 @@
     .au-filters .filter-group { display: flex; flex-direction: column; gap: 4px; }
     .au-filters .filter-group-grow { flex: 1; min-width: 200px; }
     .au-filters .ui-label { margin: 0; }
-    .au-filters .ui-input, .au-filters .ui-select { height: 36px; font-size: 13.5px; }
+    .au-filters .ui-input, .au-filters .ui-select { height: 36px; font-size: 13.5px; padding-top: 0 !important; padding-bottom: 0 !important; line-height: 34px; }
     .au-filters .filter-actions { display: flex; gap: 8px; margin-left: auto; }
 
     .au-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }

@@ -74,7 +74,7 @@
 .rb-strip-note { font-size:12.5px; color:var(--rb-sub); padding:4px 0; }
 
 /* ─── Main body ──────────────────────────────────────────────── */
-.rb-body { display:grid; grid-template-columns:240px minmax(0,1fr); gap:12px; overflow:hidden; min-height:0; }
+.rb-body { display:grid; grid-template-columns:256px minmax(0,1fr); gap:12px; overflow:hidden; min-height:0; }
 
 /* ─── Field panel ────────────────────────────────────────────── */
 .rb-fields-panel {
@@ -213,6 +213,12 @@
 .rb-btn-sm { height:30px; padding:0 10px; font-size:12.5px; }
 .rb-btn-icon { width:30px; padding:0; justify-content:center; }
 .rb-caret { width:14px !important; height:14px !important; margin-left:-2px; }
+
+/* x-show removes inline display, so the label layout lives in a class */
+.rb-run-label { display:inline-flex; align-items:center; gap:7px; }
+.rb-fields-head .rb-search { padding-left:30px !important; }
+.rb-link-btn { white-space:nowrap; }
+.rb-strip-select { max-width:240px; }
 
 /* ─── Spinner ────────────────────────────────────────────────── */
 .rb-spinner {
@@ -373,8 +379,8 @@
 
                 <span :title="fields.length === 0 ? 'Add at least one column from the left panel first' : 'Run your report'">
                 <button @click="runReport()" :disabled="loading || fields.length === 0" class="rb-btn rb-btn-primary rb-btn-run">
-                    <span x-show="!loading" style="display:inline-flex;align-items:center;gap:7px;"><svg class="mv-i" aria-hidden="true"><use href="#i-play"/></svg>Run Report</span>
-                    <span x-show="loading" style="display:inline-flex;align-items:center;gap:7px;">
+                    <span x-show="!loading" class="rb-run-label"><svg class="mv-i" aria-hidden="true"><use href="#i-play"/></svg>Run Report</span>
+                    <span x-show="loading" class="rb-run-label">
                         <span style="width:13px;height:13px;border:2px solid rgba(31,79,135,.25);border-top-color:currentColor;border-radius:50%;animation:rb-spin .7s linear infinite;display:inline-block;"></span>
                         Running…
                     </span>

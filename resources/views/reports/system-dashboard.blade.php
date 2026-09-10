@@ -228,7 +228,7 @@
                     ] as [$label, $value])
                     <div class="sd-bar-row">
                         <span class="sd-bar-label">{{ $label }}</span>
-                        <div class="sd-track"><div class="sd-fill {{ $tone($value) }}" style="width: {{ min(100, max(0, $value)) }}%;"></div></div>
+                        <div class="sd-track"><div class="sd-fill" style="width: {{ min(100, max(0, $value)) }}%;"></div></div>
                         <span class="sd-bar-value">{{ $value }}%</span>
                     </div>
                     @endforeach

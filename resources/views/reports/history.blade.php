@@ -37,8 +37,11 @@
 .rh-card-header-meta { font-size: 12.5px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
 
 table.rh-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-table.rh-table thead th { text-align: left; white-space: nowrap; }
+table.rh-table thead th { text-align: left; }
 table.rh-table td { vertical-align: middle; }
+.mv-page table.rh-table thead th, .mv-page table.rh-table tbody td { padding: 10px 10px; }
+.mv-page table.rh-table thead th:first-child, .mv-page table.rh-table tbody td:first-child { padding-left: 16px; }
+.mv-page table.rh-table thead th:last-child, .mv-page table.rh-table tbody td:last-child { padding-right: 16px; }
 
 /* ── Cells ───────────────────────────────────────────────── */
 .rh-avatar {
