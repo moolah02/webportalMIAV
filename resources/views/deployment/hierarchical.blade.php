@@ -1,1693 +1,403 @@
 @extends('layouts.app')
 @section('title', 'Terminal Deployment')
 
+@section('header-actions')
+    <span class="dp-meta"><span class="dp-count">{{ $stats['active_projects'] }}</span> active projects</span>
+@endsection
+
 @push('styles')
 <style>
-
-.metric-card {
-
-    padding: 15px;
-
-    border-radius: 8px;
-
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-}
-
-
-
-.content-card {
-
-    background: white;
-
-    padding: 20px;
-
-    border-radius: 8px;
-
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-}
-
-
-
-.btn {
-
-    padding: 8px 16px;
-
-    border: 2px solid #ddd;
-
-    border-radius: 6px;
-
-    background: white;
-
-    color: #333;
-
-    text-decoration: none;
-
-    cursor: pointer;
-
-    font-weight: 500;
-
-    transition: all 0.2s ease;
-
-    display: inline-block;
-
-    border: none;
-
-}
-
-
-
-.btn:hover {
-
-    transform: translateY(-1px);
-
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-}
-
-
-
-.btn-primary {
-
-    background: #1a3a5c;
-
-    color: white;
-
-    border-color: #1a3a5c;
-
-}
-
-
-
-.btn-primary:hover {
-
-    background: #152e4a;
-
-    border-color: #152e4a;
-
-    color: white;
-
-}
-
-
-
-.btn-success {
-
-    background: #4caf50;
-
-    color: white;
-
-    border-color: #4caf50;
-
-}
-
-
-
-.btn-success:hover {
-
-    background: #388e3c;
-
-    border-color: #388e3c;
-
-    color: white;
-
-}
-
-
-
-.btn-small {
-
-    padding: 6px 12px;
-
-    font-size: 12px;
-
-}
-
-
-
-.btn:disabled {
-
-    opacity: 0.6;
-
-    cursor: not-allowed;
-
-    transform: none;
-
-}
-
-
-
-/* Progressive Disclosure */
-
-.progress-section, .main-content-section, .assignment-section, .assignment-success-section {
-
-    transition: all 0.3s ease;
-
-}
-
-
-
-.step-item {
-
-    text-align: center;
-
-    opacity: 0.5;
-
-    transition: all 0.3s ease;
-
-}
-
-
-
-.step-item.active {
-
-    opacity: 1;
-
-    color: #1a3a5c;
-
-}
-
-
-
-.step-item.completed {
-
-    opacity: 1;
-
-    color: #4caf50;
-
-}
-
-
-
-.step-circle {
-
-    width: 24px;
-
-    height: 24px;
-
-    border-radius: 50%;
-
-    background: #ddd;
-
-    color: white;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    margin: 0 auto 5px;
-
-    font-weight: bold;
-
-    font-size: 12px;
-
-}
-
-
-
-.step-item.active .step-circle {
-
-    background: #1a3a5c;
-
-}
-
-
-
-.step-item.completed .step-circle {
-
-    background: #4caf50;
-
-}
-
-
-
-/* Terminal Table Styles */
-
-#terminalTable {
-
-    font-size: 14px;
-
-    border-collapse: collapse;
-
-}
-
-
-
-#terminalTable th {
-
-    background: #f8f9fa;
-
-    position: sticky;
-
-    top: 0;
-
-    z-index: 10;
-
-    font-weight: 600;
-
-    color: #333;
-
-    border-bottom: 2px solid #dee2e6;
-
-    padding: 12px 8px;
-
-}
-
-
-
-#terminalTable td {
-
-    padding: 8px;
-
-    border-bottom: 1px solid #eee;
-
-    vertical-align: middle;
-
-}
-
-
-
-.terminal-row {
-
-    transition: background-color 0.2s ease;
-
-    cursor: pointer;
-
-}
-
-
-
-.terminal-row:hover {
-
-    background-color: #f8f9fa;
-
-}
-
-
-
-.terminal-row.selected {
-
-    background-color: #e3f2fd;
-
-}
-
-
-
-.status-badge {
-
-    padding: 4px 8px;
-
-    border-radius: 12px;
-
-    font-size: 11px;
-
-    font-weight: 600;
-
-    text-transform: uppercase;
-
-}
-
-
-
-.status-active {
-
-    background: #e8f5e8;
-
-    color: #2e7d32;
-
-}
-
-
-
-.status-offline {
-
-    background: #ffebee;
-
-    color: #c62828;
-
-}
-
-
-
-.status-maintenance {
-
-    background: #fff3e0;
-
-    color: #f57c00;
-
-}
-
-
-
-.status-faulty {
-
-    background: #fce4ec;
-
-    color: #ad1457;
-
-}
-
-
-
-.status-unknown {
-
-    background: #f5f5f5;
-
-    color: #666;
-
-}
-
-
-
-.assignment-badge {
-
-    padding: 4px 8px;
-
-    border-radius: 12px;
-
-    font-size: 11px;
-
-    font-weight: 600;
-
-    text-transform: uppercase;
-
-}
-
-
-
-.assignment-assigned {
-
-    background: #e8f5e8;
-
-    color: #2e7d32;
-
-}
-
-
-
-.assignment-unassigned {
-
-    background: #fff3e0;
-
-    color: #f57c00;
-
-}
-
-
-
-/* Filter Styles */
-
-.filters-grid {
-
-    display: grid;
-
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-
-    gap: 15px;
-
-    margin-bottom: 15px;
-
-}
-
-
-
-/* Pagination Styles */
-
-#tablePagination {
-
-    background: #f8f9fa;
-
-    border-top: 1px solid #dee2e6;
-
-    padding: 15px 20px;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    font-size: 14px;
-
-}
-
-
-
-#paginationButtons {
-
-    display: flex;
-
-    gap: 5px;
-
-}
-
-
-
-#paginationButtons .btn {
-
-    padding: 6px 12px;
-
-    font-size: 12px;
-
-    min-width: auto;
-
-}
-
-
-
-/* Table Container */
-
-.table-container {
-
-    max-height: 600px;
-
-    overflow: auto;
-
-    background: white;
-
-    border-radius: 0 0 8px 8px;
-
-}
-
-
-
-/* Responsive adjustments */
-
-@media (max-width: 768px) {
-
-    .filters-grid {
-
-        grid-template-columns: 1fr;
-
-        gap: 10px;
-
-    }
-
-
-
-    #terminalTable th,
-
-    #terminalTable td {
-
-        padding: 6px 4px;
-
-        font-size: 12px;
-
-    }
-
-
-
-    .status-badge {
-
-        padding: 2px 6px;
-
-        font-size: 10px;
-
-    }
-
-}
-
-
-
-.workload-item {
-
-    background: white;
-
-    border-radius: 6px;
-
-    padding: 12px;
-
-    margin-bottom: 8px;
-
-    border-left: 4px solid #007bff;
-
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-
-}
-
-
-
-.technician-name {
-
-    font-weight: 600;
-
-    color: #333;
-
-    margin-bottom: 4px;
-
-}
-
-
-
-.workload-count {
-
-    color: #666;
-
-    font-size: 14px;
-
-}
-
-
-
-.unassigned-item {
-
-    background: #fff3cd;
-
-    border: 1px solid #ffeaa7;
-
-    border-radius: 4px;
-
-    padding: 8px;
-
-    margin-bottom: 4px;
-
-    font-size: 13px;
-
-}
-
-
-
-.assignment-table th {
-
-    background: #f8f9fa;
-
-    padding: 12px;
-
-    text-align: left;
-
-    font-weight: 600;
-
-    color: #333;
-
-    border-bottom: 2px solid #dee2e6;
-
-}
-
-
-
-.assignment-table td {
-
-    padding: 12px;
-
-    border-bottom: 1px solid #dee2e6;
-
-    vertical-align: middle;
-
-}
-
-
-
-.assignment-table tbody tr:hover {
-
-    background: #f8f9fa;
-
-}
-
-
-
-.loading {
-
-    opacity: 0.6;
-
-    pointer-events: none;
-
-    position: relative;
-
-}
-
-
-
-.loading::after {
-
-    content: '';
-
-    position: absolute;
-
-    top: 50%;
-
-    left: 50%;
-
-    width: 20px;
-
-    height: 20px;
-
-    margin: -10px 0 0 -10px;
-
-    border: 2px solid #f3f3f3;
-
-    border-top: 2px solid #007bff;
-
-    border-radius: 50%;
-
-    animation: spin 1s linear infinite;
-
-}
-
-
-
-@keyframes spin {
-
-    0% { transform: rotate(0deg); }
-
-    100% { transform: rotate(360deg); }
-
-}
-
-
-
-@keyframes slideIn {
-
-    from { transform: translateX(100%); opacity: 0; }
-
-    to { transform: translateX(0); opacity: 1; }
-
-}
-
-
-
-@keyframes slideOut {
-
-    from { transform: translateX(0); opacity: 1; }
-
-    to { transform: translateX(100%); opacity: 0; }
-
-}
-
-
-
-.alert {
-
-    border-radius: 6px;
-
-    padding: 15px;
-
-    margin-block-end: 20px;
-
-}
-
-
-
-.alert-success {
-
-    background: #d4edda;
-
-    color: #155724;
-
-    border: 1px solid #c3e6cb;
-
-}
-
-
-
-.alert-danger {
-
-    background: #f8d7da;
-
-    color: #721c24;
-
-    border: 1px solid #f5c6cb;
-
-}
-
-
-
-/* Custom Dropdown Styles */
-
-.custom-dropdown {
-
-    position: relative;
-
-    width: 100%;
-
-}
-
-
-
-.dropdown-selected {
-
-    background: white;
-
-    border: 2px solid #ddd;
-
-    border-radius: 6px;
-
-    padding: 10px 12px;
-
-    cursor: pointer;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    transition: border-color 0.2s;
-
-}
-
-
-
-.dropdown-selected:hover {
-
-    border-color: #1a3a5c;
-
-}
-
-
-
-.dropdown-selected.active {
-
-    border-color: #1a3a5c;
-
-    border-bottom-left-radius: 0;
-
-    border-bottom-right-radius: 0;
-
-}
-
-
-
-.dropdown-arrow {
-
-    transition: transform 0.2s;
-
-    color: #666;
-
-    font-size: 12px;
-
-}
-
-
-
-.dropdown-selected.active .dropdown-arrow {
-
-    transform: rotate(180deg);
-
-}
-
-
-
-.dropdown-options {
-
-    position: absolute;
-
-    top: 100%;
-
-    left: 0;
-
-    right: 0;
-
-    background: white;
-
-    border: 2px solid #1a3a5c;
-
-    border-top: none;
-
-    border-radius: 0 0 6px 6px;
-
-    max-height: 250px;
-
-    overflow-y: auto;
-
-    z-index: 1000;
-
-    display: none;
-
-    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
-
-}
-
-
-
-.dropdown-options.show {
-
-    display: block;
-
-    animation: dropdownFadeIn 0.2s ease-out;
-
-}
-
-
-
-@keyframes dropdownFadeIn {
-
-    from { opacity: 0; transform: translateY(-10px); }
-
-    to { opacity: 1; transform: translateY(0); }
-
-}
-
-
-
-.dropdown-search {
-
-    padding: 8px;
-
-    border-bottom: 1px solid #eee;
-
-    background: #f9f9f9;
-
-}
-
-
-
-.dropdown-search input {
-
-    width: 100%;
-
-    padding: 6px 8px;
-
-    border: 1px solid #ddd;
-
-    border-radius: 4px;
-
-    font-size: 14px;
-
-}
-
-
-
-.dropdown-search input:focus {
-
-    outline: none;
-
-    border-color: #1a3a5c;
-
-}
-
-
-
-.dropdown-option {
-
-    display: flex;
-
-    align-items: center;
-
-    padding: 8px 12px;
-
-    cursor: pointer;
-
-    transition: background-color 0.2s;
-
-    border-bottom: 1px solid #f5f5f5;
-
-}
-
-
-
-.dropdown-option:hover {
-
-    background-color: #f8f9fa;
-
-}
-
-
-
-.dropdown-option.disabled {
-
-    color: #999;
-
-    cursor: not-allowed;
-
-}
-
-
-
-.dropdown-option input[type="checkbox"] {
-
-    margin-right: 8px;
-
-    cursor: pointer;
-
-}
-
-
-
-.dropdown-option span {
-
-    flex: 1;
-
-    font-size: 14px;
-
-}
-
-
-
-.dropdown-options::-webkit-scrollbar {
-
-    width: 6px;
-
-}
-
-
-
-.dropdown-options::-webkit-scrollbar-track {
-
-    background: #f1f1f1;
-
-}
-
-
-
-.dropdown-options::-webkit-scrollbar-thumb {
-
-    background: #c1c1c1;
-
-    border-radius: 3px;
-
-}
-
-
-
-.dropdown-options::-webkit-scrollbar-thumb:hover {
-
-    background: #a1a1a1;
-
-}
-
-
-
-@media (max-width: 1200px) {
-
-    div[style*="grid-template-columns: 3fr 2fr"] {
-
-        grid-template-columns: 1fr !important;
-
-        gap: 20px;
-
-    }
-
-    .deployment-setup-grid,
-    .deployment-main-grid,
-    .deployment-success-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-
-
-    div[style*="grid-template-columns: 2fr 1fr 2fr 1fr"] {
-
-        grid-template-columns: 1fr 1fr !important;
-
-        gap: 15px;
-
-    }
-
-}
-
-.deployment-hero {
-    background: linear-gradient(135deg, #f8fbff 0%, #eef4f9 100%);
-    border: 1px solid #dbe5ef;
-    border-radius: 18px;
-    padding: 24px;
-    margin-block-end: 20px;
-}
-
-.deployment-hero-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    margin-block-end: 18px;
-}
-
-.deployment-hero-copy {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-}
-
-.deployment-hero-icon {
-    inline-size: 52px;
-    block-size: 52px;
-    border-radius: 16px;
-    background: rgba(26, 58, 92, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    flex-shrink: 0;
-}
-
-.deployment-hero-title {
-    margin: 0;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #111827;
-}
-
-.deployment-hero-subtitle {
-    color: #64748b;
-    margin: 6px 0 0;
-    font-size: 0.95rem;
-}
-
-.deployment-hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    border-radius: 999px;
-    background: #fff;
-    border: 1px solid #dbe5ef;
-    color: #1a3a5c;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.deployment-stepper {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-}
-
-.deployment-step-card {
-    position: relative;
-    padding: 14px 12px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.7);
-    border: 1px solid #dbe5ef;
-}
-
-.deployment-step-card::after {
-    content: '';
-    position: absolute;
-    inset-block-start: 25px;
-    inset-inline-end: -12px;
-    inline-size: 24px;
-    block-size: 1px;
-    background: #dbe5ef;
-}
-
-.deployment-step-card:last-child::after {
-    display: none;
-}
-
-.deployment-step-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-block-end: 6px;
-}
-
-.deployment-step-label {
-    font-size: 12px;
-    color: #64748b;
-    line-height: 1.35;
-}
-
-.deployment-setup-card,
-.deployment-table-card,
-.deployment-side-card,
-.deployment-success-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
-}
-
-.deployment-setup-card {
-    margin-block-end: 20px;
-    overflow: visible;
-    position: relative;
-    z-index: 20;
-}
-
-.deployment-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 20px 24px;
-    border-block-end: 1px solid #eef2f7;
-}
-
-.deployment-card-title {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #111827;
-}
-
-.deployment-card-subtitle {
-    margin: 4px 0 0;
-    font-size: 12px;
-    color: #94a3b8;
-}
-
-.deployment-setup-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 2fr 1fr;
-    gap: 20px;
-    align-items: end;
-    padding: 24px;
-    overflow: visible;
-}
-
-.deployment-field-label {
-    display: block;
-    margin-block-end: 8px;
-    font-weight: 600;
-    color: #334155;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.deployment-field-help {
-    color: #94a3b8;
-    font-size: 12px;
-    margin-block-start: 7px;
-}
-
-.deployment-kpi {
-    background: linear-gradient(180deg, #1a3a5c 0%, #152e4a 100%);
-    color: white;
-    padding: 22px 16px;
-    border-radius: 16px;
-    text-align: center;
-}
-
-.deployment-kpi-number {
-    font-size: 2rem;
-    font-weight: 700;
-    line-height: 1;
+/* Terminal Deployment — page styles (tokens from miav-shell.css) */
+.dp-page { display: flex; flex-direction: column; gap: 16px; }
+.dp-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; }
+.dp-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--mv-line); min-height: 52px; }
+.dp-card-title { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); display: flex; align-items: center; gap: 8px; }
+.dp-card-sub { margin: 2px 0 0; font-size: 12.5px; color: var(--mv-muted); }
+.dp-card-body { padding: 16px 18px; }
+.dp-muted { color: var(--mv-muted); }
+.dp-meta { font-size: 12.5px; color: var(--mv-muted); white-space: nowrap; }
+.dp-count { font-size: 12px; font-weight: 500; color: var(--mv-ink-2); background: var(--mv-surface-2); border: 1px solid var(--mv-line); border-radius: 6px; padding: 0 7px; line-height: 1.7; font-variant-numeric: tabular-nums; }
+
+/* Stepper */
+.dp-stepper { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 14px 18px; gap: 0; }
+.step-item { position: relative; display: flex; gap: 10px; align-items: flex-start; padding-right: 18px; color: var(--mv-muted); }
+.step-item::after { content: ''; position: absolute; top: 12px; left: 34px; right: 12px; height: 1px; background: var(--mv-line); z-index: 0; }
+.step-item:last-child::after { display: none; }
+.step-circle { position: relative; z-index: 1; width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center;
+    font-size: 12px; font-weight: 600; background: var(--mv-surface); color: var(--mv-muted); border: 1px solid var(--mv-line-strong); box-shadow: 0 0 0 4px var(--mv-surface); }
+.dp-step-text { position: relative; z-index: 1; background: var(--mv-surface); padding-right: 10px; min-width: 0; }
+.dp-step-text strong { display: block; font-size: 13px; font-weight: 600; color: var(--mv-ink-2); line-height: 24px; }
+.dp-step-text span { display: block; font-size: 12px; color: var(--mv-muted); line-height: 1.4; }
+.step-item.active .step-circle { background: var(--mv-accent); border-color: var(--mv-accent); color: #FFFFFF; }
+.step-item.active .dp-step-text strong { color: var(--mv-accent-ink); }
+.step-item.completed .step-circle { background: var(--mv-good-soft); border-color: #C6E6D2; color: var(--mv-good); }
+.step-item.completed .dp-step-text strong { color: var(--mv-ink); }
+.step-item.completed::after { background: #C6E6D2; }
+
+/* Setup */
+.dp-setup { position: relative; z-index: 20; }
+.dp-setup-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1.2fr); gap: 18px; align-items: start; padding: 16px 18px 18px; }
+.dp-label { display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 500; color: var(--mv-ink-2); }
+.dp-req { color: var(--mv-crit); }
+.dp-help { color: var(--mv-muted); font-size: 12px; margin-top: 6px; }
+.dp-kpi { border: 1px solid var(--mv-line); border-radius: 8px; background: var(--mv-surface-2); padding: 7px 12px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.dp-kpi-number { font-size: 22px; font-weight: 600; color: var(--mv-ink); font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1.2; }
+.dp-kpi-label { font-size: 12px; color: var(--mv-muted); }
+.dp-stack { display: grid; gap: 8px; margin-top: 8px; }
+.dp-stack .btn-primary, .dp-stack .btn-secondary, .dp-full { width: 100%; justify-content: center; }
+.dp-input, .deployment-input, .deployment-select { width: 100%; padding: 8px 11px; border: 1px solid var(--mv-line-strong); border-radius: 8px; font: inherit; font-size: 13.5px; background: var(--mv-surface); color: var(--mv-ink); }
+.dp-input:focus, .deployment-input:focus, .deployment-select:focus { outline: none; border-color: var(--mv-accent); box-shadow: 0 0 0 3px rgba(43, 100, 168, .15); }
+#loadHierarchyBtn:disabled { opacity: .55; cursor: not-allowed; }
+#autoLoadIndicator { display: none; font-size: 12px; color: var(--mv-accent-ink); margin-top: 6px; }
+
+/* Custom multi-select dropdowns */
+.custom-dropdown { position: relative; width: 100%; }
+.dropdown-selected { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid var(--mv-line-strong); border-radius: 8px; background: var(--mv-surface); cursor: pointer; font-size: 13.5px; color: var(--mv-ink); }
+.dropdown-selected > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dropdown-selected:hover { border-color: var(--mv-ink-2); }
+.dropdown-selected.active { border-color: var(--mv-accent); box-shadow: 0 0 0 3px rgba(43, 100, 168, .15); }
+.dropdown-arrow { display: grid; place-items: center; color: var(--mv-muted); transition: transform .15s ease; }
+.dropdown-selected.active .dropdown-arrow { transform: rotate(180deg); }
+.dropdown-options { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 1000; max-height: 280px; overflow-y: auto; background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 8px; box-shadow: 0 12px 32px rgba(22, 32, 44, .12); }
+.dropdown-options.show { display: block; }
+.dropdown-search { position: sticky; top: 0; padding: 8px; background: var(--mv-surface); border-bottom: 1px solid var(--mv-line); }
+.dropdown-search input { width: 100%; padding: 6px 9px; border: 1px solid var(--mv-line-strong); border-radius: 6px; font: inherit; font-size: 13px; }
+.dropdown-search input:focus { outline: none; border-color: var(--mv-accent); }
+.dropdown-option { display: flex; align-items: center; gap: 9px; padding: 8px 12px; cursor: pointer; font-size: 13px; color: var(--mv-ink-2); }
+.dropdown-option:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.dropdown-option.disabled { color: var(--mv-muted); cursor: default; }
+.dropdown-option.disabled:hover { background: transparent; }
+.dropdown-option input[type="checkbox"] { accent-color: var(--mv-accent); margin: 0; }
+.dropdown-option span { flex: 1; }
+.dropdown-option small { color: var(--mv-warn); }
+
+/* Progress strip (display toggled to grid by JS) */
+.deployment-progress-stats { display: none; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; }
+.deployment-progress-stat { padding: 12px 18px; }
+.deployment-progress-stat + .deployment-progress-stat { border-left: 1px solid var(--mv-line); }
+.deployment-progress-label { font-size: 12.5px; color: var(--mv-muted); display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+.deployment-progress-value { font-size: 20px; font-weight: 600; color: var(--mv-ink); font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1.2; }
+.dp-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mv-line-strong); }
+.dp-dot.is-accent { background: var(--mv-accent); }
+.dp-dot.is-good { background: var(--mv-good); }
+.dp-dot.is-warn { background: #C28A2C; }
+
+/* Main working area (display toggled to block by JS) */
+.main-content-section { display: none; }
+.dp-work-side { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; margin-top: 16px; }
+
+/* Terminal table */
+.dp-table-head { padding: 13px 18px; border-bottom: 1px solid var(--mv-line); }
+.dp-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.dp-toolbar-actions { display: flex; gap: 6px; }
+.dp-filter-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.dp-table-wrap { max-height: 600px; overflow: auto; }
+#terminalTable { width: 100%; border-collapse: collapse; font-size: 13px; }
+#terminalTable th { position: sticky; top: 0; z-index: 2; background: var(--mv-surface-2); color: var(--mv-muted); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--mv-line); white-space: nowrap; }
+#terminalTable th.dp-c, #terminalTable td.dp-c { text-align: center; }
+#terminalTable td { padding: 9px 12px; border-bottom: 1px solid var(--mv-line); color: var(--mv-ink-2); vertical-align: middle; }
+#terminalTable input[type="checkbox"] { accent-color: var(--mv-accent); cursor: pointer; }
+.terminal-row { cursor: pointer; }
+.terminal-row:hover { background: var(--mv-surface-2); }
+.terminal-row.selected { background: var(--mv-accent-soft); }
+.dp-tid { font-family: var(--mv-mono); font-size: 12.5px; color: var(--mv-ink); }
+.dp-merchant { color: var(--mv-ink); font-weight: 500; }
+.dp-row-btn { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border: 1px solid var(--mv-line-strong); border-radius: 7px; background: var(--mv-surface); color: var(--mv-ink-2); font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer; }
+.dp-row-btn:hover:not(:disabled) { background: var(--mv-accent-soft); border-color: #C9D9EE; color: var(--mv-accent-ink); }
+.dp-row-btn:disabled { opacity: .55; cursor: default; }
+.dp-row-btn.is-danger { color: var(--mv-crit); border-color: #EBC3C3; }
+.dp-row-btn.is-danger:hover { background: var(--mv-crit-soft); color: var(--mv-crit); border-color: #EBC3C3; }
+.dp-empty { padding: 44px 20px; text-align: center; color: var(--mv-muted); font-size: 13.5px; }
+.dp-empty .mv-i { width: 26px; height: 26px; color: var(--mv-line-strong); display: block; margin: 0 auto 10px; }
+.dp-empty h5, .dp-empty h6 { margin: 0 0 3px; font-size: 13.5px; font-weight: 600; color: var(--mv-ink); }
+.dp-empty p { margin: 0; }
+.dp-empty ul { list-style: none; margin: 10px 0 0; padding: 0; font-size: 12.5px; }
+#tablePagination { display: none; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--mv-line); font-size: 13px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+#paginationButtons { display: flex; gap: 4px; flex-wrap: wrap; }
+#paginationButtons .btn, #paginationButtons button { min-width: 32px; height: 30px; padding: 0 10px; border: 1px solid var(--mv-line); border-radius: 7px; background: var(--mv-surface); color: var(--mv-ink-2); font-size: 12.5px; font-weight: 500; box-shadow: none; }
+#paginationButtons .btn:hover, #paginationButtons button:hover { background: var(--mv-surface-2); }
+#paginationButtons .btn.btn-primary { background: var(--mv-accent) !important; border-color: var(--mv-accent) !important; color: #FFFFFF !important; }
+
+/* Status chips (classes set by JS) */
+.status-badge, .assignment-badge, .dp-chip { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; line-height: 1.7; white-space: nowrap; text-transform: capitalize;
+    background: var(--mv-surface-2); color: var(--mv-ink-2); border: 1px solid var(--mv-line); }
+.status-active, .assignment-assigned, .dp-chip.is-good { background: var(--mv-good-soft); color: var(--mv-good); border-color: transparent; }
+.status-offline, .status-faulty, .dp-chip.is-crit { background: var(--mv-crit-soft); color: var(--mv-crit); border-color: transparent; }
+.status-maintenance, .dp-chip.is-warn { background: var(--mv-warn-soft); color: var(--mv-warn); border-color: transparent; }
+.dp-chip.is-accent { background: var(--mv-accent-soft); color: var(--mv-accent-ink); border-color: transparent; }
+/* status-unknown and assignment-unassigned stay neutral */
+
+/* Side cards */
+.dp-field { margin-bottom: 14px; }
+.deployment-mode-grid { display: grid; gap: 8px; }
+.dp-mode { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--mv-line); border-radius: 8px; cursor: pointer; background: var(--mv-surface); }
+.dp-mode:hover { background: var(--mv-surface-2); }
+.dp-mode:has(input:checked) { border-color: #C9D9EE; background: var(--mv-accent-soft); }
+.dp-mode input { accent-color: var(--mv-accent); margin-top: 3px; }
+.dp-mode strong { display: block; font-size: 13px; font-weight: 500; color: var(--mv-ink); }
+.dp-mode span { display: block; font-size: 12px; color: var(--mv-muted); }
+.dp-option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.dp-actions { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--mv-line); }
+.dp-actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dp-actions button { justify-content: center; }
+.dp-actions button:disabled { opacity: .55; cursor: not-allowed; }
+.workload-item { padding: 10px 0; border-bottom: 1px solid var(--mv-line); }
+.workload-item:first-child { padding-top: 0; }
+.workload-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.technician-name { font-size: 13px; font-weight: 500; color: var(--mv-ink); }
+.dp-workload-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 3px; font-size: 12px; color: var(--mv-muted); }
+.dp-workload-row > span:last-child { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+.dp-list { max-height: 260px; overflow-y: auto; }
+.unassigned-item { padding: 8px 10px; border: 1px solid var(--mv-line); border-radius: 8px; margin-bottom: 6px; font-size: 13px; color: var(--mv-ink); cursor: pointer; }
+.unassigned-item:hover { background: var(--mv-surface-2); border-color: var(--mv-line-strong); }
+.unassigned-item small { color: var(--mv-muted); }
+.unassigned-item .dp-tid { font-size: 12px; color: var(--mv-ink-2); }
+.dp-more { text-align: center; padding: 6px; font-size: 12.5px; color: var(--mv-muted); }
+
+/* Success / summary (display toggled to block by JS) */
+.assignment-success-section { display: none; }
+.dp-success-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.assignment-table { width: 100%; border-collapse: collapse; }
+.assignment-table th { background: var(--mv-surface-2); color: var(--mv-muted); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--mv-line); }
+.assignment-table td { padding: 10px 12px; border-bottom: 1px solid var(--mv-line); font-size: 13px; color: var(--mv-ink-2); vertical-align: middle; font-variant-numeric: tabular-nums; }
+.assignment-table .dp-c { text-align: center; }
+.assignment-table tbody tr:last-child td { border-bottom: 0; }
+.assignment-table tbody tr:hover { background: var(--mv-surface-2); }
+.dp-table-frame { border: 1px solid var(--mv-line); border-radius: 8px; overflow: hidden; }
+.dp-summary { margin-top: 14px; border: 1px solid var(--mv-line); border-radius: 8px; padding: 12px 14px; background: var(--mv-surface-2); }
+.dp-summary h6 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--mv-muted); letter-spacing: .04em; text-transform: uppercase; }
+.dp-summary-list { display: grid; gap: 6px; font-size: 13px; }
+.dp-summary-list > div { display: flex; justify-content: space-between; gap: 8px; color: var(--mv-ink-2); }
+.dp-summary-list strong { color: var(--mv-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Info message inserted by JS (project pre-selected) */
+.flash-info-lite { display: flex; gap: 12px; align-items: flex-start; background: var(--mv-accent-soft); border: 1px solid #C9D9EE; color: var(--mv-accent-ink); border-radius: 8px; padding: 11px 14px; font-size: 13.5px; }
+.flash-info-lite p { margin: 3px 0 0; color: var(--mv-ink-2); }
+
+/* Loading state */
+.loading { opacity: .6; pointer-events: none; }
+
+/* Modals */
+.dp-overlay { position: fixed; inset: 0; z-index: 1000; justify-content: center; align-items: center; background: rgba(22, 32, 44, .45); padding: 16px; }
+.dp-modal { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 16px 40px rgba(22, 32, 44, .18); }
+.dp-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--mv-line); }
+.dp-modal-head h3 { margin: 0; font-size: 15px; font-weight: 600; color: var(--mv-ink); }
+.dp-x { width: 32px; height: 32px; border: 0; border-radius: 7px; background: transparent; color: var(--mv-muted); display: grid; place-items: center; cursor: pointer; }
+.dp-x:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.dp-modal-body { padding: 16px 18px; }
+.dp-modal-body p { margin: 0 0 14px; font-size: 13.5px; color: var(--mv-ink-2); line-height: 1.5; }
+.dp-modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--mv-line); background: var(--mv-surface-2); border-radius: 0 0 12px 12px; }
+.dp-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dp-choice { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--mv-line); border-radius: 8px; background: var(--mv-surface); color: var(--mv-ink); font: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer; text-align: left; }
+.dp-choice:hover { background: var(--mv-accent-soft); border-color: #C9D9EE; color: var(--mv-accent-ink); }
+.dp-choice .mv-i { color: var(--mv-muted); }
+.dp-choice small { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--mv-muted); }
+.dp-details { margin-top: 12px; padding: 10px 12px; background: var(--mv-surface-2); border: 1px solid var(--mv-line); border-radius: 8px; font-size: 13px; }
+.dp-details summary { cursor: pointer; font-weight: 500; color: var(--mv-ink-2); }
+.dp-details pre { margin: 8px 0 0; font-family: var(--mv-mono); font-size: 12px; color: var(--mv-ink-2); white-space: pre-wrap; }
+
+@media (max-width: 1280px) {
+    .dp-setup-grid { grid-template-columns: 1fr 1fr; }
+    .dp-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .dp-work-side { grid-template-columns: 1fr 1fr; }
 }
-
-.deployment-kpi-label {
-    font-size: 12px;
-    opacity: 0.85;
-    margin-block-start: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-
-.deployment-action-stack {
-    display: grid;
-    gap: 10px;
-}
-
-.deployment-progress-stats {
-    display: none;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
-    margin-block-end: 20px;
-}
-
-.deployment-progress-stat {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.deployment-progress-icon {
-    inline-size: 42px;
-    block-size: 42px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.deployment-progress-value {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #111827;
-    line-height: 1.1;
-}
-
-.deployment-progress-label {
-    font-size: 12px;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-block-start: 3px;
-}
-
-.deployment-main-grid {
-    display: none;
-    grid-template-columns: 3fr 2fr;
-    gap: 20px;
-}
-
-.deployment-table-head {
-    background: linear-gradient(180deg, #fcfdff 0%, #f8fafc 100%);
-    padding: 20px;
-    border-radius: 18px 18px 0 0;
-    border-block-end: 1px solid #e5e7eb;
-}
-
-.deployment-table-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 14px;
-    margin-block-end: 16px;
-}
-
-.deployment-table-title {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #111827;
-    font-size: 1rem;
-    font-weight: 700;
-}
-
-.deployment-count-pill {
-    background: #1a3a5c;
-    color: white;
-    padding: 4px 9px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.deployment-filter-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 14px;
-}
-
-.deployment-input,
-.deployment-select {
-    inline-size: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    font-size: 14px;
-    background: #fff;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.deployment-input:focus,
-.deployment-select:focus {
-    outline: none;
-    border-color: #1a3a5c;
-    box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.12);
-}
-
-.deployment-empty-state {
-    padding: 60px 20px;
-    text-align: center;
-    color: #64748b;
-}
-
-.deployment-empty-icon {
-    font-size: 48px;
-    margin-block-end: 15px;
-}
-
-.deployment-side-stack {
-    display: grid;
-    gap: 20px;
-}
-
-.deployment-side-card {
-    padding: 24px;
-}
-
-.deployment-side-title {
-    margin: 0 0 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #111827;
-    font-size: 1rem;
-    font-weight: 700;
-}
-
-.deployment-mode-grid,
-.deployment-action-grid {
-    display: grid;
-    gap: 10px;
-}
-
-.deployment-mode-grid label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px;
-    border: 1px solid #dbe5ef;
-    border-radius: 12px;
-    cursor: pointer;
-    background: #f8fafc;
-}
-
-.deployment-option-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-block-end: 16px;
-}
-
-.deployment-empty-panel {
-    text-align: center;
-    color: #64748b;
-    padding: 18px;
-    background: #f8fafc;
-    border-radius: 14px;
-    border: 1px dashed #dbe5ef;
-}
-
-.deployment-summary-shell {
-    margin-block-start: 20px;
-    display: none;
-}
-
-.deployment-success-card {
-    padding: 24px;
-}
-
-.deployment-success-grid {
-    display: grid;
-    grid-template-columns: 3fr 1fr;
-    gap: 20px;
-}
-
-.deployment-summary-box {
-    margin-block-start: 20px;
-    padding: 16px;
-    background: #f8fafc;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-}
-
-.deployment-summary-box h6 {
-    margin: 0 0 10px;
-    color: #111827;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.deployment-summary-list {
-    display: grid;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.deployment-summary-list > div {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.flash-info-lite {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    color: #1e3a8a;
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-block-end: 20px;
-}
-
 @media (max-width: 900px) {
-    .deployment-hero-head,
-    .deployment-table-toolbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .deployment-stepper {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .deployment-step-card::after {
-        display: none;
-    }
-
-    .deployment-option-grid {
-        grid-template-columns: 1fr;
-    }
+    .dp-stepper { grid-template-columns: 1fr 1fr; row-gap: 12px; }
+    .step-item::after { display: none; }
+    .dp-setup-grid, .dp-work-side, .dp-success-grid { grid-template-columns: 1fr; }
+    .dp-filter-grid { grid-template-columns: 1fr 1fr; }
+    .deployment-progress-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .deployment-progress-stat + .deployment-progress-stat { border-left: 0; }
+    .dp-option-grid, .dp-form-row { grid-template-columns: 1fr; }
 }
-
-@media (max-width: 640px) {
-    .deployment-stepper {
-        grid-template-columns: 1fr;
-    }
-}
-
 </style>
 @endpush
 
 @section('content')
-<div>
+<div class="dp-page" id="deploymentPage">
     <!-- CSRF Token for AJAX requests -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Header -->
-    <div class="deployment-hero">
-        <div class="deployment-hero-head">
-            <div class="deployment-hero-copy">
-                <div class="deployment-hero-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg></div>
-                <div>
-                    <h1 class="deployment-hero-title">Terminal Deployment</h1>
-                    <p class="deployment-hero-subtitle">Deploy technicians to terminals across regions with a cleaner, step-based workflow.</p>
-                </div>
+    <!-- Steps -->
+    <section class="dp-card">
+        <div class="dp-stepper" id="stepProgress">
+            <div class="step-item active" id="step1">
+                <div class="step-circle">1</div>
+                <div class="dp-step-text"><strong>Select Scope</strong><span>Choose clients and projects for this deployment batch.</span></div>
             </div>
-            <div class="deployment-hero-badge">{{ $stats['active_projects'] }} active projects</div>
-        </div>
-
-        <div class="deployment-stepper" id="stepProgress">
-            <div class="deployment-step-card step-item active" id="step1">
-                <div class="deployment-step-top">
-                    <div class="step-circle">1</div>
-                    <strong>Select Scope</strong>
-                </div>
-                <div class="deployment-step-label">Choose clients and projects for this deployment batch.</div>
+            <div class="step-item" id="step2">
+                <div class="step-circle">2</div>
+                <div class="dp-step-text"><strong>Load Hierarchy</strong><span>Pull terminal hierarchy and filter the working set.</span></div>
             </div>
-            <div class="deployment-step-card step-item" id="step2">
-                <div class="deployment-step-top">
-                    <div class="step-circle">2</div>
-                    <strong>Load Hierarchy</strong>
-                </div>
-                <div class="deployment-step-label">Pull terminal hierarchy and filter the working set.</div>
+            <div class="step-item" id="step3">
+                <div class="step-circle">3</div>
+                <div class="dp-step-text"><strong>Pick Technicians</strong><span>Select technicians and define assignment mode.</span></div>
             </div>
-            <div class="deployment-step-card step-item" id="step3">
-                <div class="deployment-step-top">
-                    <div class="step-circle">3</div>
-                    <strong>Pick Technicians</strong>
-                </div>
-                <div class="deployment-step-label">Select technicians and define assignment mode.</div>
-            </div>
-            <div class="deployment-step-card step-item" id="step4">
-                <div class="deployment-step-top">
-                    <div class="step-circle">4</div>
-                    <strong>Assign</strong>
-                </div>
-                <div class="deployment-step-label">Create assignments and review the final summary.</div>
+            <div class="step-item" id="step4">
+                <div class="step-circle">4</div>
+                <div class="dp-step-text"><strong>Assign</strong><span>Create assignments and review the final summary.</span></div>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Success/Error Messages -->
     @if(session('success'))
-        <div class="flash-success" style="margin-block-end: 20px;">
-            {{ session('success') }}
-        </div>
+        <div class="flash-success" style="border:1px solid; padding:11px 14px;">{{ session('success') }}</div>
     @endif
 
     @if(session('error'))
-        <div class="flash-error" style="margin-block-end: 20px;">
-            {{ session('error') }}
-        </div>
+        <div class="flash-error" style="border:1px solid; padding:11px 14px;">{{ session('error') }}</div>
     @endif
 
     <!-- Page Setup - Filters Section -->
-    <div class="deployment-setup-card">
-        <div class="deployment-card-header">
+    <section class="dp-card dp-setup">
+        <div class="dp-card-head">
             <div>
-                <h4 class="deployment-card-title">Deployment Setup</h4>
-                <p class="deployment-card-subtitle">Define the client scope, target projects, and deployment date before loading terminals.</p>
+                <h2 class="dp-card-title">Deployment Setup</h2>
+                <p class="dp-card-sub">Define the client scope, target projects, and deployment date before loading terminals.</p>
             </div>
-            <div class="deployment-hero-badge">Step 1 of 4</div>
+            <span class="dp-meta">Step 1 of 4</span>
         </div>
 
-        <div class="deployment-setup-grid">
+        <div class="dp-setup-grid">
             <!-- Client Selection -->
             <div>
-                <label class="deployment-field-label">
-                    Select Clients <span style="color: #f44336;">*</span>
-                </label>
-                <div style="position: relative;">
-                    <div class="custom-dropdown" id="clientDropdown">
-                        <div class="dropdown-selected" onclick="toggleDropdown('clientDropdown')">
-                            <span id="clientSelectedText">Choose clients...</span>
-                            <i class="dropdown-arrow">▼</i>
-                        </div>
-                        <div class="dropdown-options" id="clientOptions">
-                            <div class="dropdown-search">
-                                <input type="text" placeholder="Search clients..." onkeyup="filterOptions('clientOptions', this.value)">
-                            </div>
-                            @foreach($clients as $client)
-                                <label class="dropdown-option">
-                                    <input type="checkbox" value="{{ $client['id'] }}" data-terminals="{{ $client['terminal_count'] }}" data-name="{{ $client['name'] }}" onchange="updateClientSelection()">
-                                    <span>{{ $client['name'] }} ({{ $client['terminal_count'] }} terminals)</span>
-                                </label>
-                            @endforeach
-                        </div>
+                <span class="dp-label">Select Clients <span class="dp-req">*</span></span>
+                <div class="custom-dropdown" id="clientDropdown">
+                    <div class="dropdown-selected" onclick="toggleDropdown('clientDropdown')">
+                        <span id="clientSelectedText">Choose clients...</span>
+                        <i class="dropdown-arrow"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg></i>
                     </div>
-                    <div class="deployment-field-help">Select one or more clients to build the deployment scope.</div>
+                    <div class="dropdown-options" id="clientOptions">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Search clients..." onkeyup="filterOptions('clientOptions', this.value)">
+                        </div>
+                        @foreach($clients as $client)
+                            <label class="dropdown-option">
+                                <input type="checkbox" value="{{ $client['id'] }}" data-terminals="{{ $client['terminal_count'] }}" data-name="{{ $client['name'] }}" onchange="updateClientSelection()">
+                                <span>{{ $client['name'] }} ({{ $client['terminal_count'] }} terminals)</span>
+                            </label>
+                        @endforeach
+                    </div>
                 </div>
+                <div class="dp-help">Select one or more clients to build the deployment scope.</div>
             </div>
 
             <!-- Total Terminals Display -->
             <div>
-                <label class="deployment-field-label">Total Terminals</label>
-                <div class="deployment-kpi">
-                    <div class="deployment-kpi-number" id="totalTerminalCount">0</div>
-                    <div class="deployment-kpi-label">Selected</div>
+                <span class="dp-label">Total Terminals</span>
+                <div class="dp-kpi">
+                    <div class="dp-kpi-number" id="totalTerminalCount">0</div>
+                    <div class="dp-kpi-label">Selected</div>
                 </div>
             </div>
 
             <!-- Project Selection -->
             <div>
-                <label class="deployment-field-label">
-                    Projects <span style="color: #f44336;">*</span>
-                </label>
-                <div style="position: relative;">
-                    <div class="custom-dropdown" id="projectDropdown">
-                        <div class="dropdown-selected" onclick="toggleDropdown('projectDropdown')">
-                            <span id="projectSelectedText">Select clients first...</span>
-                            <i class="dropdown-arrow">▼</i>
-                        </div>
-                        <div class="dropdown-options" id="projectOptions">
-                            <div class="dropdown-search">
-                                <input type="text" placeholder="Search projects..." onkeyup="filterOptions('projectOptions', this.value)">
-                            </div>
-                            <div id="projectOptionsList">
-                                <div class="dropdown-option disabled">Select clients first...</div>
-                            </div>
-                        </div>
+                <span class="dp-label">Projects <span class="dp-req">*</span></span>
+                <div class="custom-dropdown" id="projectDropdown">
+                    <div class="dropdown-selected" onclick="toggleDropdown('projectDropdown')">
+                        <span id="projectSelectedText">Select clients first...</span>
+                        <i class="dropdown-arrow"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg></i>
                     </div>
-                    <div class="deployment-action-stack">
-                        <button type="button" class="btn-primary" onclick="createNewProject()" style="margin-top: 8px; width: 100%; padding: 10px 12px;">
-                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Create New Project
-                        </button>
-                        <div class="deployment-field-help">Need a fresh deployment project? Create it here and continue.</div>
+                    <div class="dropdown-options" id="projectOptions">
+                        <div class="dropdown-search">
+                            <input type="text" placeholder="Search projects..." onkeyup="filterOptions('projectOptions', this.value)">
+                        </div>
+                        <div id="projectOptionsList">
+                            <div class="dropdown-option disabled">Select clients first...</div>
+                        </div>
                     </div>
                 </div>
+                <div class="dp-stack">
+                    <button type="button" class="btn-secondary" onclick="createNewProject()">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Create New Project
+                    </button>
+                </div>
+                <div class="dp-help">Need a fresh deployment project? Create it here and continue.</div>
             </div>
 
             <!-- Start Date -->
             <div>
-                <label class="deployment-field-label">Deployment Date</label>
-                <input type="date" id="deploymentDate" value="{{ date('Y-m-d', strtotime('+1 day')) }}"
-                       class="deployment-input">
-                <!-- Load Button -->
-                <button type="button" class="btn-success" onclick="loadHierarchy()" id="loadHierarchyBtn" disabled
-                        style="margin-top: 12px; width: 100%; padding: 12px; font-size: 16px;">
-                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-map"/></svg> Load Client Terminals
-                </button>
+                <label class="dp-label" for="deploymentDate">Deployment Date</label>
+                <input type="date" id="deploymentDate" value="{{ date('Y-m-d', strtotime('+1 day')) }}" class="deployment-input">
+                <div class="dp-stack">
+                    <button type="button" class="btn-primary" onclick="loadHierarchy()" id="loadHierarchyBtn" disabled>
+                        Load Client Terminals
+                    </button>
+                </div>
+                <div id="autoLoadIndicator">Loading terminals...</div>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Progress Stats - Hidden Initially -->
     <div id="progressStats" class="progress-section deployment-progress-stats">
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#dbeafe;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-target"/></svg></div>
-            <div>
-                <div class="deployment-progress-value" id="totalTerminals">0</div>
-                <div class="deployment-progress-label">Total Terminals</div>
-            </div>
+            <div class="deployment-progress-label"><span class="dp-dot"></span>Total Terminals</div>
+            <div class="deployment-progress-value" id="totalTerminals">0</div>
         </div>
-
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#dcfce7;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
-            <div>
-                <div class="deployment-progress-value" id="assignedTerminals">0</div>
-                <div class="deployment-progress-label">Assigned</div>
-            </div>
+            <div class="deployment-progress-label"><span class="dp-dot is-good"></span>Assigned</div>
+            <div class="deployment-progress-value" id="assignedTerminals">0</div>
         </div>
-
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#fef3c7;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg></div>
-            <div>
-                <div class="deployment-progress-value" id="unassignedTerminals">0</div>
-                <div class="deployment-progress-label">Unassigned</div>
-            </div>
+            <div class="deployment-progress-label"><span class="dp-dot is-warn"></span>Unassigned</div>
+            <div class="deployment-progress-value" id="unassignedTerminals">0</div>
         </div>
-
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#ede9fe;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
-            <div>
-                <div class="deployment-progress-value" id="selectedTerminals">0</div>
-                <div class="deployment-progress-label">Selected</div>
-            </div>
+            <div class="deployment-progress-label"><span class="dp-dot is-accent"></span>Selected</div>
+            <div class="deployment-progress-value" id="selectedTerminals">0</div>
         </div>
-
         <div class="deployment-progress-stat">
-            <div class="deployment-progress-icon" style="background:#fee2e2;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg></div>
-            <div>
-                <div class="deployment-progress-value" id="technicianCount">0</div>
-                <div class="deployment-progress-label">Technicians</div>
-            </div>
+            <div class="deployment-progress-label"><span class="dp-dot"></span>Technicians</div>
+            <div class="deployment-progress-value" id="technicianCount">0</div>
         </div>
     </div>
 
     <!-- Main Content Area - Hidden Initially -->
-    <div id="mainContentArea" class="main-content-section deployment-main-grid">
+    <div id="mainContentArea" class="main-content-section">
 
-        <!-- Left Side - Terminal Table -->
-        <div class="deployment-table-card">
-            <!-- Table Header -->
-            <div class="deployment-table-head">
-                <div class="deployment-table-toolbar">
-                    <h4 class="deployment-table-title">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Terminal List
-                        <span class="deployment-count-pill" id="terminalCount">0</span>
-                    </h4>
-                    <div style="display: flex; gap: 8px;">
+        <!-- Terminal Table -->
+        <section class="dp-card">
+            <div class="dp-table-head">
+                <div class="dp-toolbar">
+                    <h2 class="dp-card-title">Terminal List <span class="dp-count" id="terminalCount">0</span></h2>
+                    <div class="dp-toolbar-actions">
                         <button class="btn-secondary btn-sm" onclick="selectAllVisible()" disabled id="selectAllBtn" title="Select All Visible">
-                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-square"/></svg> Select All
+                            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-check-square"/></svg> Select All
                         </button>
                         <button class="btn-secondary btn-sm" onclick="clearSelections()" disabled id="clearAllBtn" title="Clear Selections">
-                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-x-circle"/></svg> Clear
+                            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-x"/></svg> Clear
                         </button>
                         <button class="btn-secondary btn-sm" onclick="exportTableData()" disabled id="exportBtn" title="Export Data">
-                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export
+                            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg> Export
                         </button>
                     </div>
                 </div>
 
                 <!-- Filters -->
-                <div class="deployment-filter-grid">
+                <div class="dp-filter-grid">
                     <div>
-                        <label class="deployment-field-label">Province</label>
+                        <label class="dp-label" for="provinceFilter">Province</label>
                         <select id="provinceFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Provinces</option>
                         </select>
                     </div>
                     <div>
-                        <label class="deployment-field-label">City</label>
+                        <label class="dp-label" for="cityFilter">City</label>
                         <select id="cityFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Cities</option>
                         </select>
                     </div>
                     <div>
-                        <label class="deployment-field-label">Region</label>
+                        <label class="dp-label" for="regionFilter">Region</label>
                         <select id="regionFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Regions</option>
                         </select>
                     </div>
                     <div>
-                        <label class="deployment-field-label">Assignment Status</label>
+                        <label class="dp-label" for="assignmentFilter">Assignment Status</label>
                         <select id="assignmentFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Terminals</option>
                             <option value="assigned">Assigned</option>
@@ -1695,7 +405,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="deployment-field-label">Status</label>
+                        <label class="dp-label" for="statusFilter">Status</label>
                         <select id="statusFilter" onchange="applyFilters()" class="deployment-select">
                             <option value="">All Status</option>
                             <option value="active">Active</option>
@@ -1705,335 +415,294 @@
                         </select>
                     </div>
                     <div>
-                        <label class="deployment-field-label">Search</label>
+                        <label class="dp-label" for="searchFilter">Search</label>
                         <input type="text" id="searchFilter" placeholder="Search terminals..." onkeyup="applyFilters()" class="deployment-input">
                     </div>
                 </div>
             </div>
 
             <!-- Terminal Table -->
-            <div style="max-height: 600px; overflow: auto; background: white;">
-                <table id="terminalTable" style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                    <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10;">
+            <div class="dp-table-wrap">
+                <table id="terminalTable">
+                    <thead>
                         <tr>
-                            <th style="padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; width: 40px;">
-                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" style="cursor: pointer;">
-                            </th>
-                            <th style="padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; min-width: 100px; font-weight: 600;">Terminal ID</th>
-                            <th style="padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; min-width: 200px; font-weight: 600;">Merchant Name</th>
-                            <th style="padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; min-width: 120px; font-weight: 600;">Province</th>
-                            <th style="padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; min-width: 120px; font-weight: 600;">City</th>
-                            <th style="padding: 12px 8px; text-align: left; border-bottom: 2px solid #dee2e6; min-width: 120px; font-weight: 600;">Region</th>
-                            <th style="padding: 12px 8px; text-align: center; border-bottom: 2px solid #dee2e6; min-width: 100px; font-weight: 600;">Assignment</th>
-                            <th style="padding: 12px 8px; text-align: center; border-bottom: 2px solid #dee2e6; min-width: 80px; font-weight: 600;">Status</th>
-                            <th style="padding: 12px 8px; text-align: center; border-bottom: 2px solid #dee2e6; min-width: 100px; font-weight: 600;">Actions</th>
+                            <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" aria-label="Select all on this page"></th>
+                            <th>Terminal ID</th>
+                            <th>Merchant Name</th>
+                            <th>Province</th>
+                            <th>City</th>
+                            <th>Region</th>
+                            <th class="dp-c">Assignment</th>
+                            <th class="dp-c">Status</th>
+                            <th class="dp-c">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="terminalTableBody">
                         <tr>
-                            <td colspan="9" style="padding: 60px 20px; text-align: center; color: #666;">
-                                <div class="deployment-empty-state">
-                                    <div class="deployment-empty-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-arrow-left"/></svg></div>
+                            <td colspan="9">
+                                <div class="dp-empty">
+                                    <svg class="mv-i" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
                                     <h5>Step 1: Configure Deployment Setup</h5>
                                     <p>Select clients and projects to load terminals.</p>
-                                    <div style="margin-top: 20px; font-size: 14px; color: #94a3b8;">
-                                    • Choose one or more clients<br>
-                                    • Select associated projects
-                                    </div>
                                 </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
 
-                <!-- Pagination -->
-                <div id="tablePagination" style="display: none; padding: 15px 20px; background: #f8f9fa; border-top: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="font-size: 14px; color: #666;">
-                        Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalTerminals">0</span> terminals
-                    </div>
-                    <div style="display: flex; gap: 5px;" id="paginationButtons">
-                        <!-- Pagination buttons will be inserted here -->
-                    </div>
+            <!-- Pagination -->
+            <div id="tablePagination">
+                <div>
+                    Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="paginationTotal">0</span> terminals
+                </div>
+                <div id="paginationButtons">
+                    <!-- Pagination buttons will be inserted here -->
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Right Side - Assignment & Tracking -->
-        <div class="deployment-side-stack">
+        <!-- Assignment & Tracking -->
+        <div class="dp-work-side">
 
             <!-- Assignment Section -->
-            <div class="deployment-side-card" id="assignmentSection">
-                <h4 class="deployment-side-title">
-                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Technician Assignment
-                </h4>
-
-                <!-- Technician Selection -->
-                <div style="margin-block-end: 15px;">
-                    <label class="deployment-field-label">
-                        Select Technicians <span style="color: #f44336;">*</span>
-                    </label>
-                    <div class="custom-dropdown" id="technicianDropdown">
-                        <div class="dropdown-selected" onclick="toggleDropdown('technicianDropdown')">
-                            <span id="technicianSelectedText">Choose technicians...</span>
-                            <i class="dropdown-arrow">▼</i>
+            <section class="dp-card" id="assignmentSection">
+                <div class="dp-card-head"><h2 class="dp-card-title">Technician Assignment</h2></div>
+                <div class="dp-card-body">
+                    <!-- Technician Selection -->
+                    <div class="dp-field">
+                        <span class="dp-label">Select Technicians <span class="dp-req">*</span></span>
+                        <div class="custom-dropdown" id="technicianDropdown">
+                            <div class="dropdown-selected" onclick="toggleDropdown('technicianDropdown')">
+                                <span id="technicianSelectedText">Choose technicians...</span>
+                                <i class="dropdown-arrow"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg></i>
+                            </div>
+                            <div class="dropdown-options" id="technicianOptions">
+                                <div class="dropdown-search">
+                                    <input type="text" placeholder="Search technicians..." onkeyup="filterOptions('technicianOptions', this.value)">
+                                </div>
+                                @foreach($technicians as $tech)
+                                    <label class="dropdown-option">
+                                        <input type="checkbox"
+                                               value="{{ $tech['id'] }}"
+                                               data-name="{{ $tech['name'] }}"
+                                               data-spec="{{ $tech['specialization'] }}"
+                                               data-availability="{{ $tech['availability_status'] }}"
+                                               data-workload="{{ $tech['current_workload'] }}"
+                                               onchange="updateTechnicianSelection()">
+                                        <span>
+                                            {{ $tech['name'] }} - {{ $tech['specialization'] }}
+                                            @if($tech['availability_status'] !== 'available')
+                                                <small>({{ ucfirst($tech['availability_status']) }})</small>
+                                            @endif
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
                         </div>
-                        <div class="dropdown-options" id="technicianOptions">
-                            <div class="dropdown-search">
-                                <input type="text" placeholder="Search technicians..." onkeyup="filterOptions('technicianOptions', this.value)">
-                            </div>
-                            @foreach($technicians as $tech)
-                                <label class="dropdown-option">
-                                    <input type="checkbox"
-                                           value="{{ $tech['id'] }}"
-                                           data-name="{{ $tech['name'] }}"
-                                           data-spec="{{ $tech['specialization'] }}"
-                                           data-availability="{{ $tech['availability_status'] }}"
-                                           data-workload="{{ $tech['current_workload'] }}"
-                                           onchange="updateTechnicianSelection()">
-                                    <span>
-                                        {{ $tech['name'] }} - {{ $tech['specialization'] }}
-                                        @if($tech['availability_status'] !== 'available')
-                                            <small style="color: #ff9800;">({{ ucfirst($tech['availability_status']) }})</small>
-                                        @endif
-                                    </span>
-                                </label>
-                            @endforeach
+                        <div class="dp-help">Select multiple technicians to distribute or share assignments.</div>
+                    </div>
+
+                    <!-- Assignment Mode -->
+                    <div class="dp-field">
+                        <span class="dp-label">Assignment Mode</span>
+                        <div class="deployment-mode-grid">
+                            <label class="dp-mode" onclick="selectAssignmentMode('individual')">
+                                <input type="radio" name="assignmentMode" value="individual" checked>
+                                <div>
+                                    <strong>Individual Assignment</strong>
+                                    <span>Distribute terminals among technicians</span>
+                                </div>
+                            </label>
+                            <label class="dp-mode" onclick="selectAssignmentMode('team')">
+                                <input type="radio" name="assignmentMode" value="team">
+                                <div>
+                                    <strong>Team Assignment</strong>
+                                    <span>All technicians work together</span>
+                                </div>
+                            </label>
                         </div>
                     </div>
-                    <div class="deployment-field-help">Select multiple technicians to distribute or share assignments.</div>
-                </div>
 
-                <!-- Assignment Mode -->
-                <div style="margin-block-end: 15px;">
-                    <label class="deployment-field-label">Assignment Mode</label>
-                    <div class="deployment-mode-grid">
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;" onclick="selectAssignmentMode('individual')">
-                            <input type="radio" name="assignmentMode" value="individual" checked>
-                            <div>
-                                <strong>Individual Assignment</strong>
-                                <div style="font-size: 12px; color: #666;">Distribute terminals among technicians</div>
-                            </div>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;" onclick="selectAssignmentMode('team')">
-                            <input type="radio" name="assignmentMode" value="team">
-                            <div>
-                                <strong>Team Assignment</strong>
-                                <div style="font-size: 12px; color: #666;">All technicians work together</div>
-                            </div>
-                        </label>
+                    <!-- Assignment Options -->
+                    <div class="dp-option-grid">
+                        <div>
+                            <label class="dp-label" for="assignmentPriority">Priority</label>
+                            <select id="assignmentPriority" class="deployment-select">
+                                <option value="normal" selected>Normal</option>
+                                <option value="high">High</option>
+                                <option value="emergency">Emergency</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="dp-label" for="serviceType">Service Type</label>
+                            <select id="serviceType" class="deployment-select">
+                                <option value="routine_maintenance">Routine Maintenance</option>
+                                <option value="emergency_repair">Emergency Repair</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Assignment Options -->
-                <div class="deployment-option-grid">
-                    <div>
-                        <label class="deployment-field-label">Priority</label>
-                        <select id="assignmentPriority" class="deployment-select">
-                            <option value="normal" selected>Normal</option>
-                            <option value="high">High</option>
-                            <option value="emergency">Emergency</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="deployment-field-label">Service Type</label>
-                        <select id="serviceType" class="deployment-select">
-                            <option value="routine_maintenance">Routine Maintenance</option>
-                            <option value="emergency_repair">Emergency Repair</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Assignment Actions -->
-                <div class="deployment-action-grid">
-                    <button type="button" class="btn-success" onclick="assignSelected()" id="assignSelectedBtn" disabled style="width: 100%;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Assign Selected Terminals
-                    </button>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <button type="button" class="btn-secondary" onclick="assignAll()" id="assignAllBtn" disabled>
-                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> Assign All
+                    <!-- Assignment Actions -->
+                    <div class="dp-actions">
+                        <button type="button" class="btn-primary" onclick="assignSelected()" id="assignSelectedBtn" disabled>
+                            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Assign Selected Terminals
                         </button>
-                        <button type="button" class="btn-secondary" onclick="clearAssignments()" id="clearAssignmentsBtn" disabled>
-                            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Clear Assignments
-                        </button>
+                        <div class="dp-actions-row">
+                            <button type="button" class="btn-secondary" onclick="assignAll()" id="assignAllBtn" disabled>
+                                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-clipboard"/></svg> Assign All
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="clearAssignments()" id="clearAssignmentsBtn" disabled>
+                                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-trash"/></svg> Clear Assignments
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <!-- Technician Workload Display -->
-            <div class="deployment-side-card">
-                <h4 class="deployment-side-title">
-                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Technician Workload
-                </h4>
-
-                <div id="technicianWorkload">
-                    <div class="deployment-empty-panel">
-                        <div style="font-size: 32px; margin-block-end: 10px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
-                        <h6>Step 3: Select Technicians</h6>
-                        <p>Choose technicians to see workload distribution</p>
+            <section class="dp-card">
+                <div class="dp-card-head"><h2 class="dp-card-title">Technician Workload</h2></div>
+                <div class="dp-card-body">
+                    <div id="technicianWorkload">
+                        <div class="dp-empty" style="padding: 20px 8px;">
+                            <svg class="mv-i" aria-hidden="true"><use href="#i-users"/></svg>
+                            <h6>Step 3: Select Technicians</h6>
+                            <p>Choose technicians to see workload distribution</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <!-- Unassigned Terminals -->
-            <div class="deployment-side-card">
-                <h4 class="deployment-side-title">
-                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg> Unassigned Terminals
-                    <span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;" id="unassignedCount">0</span>
-                </h4>
-
-                <div id="unassignedList" style="max-height: 200px; overflow-y: auto;">
-                    <div class="deployment-empty-panel">
-                        <div style="font-size: 32px; margin-block-end: 10px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-hourglass"/></svg></div>
-                        <p>Load hierarchy to see unassigned terminals</p>
+            <section class="dp-card">
+                <div class="dp-card-head">
+                    <h2 class="dp-card-title">Unassigned Terminals <span class="dp-count" id="unassignedCount">0</span></h2>
+                </div>
+                <div class="dp-card-body">
+                    <div id="unassignedList" class="dp-list">
+                        <div class="dp-empty" style="padding: 20px 8px;">
+                            <svg class="mv-i" aria-hidden="true"><use href="#i-hourglass"/></svg>
+                            <p>Load hierarchy to see unassigned terminals</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 
     <!-- Assignment Success Section - Hidden Initially -->
-    <div class="assignment-success-section deployment-summary-shell" id="assignmentSuccessSection">
-        <div class="deployment-success-card">
-        <h4 class="deployment-side-title">
-            <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> Assignment Complete!
-        </h4>
-
-        <div class="deployment-success-grid">
-            <!-- Assignment Summary Table -->
-            <div>
-                <div class="deployment-table-card" style="overflow: hidden;">
-                    <table class="assignment-table" style="width: 100%; border-collapse: collapse;">
+    <section class="assignment-success-section dp-card" id="assignmentSuccessSection">
+        <div class="dp-card-head">
+            <h2 class="dp-card-title">
+                <svg class="mv-i mv-i-sm" aria-hidden="true" style="color: var(--mv-good);"><use href="#i-check-circle"/></svg> Assignment Complete!
+            </h2>
+        </div>
+        <div class="dp-card-body">
+            <div class="dp-success-grid">
+                <!-- Assignment Summary Table -->
+                <div class="dp-table-frame">
+                    <table class="assignment-table">
                         <thead>
-                            <tr style="background: #f8f9fa;">
-                                <th style="padding: 12px; text-align: left; font-weight: 600;">Technician</th>
-                                <th style="padding: 12px; text-align: center; font-weight: 600;">Terminals</th>
-                                <th style="padding: 12px; text-align: center; font-weight: 600;">Regions</th>
-                                <th style="padding: 12px; text-align: center; font-weight: 600;">Priority</th>
-                                <th style="padding: 12px; text-align: center; font-weight: 600;">Actions</th>
+                            <tr>
+                                <th>Technician</th>
+                                <th class="dp-c">Terminals</th>
+                                <th class="dp-c">Regions</th>
+                                <th class="dp-c">Priority</th>
+                                <th class="dp-c">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="assignmentSummaryTable">
                             <tr>
-                                <td colspan="5" style="padding: 40px; text-align: center; color: #666;">
-                                    No assignments yet
-                                </td>
+                                <td colspan="5" class="dp-empty" style="padding: 28px;">No assignments yet</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-            <!-- Export Actions -->
-            <div>
-                <div style="display: grid; gap: 12px;">
-                    <button type="button" class="btn-success" onclick="exportDeployment()" id="exportDeploymentBtn" disabled style="width: 100%;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> Export Assignment Data
-                    </button>
-                    <button type="button" class="btn-secondary" onclick="saveAsDraft()" id="saveDraftBtn" disabled style="width: 100%;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-save"/></svg> Save as Draft
-                    </button>
-                    <button type="button" class="btn-primary" onclick="viewAllAssignments()" style="width: 100%;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> View All Assignments
-                    </button>
-                </div>
+                <!-- Export Actions -->
+                <div>
+                    <div class="dp-actions" style="padding-top: 0; border-top: 0;">
+                        <button type="button" class="btn-primary" onclick="exportDeployment()" id="exportDeploymentBtn" disabled>
+                            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg> Export Assignment Data
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="saveAsDraft()" id="saveDraftBtn" disabled>
+                            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-save"/></svg> Save as Draft
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="viewAllAssignments()">
+                            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg> View All Assignments
+                        </button>
+                    </div>
 
-                <!-- Assignment Stats -->
-                <div class="deployment-summary-box">
-                    <h6>Assignment Summary</h6>
-                    <div class="deployment-summary-list">
-                        <div>
-                            <span>Total Technicians:</span>
-                            <strong id="summaryTechnicians">0</strong>
-                        </div>
-                        <div>
-                            <span>Total Terminals:</span>
-                            <strong id="summaryTerminals">0</strong>
-                        </div>
-                        <div>
-                            <span>Estimated Time:</span>
-                            <strong id="summaryTime">0 hours</strong>
+                    <!-- Assignment Stats -->
+                    <div class="dp-summary">
+                        <h6>Assignment Summary</h6>
+                        <div class="dp-summary-list">
+                            <div><span>Total Technicians</span><strong id="summaryTechnicians">0</strong></div>
+                            <div><span>Total Terminals</span><strong id="summaryTerminals">0</strong></div>
+                            <div><span>Estimated Time</span><strong id="summaryTime">0 hours</strong></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        </div>
-    </div>
+    </section>
 </div>
 
 <!-- Create New Project Modal -->
-<div id="createProjectModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg></span>
-                <span>Create New Project</span>
-            </h3>
-            <button onclick="closeProjectModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
+<div id="createProjectModal" class="dp-overlay" style="display: none;">
+    <div class="dp-modal" role="dialog" aria-modal="true" aria-labelledby="createProjectTitle">
+        <div class="dp-modal-head">
+            <h3 id="createProjectTitle">Create New Project</h3>
+            <button type="button" onclick="closeProjectModal()" class="dp-x" aria-label="Close">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg>
+            </button>
         </div>
 
-        <!-- Modal Body -->
-        <div style="padding: 20px;">
-            <form id="createProjectForm">
-                <div style="display: grid; gap: 15px;">
+        <form id="createProjectForm">
+            <div class="dp-modal-body">
+                <div class="dp-field">
+                    <label class="dp-label" for="newProjectName">Project Name <span class="dp-req">*</span></label>
+                    <input type="text" id="newProjectName" required class="dp-input" placeholder="e.g., Q1 2025 Terminal Maintenance">
+                </div>
+
+                <div class="dp-form-row dp-field">
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                            Project Name <span style="color: #f44336;">*</span>
-                        </label>
-                        <input type="text" id="newProjectName" required
-                               placeholder="e.g., Q1 2025 Terminal Maintenance"
-                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <label class="dp-label" for="newProjectType">Project Type <span class="dp-req">*</span></label>
+                        <select id="newProjectType" required class="dp-input">
+                            <option value="">Select type...</option>
+                            <option value="discovery">Discovery</option>
+                            <option value="servicing">Servicing</option>
+                            <option value="support">Support</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="installation">Installation</option>
+                        </select>
                     </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Project Type <span style="color: #f44336;">*</span>
-                            </label>
-                            <select id="newProjectType" required style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                                <option value="">Select type...</option>
-                                <option value="discovery">Discovery</option>
-                                <option value="servicing">Servicing</option>
-                                <option value="support">Support</option>
-                                <option value="maintenance">Maintenance</option>
-                                <option value="installation">Installation</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Expected Duration
-                            </label>
-                            <select id="newProjectDuration" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                                <option value="1">1 Month</option>
-                                <option value="3" selected>3 Months</option>
-                                <option value="6">6 Months</option>
-                                <option value="12">1 Year</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                            Project Description
-                        </label>
-                        <textarea id="newProjectDescription" rows="3"
-                                  placeholder="Describe the project objectives and scope..."
-                                  style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
+                        <label class="dp-label" for="newProjectDuration">Expected Duration</label>
+                        <select id="newProjectDuration" class="dp-input">
+                            <option value="1">1 Month</option>
+                            <option value="3" selected>3 Months</option>
+                            <option value="6">6 Months</option>
+                            <option value="12">1 Year</option>
+                        </select>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn-primary" style="flex: 1;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-plus"/></svg> Create Project
-                    </button>
-                    <button type="button" onclick="closeProjectModal()" class="btn-secondary">
-                        Cancel
-                    </button>
+                <div>
+                    <label class="dp-label" for="newProjectDescription">Project Description</label>
+                    <textarea id="newProjectDescription" rows="3" class="dp-input" style="resize: vertical;"
+                              placeholder="Describe the project objectives and scope..."></textarea>
                 </div>
-            </form>
-        </div>
+            </div>
+
+            <div class="dp-modal-foot">
+                <button type="button" onclick="closeProjectModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Create Project
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -2156,20 +825,16 @@ function loadProjectsAndSelect(projectId) {
 function showProjectSelectionMessage() {
     const messageHtml = `
         <div class="flash-info-lite">
-            <div style="font-size: 18px; line-height: 1;"></div>
+            <svg class="mv-i" aria-hidden="true"><use href="#i-info"/></svg>
             <div>
-                <div>
-                    <strong>Project Ready for Terminal Assignment</strong>
-                    <p style="margin: 5px 0 0 0; color: #475569;">
-                        Your project has been created successfully. Follow the steps below to assign terminals and technicians to this project.
-                    </p>
-                </div>
+                <strong>Project Ready for Terminal Assignment</strong>
+                <p>Your project has been created successfully. Follow the steps below to assign terminals and technicians to this project.</p>
             </div>
         </div>
     `;
 
     // Insert the message at the top of the page
-    const container = document.querySelector('.container-fluid') || document.querySelector('div');
+    const container = document.getElementById('deploymentPage') || document.querySelector('.container-fluid');
     if (container) {
         container.insertAdjacentHTML('afterbegin', messageHtml);
     }
@@ -2292,14 +957,13 @@ function updateHelpfulHints(hasClients, hasProjects, hasHierarchy, hasTechnician
     if (!hasClients || !hasProjects) {
         if (treeContainer) {
             treeContainer.innerHTML = `
-                <div style="text-align: center; padding: 60px 20px; color: #666;">
-                    <div style="font-size: 64px; margin-block-end: 20px;"></div>
+                <div class="dp-empty">
                     <h5>Step 1: Configure Deployment Setup</h5>
                     <p>Select clients and projects to continue</p>
-                    <div style="margin-top: 20px; font-size: 14px; color: #999;">
-                        ${!hasClients ? '• Choose one or more clients' : 'Clients selected'}<br>
-                        ${!hasProjects ? '• Select associated projects' : 'Projects selected'}
-                    </div>
+                    <ul>
+                        <li>${!hasClients ? 'Choose one or more clients' : 'Clients selected'}</li>
+                        <li>${!hasProjects ? 'Select associated projects' : 'Projects selected'}</li>
+                    </ul>
                 </div>
             `;
         }
@@ -2308,8 +972,7 @@ function updateHelpfulHints(hasClients, hasProjects, hasHierarchy, hasTechnician
     // Update technician workload placeholder
     if (!hasTechnicians && hasHierarchy) {
         document.getElementById('technicianWorkload').innerHTML = `
-            <div style="text-align: center; color: #666; padding: 20px;">
-                <div style="font-size: 32px; margin-block-end: 10px;"></div>
+            <div class="dp-empty" style="padding: 20px 8px;">
                 <h6>Step 3: Select Technicians</h6>
                 <p>Choose technicians to see workload distribution</p>
             </div>
@@ -2627,9 +1290,8 @@ function loadHierarchy() {
 
     tableBody.innerHTML = `
         <tr>
-            <td colspan="8" style="padding: 40px 20px; text-align: center; color: #666;">
-                <div style="font-size: 32px; margin-bottom: 15px;"></div>
-                <p>Loading terminals...</p>
+            <td colspan="9">
+                <div class="dp-empty"><p>Loading terminals...</p></div>
             </td>
         </tr>
     `;
@@ -2945,10 +1607,12 @@ function renderTerminalTable() {
     if (pageTerminals.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="9" style="padding: 40px 20px; text-align: center; color: #666;">
-                    <div style="font-size: 32px; margin-bottom: 10px;"></div>
-                    <h5>No terminals found</h5>
-                    <p>Try adjusting your filters or search criteria</p>
+                <td colspan="9">
+                    <div class="dp-empty">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-search"/></svg>
+                        <h5>No terminals found</h5>
+                        <p>Try adjusting your filters or search criteria</p>
+                    </div>
                 </td>
             </tr>
         `;
@@ -2965,37 +1629,26 @@ function renderTerminalTable() {
 
         html += `
             <tr class="terminal-row ${isSelected ? 'selected' : ''}" data-terminal-id="${terminalId}">
-                <td style="padding: 8px; text-align: center; border-bottom: 1px solid #eee;">
+                <td>
                     <input type="checkbox" ${isSelected ? 'checked' : ''}
                            onchange="toggleTerminalSelection('${terminalId}')"
-                           style="cursor: pointer;">
+                           aria-label="Select terminal ${terminal.terminal_id}">
                 </td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee; font-family: monospace; font-weight: 600;">
-                    ${terminal.terminal_id}
-                </td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 500;">
-                    ${terminal.merchant_name}
-                </td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                    ${terminal.province || 'Unknown'}
-                </td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                    ${terminal.city || 'Unknown'}
-                </td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                    ${terminal.area || 'Unknown'}
-                </td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
+                <td><span class="dp-tid">${terminal.terminal_id}</span></td>
+                <td class="dp-merchant">${terminal.merchant_name}</td>
+                <td>${terminal.province || '<span class="dp-muted">Unknown</span>'}</td>
+                <td>${terminal.city || '<span class="dp-muted">Unknown</span>'}</td>
+                <td>${terminal.area || '<span class="dp-muted">Unknown</span>'}</td>
+                <td class="dp-c">
                     <span class="assignment-badge ${assignmentClass}">
                         ${isAssigned ? 'Assigned' : 'Unassigned'}
                     </span>
                 </td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
+                <td class="dp-c">
                     <span class="status-badge ${statusClass}">${terminal.status || 'unknown'}</span>
                 </td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">
-                    <button class="btn-secondary btn-sm" onclick="assignSingleTerminal('${terminalId}')"
-                            style="background: #2196f3; color: white; padding: 4px 8px; font-size: 11px;"
+                <td class="dp-c">
+                    <button type="button" class="dp-row-btn" onclick="assignSingleTerminal('${terminalId}')"
                             ${isAssigned ? 'disabled title="Already assigned"' : ''}>
                         ${isAssigned ? 'Assigned' : 'Assign'}
                     </button>
@@ -3043,13 +1696,11 @@ function showEmptyTable() {
     const tableBody = document.getElementById('terminalTableBody');
     tableBody.innerHTML = `
         <tr>
-            <td colspan="9" style="padding: 60px 20px; text-align: center; color: #666;">
-                <div style="font-size: 48px; margin-bottom: 15px;"></div>
-                <h5>Step 1: Configure Deployment Setup</h5>
-                <p>Select clients and projects to load terminals</p>
-                <div style="margin-top: 20px; font-size: 14px; color: #999;">
-                    • Choose one or more clients<br>
-                    • Select associated projects
+            <td colspan="9">
+                <div class="dp-empty">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+                    <h5>Step 1: Configure Deployment Setup</h5>
+                    <p>Select clients and projects to load terminals</p>
                 </div>
             </td>
         </tr>
@@ -3083,8 +1734,7 @@ function updateTechnicianWorkload() {
 
     if (deploymentState.selectedTechnicians.size === 0) {
         container.innerHTML = `
-            <div style="text-align: center; color: #666; padding: 20px;">
-                <div style="font-size: 32px; margin-block-end: 10px;"></div>
+            <div class="dp-empty" style="padding: 20px 8px;">
                 <h6>Step 3: Select Technicians</h6>
                 <p>Choose technicians to see workload distribution</p>
             </div>
@@ -3100,24 +1750,22 @@ function updateTechnicianWorkload() {
         const availability = checkbox.dataset.availability || 'available';
         const spec = checkbox.dataset.spec || 'General';
 
-        const availabilityColor = {
-            'available': '#4caf50',
-            'busy': '#ff9800',
-            'very_busy': '#f44336',
-            'overloaded': '#d32f2f'
-        }[availability] || '#666';
+        const availabilityTone = {
+            'available': 'is-good',
+            'busy': 'is-warn',
+            'very_busy': 'is-crit',
+            'overloaded': 'is-crit'
+        }[availability] || '';
 
         html += `
             <div class="workload-item">
                 <div class="technician-name">${checkbox.dataset.name}</div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                    <div style="font-size: 12px; color: #666;">${spec}</div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 12px;">Current: ${workload} jobs</span>
-                        <span style="background: ${availabilityColor}; color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
-                            ${availability.replace('_', ' ').toUpperCase()}
-                        </span>
-                    </div>
+                <div class="dp-workload-row">
+                    <span>${spec}</span>
+                    <span>
+                        Current: ${workload} jobs
+                        <span class="dp-chip ${availabilityTone}">${availability.replace('_', ' ')}</span>
+                    </span>
                 </div>
             </div>
         `;
@@ -3303,7 +1951,7 @@ function updateAssignmentSummary() {
     if (Object.keys(deploymentState.assignments).length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="5" style="padding: 40px; text-align: center; color: #666;">
+                <td colspan="5" class="dp-empty" style="padding: 28px;">
                     No assignments yet
                 </td>
             </tr>
@@ -3315,30 +1963,22 @@ function updateAssignmentSummary() {
     Object.values(deploymentState.assignments).forEach((assignment, index) => {
         const regionList = Array.from(assignment.regions).join(', ');
         const priorityClass = {
-            'normal': 'bg-primary',
-            'high': 'bg-warning',
-            'emergency': 'bg-danger'
-        }[assignment.priority] || 'bg-primary';
+            'normal': '',
+            'high': 'is-warn',
+            'emergency': 'is-crit'
+        }[assignment.priority] || '';
 
         html += `
             <tr>
                 <td>
-                    <strong>${assignment.technician.name}</strong>
-                    <br><small style="color: #666;">${assignment.technician.specialization}</small>
+                    <div class="dp-merchant">${assignment.technician.name}</div>
+                    <div class="dp-muted" style="font-size: 12px;">${assignment.technician.specialization}</div>
                 </td>
-                <td style="text-align: center;">
-                    <strong>${assignment.terminals.length}</strong>
-                </td>
-                <td style="text-align: center;">
-                    ${regionList || 'Various'}
-                </td>
-                <td style="text-align: center;">
-                    <span style="padding: 4px 8px; border-radius: 12px; font-size: 11px; color: white;" class="${priorityClass}">
-                        ${assignment.priority.toUpperCase()}
-                    </span>
-                </td>
-                <td style="text-align: center;">
-                    <button class="btn-secondary btn-sm" onclick="removeAssignment('${assignment.technician.id}')" style="background: #f44336; color: white;">
+                <td class="dp-c"><strong>${assignment.terminals.length}</strong></td>
+                <td class="dp-c">${regionList || 'Various'}</td>
+                <td class="dp-c"><span class="dp-chip ${priorityClass}">${assignment.priority}</span></td>
+                <td class="dp-c">
+                    <button type="button" class="dp-row-btn is-danger" onclick="removeAssignment('${assignment.technician.id}')">
                         Remove
                     </button>
                 </td>
@@ -3382,8 +2022,7 @@ function updateUnassignedList() {
 
     if (unassignedTerminals.length === 0 && deploymentState.allTerminals.size > 0) {
         container.innerHTML = `
-            <div style="text-align: center; color: #666; padding: 20px;">
-                <div style="font-size: 32px; margin-block-end: 10px;"></div>
+            <div class="dp-empty" style="padding: 20px 8px;">
                 <p>All terminals assigned!</p>
             </div>
         `;
@@ -3392,8 +2031,7 @@ function updateUnassignedList() {
 
     if (deploymentState.allTerminals.size === 0) {
         container.innerHTML = `
-            <div style="text-align: center; color: #666; padding: 20px;">
-                <div style="font-size: 32px; margin-block-end: 10px;"></div>
+            <div class="dp-empty" style="padding: 20px 8px;">
                 <p>Load hierarchy to see unassigned terminals</p>
             </div>
         `;
@@ -3404,16 +2042,14 @@ function updateUnassignedList() {
     unassignedTerminals.slice(0, 10).forEach(terminal => { // Show max 10
         html += `
             <div class="unassigned-item" onclick="selectUnassignedTerminal('${terminal.id.replace('terminal-', '')}')">
-                <strong>${terminal.merchant_name}</strong> - ${terminal.terminal_id}
-                <br><small>${terminal.city || 'Unknown City'}</small>
+                <div><strong style="font-weight: 500;">${terminal.merchant_name}</strong> <span class="dp-tid">${terminal.terminal_id}</span></div>
+                <small>${terminal.city || 'Unknown City'}</small>
             </div>
         `;
     });
 
     if (unassignedTerminals.length > 10) {
-        html += `<div style="text-align: center; padding: 10px; color: #666;">
-            ... and ${unassignedTerminals.length - 10} more
-        </div>`;
+        html += `<div class="dp-more">and ${unassignedTerminals.length - 10} more</div>`;
     }
 
     container.innerHTML = html;
@@ -3542,7 +2178,7 @@ function updatePagination() {
     // Update showing text
     document.getElementById('showingFrom').textContent = startIndex;
     document.getElementById('showingTo').textContent = endIndex;
-    document.getElementById('totalTerminals').textContent = deploymentState.filteredTerminals.length;
+    document.getElementById('paginationTotal').textContent = deploymentState.filteredTerminals.length;
 
     // Generate pagination buttons
     const buttonsContainer = document.getElementById('paginationButtons');
@@ -3678,7 +2314,13 @@ function showEmptyHierarchy() {
 }
 
 function showAlert(message, type = 'success') {
-    // Create better alert/toast notification
+    // Use the portal's toast when available
+    if (typeof window.showNotification === 'function') {
+        window.showNotification(type === 'danger' ? 'error' : (type === 'success' ? 'success' : 'info'), message);
+        return;
+    }
+
+    // Fallback toast
     const alertId = 'alert-' + Date.now();
     const alertClass = type === 'success' ? 'alert-success' : type === 'danger' ? 'alert-danger' : 'alert-info';
     const icon = type === 'success' ? '' : type === 'danger' ? '' : '';
@@ -3716,23 +2358,23 @@ function showErrorModal(title, message, details = null) {
     `;
 
     modal.innerHTML = `
-        <div style="background: white; border-radius: 12px; padding: 0; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-            <div style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <span></span>
+        <div class="dp-modal" role="alertdialog" aria-modal="true">
+            <div class="dp-modal-head">
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    <svg class="mv-i" aria-hidden="true" style="color: var(--mv-crit);"><use href="#i-alert-circle"/></svg>
                     <span>${title}</span>
                 </h3>
-                <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">×</button>
+                <button type="button" class="dp-x" aria-label="Close" onclick="this.closest('[style*=\"position: fixed\"]').remove()"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
             </div>
-            <div style="padding: 20px;">
-                <p style="margin: 0 0 15px 0; color: #333; line-height: 1.5;">${message}</p>
-                ${details ? `<details style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-                    <summary style="cursor: pointer; font-weight: 600;">Technical Details</summary>
-                    <pre style="margin: 10px 0 0 0; font-size: 12px; color: #666; white-space: pre-wrap;">${details}</pre>
+            <div class="dp-modal-body">
+                <p>${message}</p>
+                ${details ? `<details class="dp-details">
+                    <summary>Technical Details</summary>
+                    <pre>${details}</pre>
                 </details>` : ''}
-                <div style="text-align: right; margin-top: 20px;">
-                    <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" class="btn-primary">Close</button>
-                </div>
+            </div>
+            <div class="dp-modal-foot">
+                <button type="button" onclick="this.closest('[style*=\"position: fixed\"]').remove()" class="btn-primary">Close</button>
             </div>
         </div>
     `;
@@ -3811,38 +2453,34 @@ function showExportModal() {
     `;
 
     modal.innerHTML = `
-        <div style="background: white; border-radius: 12px; padding: 0; max-width: 400px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-            <div style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <span></span>
-                    <span>Export Assignment Data</span>
-                </h3>
-                <button onclick="closeModal(this)"
-                        style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">×</button>
+        <div class="dp-modal" style="max-width: 420px;" role="dialog" aria-modal="true">
+            <div class="dp-modal-head">
+                <h3>Export Assignment Data</h3>
+                <button type="button" class="dp-x" aria-label="Close" onclick="closeModal(this)"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
             </div>
-            <div style="padding: 20px;">
-                <p style="margin: 0 0 20px 0; color: #666;">Choose export format for your assignment data:</p>
-                <div style="display: grid; gap: 10px;">
-                    <button onclick="exportAssignments('csv')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
-                        <span></span>
-                        <span>CSV Spreadsheet</span>
+            <div class="dp-modal-body">
+                <p>Choose export format for your assignment data:</p>
+                <div style="display: grid; gap: 8px;">
+                    <button type="button" onclick="exportAssignments('csv')" class="dp-choice">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-table"/></svg>
+                        <span>CSV Spreadsheet</span><small>.csv</small>
                     </button>
-                    <button onclick="exportAssignments('excel')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
-                        <span></span>
-                        <span>Excel Workbook</span>
+                    <button type="button" onclick="exportAssignments('excel')" class="dp-choice">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-file"/></svg>
+                        <span>Excel Workbook</span><small>.xlsx</small>
                     </button>
-                    <button onclick="exportAssignments('pdf')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
-                        <span></span>
-                        <span>PDF Report</span>
+                    <button type="button" onclick="exportAssignments('pdf')" class="dp-choice">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-printer"/></svg>
+                        <span>PDF Report</span><small>.pdf</small>
                     </button>
-                    <button onclick="exportAssignments('mobile')" class="btn-primary" style="width: 100%; justify-content: flex-start; display: flex; align-items: center; gap: 10px;">
-                        <span></span>
-                        <span>Mobile Sync JSON</span>
+                    <button type="button" onclick="exportAssignments('mobile')" class="dp-choice">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-phone"/></svg>
+                        <span>Mobile Sync JSON</span><small>.json</small>
                     </button>
                 </div>
-                <div style="margin-top: 15px; text-align: center;">
-                    <button onclick="closeModal(this)" class="btn-secondary">Cancel</button>
-                </div>
+            </div>
+            <div class="dp-modal-foot">
+                <button type="button" onclick="closeModal(this)" class="btn-secondary">Cancel</button>
             </div>
         </div>
     `;
