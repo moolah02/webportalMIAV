@@ -64,7 +64,7 @@
 
     /* Empty + footer */
     .bl-index .bl-empty { padding: 44px 16px; }
-    .bl-index .empty-state-icon .mv-i { width: 28px; height: 28px; }
+    .bl-index .empty-state-icon .mv-i { display: block; margin: 0 auto; width: 28px; height: 28px; }
     .bl-index .bl-empty-title { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
     .bl-index .bl-empty p { margin: 0 0 14px; }
     .bl-index .bl-card-foot { padding: 10px 16px; border-top: 1px solid var(--mv-line); }

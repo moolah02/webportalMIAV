@@ -84,7 +84,7 @@
 /* Empty states */
 .as-index .empty-state { padding: 44px 16px; }
 .as-index .empty-state-icon { margin-bottom: 8px; }
-.as-index .empty-state-icon .mv-i { width: 32px; height: 32px; stroke-width: 1.5; }
+.as-index .empty-state-icon .mv-i { display: block; margin: 0 auto; width: 32px; height: 32px; stroke-width: 1.5; }
 .as-index .empty-state h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
 .as-index .empty-state-msg { margin: 0 0 14px; font-size: 13.5px; color: var(--mv-muted); }
 

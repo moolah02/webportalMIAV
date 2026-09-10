@@ -29,7 +29,7 @@
 .ar-cart .rq-actions a { justify-content: center; }
 
 .ar-cart .rq-empty { padding: 44px 20px; text-align: center; }
-.ar-cart .rq-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); margin-bottom: 8px; }
+.ar-cart .rq-empty .mv-i { display: block; width: 28px; height: 28px; color: var(--mv-line-strong); margin: 0 auto 8px; }
 .ar-cart .rq-empty-title { margin: 0 0 2px; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
 .ar-cart .rq-empty-text { margin: 0 0 14px; font-size: 13px; color: var(--mv-muted); }
 

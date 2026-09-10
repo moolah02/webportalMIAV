@@ -37,7 +37,7 @@
 .ar-catalog .rq-unavailable { display: flex; align-items: center; gap: 6px; height: 32px; font-size: 12.5px; color: var(--mv-muted); }
 
 .ar-catalog .rq-empty { padding: 44px 20px; text-align: center; }
-.ar-catalog .rq-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); margin-bottom: 8px; }
+.ar-catalog .rq-empty .mv-i { display: block; width: 28px; height: 28px; color: var(--mv-line-strong); margin: 0 auto 8px; }
 .ar-catalog .rq-empty-title { margin: 0 0 2px; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
 .ar-catalog .rq-empty-text { margin: 0 0 14px; font-size: 13px; color: var(--mv-muted); }
 .ar-catalog .rq-pager { margin-top: 18px; }

@@ -29,7 +29,7 @@
 
 .aa-index .ui-table tbody tr.rq-empty-row:hover { background: transparent; }
 .aa-index .rq-empty { padding: 40px 20px; text-align: center; }
-.aa-index .rq-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); margin-bottom: 8px; }
+.aa-index .rq-empty .mv-i { display: block; width: 28px; height: 28px; color: var(--mv-line-strong); margin: 0 auto 8px; }
 .aa-index .rq-empty-title { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
 .aa-index .rq-empty .btn-secondary { margin-top: 14px; }
 

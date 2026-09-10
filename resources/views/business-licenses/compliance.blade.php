@@ -47,7 +47,7 @@
     .bl-report .action-btn { width: 30px; height: 30px; background: var(--mv-surface); }
     .bl-report .bl-card-foot { padding: 10px 16px; border-top: 1px solid var(--mv-line); }
     .bl-report .bl-empty { padding: 44px 16px; }
-    .bl-report .empty-state-icon .mv-i { width: 28px; height: 28px; }
+    .bl-report .empty-state-icon .mv-i { display: block; margin: 0 auto; width: 28px; height: 28px; }
     .bl-report .bl-empty .empty-state-msg { margin: 0 0 14px; }
 
     @media (max-width: 1100px) { .bl-report .bl-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
