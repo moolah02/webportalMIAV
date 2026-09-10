@@ -8,6 +8,9 @@
 
 @push('styles')
 <style>
+/* Top-bar actions sit outside .mv-page, so give the primary button the portal accent here */
+.mv-header-actions .btn-primary { background: var(--mv-accent) !important; border-color: var(--mv-accent) !important; color: #fff !important; }
+.mv-header-actions .btn-primary:hover { background: var(--mv-accent-ink) !important; border-color: var(--mv-accent-ink) !important; }
 .sm-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
 .sm-card-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--mv-line); }
 .sm-card-head h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
@@ -27,7 +30,7 @@
 .sm-btn-danger { color: var(--mv-crit); border-color: #EBC3C3; }
 .sm-btn-danger:hover { background: var(--mv-crit-soft); color: var(--mv-crit); }
 .sm-empty { padding: 48px 16px; text-align: center; color: var(--mv-muted); font-size: 13.5px; }
-.sm-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); margin-bottom: 8px; }
+.sm-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); display: block; margin: 0 auto 8px; }
 .sm-empty h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
 .sm-empty p { margin: 0; }
 

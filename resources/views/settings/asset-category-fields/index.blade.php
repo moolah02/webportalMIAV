@@ -8,10 +8,13 @@
 
 @push('styles')
 <style>
+/* Top-bar actions sit outside .mv-page, so give the primary button the portal accent here */
+.mv-header-actions .btn-primary { background: var(--mv-accent) !important; border-color: var(--mv-accent) !important; color: #fff !important; }
+.mv-header-actions .btn-primary:hover { background: var(--mv-accent-ink) !important; border-color: var(--mv-accent-ink) !important; }
 .cf { display: grid; gap: 16px; }
 .cf-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .cf-toolbar label { font-size: 13px; font-weight: 500; color: var(--mv-ink-2); }
-.cf-toolbar select { height: 36px; min-width: 240px; padding: 0 30px 0 11px; font: inherit; font-size: 13.5px; color: var(--mv-ink); background-color: var(--mv-surface); border: 1px solid var(--mv-line-strong); border-radius: 8px; cursor: pointer; }
+.cf-toolbar select { width: 280px; max-width: 100%; flex: 0 0 auto; height: 36px; min-width: 240px; padding: 0 30px 0 11px; font: inherit; font-size: 13.5px; color: var(--mv-ink); background-color: var(--mv-surface); border: 1px solid var(--mv-line-strong); border-radius: 8px; cursor: pointer; }
 .cf-toolbar select:focus { outline: none; border-color: var(--mv-accent); box-shadow: 0 0 0 3px rgba(43,100,168,.15); }
 .cf-toolbar p { margin: 0 0 0 auto; font-size: 13px; color: var(--mv-muted); }
 
@@ -47,7 +50,7 @@
 .cf-btn-danger { color: var(--mv-crit); border-color: #EBC3C3; }
 .cf-btn-danger:hover { background: var(--mv-crit-soft); color: var(--mv-crit); }
 .cf-empty { padding: 44px 16px; text-align: center; color: var(--mv-muted); font-size: 13.5px; }
-.cf-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); margin-bottom: 8px; }
+.cf-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); display: block; margin: 0 auto 8px; }
 .cf-empty h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
 .cf-empty p { margin: 0; }
 

@@ -105,6 +105,9 @@
 
 @push('styles')
 <style>
+/* Top-bar actions sit outside .mv-page, so give the primary button the portal accent here */
+.mv-header-actions .btn-primary { background: var(--mv-accent) !important; border-color: var(--mv-accent) !important; color: #fff !important; }
+.mv-header-actions .btn-primary:hover { background: var(--mv-accent-ink) !important; border-color: var(--mv-accent-ink) !important; }
 .sm-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; }
 .sm-card .ui-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .sm-card .ui-table th { text-align: left; white-space: nowrap; }
@@ -121,7 +124,7 @@
 .sm-btn-danger { color: var(--mv-crit); border-color: #EBC3C3; }
 .sm-btn-danger:hover { background: var(--mv-crit-soft); color: var(--mv-crit); }
 .sm-empty { padding: 48px 16px; text-align: center; color: var(--mv-muted); font-size: 13.5px; }
-.sm-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); margin-bottom: 8px; }
+.sm-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); display: block; margin: 0 auto 8px; }
 .ui-modal { display:none; position:fixed; inset:0; z-index:1100; background:rgba(22,32,44,.45); align-items:center; justify-content:center; padding:16px; }
 .ui-modal.show { display:flex; }
 .ui-modal-box { background:var(--mv-surface); border:1px solid var(--mv-line); border-radius:12px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 48px rgba(22,32,44,.18); }

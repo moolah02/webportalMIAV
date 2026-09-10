@@ -7,6 +7,9 @@
 
 @push('styles')
 <style>
+    /* Top-bar actions sit outside .mv-page, so give the primary button the portal accent here */
+    .mv-header-actions .btn-primary { background: var(--mv-accent) !important; border-color: var(--mv-accent) !important; color: #fff !important; }
+    .mv-header-actions .btn-primary:hover { background: var(--mv-accent-ink) !important; border-color: var(--mv-accent-ink) !important; }
     .pf { display: grid; gap: 16px; }
     .pf .mv-i { width: 16px; height: 16px; }
 
