@@ -487,7 +487,7 @@
             <div class="empty-state bl-empty">
                 <div class="empty-state-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-file"/></svg></div>
                 <h3 class="bl-empty-title">No records found</h3>
-                <p class="empty-state-msg">Start by adding a {{ $direction === 'company_held' ? 'internal license' : 'customer license' }}.</p>
+                <p class="empty-state-msg">Start by adding {{ $direction === 'company_held' ? 'an internal license' : 'a customer license' }}.</p>
                 <a href="{{ route('business-licenses.create', ['direction' => $direction]) }}" class="btn-primary">
                     <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg>Add {{ $direction === 'company_held' ? 'Internal License' : 'Customer License' }}
                 </a>

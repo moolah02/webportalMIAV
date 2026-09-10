@@ -401,16 +401,6 @@
             <button type="submit" class="btn-primary pt-btn">Apply</button>
             <a href="{{ route('pos-terminals.index') }}" class="btn-secondary pt-btn">Reset</a>
         </div>
-        <div class="pt-toolbar-end">
-            <a href="{{ route('pos-terminals.export', request()->query()) }}" class="btn-secondary pt-btn">
-                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg>
-                Export
-            </a>
-            <a href="{{ route('pos-terminals.create') }}" class="btn-primary pt-btn">
-                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg>
-                Add Terminal
-            </a>
-        </div>
     </form>
 
     {{-- Terminals table --}}
@@ -419,6 +409,16 @@
             <div class="pt-card-title">
                 <h2>Terminal Inventory</h2>
                 <span class="pt-card-meta">{{ number_format($terminals->total()) }} terminals</span>
+            </div>
+            <div class="pt-toolbar-end">
+                <a href="{{ route('pos-terminals.export', request()->query()) }}" class="btn-secondary pt-btn">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg>
+                    Export
+                </a>
+                <a href="{{ route('pos-terminals.create') }}" class="btn-primary pt-btn">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg>
+                    Add Terminal
+                </a>
             </div>
         </div>
         <div class="overflow-x-auto">
