@@ -1126,6 +1126,14 @@ Route::get('/work-order/{assignment}', [TerminalDeploymentController::class, 'do
     });
 
     // ==============================================
+    // MOBILE APP (APK) DOWNLOAD - Open to all authenticated users
+    // ==============================================
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/mobile-app', [\App\Http\Controllers\MobileAppController::class, 'index'])->name('mobile-app.index');
+        Route::get('/mobile-app/download', [\App\Http\Controllers\MobileAppController::class, 'download'])->name('mobile-app.download');
+    });
+    // ==============================================
     // REPORT BUILDER ROUTES - Open to all authenticated users
     // ==============================================
 

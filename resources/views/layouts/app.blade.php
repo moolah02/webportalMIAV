@@ -335,6 +335,15 @@
 
         {{-- &#x2500;&#x2500; Bottom links &#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500; --}}
         <div class="px-2 pt-3 mt-2 border-t border-gray-100 space-y-0.5">
+          @php $miavApp = \App\Services\MobileAppRelease::latest(); @endphp
+          <a href="{{ route('mobile-app.index') }}"
+             class="flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium transition-all duration-150
+                    {{ request()->routeIs('mobile-app.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <span class="text-sm leading-none w-4 text-center">📱</span> Mobile App
+            @if($miavApp)
+            <span class="ml-auto text-[10px] font-semibold text-blue-700 bg-blue-50 rounded px-1.5 py-0.5">v{{ $miavApp['version'] }}</span>
+            @endif
+          </a>
           <a href="{{ url('/docs') }}" target="_blank"
              class="flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-all duration-150">
             <span class="text-sm leading-none w-4 text-center">📚</span> Documentation

@@ -50,3 +50,26 @@ Artisan::command('miav:sync-technician-visits {--dry-run : Show what would chang
         $this->warn('Orphan technician_visits rows (visit deleted), not touched: ' . $orphans->implode(', '));
     }
 })->purpose('Sync technician_visits report rows from mobile visits');
+
+// Publish a new Android APK for download on the portal's Mobile App page.
+// Usage: php artisan miav:publish-apk /tmp/app.apk 1.4.7 19 --notes="What changed" --notes="..."
+Artisan::command('miav:publish-apk {path} {version} {build} {--notes=* : Release note lines}', function () {
+    $src = $this->argument('path');
+    if (!is_file($src)) { $this->error("File not found: $src"); return 1; }
+    $dir = \App\Services\MobileAppRelease::dir();
+    if (!is_dir($dir) && !mkdir($dir, 0775, true)) { $this->error("Cannot create $dir"); return 1; }
+    $file = 'man-in-a-van-v' . $this->argument('version') . '+' . $this->argument('build') . '.apk';
+    if (!copy($src, "$dir/$file")) { $this->error('Copy failed'); return 1; }
+    $meta = [
+        'version'     => $this->argument('version'),
+        'build'       => (int) $this->argument('build'),
+        'file'        => $file,
+        'size'        => filesize("$dir/$file"),
+        'sha256'      => hash_file('sha256', "$dir/$file"),
+        'released_at' => now()->toDateTimeString(),
+        'notes'       => array_values(array_filter($this->option('notes'))),
+    ];
+    file_put_contents("$dir/latest.json", json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    $this->info("Published v{$meta['version']} ({$meta['build']}): {$meta['size']} bytes, sha256 {$meta['sha256']}");
+    return 0;
+})->purpose('Publish an Android APK for download on the Mobile App page');
