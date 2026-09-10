@@ -45,51 +45,55 @@
     $onDiscoveries = request()->routeIs('pos-terminals.index') && request('tab') === 'discoveries';
 
     // [route, icon, label, active-patterns, query, not-active-on]
-    // Every destination from the previous menu is here (some renamed/regrouped):
-    // Company Dashboard → Operations overview; Employee Dashboard + Technician
-    // Portal › My Dashboard → My work; Technician Portal › My Assignments → My
-    // assignments; My Profile + Sign Out live in the sidebar footer.
+    // Same sections, order and names as the previous menu, so nobody has to
+    // relearn it. Only addition: Assets › Discovered Terminals.
     $nav = [
-      [null, [
-        ['dashboard',          'grid',       'Operations overview', ['dashboard']],
-        ['employee.dashboard', 'user-check', 'My work',             ['employee.dashboard']],
-        ['jobs.mine',          'list-todo',  'My assignments',      ['jobs.mine']],
+      ['Overview', [
+        ['dashboard',          'grid',       'Company Dashboard',  ['dashboard']],
+        ['employee.dashboard', 'user-check', 'Employee Dashboard', ['employee.dashboard']],
       ]],
-      ['Field work', [
-        ['jobs.index',               'clipboard',   'Job assignments',    ['jobs.*'], [], ['jobs.mine']],
-        ['visits.index',             'pin',         'Site visits',        ['visits.*', 'site_visits.show', 'site_visits.completed']],
-        ['site_visits.createManual', 'plus-circle', 'Log a visit',        ['site_visits.createManual']],
-        ['deployment.hierarchical',  'route',       'Deployment planner', ['deployment.*']],
-        ['tickets.index',            'ticket',      'Support tickets',    ['tickets.*']],
+      ['Assets', [
+        ['assets.index',            'box',          'Internal Assets',      ['assets.*']],
+        ['pos-terminals.index',     'card',         'POS Terminals',        ['pos-terminals.*'], []],
+        ['pos-terminals.index',     'compass',      'Discovered Terminals', [],                  ['tab' => 'discoveries']],
+        ['asset-requests.catalog',  'cart',         'Request Assets',       ['asset-requests.catalog', 'asset-requests.cart']],
+        ['asset-requests.index',    'list',         'My Requests',          ['asset-requests.index', 'asset-requests.show']],
+        ['asset-approvals.index',   'check-square', 'Asset Approvals',      ['asset-approvals.*']],
+        ['business-licenses.index', 'file',         'Business Licenses',    ['business-licenses.*']],
       ]],
-      ['Fleet', [
-        ['pos-terminals.index',     'card',         'POS terminals',           ['pos-terminals.*'], []],
-        ['pos-terminals.index',     'compass',      'Discovered in the field', [],                  ['tab' => 'discoveries']],
-        ['assets.index',            'box',          'Internal assets',         ['assets.*']],
-        ['asset-requests.catalog',  'cart',         'Request assets',          ['asset-requests.catalog', 'asset-requests.cart']],
-        ['asset-requests.index',    'list',         'My requests',             ['asset-requests.index', 'asset-requests.show']],
-        ['asset-approvals.index',   'check-square', 'Asset approvals',         ['asset-approvals.*']],
-        ['business-licenses.index', 'file',         'Business licences',       ['business-licenses.*']],
+      ['Field Operations', [
+        ['deployment.hierarchical',  'route',       'Terminal Deployment', ['deployment.*']],
+        ['jobs.index',               'clipboard',   'Job Assignments',     ['jobs.*'], [], ['jobs.mine']],
+        ['visits.index',             'pin',         'Site Visits',         ['visits.*', 'site_visits.show', 'site_visits.completed']],
+        ['site_visits.createManual', 'plus-circle', 'Log a Visit',         ['site_visits.createManual']],
+        ['tickets.index',            'ticket',      'Support Tickets',     ['tickets.*']],
       ]],
-      ['Customers', [
-        ['clients.index',            'building',   'Clients',           ['clients.*']],
-        ['client-dashboards.index',  'layout',     'Client dashboards', ['client-dashboards.*']],
-        ['projects.index',           'folder',     'Projects',          ['projects.index', 'projects.show', 'projects.edit']],
-        ['projects.create',          'plus-circle', 'New project',      ['projects.create']],
-        ['projects.closure-reports', 'file-check', 'Closure reports',   ['projects.closure-reports', 'projects.completion-reports']],
+      ['Projects', [
+        ['projects.index',           'folder',      'All Projects',    ['projects.index', 'projects.show', 'projects.edit']],
+        ['projects.create',          'plus-circle', 'New Project',     ['projects.create']],
+        ['projects.closure-reports', 'file-check',  'Closure Reports', ['projects.closure-reports', 'projects.completion-reports']],
       ]],
-      ['Team', [
-        ['employees.index', 'users',  'Employees',      ['employees.*']],
-        ['roles.index',     'shield', 'Roles & access', ['roles.*']],
+      ['Clients', [
+        ['clients.index',           'building', 'Clients',           ['clients.*']],
+        ['client-dashboards.index', 'layout',   'Client Dashboards', ['client-dashboards.*']],
       ]],
-      ['Insights', [
-        ['reports.index',             'chart', 'Reports',           ['reports.index', 'reports.system']],
-        ['reports.technician-visits', 'pin',   'Technician visits', ['reports.technician-visits*']],
-        ['reports.builder',           'table', 'Report builder',    ['reports.builder', 'reports.history']],
+      ['Employees', [
+        ['employees.index', 'users',  'Employees',       ['employees.*']],
+        ['roles.index',     'shield', 'Role Management', ['roles.*']],
+      ]],
+      ['Technician Portal', [
+        // Same page as Overview › Employee Dashboard (as before); highlighted there only.
+        ['employee.dashboard', 'user-check', 'My Dashboard',   []],
+        ['jobs.mine',          'list-todo',  'My Assignments', ['jobs.mine']],
+      ]],
+      ['Reports', [
+        ['reports.index',             'chart', 'Reports Dashboard', ['reports.index', 'reports.system']],
+        ['reports.technician-visits', 'pin',   'Technician Visits', ['reports.technician-visits*']],
+        ['reports.builder',           'table', 'Report Builder',    ['reports.builder', 'reports.history']],
       ]],
       ['Administration', [
-        ['settings.index',    'sliders', 'Settings',    ['settings.*']],
-        ['audit-trail.index', 'history', 'Audit trail', ['audit-trail.*']],
+        ['settings.index',    'sliders', 'System Settings', ['settings.*']],
+        ['audit-trail.index', 'history', 'Audit Trail',     ['audit-trail.*']],
       ]],
     ];
   @endphp
@@ -130,15 +134,15 @@
       <div class="mv-nav">
         <div class="mv-nav-group">
           <a href="{{ route('mobile-app.index') }}" class="{{ request()->routeIs('mobile-app.*') ? 'is-on' : '' }}">
-            <svg class="mv-i"><use href="#i-phone"/></svg>Mobile app
+            <svg class="mv-i"><use href="#i-phone"/></svg>Mobile App
             @if($miavApp)<span class="mv-ver">{{ $miavApp['version'] }}</span>@endif
           </a>
           <a href="{{ url('/docs') }}" target="_blank" rel="noopener">
-            <svg class="mv-i"><use href="#i-book"/></svg>Help &amp; documentation
+            <svg class="mv-i"><use href="#i-book"/></svg>Documentation
             <svg class="mv-i mv-ext"><use href="#i-external"/></svg>
           </a>
           <a href="{{ route('employee.profile') }}" class="{{ request()->routeIs('employee.profile*') ? 'is-on' : '' }}">
-            <svg class="mv-i"><use href="#i-user"/></svg>My profile
+            <svg class="mv-i"><use href="#i-user"/></svg>My Profile
           </a>
         </div>
       </div>
@@ -150,7 +154,7 @@
         </a>
         <form method="POST" action="{{ route('logout') }}">
           @csrf
-          <button type="submit" class="mv-signout" title="Sign out" aria-label="Sign out"><svg class="mv-i"><use href="#i-logout"/></svg></button>
+          <button type="submit" class="mv-signout" title="Sign Out" aria-label="Sign Out"><svg class="mv-i"><use href="#i-logout"/></svg></button>
         </form>
       </div>
     </div>
@@ -196,10 +200,10 @@
           <span class="mv-avatar" aria-hidden="true">{{ $initials }}</span>
         </button>
         <div id="userDropdown" class="mv-dropdown mv-menu hidden" role="menu">
-          <a href="{{ route('employee.profile') }}"><svg class="mv-i"><use href="#i-user"/></svg>My profile</a>
+          <a href="{{ route('employee.profile') }}"><svg class="mv-i"><use href="#i-user"/></svg>My Profile</a>
           <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="mv-danger"><svg class="mv-i"><use href="#i-logout"/></svg>Sign out</button>
+            <button type="submit" class="mv-danger"><svg class="mv-i"><use href="#i-logout"/></svg>Sign Out</button>
           </form>
         </div>
       </div>
