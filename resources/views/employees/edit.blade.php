@@ -1,221 +1,210 @@
 @extends('layouts.app')
 @section('title', 'Edit Employee')
 
+@section('header-actions')
+<a href="{{ route('employees.show', $employee) }}" class="btn-secondary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Back to Profile</a>
+@endsection
+
+@push('styles')
+<style>
+.ef-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(22, 32, 44, .45); }
+.ef-modal.hidden { display: none; }
+.ef-modal-box { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; width: 92%; max-width: 380px; padding: 20px; box-shadow: 0 16px 40px rgba(22, 32, 44, .18); }
+.ef-modal-box h3 { margin: 0 0 4px; font-size: 15px; font-weight: 600; color: var(--mv-ink); display: flex; align-items: center; gap: 8px; }
+.ef-modal-box p { font-size: 13px; color: var(--mv-muted); margin: 0 0 14px; }
+.ef-pass { font-family: var(--mv-mono); font-size: 18px; font-weight: 600; letter-spacing: .12em; color: var(--mv-ink); background: var(--mv-surface-2); border: 1px solid var(--mv-line-strong); border-radius: 8px; padding: 10px 12px; text-align: center; margin-bottom: 14px; user-select: all; }
+.ef-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+@endpush
+
 @section('content')
-<div>
-    <div class="flex items-start justify-between mb-5">
-        <a href="{{ route('employees.show', $employee) }}" class="btn-secondary btn-sm">&#8592; Back to Profile</a>
-    </div>
+@include('employees.partials.form-styles')
 
-    <form method="POST" action="{{ route('employees.update', $employee) }}" id="editForm">
-        @csrf
-        @method('PUT')
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+@php
+    try { $roles = \App\Models\Role::all(); $employeeRoleIds = $employee->roles->pluck('id')->toArray(); }
+    catch (\Exception $e) { $roles = collect(); $employeeRoleIds = []; }
+    try { $departments = \App\Models\Department::all(); }
+    catch (\Exception $e) { $departments = collect([(object)['id' => 1, 'name' => 'IT']]); }
+    try { $currentRole = \App\Models\Role::find($employee->role_id); } catch (\Exception $e) { $currentRole = null; }
+@endphp
 
-            {{-- Main Form (2/3) --}}
-            <div class="lg:col-span-2 flex flex-col gap-5">
-
-                <div class="ui-card">
-                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Personal Information</h4></div>
-                    <div class="ui-card-body grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="ui-label">First Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="first_name" value="{{ old('first_name', $employee->first_name) }}" required class="ui-input w-full">
-                            @error('first_name')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
-                        </div>
-                        <div>
-                            <label class="ui-label">Last Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="last_name" value="{{ old('last_name', $employee->last_name) }}" required class="ui-input w-full">
-                            @error('last_name')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
-                        </div>
-                        <div>
-                            <label class="ui-label">Email Address <span class="text-red-500">*</span></label>
-                            <input type="email" name="email" value="{{ old('email', $employee->email) }}" required class="ui-input w-full">
-                            @error('email')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
-                        </div>
-                        <div>
-                            <label class="ui-label">Phone Number</label>
-                            <input type="text" name="phone" value="{{ old('phone', $employee->phone) }}" placeholder="+1 (555) 123-4567" class="ui-input w-full">
-                            @error('phone')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
-                        </div>
+<form method="POST" action="{{ route('employees.update', $employee) }}" id="editForm">
+    @csrf
+    @method('PUT')
+    <div class="ef-layout">
+        <div class="ef-col">
+            <div class="ui-card">
+                <div class="ui-card-header"><h3>Personal Information</h3></div>
+                <div class="ef-grid">
+                    <div>
+                        <label class="ui-label">First Name <span class="ef-req">*</span></label>
+                        <input type="text" name="first_name" value="{{ old('first_name', $employee->first_name) }}" required class="ui-input">
+                        @error('first_name')<div class="ef-error">{{ $message }}</div>@enderror
+                    </div>
+                    <div>
+                        <label class="ui-label">Last Name <span class="ef-req">*</span></label>
+                        <input type="text" name="last_name" value="{{ old('last_name', $employee->last_name) }}" required class="ui-input">
+                        @error('last_name')<div class="ef-error">{{ $message }}</div>@enderror
+                    </div>
+                    <div>
+                        <label class="ui-label">Email Address <span class="ef-req">*</span></label>
+                        <input type="email" name="email" value="{{ old('email', $employee->email) }}" required class="ui-input">
+                        @error('email')<div class="ef-error">{{ $message }}</div>@enderror
+                    </div>
+                    <div>
+                        <label class="ui-label">Phone Number</label>
+                        <input type="text" name="phone" value="{{ old('phone', $employee->phone) }}" placeholder="+1 (555) 123-4567" class="ui-input">
+                        @error('phone')<div class="ef-error">{{ $message }}</div>@enderror
                     </div>
                 </div>
+            </div>
 
-                <div class="ui-card">
-                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Role &amp; Department</h4></div>
-                    <div class="ui-card-body flex flex-col gap-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="ui-label">Primary Role <span class="text-red-500">*</span></label>
-                                <select name="role_id" required class="ui-select w-full">
-                                    <option value="">Select Primary Role</option>
-                                    @php
-                                        try { $roles = \App\Models\Role::all(); $employeeRoleIds = $employee->roles->pluck('id')->toArray(); }
-                                        catch (\Exception $e) { $roles = collect(); $employeeRoleIds = []; }
-                                    @endphp
-                                    @foreach($roles as $role)
-                                    <option value="{{ $role->id }}" {{ old('role_id', $employee->role_id) == $role->id ? 'selected' : '' }}>
-                                        {{ ucfirst(str_replace('_', ' ', $role->name)) }}{{ is_array($role->permissions) && in_array('all', $role->permissions) ? ' (Super Admin)' : '' }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                                @error('role_id')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
-                            </div>
-                            <div>
-                                <label class="ui-label">Department</label>
-                                <select name="department_id" class="ui-select w-full">
-                                    <option value="">Select Department</option>
-                                    @php
-                                        try { $departments = \App\Models\Department::all(); }
-                                        catch (\Exception $e) { $departments = collect([(object)['id'=>1,'name'=>'IT']]); }
-                                    @endphp
-                                    @foreach($departments as $dept)
-                                    <option value="{{ $dept->id }}" {{ old('department_id', $employee->department_id) == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div>
-                                <label class="ui-label">Status <span class="text-red-500">*</span></label>
-                                <select name="status" required class="ui-select w-full">
-                                    <option value="active"   {{ old('status', $employee->status) == 'active'   ? 'selected' : '' }}>Active</option>
-                                    <option value="inactive" {{ old('status', $employee->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                    <option value="pending"  {{ old('status', $employee->status) == 'pending'  ? 'selected' : '' }}>Pending</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="ui-label">Hire Date</label>
-                                <input type="date" name="hire_date"
-                                       value="{{ old('hire_date', $employee->hire_date ? \Carbon\Carbon::parse($employee->hire_date)->format('Y-m-d') : '') }}"
-                                       class="ui-input w-full">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="ui-label mb-2">Additional Roles <span class="text-gray-400 font-normal">(Optional)</span></label>
-                            <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                                <p class="text-xs text-gray-500 mb-3">Current: <strong>{{ $employee->roles->count() > 0 ? $employee->roles->pluck('name')->join(', ') : 'None' }}</strong></p>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    @foreach($roles as $role)
-                                    <label class="flex items-center gap-2.5 px-3 py-2 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-[#1a3a5c] hover:bg-blue-50 transition-all">
-                                        <input type="checkbox" name="additional_roles[]" value="{{ $role->id }}"
-                                               {{ in_array($role->id, old('additional_roles', $employeeRoleIds)) ? 'checked' : '' }}
-                                               class="w-4 h-4 cursor-pointer">
-                                        <span class="text-sm text-gray-700">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</span>
-                                    </label>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
+            <div class="ui-card">
+                <div class="ui-card-header"><h3>Role &amp; Department</h3></div>
+                <div class="ef-grid">
+                    <div>
+                        <label class="ui-label">Primary Role <span class="ef-req">*</span></label>
+                        <select name="role_id" required class="ui-select">
+                            <option value="">Select Primary Role</option>
+                            @foreach($roles as $role)
+                            <option value="{{ $role->id }}" {{ old('role_id', $employee->role_id) == $role->id ? 'selected' : '' }}>
+                                {{ ucfirst(str_replace('_', ' ', $role->name)) }}{{ is_array($role->permissions) && in_array('all', $role->permissions) ? ' (Super Admin)' : '' }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('role_id')<div class="ef-error">{{ $message }}</div>@enderror
                     </div>
-                </div>
-
-                <div class="ui-card">
-                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Preferences</h4></div>
-                    <div class="ui-card-body grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="ui-label">Time Zone</label>
-                            <select name="time_zone" class="ui-select w-full">
-                                <option value="UTC"                 {{ old('time_zone', $employee->time_zone) == 'UTC'                 ? 'selected' : '' }}>UTC</option>
-                                <option value="America/New_York"   {{ old('time_zone', $employee->time_zone) == 'America/New_York'   ? 'selected' : '' }}>Eastern Time</option>
-                                <option value="America/Chicago"    {{ old('time_zone', $employee->time_zone) == 'America/Chicago'    ? 'selected' : '' }}>Central Time</option>
-                                <option value="America/Denver"     {{ old('time_zone', $employee->time_zone) == 'America/Denver'     ? 'selected' : '' }}>Mountain Time</option>
-                                <option value="America/Los_Angeles"{{ old('time_zone', $employee->time_zone) == 'America/Los_Angeles'? 'selected' : '' }}>Pacific Time</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="ui-label">Language</label>
-                            <select name="language" class="ui-select w-full">
-                                <option value="en" {{ old('language', $employee->language) == 'en' ? 'selected' : '' }}>English</option>
-                                <option value="es" {{ old('language', $employee->language) == 'es' ? 'selected' : '' }}>Spanish</option>
-                                <option value="fr" {{ old('language', $employee->language) == 'fr' ? 'selected' : '' }}>French</option>
-                            </select>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="flex items-center gap-2.5 cursor-pointer">
-                                <input type="checkbox" name="two_factor_enabled" value="1"
-                                       {{ old('two_factor_enabled', $employee->two_factor_enabled) ? 'checked' : '' }} class="w-4 h-4">
-                                <span class="text-sm font-medium text-gray-700">Enable Two-Factor Authentication</span>
-                            </label>
+                    <div>
+                        <label class="ui-label">Department</label>
+                        <select name="department_id" class="ui-select">
+                            <option value="">Select Department</option>
+                            @foreach($departments as $dept)
+                            <option value="{{ $dept->id }}" {{ old('department_id', $employee->department_id) == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="ui-label">Status <span class="ef-req">*</span></label>
+                        <select name="status" required class="ui-select">
+                            <option value="active"   {{ old('status', $employee->status) == 'active'   ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ old('status', $employee->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                            <option value="pending"  {{ old('status', $employee->status) == 'pending'  ? 'selected' : '' }}>Pending</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="ui-label">Hire Date</label>
+                        <input type="date" name="hire_date" value="{{ old('hire_date', $employee->hire_date ? \Carbon\Carbon::parse($employee->hire_date)->format('Y-m-d') : '') }}" class="ui-input">
+                    </div>
+                    <div class="ef-full">
+                        <label class="ui-label">Additional Roles <span class="ef-opt">(Optional)</span></label>
+                        <div class="ef-roles">
+                            <div class="ef-roles-note">Current: <strong>{{ $employee->roles->count() > 0 ? $employee->roles->pluck('name')->join(', ') : 'None' }}</strong></div>
+                            <div class="ef-roles-grid" style="margin:0 -1px -1px 0">
+                                @foreach($roles as $role)
+                                <label class="ef-role">
+                                    <input type="checkbox" name="additional_roles[]" value="{{ $role->id }}"
+                                           {{ in_array($role->id, old('additional_roles', $employeeRoleIds)) ? 'checked' : '' }}>
+                                    <span>{{ ucfirst(str_replace('_', ' ', $role->name)) }}</span>
+                                </label>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Sidebar (1/3) --}}
-            <div class="flex flex-col gap-5">
-
-                <div class="ui-card">
-                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Current Role</h4></div>
-                    <div class="ui-card-body">
-                        @php try { $currentRole = \App\Models\Role::find($employee->role_id); } catch (\Exception $e) { $currentRole = null; } @endphp
-                        @if($currentRole)
-                            <div class="bg-gray-50 rounded-lg p-3 flex flex-wrap gap-2 items-center">
-                                <span class="badge badge-blue">{{ ucfirst(str_replace('_', ' ', $currentRole->name)) }}</span>
-                                @if(is_array($currentRole->permissions) && in_array('all', $currentRole->permissions))
-                                    <span class="badge badge-red">Super Admin</span>
-                                @endif
-                            </div>
-                            <p class="text-xs text-gray-400 mt-2">{{ is_array($currentRole->permissions) ? count($currentRole->permissions) : 0 }} permission(s)</p>
-                        @else
-                            <div class="bg-red-50 text-red-700 text-sm p-3 rounded-lg text-center">No Role Assigned</div>
-                        @endif
+            <div class="ui-card">
+                <div class="ui-card-header"><h3>Preferences</h3></div>
+                <div class="ef-grid">
+                    <div>
+                        <label class="ui-label">Time Zone</label>
+                        <select name="time_zone" class="ui-select">
+                            <option value="UTC"                 {{ old('time_zone', $employee->time_zone) == 'UTC'                 ? 'selected' : '' }}>UTC</option>
+                            <option value="America/New_York"    {{ old('time_zone', $employee->time_zone) == 'America/New_York'    ? 'selected' : '' }}>Eastern Time</option>
+                            <option value="America/Chicago"     {{ old('time_zone', $employee->time_zone) == 'America/Chicago'     ? 'selected' : '' }}>Central Time</option>
+                            <option value="America/Denver"      {{ old('time_zone', $employee->time_zone) == 'America/Denver'      ? 'selected' : '' }}>Mountain Time</option>
+                            <option value="America/Los_Angeles" {{ old('time_zone', $employee->time_zone) == 'America/Los_Angeles' ? 'selected' : '' }}>Pacific Time</option>
+                        </select>
                     </div>
-                </div>
-
-                <div class="ui-card">
-                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Actions</h4></div>
-                    <div class="ui-card-body flex flex-col gap-2.5">
-                        <button type="submit" class="btn-primary w-full justify-center">Save Changes</button>
-                        <a href="{{ route('employees.show', $employee) }}" class="btn-secondary w-full text-center">Cancel</a>
-                        <button type="button" onclick="resetPassword()" class="w-full px-3 py-2 rounded-lg text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors cursor-pointer">Reset Password</button>
+                    <div>
+                        <label class="ui-label">Language</label>
+                        <select name="language" class="ui-select">
+                            <option value="en" {{ old('language', $employee->language) == 'en' ? 'selected' : '' }}>English</option>
+                            <option value="es" {{ old('language', $employee->language) == 'es' ? 'selected' : '' }}>Spanish</option>
+                            <option value="fr" {{ old('language', $employee->language) == 'fr' ? 'selected' : '' }}>French</option>
+                        </select>
                     </div>
-                </div>
-
-                <div class="ui-card">
-                    <div class="ui-card-header"><h4 class="text-sm font-semibold text-gray-800 m-0">Employee Stats</h4></div>
-                    <div class="ui-card-body flex flex-col divide-y divide-gray-100">
-                        <div class="flex items-center justify-between py-2">
-                            <span class="text-xs text-gray-500">Employee ID</span>
-                            <span class="text-sm font-medium text-gray-900">{{ $employee->employee_number ?? $employee->id }}</span>
-                        </div>
-                        <div class="flex items-center justify-between py-2">
-                            <span class="text-xs text-gray-500">Member Since</span>
-                            <span class="text-sm font-medium text-gray-900">{{ $employee->created_at->format('M Y') }}</span>
-                        </div>
-                        <div class="flex items-center justify-between py-2">
-                            <span class="text-xs text-gray-500">Last Updated</span>
-                            <span class="text-sm font-medium text-gray-900">{{ $employee->updated_at->diffForHumans() }}</span>
-                        </div>
-                        @if($employee->last_login_at)
-                        <div class="flex items-center justify-between py-2">
-                            <span class="text-xs text-gray-500">Last Login</span>
-                            <span class="text-sm font-medium text-gray-900">{{ \Carbon\Carbon::parse($employee->last_login_at)->diffForHumans() }}</span>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="ui-card bg-blue-50 border-blue-200">
-                    <div class="ui-card-body text-sm text-gray-600 space-y-1.5">
-                        <p><strong class="text-gray-800">Role changes</strong> take effect immediately</p>
-                        <p><strong class="text-gray-800">Email changes</strong> require verification</p>
-                        <p><strong class="text-gray-800">Status changes</strong> affect system access</p>
-                        <p>Use <strong class="text-gray-800">Reset Password</strong> for login issues</p>
+                    <div class="ef-full">
+                        <label class="ef-check">
+                            <input type="checkbox" name="two_factor_enabled" value="1" {{ old('two_factor_enabled', $employee->two_factor_enabled) ? 'checked' : '' }}>
+                            <span>Enable Two-Factor Authentication</span>
+                        </label>
                     </div>
                 </div>
             </div>
         </div>
-    </form>
-</div>
+
+        <div class="ef-col">
+            <div class="ui-card">
+                <div class="ui-card-header"><h3>Current Role</h3></div>
+                <div class="ef-body">
+                    @if($currentRole)
+                        <div class="ef-chips">
+                            <span class="badge badge-blue">{{ ucfirst(str_replace('_', ' ', $currentRole->name)) }}</span>
+                            @if(is_array($currentRole->permissions) && in_array('all', $currentRole->permissions))
+                                <span class="badge badge-red">Super Admin</span>
+                            @endif
+                        </div>
+                        <div class="ef-hint">{{ is_array($currentRole->permissions) ? count($currentRole->permissions) : 0 }} permission(s)</div>
+                    @else
+                        <span class="badge badge-red">No Role Assigned</span>
+                    @endif
+                </div>
+            </div>
+
+            <div class="ui-card">
+                <div class="ui-card-header"><h3>Actions</h3></div>
+                <div class="ef-actions" style="justify-content:stretch;flex-direction:column">
+                    <button type="submit" class="btn-primary" style="justify-content:center"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-save"/></svg> Save Changes</button>
+                    <a href="{{ route('employees.show', $employee) }}" class="btn-secondary" style="justify-content:center;text-align:center">Cancel</a>
+                    <button type="button" onclick="resetPassword()" class="btn-warning" style="justify-content:center"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-key"/></svg> Reset Password</button>
+                </div>
+            </div>
+
+            <div class="ui-card">
+                <div class="ui-card-header"><h3>Employee Stats</h3></div>
+                <div class="ef-rows">
+                    <div class="ef-row"><span>Employee ID</span><strong style="font-family:var(--mv-mono);font-size:12.5px">{{ $employee->employee_number ?? $employee->id }}</strong></div>
+                    <div class="ef-row"><span>Member Since</span><strong>{{ $employee->created_at->format('M Y') }}</strong></div>
+                    <div class="ef-row"><span>Last Updated</span><strong>{{ $employee->updated_at->diffForHumans() }}</strong></div>
+                    @if($employee->last_login_at)
+                    <div class="ef-row"><span>Last Login</span><strong>{{ \Carbon\Carbon::parse($employee->last_login_at)->diffForHumans() }}</strong></div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="ui-card">
+                <div class="ef-note">
+                    <div><strong>Role changes</strong> take effect immediately</div>
+                    <div><strong>Email changes</strong> require verification</div>
+                    <div><strong>Status changes</strong> affect system access</div>
+                    <div>Use <strong>Reset Password</strong> for login issues</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 
 {{-- Temp password reveal modal --}}
-<div id="tempPasswordModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.5);">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 text-center">
-        <div class="text-4xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-key"/></svg></div>
-        <h3 class="text-base font-semibold text-gray-800 mb-1">Password Reset</h3>
-        <p class="text-sm text-gray-500 mb-4">Share this temporary password with <strong id="resetEmpName"></strong>. It is only shown once.</p>
-        <div class="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 font-mono text-lg font-bold tracking-widest text-gray-800 mb-4 select-all" id="tempPasswordDisplay"></div>
-        <button onclick="copyTempPassword()" class="btn-secondary w-full mb-2">Copy Password</button>
-        <button onclick="document.getElementById('tempPasswordModal').classList.add('hidden')" class="btn-primary w-full">Done</button>
+<div id="tempPasswordModal" class="ef-modal hidden">
+    <div class="ef-modal-box">
+        <h3><svg class="mv-i mv-i-sm" aria-hidden="true" style="color:var(--mv-muted)"><use href="#i-key"/></svg> Password Reset</h3>
+        <p>Share this temporary password with <strong id="resetEmpName"></strong>. It is only shown once.</p>
+        <div class="ef-pass" id="tempPasswordDisplay"></div>
+        <div class="ef-modal-actions">
+            <button type="button" onclick="copyTempPassword(event)" class="btn-secondary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-copy"/></svg> Copy Password</button>
+            <button type="button" onclick="document.getElementById('tempPasswordModal').classList.add('hidden')" class="btn-primary">Done</button>
+        </div>
     </div>
 </div>
 
@@ -242,12 +231,14 @@ async function resetPassword() {
         alert('Error resetting password. Please try again.');
     }
 }
-function copyTempPassword() {
+function copyTempPassword(e) {
+    const btn = e ? e.currentTarget : null;
     const pwd = document.getElementById('tempPasswordDisplay').textContent;
     navigator.clipboard.writeText(pwd).then(() => {
-        const btn = event.target;
+        if (!btn) return;
+        const original = btn.innerHTML;
         btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy Password', 2000);
+        setTimeout(() => btn.innerHTML = original, 2000);
     });
 }
 let formDirty = false;

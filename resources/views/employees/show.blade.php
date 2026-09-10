@@ -1,165 +1,136 @@
 @extends('layouts.app')
 @section('title', 'Employee Details')
 
+@section('header-actions')
+<a href="{{ route('employees.index') }}" class="btn-secondary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Back to Employees</a>
+<button type="button" onclick="sendEmail('{{ $employee->email }}')" class="btn-secondary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-mail"/></svg> Send Email</button>
+<a href="{{ route('employees.edit', $employee) }}" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg> Edit Profile</a>
+@endsection
+
+@push('styles')
+<style>
+.es-layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .es-layout { grid-template-columns: 1fr; } }
+.es-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.es-profile { padding: 20px 18px 16px; display: flex; align-items: center; gap: 14px; }
+.es-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--mv-surface-2); border: 1px solid var(--mv-line); color: var(--mv-ink-2); display: inline-flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600; flex-shrink: 0; }
+.es-name { font-size: 15.5px; font-weight: 600; color: var(--mv-ink); }
+.es-role { font-size: 12.5px; color: var(--mv-muted); margin: 2px 0 6px; }
+.es-rows { padding: 2px 18px 6px; border-top: 1px solid var(--mv-line); }
+.es-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 0; font-size: 13px; }
+.es-row + .es-row { border-top: 1px solid var(--mv-line); }
+.es-row > span:first-child { color: var(--mv-muted); flex-shrink: 0; }
+.es-row > :last-child { color: var(--mv-ink); text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.es-mono { font-family: var(--mv-mono); font-size: 12.5px; }
+.es-link { color: var(--mv-accent-ink); text-decoration: none; }
+.es-link:hover { text-decoration: underline; }
+.es-body { padding: 16px 18px; }
+.es-dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; padding: 16px 18px; }
+.es-dl-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 760px) { .es-dl, .es-dl-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.es-dl .v { font-size: 13.5px; color: var(--mv-ink); margin-top: 2px; }
+.es-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.es-chip { font-size: 11.5px; padding: 2px 7px; border-radius: 5px; background: var(--mv-surface-2); border: 1px solid var(--mv-line); color: var(--mv-ink-2); }
+.es-chip.is-crit { background: var(--mv-crit-soft); border-color: #F2CACA; color: var(--mv-crit); }
+.es-sub { font-size: 11.5px; font-weight: 600; color: var(--mv-muted); letter-spacing: .05em; text-transform: uppercase; margin: 14px 0 8px; }
+.es-muted { color: var(--mv-muted); font-size: 12.5px; }
+</style>
+@endpush
+
 @section('content')
-<div>
-    {{-- Header --}}
-    <div class="flex items-start justify-between mb-5">
-        <div class="flex gap-2 flex-wrap">
-            <a href="{{ route('employees.index') }}" class="btn-secondary btn-sm">&#8592; Back to Employees</a>
-            <a href="{{ route('employees.edit', $employee) }}" class="btn-primary btn-sm">Edit Profile</a>
-            <button onclick="sendEmail('{{ $employee->email }}')" class="btn-sm px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-600 text-white hover:bg-purple-700 transition-colors cursor-pointer">Send Email</button>
+@php
+    try { $role = \App\Models\Role::find($employee->role_id); } catch (\Exception $e) { $role = null; }
+    $roleName = $role ? ucfirst(str_replace('_', ' ', $role->name)) : 'No Role Assigned';
+    $empStatusClass = match($employee->status ?? 'pending') {
+        'active'  => 'badge-green',
+        'pending' => 'badge-yellow',
+        default   => 'badge-gray',
+    };
+    try {
+        // employees has a legacy `department` text column that shadows the relation
+        $dept = $employee->getRelationValue('department');
+        $departmentName = $dept->name ?? ($employee->getAttributes()['department'] ?? null) ?: 'No Department';
+    } catch (\Throwable $e) { $departmentName = 'No Department'; }
+    try { $managerName = $employee->manager ? $employee->manager->first_name . ' ' . $employee->manager->last_name : 'No Manager'; } catch (\Throwable $e) { $managerName = 'No Manager'; }
+    $rolePerms = ($role && is_array($role->permissions)) ? $role->permissions : [];
+@endphp
+
+<div class="es-layout">
+    <div class="es-col">
+        <div class="ui-card">
+            <div class="es-profile">
+                <span class="es-avatar">{{ substr($employee->first_name ?? 'N', 0, 1) }}{{ substr($employee->last_name ?? 'A', 0, 1) }}</span>
+                <div style="min-width:0">
+                    <div class="es-name">{{ $employee->first_name }} {{ $employee->last_name }}</div>
+                    <div class="es-role">{{ $roleName }}</div>
+                    <span class="badge {{ $empStatusClass }}">{{ ucfirst($employee->status ?? 'Pending') }}</span>
+                </div>
+            </div>
+            <div class="es-rows">
+                <div class="es-row"><span>Employee ID</span><span class="es-mono">{{ $employee->employee_number ?? $employee->id }}</span></div>
+                <div class="es-row"><span>Email</span><a href="mailto:{{ $employee->email }}" class="es-link">{{ $employee->email }}</a></div>
+                @if($employee->phone)
+                <div class="es-row"><span>Phone</span><span>{{ $employee->phone }}</span></div>
+                @endif
+                <div class="es-row"><span>Hire Date</span><span>{{ $employee->hire_date ? \Carbon\Carbon::parse($employee->hire_date)->format('M d, Y') : 'Not set' }}</span></div>
+                @if($employee->last_login_at)
+                <div class="es-row"><span>Last Login</span><span>{{ \Carbon\Carbon::parse($employee->last_login_at)->diffForHumans() }}</span></div>
+                @endif
+            </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {{-- Left: Profile card --}}
-        <div class="ui-card h-fit">
-            <div class="ui-card-body flex flex-col items-center text-center">
-                <div class="w-24 h-24 rounded-full bg-[#1a3a5c] flex items-center justify-center text-white text-3xl font-bold mb-4">
-                    {{ substr($employee->first_name ?? 'N', 0, 1) }}{{ substr($employee->last_name ?? 'A', 0, 1) }}
-                </div>
-                <h3 class="text-base font-semibold text-gray-900 mb-1">{{ $employee->first_name }} {{ $employee->last_name }}</h3>
-                <p class="text-sm text-gray-500 mb-3">
-                    @php
-                        try { $role = \App\Models\Role::find($employee->role_id); echo $role ? ucfirst(str_replace('_', ' ', $role->name)) : 'No Role Assigned'; } catch (\Exception $e) { echo 'No Role Assigned'; }
-                    @endphp
-                </p>
-                @php
-                    $empStatusClass = match($employee->status ?? 'pending') {
-                        'active'  => 'badge-green',
-                        'pending' => 'badge-yellow',
-                        default   => 'badge-gray',
-                    };
-                @endphp
-                <span class="badge {{ $empStatusClass }}">{{ ucfirst($employee->status ?? 'Pending') }}</span>
-            </div>
-            <div class="border-t border-gray-100">
-                <div class="ui-card-body flex flex-col divide-y divide-gray-100">
-                    <div class="flex items-center justify-between py-2">
-                        <span class="text-xs text-gray-500 uppercase tracking-wide">Employee ID</span>
-                        <span class="text-sm font-medium text-gray-900">{{ $employee->employee_number ?? $employee->id }}</span>
+    <div class="es-col">
+        <div class="ui-card">
+            <div class="ui-card-header"><h3>Role &amp; Permissions</h3></div>
+            <div class="es-body">
+                @if($role)
+                    <div class="es-chips">
+                        <span class="badge badge-blue">{{ $roleName }}</span>
+                        @if(in_array('all', $rolePerms))
+                            <span class="badge badge-red">Super Admin</span>
+                        @endif
                     </div>
-                    <div class="flex items-start justify-between py-2 gap-2">
-                        <span class="text-xs text-gray-500 uppercase tracking-wide flex-shrink-0">Email</span>
-                        <a href="mailto:{{ $employee->email }}" class="text-sm text-[#1a3a5c] hover:underline truncate">{{ $employee->email }}</a>
+                    <div class="es-sub">Permissions</div>
+                    <div class="es-chips">
+                        @forelse($rolePerms as $permission)
+                            <span class="es-chip {{ $permission === 'all' ? 'is-crit' : '' }}">{{ ucwords(str_replace('_', ' ', $permission)) }}</span>
+                        @empty
+                            <span class="es-muted">No permissions assigned</span>
+                        @endforelse
                     </div>
-                    @if($employee->phone)
-                    <div class="flex items-center justify-between py-2">
-                        <span class="text-xs text-gray-500 uppercase tracking-wide">Phone</span>
-                        <span class="text-sm text-gray-900">{{ $employee->phone }}</span>
+                @else
+                    <div class="alert-danger" style="padding:11px 14px;font-size:13px;border:1px solid">
+                        <strong>No Role Assigned</strong> — this employee needs a role to access the system.
                     </div>
-                    @endif
-                    <div class="flex items-center justify-between py-2">
-                        <span class="text-xs text-gray-500 uppercase tracking-wide">Hire Date</span>
-                        <span class="text-sm text-gray-900">{{ $employee->hire_date ? \Carbon\Carbon::parse($employee->hire_date)->format('M d, Y') : 'Not set' }}</span>
-                    </div>
-                    @if($employee->last_login_at)
-                    <div class="flex items-center justify-between py-2">
-                        <span class="text-xs text-gray-500 uppercase tracking-wide">Last Login</span>
-                        <span class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($employee->last_login_at)->diffForHumans() }}</span>
-                    </div>
-                    @endif
-                </div>
+                @endif
             </div>
         </div>
 
-        {{-- Right: Details (2/3) --}}
-        <div class="lg:col-span-2 flex flex-col gap-4">
-
-            {{-- Role & Permissions --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">Role &amp; Permissions</h4>
-                </div>
-                <div class="ui-card-body">
-                    @php
-                        try { $role = \App\Models\Role::find($employee->role_id); } catch (\Exception $e) { $role = null; }
-                    @endphp
-                    @if($role)
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="badge badge-blue">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</span>
-                            @if(is_array($role->permissions) && in_array('all', $role->permissions))
-                                <span class="badge badge-red">Super Admin</span>
-                            @endif
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <div class="text-xs text-gray-500 uppercase tracking-wide mb-2">Permissions</div>
-                            <div class="flex flex-wrap gap-1.5">
-                                @if(is_array($role->permissions) && !empty($role->permissions))
-                                    @foreach($role->permissions as $permission)
-                                    @php
-                                        $permClass = match($permission) {
-                                            'all'            => 'badge-red',
-                                            'manage_team'    => 'badge-purple',
-                                            'manage_assets'  => 'badge-green',
-                                            'view_dashboard' => 'badge-blue',
-                                            'view_clients'   => 'badge-orange',
-                                            default          => 'badge-gray',
-                                        };
-                                    @endphp
-                                    <span class="badge {{ $permClass }}">{{ ucwords(str_replace('_', ' ', $permission)) }}</span>
-                                    @endforeach
-                                @else
-                                    <span class="text-sm text-gray-400 italic">No permissions assigned</span>
-                                @endif
-                            </div>
-                        </div>
-                    @else
-                        <div class="bg-red-50 text-red-700 p-4 rounded-lg text-sm text-center">
-                            <strong>No Role Assigned</strong>
-                            <p class="mt-1 text-xs text-red-500">This employee needs a role to access the system.</p>
-                        </div>
-                    @endif
-                </div>
+        <div class="ui-card">
+            <div class="ui-card-header"><h3>Department &amp; Reporting</h3></div>
+            <div class="es-dl">
+                <div><div class="ui-label">Department</div><div class="v">{{ $departmentName }}</div></div>
+                <div><div class="ui-label">Reports To</div><div class="v">{{ $managerName }}</div></div>
             </div>
+        </div>
 
-            {{-- Department & Reporting --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">Department &amp; Reporting</h4>
-                </div>
-                <div class="ui-card-body grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <div class="ui-label">Department</div>
-                        <div class="text-sm text-gray-900">@php try { echo $employee->department->name ?? 'No Department'; } catch (\Exception $e) { echo 'No Department'; } @endphp</div>
-                    </div>
-                    <div>
-                        <div class="ui-label">Reports To</div>
-                        <div class="text-sm text-gray-900">@php try { echo $employee->manager ? $employee->manager->first_name . ' ' . $employee->manager->last_name : 'No Manager'; } catch (\Exception $e) { echo 'No Manager'; } @endphp</div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Additional Information --}}
-            <div class="ui-card">
-                <div class="ui-card-header">
-                    <h4 class="text-sm font-semibold text-gray-800 m-0">Additional Information</h4>
-                </div>
-                <div class="ui-card-body grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div>
-                        <div class="ui-label">Time Zone</div>
-                        <div class="text-sm text-gray-900">{{ $employee->time_zone ?? 'UTC' }}</div>
-                    </div>
-                    <div>
-                        <div class="ui-label">Language</div>
-                        <div class="text-sm text-gray-900">{{ strtoupper($employee->language ?? 'EN') }}</div>
-                    </div>
-                    <div>
-                        <div class="ui-label">Two Factor Auth</div>
-                        <div class="text-sm">
-                            @if($employee->two_factor_enabled)
-                                <span class="badge badge-green">Enabled</span>
-                            @else
-                                <span class="badge badge-gray">Disabled</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div>
-                        <div class="ui-label">Account Created</div>
-                        <div class="text-sm text-gray-900">{{ $employee->created_at->format('M d, Y') }}</div>
+        <div class="ui-card">
+            <div class="ui-card-header"><h3>Additional Information</h3></div>
+            <div class="es-dl es-dl-4">
+                <div><div class="ui-label">Time Zone</div><div class="v">{{ $employee->time_zone ?? 'UTC' }}</div></div>
+                <div><div class="ui-label">Language</div><div class="v">{{ strtoupper($employee->language ?? 'EN') }}</div></div>
+                <div>
+                    <div class="ui-label">Two Factor Auth</div>
+                    <div class="v">
+                        @if($employee->two_factor_enabled)
+                            <span class="badge badge-green">Enabled</span>
+                        @else
+                            <span class="badge badge-gray">Disabled</span>
+                        @endif
                     </div>
                 </div>
+                <div><div class="ui-label">Account Created</div><div class="v">{{ $employee->created_at->format('M d, Y') }}</div></div>
             </div>
         </div>
     </div>

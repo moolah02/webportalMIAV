@@ -2,721 +2,358 @@
 @extends('layouts.app')
 @section('title', 'Closure Reports')
 
-@section('content')
-
-<div class="py-4">
-    {{-- Page Header --}}
-
-    {{-- Statistics Cards --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-play"/></svg></div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number">{{ $activeProjects->count() }}</div>
-                <div class="stat-label">Active Projects</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number">{{ $closedProjects->count() }}</div>
-                <div class="stat-label">Closed Projects</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg></div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number">{{ $closedProjects->where('report_path')->count() }}</div>
-                <div class="stat-label">Reports Generated</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg></div>
-            <div class="flex-1 min-w-0">
-                <div class="stat-number">{{ number_format($activeProjects->avg('completion_percentage') ?? 0, 1) }}%</div>
-                <div class="stat-label">Avg. Progress</div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Navigation --}}
-    <div class="ui-card mb-4">
-        <div class="ui-card-header">
-            <h6 class="ui-card-title">Project Management</h6>
-        </div>
-        <div class="ui-card-body">
-            <div class="nav-buttons">
-                <button class="btn-primary active" onclick="showTab('active-projects')">
-                    <i class="fas fa-play-circle"></i> Active Projects
-                </button>
-                <button class="btn-secondary" onclick="showTab('closed-projects')">
-                    <i class="fas fa-check-circle"></i> Closed Projects
-                </button>
-                <button class="btn-secondary" onclick="showTab('analytics')">
-                    <i class="fas fa-chart-bar"></i> Analytics
-                </button>
-                <button class="btn-secondary" onclick="showTab('reports')">
-                    <i class="fas fa-file-pdf"></i> Reports
-                </button>
-                <button class="btn-secondary" onclick="showTab('manual-reports')">
-                    <i class="fas fa-cogs"></i> Generate Reports
-                </button>
-            </div>
-        </div>
-    </div>
-
-    {{-- Active Projects Tab --}}
-    <div id="active-projects" class="tab-content active">
-        <div class="ui-card">
-            <div class="ui-card-header">
-                <h6 class="ui-card-title">Active Projects</h6>
-                <span class="badge">{{ $activeProjects->count() }}</span>
-            </div>
-
-            @if($activeProjects->count() > 0)
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Project</th>
-                                <th>Client</th>
-                                <th>Status</th>
-                                <th>Progress</th>
-                                <th>Timeline</th>
-                                <th>Manager</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($activeProjects as $project)
-                            <tr>
-                                <td>
-                                    <div class="item-title">{{ $project->project_name }}</div>
-                                    <div class="item-subtitle">{{ $project->project_code }}</div>
-                                </td>
-                                <td>{{ $project->client->company_name }}</td>
-                                <td>
-                                    <span class="badge badge-status-{{ $project->status }}">
-                                        {{ ucfirst($project->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @if($project->job_assignments_count > 0)
-                                    <div class="progress-info">
-                                        {{ $project->terminals_count ?? 0 }} terminals<br>
-                                        <small class="text-muted">{{ number_format($project->completion_percentage ?? 0, 1) }}% complete</small>
-                                    </div>
-                                    @else
-                                    <span class="text-muted">No assignments</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="timeline-info">
-                                        <div><strong>Start:</strong> {{ $project->start_date ? $project->start_date->format('M j, Y') : 'Not set' }}</div>
-                                        <div><strong>End:</strong> {{ $project->end_date ? $project->end_date->format('M j, Y') : 'Not set' }}</div>
-                                    </div>
-                                </td>
-                                <td>
-                                    @if($project->projectManager)
-                                        {{ $project->projectManager->full_name }}
-                                    @else
-                                        <span class="text-muted">Unassigned</span>
-                                    @endif
-                                </td>
-                                <td class="text-end">
-                                    <div class="action-buttons">
-                                        <a href="{{ route('projects.show', $project) }}" class="btn-secondary">
-                                            <i class="fas fa-eye"></i> View
-                                        </a>
-                                        <a href="{{ route('projects.closure-wizard', $project) }}" class="btn-primary">
-                                            <i class="fas fa-flag-checkered"></i> Close
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="empty-state">
-                    <h5>No active projects</h5>
-                    <p>All projects are closed or there are no projects to show.</p>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- Closed Projects Tab --}}
-    <div id="closed-projects" class="tab-content">
-        <div class="ui-card">
-            <div class="ui-card-header">
-                <h6 class="ui-card-title">Closed Projects</h6>
-                <span class="badge">{{ $closedProjects->count() }}</span>
-            </div>
-
-            @if($closedProjects->count() > 0)
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Project</th>
-                                <th>Client</th>
-                                <th>Closure Date</th>
-                                <th>Duration</th>
-                                <th>Quality Rating</th>
-                                <th>Report Status</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($closedProjects as $project)
-                            <tr>
-                                <td>
-                                    <div class="item-title">{{ $project->project_name }}</div>
-                                    <div class="item-subtitle">{{ $project->project_code }}</div>
-                                </td>
-                                <td>{{ $project->client->company_name }}</td>
-                                <td>
-                                    <div class="closure-date">
-                                        {{ $project->closed_at ? $project->closed_at->format('M j, Y') : 'N/A' }}
-                                    </div>
-                                    <div class="closure-relative">{{ $project->closed_at?->diffForHumans() }}</div>
-                                </td>
-                                <td>
-                                    @if($project->start_date && $project->closed_at)
-                                        {{ (int) $project->start_date->diffInDays($project->closed_at) }} days
-                                    @else
-                                        N/A
-                                    @endif
-                                </td>
-
-                                <td>
-                                    @if($project->report_path)
-                                        <span class="badge badge-status-closed">Generated</span>
-                                    @else
-                                        <span class="badge badge-status-assigned">Pending</span>
-                                    @endif
-                                </td>
-                                <td class="text-end">
-                                    <div class="action-buttons">
-                                        <a href="{{ route('projects.show', $project) }}" class="btn-secondary">
-                                            <i class="fas fa-eye"></i> View
-                                        </a>
-                                        @if($project->closure)
-                                        <button class="btn-secondary" onclick="showClosureDetails('{{ $project->id }}')">
-                                            <i class="fas fa-info-circle"></i> Details
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="empty-state">
-                    <h5>No closed projects</h5>
-                    <p>No projects have been closed yet.</p>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- Analytics Tab --}}
-    <div id="analytics" class="tab-content">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-            <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></div>
-                <div class="flex-1 min-w-0">
-                    <div class="stat-number">{{ number_format($activeProjects->avg('completion_percentage') ?? 0, 1) }}%</div>
-                    <div class="stat-label">Avg. Progress</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-activity"/></svg></div>
-                <div class="flex-1 min-w-0">
-                    <div class="stat-number">{{ $closedProjects->where('closure')->avg('closure.client_satisfaction') ? number_format($closedProjects->where('closure')->avg('closure.client_satisfaction'), 1) : '0' }}</div>
-                    <div class="stat-label">Avg. Client Satisfaction</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-calendar"/></svg></div>
-                <div class="flex-1 min-w-0">
-                    <div class="stat-number">
-                        @php
-                        $avgDuration = $closedProjects->filter(function($project) {
-                            return $project->start_date && $project->closed_at;
-                        })->map(function($project) {
-                            return $project->start_date->diffInDays($project->closed_at);
-                        })->avg();
-                        @endphp
-                        {{ $avgDuration ? number_format($avgDuration, 0) : '0' }}
-                    </div>
-                    <div class="stat-label">Avg. Duration (days)</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg></div>
-                <div class="flex-1 min-w-0">
-                    <div class="stat-number">{{ $closedProjects->count() }}</div>
-                    <div class="stat-label">Total Closed</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Reports Tab --}}
-    <div id="reports" class="tab-content">
-        <div class="ui-card">
-            <div class="ui-card-header">
-                <h6 class="ui-card-title">Generated Reports</h6>
-                <span class="badge">{{ $closedProjects->where('report_path')->count() }}</span>
-            </div>
-
-            @if($closedProjects->where('report_path')->count() > 0)
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Project</th>
-                                <th>Client</th>
-                                <th>Report Generated</th>
-                                <th>File Size</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($closedProjects->where('report_path') as $project)
-                            <tr>
-                                <td>
-                                    <div class="item-title">{{ $project->project_name }}</div>
-                                    <div class="item-subtitle">{{ $project->project_code }}</div>
-                                </td>
-                                <td>{{ $project->client->company_name }}</td>
-                                <td>{{ $project->closed_at ? $project->closed_at->format('M j, Y') : 'N/A' }}</td>
-                                <td>
-                                    @if($project->report_path && file_exists(storage_path('app/public/' . $project->report_path)))
-                                        {{ number_format(filesize(storage_path('app/public/' . $project->report_path)) / 1024, 1) }} KB
-                                    @else
-                                        N/A
-                                    @endif
-                                </td>
-                                <td class="text-end">
-                                    @if($project->report_path)
-                                    <a href="{{ route('projects.download-report', $project) }}" class="btn-primary">
-                                        <i class="fas fa-download"></i> Download
-                                    </a>
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="empty-state">
-                    <h5>No reports generated</h5>
-                    <p>Close projects to generate reports.</p>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- Manual Reports Tab --}}
-    <div id="manual-reports" class="tab-content">
-        @if($closedProjects->count() > 0)
-            <div class="ui-card mb-4">
-                <div class="ui-card-header">
-                    <h6 class="ui-card-title">Select Project for Report Generation</h6>
-                </div>
-                <div class="ui-card-body">
-                    <div class="mb-4">
-                        <select id="projectSelector" class="ui-input">
-                            <option value="">Choose a closed project...</option>
-                            @foreach($closedProjects as $project)
-                                <option value="{{ $project->id }}">{{ $project->project_name }} - {{ $project->client->company_name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div id="reportGeneratorContainer" style="display: none;">
-                {{-- This will be populated via AJAX when project is selected --}}
-            </div>
-        @else
-            <div class="ui-card">
-                <div class="ui-card-body">
-                    <div class="empty-state">
-                        <h5>No closed projects</h5>
-                        <p>Close some projects first to generate reports.</p>
-                    </div>
-                </div>
-            </div>
-        @endif
-    </div>
-</div>
-@endsection
-
 @push('styles')
 <style>
-/* Base Styling */
-.page-title {
-    color: #374151;
-    font-weight: 600;
-    margin: 0;
-}
-
-.page-subtitle {
-    color: #6b7280;
-    margin-bottom: 2rem;
-    font-size: 1rem;
-}
-
-/* Statistics Grid */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-}
-
-
-
-.stat-card-body {
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 6px;
-    background: #f9fafb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-
-.stat-icon-success { background: #f0fdf4; color: #16a34a; }
-.stat-icon-pending { background: #fef3c7; color: #d97706; }
-.stat-icon-progress { background: #dbeafe; color: #2563eb; }
-
-.stat-content {
-    flex: 1;
-}
-
-.stat-number {
-    font-size: 1.875rem;
-    font-weight: 700;
-    color: #111827;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-}
-
-.stat-label {
-    color: #6b7280;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-/* Card Styling */
-.card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    margin-bottom: 1.5rem;
-}
-
-.card-header {
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
-    padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.card-title {
-    color: #374151;
-    font-weight: 600;
-    margin: 0;
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
-/* Navigation Buttons */
-.nav-buttons {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-/* Tab Content */
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-/* Button Styling */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    gap: 0.5rem;
-}
-
-.btn-primary.active {
-    background: #152e4a;
-    border-color: #152e4a;
-}
-
-/* Table Styling */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-}
-
-.data-table th {
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #374151;
-}
-
-.data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #f3f4f6;
-    vertical-align: top;
-}
-
-.data-table tbody tr:hover {
-    background: #f9fafb;
-}
-
-/* Table Content */
-.item-title {
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 0.25rem;
-}
-
-.item-subtitle {
-    color: #6b7280;
-    font-size: 0.8125rem;
-    font-family: monospace;
-    background: #f3f4f6;
-    padding: 0.125rem 0.375rem;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.closure-date {
-    font-weight: 500;
-    color: #111827;
-    margin-bottom: 0.25rem;
-}
-
-.closure-relative {
-    color: #6b7280;
-    font-size: 0.8125rem;
-}
-
-.progress-info, .timeline-info {
-    font-size: 0.875rem;
-    line-height: 1.4;
-}
-
-.rating-display {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
-}
-
-.rating-stars {
-    display: flex;
-    gap: 0.125rem;
-}
-
-/* Action Buttons */
-.action-buttons {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-/* Badges */
-.badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-}
-
-.badge-status-active {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.badge-status-closed {
-    background: #dbeafe;
-    color: #1d4ed8;
-}
-
-.badge-status-assigned {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-/* Form Elements */
-.form-group {
-    margin-bottom: 1rem;
-}
-
-.form-control {
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    color: #111827;
-    background: #ffffff;
-    width: 100%;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: #1a3a5c;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Empty State */
-.empty-state {
-    padding: 3rem;
-    text-align: center;
-}
-
-.empty-state h5 {
-    color: #374151;
-    margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-    color: #6b7280;
-    margin: 0;
-}
-
-/* Utility Classes */
-.text-end {
-    text-align: right;
-}
-
-.text-muted {
-    color: #6b7280;
-}
-
-.text-warning {
-    color: #f59e0b;
-}
-
-.table-responsive {
-    overflow-x: auto;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .nav-buttons {
-        flex-direction: column;
-    }
-
-    .action-buttons {
-        flex-direction: column;
-    }
-
-    .card-body {
-        padding: 1rem;
-    }
-
-    .data-table {
-        font-size: 0.8125rem;
-    }
-
-    .data-table th,
-    .data-table td {
-        padding: 0.5rem;
-    }
-
-    .stat-card-body {
-        padding: 1rem;
-    }
-
-    .stat-number {
-        font-size: 1.5rem;
-    }
-}
+.cr-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 900px) { .cr-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cr-tabs { margin-bottom: 16px; border-radius: 10px 10px 0 0; }
+.cr-tabs .tab-btn { background: transparent; border-top: 0; border-left: 0; border-right: 0; }
+.cr-tabs .tab-btn .mv-i { color: currentColor; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.cr-muted { color: var(--mv-muted); font-size: 12.5px; }
+.cr-title { font-weight: 500; color: var(--mv-ink); font-size: 13.5px; }
+.cr-code { font-family: var(--mv-mono); font-size: 11.5px; color: var(--mv-muted); }
+.cr-dates { font-size: 12.5px; color: var(--mv-ink-2); line-height: 1.55; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cr-dates span { color: var(--mv-muted); }
+.cr-progress { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+.cr-bar { flex: 1; height: 6px; background: var(--mv-line); border-radius: 3px; overflow: hidden; }
+.cr-bar > span { display: block; height: 100%; background: var(--mv-accent); border-radius: 3px; }
+.cr-pct { font-size: 12px; font-weight: 600; color: var(--mv-ink-2); font-variant-numeric: tabular-nums; width: 42px; text-align: right; }
+.cr-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.cr-num { text-align: right; font-variant-numeric: tabular-nums; }
+.cr-body { padding: 16px 18px; }
+.cr-select { width: 100%; max-width: 520px; }
+.cr-loading { padding: 24px; text-align: center; color: var(--mv-muted); font-size: 13px; }
 </style>
 @endpush
 
+@section('content')
+@php
+    $reportsCount = $closedProjects->where('report_path')->count();
+    $avgProgress = number_format($activeProjects->avg('completion_percentage') ?? 0, 1);
+@endphp
+
+<div class="cr-stats">
+    <div class="stat-card">
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-activity"/></svg></div>
+        <div>
+            <div class="stat-number">{{ $activeProjects->count() }}</div>
+            <div class="stat-label">Active Projects</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
+        <div>
+            <div class="stat-number">{{ $closedProjects->count() }}</div>
+            <div class="stat-label">Closed Projects</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-file-check"/></svg></div>
+        <div>
+            <div class="stat-number">{{ $reportsCount }}</div>
+            <div class="stat-label">Reports Generated</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-trending-up"/></svg></div>
+        <div>
+            <div class="stat-number">{{ $avgProgress }}%</div>
+            <div class="stat-label">Avg. Progress</div>
+        </div>
+    </div>
+</div>
+
+<div class="ui-card overflow-hidden" style="margin-bottom:16px">
+    <div class="tab-nav cr-tabs" role="tablist" style="margin:0">
+        <button type="button" class="tab-btn active" data-tab="active-projects" onclick="showTab('active-projects', this)"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-activity"/></svg> Active Projects</button>
+        <button type="button" class="tab-btn" data-tab="closed-projects" onclick="showTab('closed-projects', this)"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-check-circle"/></svg> Closed Projects</button>
+        <button type="button" class="tab-btn" data-tab="analytics" onclick="showTab('analytics', this)"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-chart"/></svg> Analytics</button>
+        <button type="button" class="tab-btn" data-tab="reports" onclick="showTab('reports', this)"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-file"/></svg> Reports</button>
+        <button type="button" class="tab-btn" data-tab="manual-reports" onclick="showTab('manual-reports', this)"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-settings"/></svg> Generate Reports</button>
+    </div>
+</div>
+
+{{-- Active Projects --}}
+<div id="active-projects" class="tab-content active">
+    <div class="ui-card overflow-hidden">
+        <div class="ui-card-header"><h3>Active Projects</h3><span class="cr-muted">{{ $activeProjects->count() }}</span></div>
+        @if($activeProjects->count() > 0)
+        <div class="overflow-x-auto">
+            <table class="ui-table w-full">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Client</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Timeline</th>
+                        <th>Manager</th>
+                        <th style="text-align:right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($activeProjects as $project)
+                    @php $pct = $project->completion_percentage ?? 0; @endphp
+                    <tr>
+                        <td>
+                            <div class="cr-title">{{ $project->project_name }}</div>
+                            <div class="cr-code">{{ $project->project_code }}</div>
+                        </td>
+                        <td>{{ $project->client->company_name }}</td>
+                        <td><span class="badge {{ $project->status === 'active' ? 'badge-green' : 'badge-gray' }}">{{ ucfirst($project->status) }}</span></td>
+                        <td>
+                            @if($project->job_assignments_count > 0)
+                            <div class="cr-progress">
+                                <div class="cr-bar"><span style="width:{{ min(100, $pct) }}%"></span></div>
+                                <span class="cr-pct">{{ number_format($pct, 1) }}%</span>
+                            </div>
+                            <div class="cr-muted" style="font-size:12px;margin-top:2px">{{ $project->terminals_count ?? 0 }} terminals</div>
+                            @else
+                            <span class="cr-muted">No assignments</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="cr-dates">
+                                <div><span>Start</span> {{ $project->start_date ? $project->start_date->format('M j, Y') : 'Not set' }}</div>
+                                <div><span>End</span> {{ $project->end_date ? $project->end_date->format('M j, Y') : 'Not set' }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            @if($project->projectManager)
+                                {{ $project->projectManager->full_name }}
+                            @else
+                                <span class="cr-muted">Unassigned</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="cr-actions">
+                                <a href="{{ route('projects.show', $project) }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg> View</a>
+                                <a href="{{ route('projects.closure-wizard', $project) }}" class="btn-primary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-lock"/></svg> Close</a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @else
+        <div class="empty-state">
+            <div class="empty-state-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-folder"/></svg></div>
+            <p class="empty-state-msg">No active projects. All projects are closed or there are no projects to show.</p>
+        </div>
+        @endif
+    </div>
+</div>
+
+{{-- Closed Projects --}}
+<div id="closed-projects" class="tab-content">
+    <div class="ui-card overflow-hidden">
+        <div class="ui-card-header"><h3>Closed Projects</h3><span class="cr-muted">{{ $closedProjects->count() }}</span></div>
+        @if($closedProjects->count() > 0)
+        <div class="overflow-x-auto">
+            <table class="ui-table w-full">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Client</th>
+                        <th>Closure Date</th>
+                        <th style="text-align:right">Duration</th>
+                        <th>Report Status</th>
+                        <th style="text-align:right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($closedProjects as $project)
+                    <tr>
+                        <td>
+                            <div class="cr-title">{{ $project->project_name }}</div>
+                            <div class="cr-code">{{ $project->project_code }}</div>
+                        </td>
+                        <td>{{ $project->client->company_name }}</td>
+                        <td>
+                            <div class="cr-dates">
+                                <div>{{ $project->closed_at ? $project->closed_at->format('M j, Y') : 'N/A' }}</div>
+                                <div><span>{{ $project->closed_at?->diffForHumans() }}</span></div>
+                            </div>
+                        </td>
+                        <td class="cr-num">
+                            @if($project->start_date && $project->closed_at)
+                                {{ (int) $project->start_date->diffInDays($project->closed_at) }} days
+                            @else
+                                <span class="cr-muted">N/A</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($project->report_path)
+                                <span class="badge badge-green">Generated</span>
+                            @else
+                                <span class="badge badge-gray">Pending</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="cr-actions">
+                                <a href="{{ route('projects.show', $project) }}" class="btn-secondary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg> View</a>
+                                @if($project->closure)
+                                <button type="button" class="btn-secondary btn-sm" onclick="showClosureDetails('{{ $project->id }}')"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-info"/></svg> Details</button>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @else
+        <div class="empty-state">
+            <div class="empty-state-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
+            <p class="empty-state-msg">No closed projects. No projects have been closed yet.</p>
+        </div>
+        @endif
+    </div>
+</div>
+
+{{-- Analytics --}}
+<div id="analytics" class="tab-content">
+    @php
+        $avgDuration = $closedProjects->filter(function ($project) {
+            return $project->start_date && $project->closed_at;
+        })->map(function ($project) {
+            return $project->start_date->diffInDays($project->closed_at);
+        })->avg();
+        $avgSatisfaction = $closedProjects->where('closure')->avg('closure.client_satisfaction');
+    @endphp
+    <div class="cr-stats">
+        <div class="stat-card">
+            <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-chart"/></svg></div>
+            <div>
+                <div class="stat-number">{{ $avgProgress }}%</div>
+                <div class="stat-label">Avg. Progress</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-star"/></svg></div>
+            <div>
+                <div class="stat-number">{{ $avgSatisfaction ? number_format($avgSatisfaction, 1) : '0' }}</div>
+                <div class="stat-label">Avg. Client Satisfaction</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-calendar"/></svg></div>
+            <div>
+                <div class="stat-number">{{ $avgDuration ? number_format($avgDuration, 0) : '0' }}</div>
+                <div class="stat-label">Avg. Duration (days)</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-folder"/></svg></div>
+            <div>
+                <div class="stat-number">{{ $closedProjects->count() }}</div>
+                <div class="stat-label">Total Closed</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Reports --}}
+<div id="reports" class="tab-content">
+    <div class="ui-card overflow-hidden">
+        <div class="ui-card-header"><h3>Generated Reports</h3><span class="cr-muted">{{ $reportsCount }}</span></div>
+        @if($reportsCount > 0)
+        <div class="overflow-x-auto">
+            <table class="ui-table w-full">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Client</th>
+                        <th>Report Generated</th>
+                        <th style="text-align:right">File Size</th>
+                        <th style="text-align:right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($closedProjects->where('report_path') as $project)
+                    <tr>
+                        <td>
+                            <div class="cr-title">{{ $project->project_name }}</div>
+                            <div class="cr-code">{{ $project->project_code }}</div>
+                        </td>
+                        <td>{{ $project->client->company_name }}</td>
+                        <td class="cr-dates">{{ $project->closed_at ? $project->closed_at->format('M j, Y') : 'N/A' }}</td>
+                        <td class="cr-num">
+                            @if($project->report_path && file_exists(storage_path('app/public/' . $project->report_path)))
+                                {{ number_format(filesize(storage_path('app/public/' . $project->report_path)) / 1024, 1) }} KB
+                            @else
+                                <span class="cr-muted">N/A</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="cr-actions">
+                                @if($project->report_path)
+                                <a href="{{ route('projects.download-report', $project) }}" class="btn-primary btn-sm"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg> Download</a>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @else
+        <div class="empty-state">
+            <div class="empty-state-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-file"/></svg></div>
+            <p class="empty-state-msg">No reports generated. Close projects to generate reports.</p>
+        </div>
+        @endif
+    </div>
+</div>
+
+{{-- Generate Reports --}}
+<div id="manual-reports" class="tab-content">
+    @if($closedProjects->count() > 0)
+    <div class="ui-card" style="margin-bottom:16px">
+        <div class="ui-card-header"><h3>Select Project for Report Generation</h3></div>
+        <div class="cr-body">
+            <label class="ui-label" for="projectSelector">Closed project</label>
+            <select id="projectSelector" class="ui-select cr-select">
+                <option value="">Choose a closed project...</option>
+                @foreach($closedProjects as $project)
+                    <option value="{{ $project->id }}">{{ $project->project_name }} - {{ $project->client->company_name }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+    <div id="reportGeneratorContainer" style="display: none;"></div>
+    @else
+    <div class="ui-card">
+        <div class="empty-state">
+            <div class="empty-state-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-file"/></svg></div>
+            <p class="empty-state-msg">No closed projects. Close some projects first to generate reports.</p>
+        </div>
+    </div>
+    @endif
+</div>
+@endsection
+
 @push('scripts')
 <script>
-function showTab(tabName) {
-    // Hide all tab contents
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
+function showTab(tabName, btn) {
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.querySelectorAll('.cr-tabs .tab-btn').forEach(b => b.classList.remove('active'));
 
-    // Remove active class from all buttons
-    document.querySelectorAll('.btn').forEach(button => {
-        button.classList.remove('active');
-        if (button.classList.contains('btn-primary')) {
-            button.classList.remove('btn-primary');
-            button.classList.add('btn-secondary');
-        }
-    });
+    const panel = document.getElementById(tabName);
+    if (panel) panel.classList.add('active');
 
-    // Show selected tab content
-    document.getElementById(tabName).classList.add('active');
-
-    // Add active class to clicked button
-    event.target.classList.remove('btn-secondary');
-    event.target.classList.add('btn-primary', 'active');
+    const trigger = btn || (window.event && window.event.target && window.event.target.closest('.tab-btn'))
+        || document.querySelector(`.cr-tabs .tab-btn[data-tab="${tabName}"]`);
+    if (trigger) trigger.classList.add('active');
 }
 
 function showClosureDetails(projectId) {
     window.location.href = `/projects/${projectId}/closure-details`;
 }
 
-// Project selector for manual reports
 document.addEventListener('DOMContentLoaded', function() {
     const projectSelector = document.getElementById('projectSelector');
     if (projectSelector) {
@@ -725,11 +362,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('reportGeneratorContainer');
 
             if (projectId) {
-                // Show loading state
-                container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Loading report generator...</div>';
+                container.innerHTML = '<div class="ui-card"><div class="cr-loading">Loading report generator...</div></div>';
                 container.style.display = 'block';
 
-                // Load the report generator for selected project
                 fetch(`/projects/${projectId}/report-generator`)
                     .then(response => response.text())
                     .then(html => {
@@ -738,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        container.innerHTML = '<div class="alert alert-danger">Error loading report generator.</div>';
+                        container.innerHTML = '<div class="alert-danger" style="padding:11px 14px;border:1px solid">Error loading report generator.</div>';
                         container.style.display = 'block';
                     });
             } else {
