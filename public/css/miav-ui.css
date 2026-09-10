@@ -36,6 +36,8 @@ button .mv-ei, .btn .mv-ei, [class*="btn-"] .mv-ei { width: 16px; height: 16px; 
 
 /* Buttons placed in the top bar (@section('header-actions')) */
 .mv-header-actions a, .mv-header-actions button { text-decoration: none !important; }
+.mv-header-actions [class*="btn"] { height: 34px; padding: 0 12px !important; font-size: 13.5px !important; display: inline-flex; align-items: center; gap: 6px; line-height: 1; white-space: nowrap; }
+.mv-header-actions [class*="btn"] .mv-i { width: 16px; height: 16px; }
 .mv-header-actions .btn-primary, .mv-header-actions .btn.btn-primary {
   background: var(--mv-accent) !important; border: 1px solid var(--mv-accent) !important; color: #FFFFFF !important;
   border-radius: 8px; font-weight: 500; box-shadow: none; background-image: none !important;

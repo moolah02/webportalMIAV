@@ -82,6 +82,8 @@ class TechnicianVisitMirror
                     'client_id'                    => $posTerminal?->client_id,
                     'job_assignment_id'            => $jobAssignmentId,
                     'merchant_id_snapshot'         => $visit->merchant_id,
+                    // Reports group and filter by visit_date (visits this month, trends, productivity).
+                    'visit_date'                   => $visit->completed_at ?? $visit->created_at,
                     'started_at'                   => $visit->completed_at,
                     'ended_at'                     => $visit->completed_at,
                     'status'                       => 'closed',
