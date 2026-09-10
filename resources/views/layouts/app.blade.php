@@ -44,14 +44,19 @@
     $miavApp = \App\Services\MobileAppRelease::latest();
     $onDiscoveries = request()->routeIs('pos-terminals.index') && request('tab') === 'discoveries';
 
-    // [route, icon, label, active-patterns, query]
+    // [route, icon, label, active-patterns, query, not-active-on]
+    // Every destination from the previous menu is here (some renamed/regrouped):
+    // Company Dashboard → Operations overview; Employee Dashboard + Technician
+    // Portal › My Dashboard → My work; Technician Portal › My Assignments → My
+    // assignments; My Profile + Sign Out live in the sidebar footer.
     $nav = [
       [null, [
         ['dashboard',          'grid',       'Operations overview', ['dashboard']],
         ['employee.dashboard', 'user-check', 'My work',             ['employee.dashboard']],
+        ['jobs.mine',          'list-todo',  'My assignments',      ['jobs.mine']],
       ]],
       ['Field work', [
-        ['jobs.index',               'clipboard',   'Job assignments',    ['jobs.*']],
+        ['jobs.index',               'clipboard',   'Job assignments',    ['jobs.*'], [], ['jobs.mine']],
         ['visits.index',             'pin',         'Site visits',        ['visits.*', 'site_visits.show', 'site_visits.completed']],
         ['site_visits.createManual', 'plus-circle', 'Log a visit',        ['site_visits.createManual']],
         ['deployment.hierarchical',  'route',       'Deployment planner', ['deployment.*']],
@@ -69,7 +74,8 @@
       ['Customers', [
         ['clients.index',            'building',   'Clients',           ['clients.*']],
         ['client-dashboards.index',  'layout',     'Client dashboards', ['client-dashboards.*']],
-        ['projects.index',           'folder',     'Projects',          ['projects.index', 'projects.show', 'projects.edit', 'projects.create']],
+        ['projects.index',           'folder',     'Projects',          ['projects.index', 'projects.show', 'projects.edit']],
+        ['projects.create',          'plus-circle', 'New project',      ['projects.create']],
         ['projects.closure-reports', 'file-check', 'Closure reports',   ['projects.closure-reports', 'projects.completion-reports']],
       ]],
       ['Team', [
@@ -103,12 +109,13 @@
           @php
             [$route, $icon, $label, $patterns] = $item;
             $query = $item[4] ?? [];
+            $notOn = $item[5] ?? [];
             if (!empty($query['tab']) && $query['tab'] === 'discoveries') {
                 $isOn = $onDiscoveries;
             } elseif ($route === 'pos-terminals.index') {
                 $isOn = request()->routeIs('pos-terminals.*') && !$onDiscoveries;
             } else {
-                $isOn = $patterns && request()->routeIs(...$patterns);
+                $isOn = $patterns && request()->routeIs(...$patterns) && !($notOn && request()->routeIs(...$notOn));
             }
           @endphp
           <a href="{{ route($route, $query) }}" class="{{ $isOn ? 'is-on' : '' }}" @if($isOn) aria-current="page" @endif>
@@ -130,13 +137,16 @@
             <svg class="mv-i"><use href="#i-book"/></svg>Help &amp; documentation
             <svg class="mv-i mv-ext"><use href="#i-external"/></svg>
           </a>
+          <a href="{{ route('employee.profile') }}" class="{{ request()->routeIs('employee.profile*') ? 'is-on' : '' }}">
+            <svg class="mv-i"><use href="#i-user"/></svg>My profile
+          </a>
         </div>
       </div>
       <div class="mv-me">
         <span class="mv-avatar" aria-hidden="true">{{ $initials }}</span>
         <a class="mv-me-text" href="{{ route('employee.profile') }}" style="text-decoration:none;color:inherit">
           <strong>{{ $me->full_name }}</strong>
-          <span>{{ $roleNames ?: 'Employee' }}</span>
+          <span>{{ $roleNames ?: $me->email }}</span>
         </a>
         <form method="POST" action="{{ route('logout') }}">
           @csrf
@@ -182,7 +192,7 @@
 
         {{-- User menu --}}
         <button type="button" onclick="toggleUserDropdown(event)" class="mv-user-btn" aria-haspopup="menu">
-          <span class="mv-user-text"><strong>{{ $me->full_name }}</strong><span class="mv-roles">{{ $roleNames ?: 'Employee' }}</span></span>
+          <span class="mv-user-text"><strong>{{ $me->full_name }}</strong><span class="mv-roles">{{ $roleNames ?: $me->email }}</span></span>
           <span class="mv-avatar" aria-hidden="true">{{ $initials }}</span>
         </button>
         <div id="userDropdown" class="mv-dropdown mv-menu hidden" role="menu">

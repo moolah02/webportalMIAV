@@ -1,4 +1,4 @@
-﻿@extends('docs.layout')
+@extends('docs.layout')
 @section('content')
 @if(!empty(trim($page->content ?? '')))
     {!! $page->content !!}

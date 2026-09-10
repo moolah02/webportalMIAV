@@ -1,4 +1,4 @@
-﻿{{-- resources/views/projects/closure-reports.blade.php --}}
+{{-- resources/views/projects/closure-reports.blade.php --}}
 @extends('layouts.app')
 @section('title', 'Closure Reports')
 

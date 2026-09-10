@@ -2,7 +2,7 @@
 @section('title', 'Terminal Deployment')
 
 @push('styles')
-﻿<style>
+<style>
 
 .metric-card {
 
