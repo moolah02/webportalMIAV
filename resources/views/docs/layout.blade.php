@@ -162,7 +162,13 @@
 
     <main class="main">
         <div class="doc">
+            {{-- Doc pages can be edited in the app (Manage Docs) and older content carries
+                 emoji; drop them on the way out so the docs keep the portal's look. --}}
+            @php ob_start(); @endphp
             @yield('content')
+            @php
+                echo preg_replace('/(?:[\x{1F000}-\x{1FAFF}]|[\x{2600}-\x{2604}\x{2607}-\x{2712}\x{2714}\x{2716}\x{2718}-\x{27BF}]|[\x{2B00}-\x{2BFF}]|[\x{23E9}-\x{23FA}])[\x{FE0F}\x{200D}]*\s?/u', '', ob_get_clean());
+            @endphp
         </div>
     </main>
 </div>
