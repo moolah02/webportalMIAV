@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Per-page CSS (pos-terminals, etc.) -->
-  <link rel="stylesheet" href="{{ asset('css/pos-terminals.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/pos-terminals.css') }}?v={{ @filemtime(public_path('css/pos-terminals.css')) }}">
 
   <!-- jQuery (needed by some inner pages) -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -36,6 +36,7 @@
 </head>
 
 <body class="mv-body">
+  @include('layouts.partials.progress')
   @include('layouts.partials.icons')
 
   @php

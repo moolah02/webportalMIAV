@@ -183,6 +183,14 @@
         btn.setAttribute('aria-pressed', String(show));
         btn.querySelector('span').textContent = show ? 'Hide' : 'Show';
       });
+      // Show that signing in is under way (the server can take a moment to answer).
+      var form = document.querySelector('form[action$="/login"]'), submit = form && form.querySelector('.submit');
+      if (form && submit) {
+        form.addEventListener('submit', function () {
+          setTimeout(function () { submit.disabled = true; submit.classList.add('is-busy'); submit.textContent = 'Signing in…'; }, 0);
+        });
+        window.addEventListener('pageshow', function () { submit.disabled = false; submit.classList.remove('is-busy'); submit.textContent = 'Sign in'; });
+      }
     })();
   </script>
 </body>
