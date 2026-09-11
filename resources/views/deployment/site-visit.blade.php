@@ -31,6 +31,7 @@
 .sd-addr{max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sd-actions{display:flex;gap:6px;justify-content:flex-end}
 .sd-empty{padding:40px 16px;text-align:center}
+.sd-empty .empty-state-icon .mv-i{display:block;margin:0 auto}
 .sd-empty p{margin:0;font-size:13.5px;color:var(--mv-ink-2)}
 #noResults{padding:28px 16px;text-align:center;font-size:13px;color:var(--mv-muted);border-top:1px solid var(--mv-line)}
 </style>

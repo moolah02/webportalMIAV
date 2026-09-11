@@ -13,12 +13,16 @@
 #visits-filter .vi-actions{display:flex;align-items:flex-end;gap:8px;margin-left:auto}
 .vi-count{font-size:12px;color:var(--mv-muted);font-variant-numeric:tabular-nums}
 .mv-page .vi-table tbody td{vertical-align:top;font-size:13px}
+.mv-page .vi-table thead th,.mv-page .vi-table tbody td{padding-left:10px;padding-right:10px}
+.mv-page .vi-table thead th:last-child,.mv-page .vi-table tbody td:last-child{position:sticky;right:0;background:var(--mv-surface);box-shadow:-1px 0 0 var(--mv-line)}
+.mv-page .vi-table thead th:last-child{background:var(--mv-surface-2)}
+.mv-page .vi-table tbody tr:hover td:last-child{background:var(--mv-surface-2)}
 .mv-page .badge{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 .vi-id{font-size:12.5px;font-weight:500;color:var(--mv-ink)}
 .vi-strong{font-weight:500;color:var(--mv-ink)}
 .vi-sub{margin-top:2px;font-size:12px;color:var(--mv-muted)}
 .vi-nowrap{white-space:nowrap}
-.vi-summary{min-width:220px;max-width:340px;line-height:1.45}
+.vi-summary{min-width:180px;max-width:260px;line-height:1.45}
 .vi-chips{display:flex;flex-wrap:wrap;gap:4px}
 .vi-disclose summary{list-style:none;display:inline-flex;align-items:center;gap:4px;margin-top:5px;cursor:pointer;font-size:12px;font-weight:500;color:var(--mv-accent-ink);white-space:nowrap;user-select:none}
 .vi-disclose.vi-flush summary{margin-top:0}
@@ -37,6 +41,7 @@
 .vi-files .mv-i{width:13px;height:13px;color:var(--mv-muted)}
 .vi-row-actions{display:flex;gap:6px;justify-content:flex-end}
 .vi-empty{padding:48px 16px;text-align:center}
+.vi-empty .empty-state-icon .mv-i{display:block;margin:0 auto}
 .vi-empty p{margin:0 0 14px;font-size:13.5px;color:var(--mv-ink-2)}
 @media (prefers-reduced-motion: reduce){.vi-disclose .vi-chev{transition:none}}
 </style>

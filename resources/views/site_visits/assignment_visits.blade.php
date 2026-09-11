@@ -16,6 +16,7 @@
 .av-nowrap{white-space:nowrap}
 .av-actions{width:1%;text-align:right}
 .av-empty{padding:40px 16px;text-align:center}
+.av-empty .empty-state-icon .mv-i{display:block;margin:0 auto}
 .av-empty p{margin:0;font-size:13.5px;color:var(--mv-ink-2)}
 </style>
 @endpush

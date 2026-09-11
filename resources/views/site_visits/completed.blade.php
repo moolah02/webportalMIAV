@@ -29,6 +29,7 @@
 .cv-actions{width:1%;text-align:right}
 .cv-pager{display:flex;justify-content:center;padding:12px 16px;border-top:1px solid var(--mv-line)}
 .cv-empty{padding:40px 16px;text-align:center}
+.cv-empty .empty-state-icon .mv-i{display:block;margin:0 auto}
 .cv-empty p{margin:0;font-size:13.5px;color:var(--mv-ink-2)}
 </style>
 @endpush
