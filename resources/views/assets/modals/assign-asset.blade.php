@@ -1,49 +1,50 @@
-{{-- Assign Asset Modal (opened from asset list "Assign Now" button) --}}
-<div id="assignAssetModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="ui-card w-full max-w-lg max-h-[90vh] overflow-y-auto">
+{{-- Assign Asset Modal (opened from asset list "Assign Now" button).
+     Not currently included by any view; styles (.as-*) live in assets/index.blade.php. --}}
+<div id="assignAssetModal" class="hidden as-overlay flex" role="dialog" aria-modal="true">
+    <div class="as-modal">
 
-        <div class="ui-card-header" style="background:#1a3a5c;">
-            <h3 class="text-sm font-semibold text-white m-0">&#x1F3AF; Assign Asset to Employee</h3>
-            <button onclick="closeAssignModal()" class="text-white/70 hover:text-white text-xl leading-none border-0 bg-transparent cursor-pointer">&times;</button>
+        <div class="as-modal-head">
+            <h3>Assign Asset to Employee</h3>
+            <button type="button" onclick="closeAssignModal()" class="as-x" title="Close" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
 
-        <div class="ui-card-body space-y-4">
+        <div class="as-modal-body">
 
             {{-- Asset summary (populated by JS) --}}
-            <div id="assignAssetInfo" class="hidden rounded-lg border border-blue-100 bg-blue-50 p-3">
+            <div id="assignAssetInfo" class="hidden as-summary">
                 <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <div class="text-sm font-semibold text-gray-800" id="assign_asset_name">—</div>
-                        <div class="text-xs text-gray-500 mt-0.5" id="assign_asset_category">—</div>
+                    <div class="min-w-0">
+                        <div class="as-v is-strong" id="assign_asset_name">—</div>
+                        <div class="cell-sub" id="assign_asset_category">—</div>
                     </div>
-                    <div class="text-right flex-shrink-0">
-                        <div class="text-sm font-bold text-[#1a3a5c]">
+                    <div class="text-right shrink-0">
+                        <div class="as-num">
                             <span id="assign_available_quantity">0</span> available
                         </div>
-                        <div class="text-xs text-gray-400">of <span id="assign_total_quantity">0</span> total</div>
+                        <div class="cell-sub">of <span id="assign_total_quantity">0</span> total</div>
                     </div>
                 </div>
             </div>
 
-            <form id="assignAssetForm" method="POST" action="{{ route('assets.assign') }}" class="space-y-4">
+            <form id="assignAssetForm" method="POST" action="{{ route('assets.assign') }}">
                 @csrf
                 <input type="hidden" name="asset_id" id="assign_asset_id">
 
-                <div>
-                    <label class="ui-label">Employee <span class="text-red-500">*</span></label>
-                    <select name="employee_id" id="assign_employee_id" required class="ui-select">
-                        <option value="">Choose an employee…</option>
-                    </select>
-                    <p class="text-xs text-gray-400 mt-1">Search by name or employee number</p>
-                </div>
+                <div class="as-grid">
+                    <div class="is-full">
+                        <label class="ui-label" for="assign_employee_id">Employee <span class="as-req">*</span></label>
+                        <select name="employee_id" id="assign_employee_id" required class="ui-select">
+                            <option value="">Choose an employee…</option>
+                        </select>
+                        <p class="as-hint">Search by name or employee number</p>
+                    </div>
 
-                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="ui-label">Quantity <span class="text-red-500">*</span></label>
+                        <label class="ui-label" for="assign_quantity">Quantity <span class="as-req">*</span></label>
                         <input type="number" name="quantity" id="assign_quantity" min="1" value="1" required class="ui-input">
                     </div>
                     <div>
-                        <label class="ui-label">Condition <span class="text-red-500">*</span></label>
+                        <label class="ui-label">Condition <span class="as-req">*</span></label>
                         <select name="condition_when_assigned" required class="ui-select">
                             <option value="new">New</option>
                             <option value="good" selected>Good</option>
@@ -51,28 +52,26 @@
                             <option value="poor">Poor</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="ui-label">Assignment Date <span class="text-red-500">*</span></label>
+                        <label class="ui-label">Assignment Date <span class="as-req">*</span></label>
                         <input type="date" name="assignment_date" value="{{ now()->format('Y-m-d') }}" required class="ui-input">
                     </div>
                     <div>
-                        <label class="ui-label">Expected Return <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+                        <label class="ui-label">Expected Return <span class="as-opt">(optional)</span></label>
                         <input type="date" name="expected_return_date" class="ui-input">
+                    </div>
+
+                    <div class="is-full">
+                        <label class="ui-label">Notes <span class="as-opt">(optional)</span></label>
+                        <textarea name="assignment_notes" rows="2" class="ui-textarea"
+                                  placeholder="Purpose or special instructions…"></textarea>
                     </div>
                 </div>
 
-                <div>
-                    <label class="ui-label">Notes <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
-                    <textarea name="assignment_notes" rows="2" class="ui-textarea"
-                              placeholder="Purpose or special instructions…"></textarea>
-                </div>
-
-                <div class="flex gap-3 pt-1">
-                    <button type="submit" id="assignSubmitBtn" class="btn-primary flex-1">&#x1F3AF; Assign Asset</button>
+                <div class="as-modal-actions">
                     <button type="button" onclick="closeAssignModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="assignSubmitBtn" class="btn-primary">Assign Asset</button>
                 </div>
             </form>
         </div>

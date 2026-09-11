@@ -1,47 +1,25 @@
+{{-- Return Asset + Assignment Details modals. Not currently included by any view;
+     styles (.as-*) live in assets/index.blade.php. --}}
 <!-- Return Asset Modal -->
-<div id="returnAssetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1003; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
-                <span>Return Asset</span>
-            </h3>
-            <button onclick="closeReturnModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
+<div id="returnAssetModal" class="as-overlay" style="display: none;" role="dialog" aria-modal="true">
+    <div class="as-modal">
+        <div class="as-modal-head">
+            <h3>Return Asset</h3>
+            <button type="button" onclick="closeReturnModal()" class="as-x" title="Close" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
 
-        <!-- Modal Body -->
-        <div style="padding: 20px;">
+        <div class="as-modal-body">
             <!-- Assignment Info Display -->
-            <div id="returnAssignmentInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-block-end: 20px;">
-                <h4 style="margin: 0 0 15px 0; color: #333;">Assignment Details</h4>
-
-                <div style="display: grid; gap: 12px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Asset</label>
-                            <div style="font-weight: bold; color: #333;" id="return_asset_name">Asset Name</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Employee</label>
-                            <div style="font-weight: bold; color: #333;" id="return_employee_name">Employee Name</div>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Assigned Date</label>
-                            <div style="color: #333;" id="return_assigned_date">Date</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Days Assigned</label>
-                            <div style="color: #333;" id="return_days_assigned">0 days</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Quantity</label>
-                            <div style="color: #333;" id="return_quantity">1</div>
-                        </div>
-                    </div>
+            <div id="returnAssignmentInfo" class="as-summary">
+                <h4 class="as-sec">Assignment Details</h4>
+                <div class="as-kv">
+                    <div><div class="as-k">Asset</div><div class="as-v is-strong" id="return_asset_name">Asset Name</div></div>
+                    <div><div class="as-k">Employee</div><div class="as-v is-strong" id="return_employee_name">Employee Name</div></div>
+                </div>
+                <div class="as-kv is-3" style="margin-top:12px;">
+                    <div><div class="as-k">Assigned Date</div><div class="as-v" id="return_assigned_date">Date</div></div>
+                    <div><div class="as-k">Days Assigned</div><div class="as-v" id="return_days_assigned">0 days</div></div>
+                    <div><div class="as-k">Quantity</div><div class="as-v" id="return_quantity">1</div></div>
                 </div>
             </div>
 
@@ -50,23 +28,17 @@
                 @method('PATCH')
                 <input type="hidden" id="return_assignment_id" name="assignment_id">
 
-                <div style="display: grid; gap: 20px;">
+                <div class="as-stack">
                     <!-- Return Details -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="as-grid">
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Return Date <span style="color: #f44336;">*</span>
-                            </label>
-                            <input type="date" name="return_date" id="return_date" value="{{ now()->format('Y-m-d') }}" required
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <label class="ui-label" for="return_date">Return Date <span class="as-req">*</span></label>
+                            <input type="date" name="return_date" id="return_date" value="{{ now()->format('Y-m-d') }}" required class="ui-input w-full">
                         </div>
 
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Condition When Returned <span style="color: #f44336;">*</span>
-                            </label>
-                            <select name="condition_when_returned" id="return_condition" required
-                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <label class="ui-label" for="return_condition">Condition When Returned <span class="as-req">*</span></label>
+                            <select name="condition_when_returned" id="return_condition" required class="ui-select w-full">
                                 <option value="">Select condition...</option>
                                 <option value="new">New - Like brand new</option>
                                 <option value="good">Good - Minor wear, fully functional</option>
@@ -78,45 +50,35 @@
 
                     <!-- Return Notes -->
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                            Return Notes
-                        </label>
-                        <textarea name="return_notes" rows="3"
-                                  placeholder="Optional notes about the return (e.g., reason for return, any issues)..."
-                                  style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
+                        <label class="ui-label">Return Notes</label>
+                        <textarea name="return_notes" rows="3" class="ui-textarea w-full"
+                                  placeholder="Optional notes about the return (e.g., reason for return, any issues)..."></textarea>
                     </div>
 
                     <!-- Asset Status Update -->
                     <div>
-                        <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
-                            Update Asset Status
-                        </label>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
-                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
+                        <span class="ui-label">Update Asset Status</span>
+                        <div class="as-choices">
+                            <label class="as-choice">
                                 <input type="radio" name="update_asset_status" value="available" checked>
-                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Available</span>
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-box"/></svg> Available
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
+                            <label class="as-choice">
                                 <input type="radio" name="update_asset_status" value="maintenance">
-                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Maintenance</span>
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-wrench"/></svg> Maintenance
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
+                            <label class="as-choice">
                                 <input type="radio" name="update_asset_status" value="damaged">
-                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Damaged</span>
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Damaged
                             </label>
                         </div>
                     </div>
                 </div>
 
                 <!-- Form Actions -->
-                <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
-                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
-                        Process Return
-                    </button>
-                    <button type="button" onclick="closeReturnModal()" style="padding: 10px 20px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">
-                        Cancel
-                    </button>
+                <div class="as-modal-actions">
+                    <button type="button" onclick="closeReturnModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-undo"/></svg> Process Return</button>
                 </div>
             </form>
         </div>
@@ -124,19 +86,15 @@
 </div>
 
 <!-- Assignment Details Modal -->
-<div id="assignmentDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
-                <span id="detailsModalTitle">Assignment Details</span>
-            </h3>
-            <button onclick="closeDetailsModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
+<div id="assignmentDetailsModal" class="as-overlay" style="display: none;" role="dialog" aria-modal="true">
+    <div class="as-modal is-wide">
+        <div class="as-modal-head">
+            <h3 id="detailsModalTitle">Assignment Details</h3>
+            <button type="button" onclick="closeDetailsModal()" class="as-x" title="Close" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
 
         <!-- Modal Body -->
-        <div id="detailsModalBody" style="padding: 20px;">
+        <div id="detailsModalBody" class="as-modal-body">
             <!-- Content will be loaded here -->
         </div>
     </div>
@@ -174,52 +132,45 @@ function viewAssignmentDetails(assignmentId) {
 
             const modalBody = document.getElementById('detailsModalBody');
             modalBody.innerHTML = `
-                <div style="display: grid; gap: 20px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="as-detail">
+                    <section class="as-kv">
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">Employee Details</h4>
-                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                                <div><strong>Name:</strong> ${assignment.employee.first_name} ${assignment.employee.last_name}</div>
-                                <div><strong>Number:</strong> ${assignment.employee.employee_number}</div>
-                                <div><strong>Department:</strong> ${assignment.employee.department?.name || 'Not assigned'}</div>
-                            </div>
+                            <h4 class="as-sec">Employee Details</h4>
+                            <div class="as-k">Name</div><div class="as-v is-strong">${assignment.employee.first_name} ${assignment.employee.last_name}</div>
+                            <div class="as-k" style="margin-top:8px">Number</div><div class="as-v mv-mono">${assignment.employee.employee_number}</div>
+                            <div class="as-k" style="margin-top:8px">Department</div><div class="as-v">${assignment.employee.department?.name || 'Not assigned'}</div>
                         </div>
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">Asset Details</h4>
-                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                                <div><strong>Name:</strong> ${assignment.asset.name}</div>
-                                <div><strong>Category:</strong> ${assignment.asset.category}</div>
-                                <div><strong>SKU:</strong> ${assignment.asset.sku || 'Not assigned'}</div>
-                            </div>
+                            <h4 class="as-sec">Asset Details</h4>
+                            <div class="as-k">Name</div><div class="as-v is-strong">${assignment.asset.name}</div>
+                            <div class="as-k" style="margin-top:8px">Category</div><div class="as-v">${assignment.asset.category}</div>
+                            <div class="as-k" style="margin-top:8px">SKU</div><div class="as-v mv-mono">${assignment.asset.sku || 'Not assigned'}</div>
                         </div>
-                    </div>
+                    </section>
 
-                    <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">Assignment Timeline</h4>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div><strong>Assigned Date:</strong> ${new Date(assignment.assignment_date).toLocaleDateString()}</div>
-                                <div><strong>Expected Return:</strong> ${assignment.expected_return_date ? new Date(assignment.expected_return_date).toLocaleDateString() : 'Not set'}</div>
-                                <div><strong>Quantity:</strong> ${assignment.quantity_assigned}</div>
-                                <div><strong>Status:</strong> <span style="padding: 4px 8px; background: #e8f5e8; color: #2e7d32; border-radius: 12px; font-size: 12px;">${assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}</span></div>
-                            </div>
+                    <section>
+                        <h4 class="as-sec">Assignment Timeline</h4>
+                        <div class="as-kv">
+                            <div><div class="as-k">Assigned Date</div><div class="as-v">${new Date(assignment.assignment_date).toLocaleDateString()}</div></div>
+                            <div><div class="as-k">Expected Return</div><div class="as-v">${assignment.expected_return_date ? new Date(assignment.expected_return_date).toLocaleDateString() : 'Not set'}</div></div>
+                            <div><div class="as-k">Quantity</div><div class="as-v">${assignment.quantity_assigned}</div></div>
+                            <div><div class="as-k">Status</div><div class="as-v"><span class="badge badge-green">${assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}</span></div></div>
                         </div>
-                    </div>
+                    </section>
 
-                    <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">Condition Tracking</h4>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div><strong>Condition When Assigned:</strong> <span style="padding: 4px 8px; background: #e3f2fd; color: #1976d2; border-radius: 12px; font-size: 12px;">${assignment.condition_when_assigned.charAt(0).toUpperCase() + assignment.condition_when_assigned.slice(1)}</span></div>
+                    <section>
+                        <h4 class="as-sec">Condition Tracking</h4>
+                        <div class="as-kv">
+                            <div><div class="as-k">Condition When Assigned</div><div class="as-v"><span class="badge badge-gray">${assignment.condition_when_assigned.charAt(0).toUpperCase() + assignment.condition_when_assigned.slice(1)}</span></div></div>
                         </div>
-                    </div>
+                    </section>
 
                     ${assignment.assignment_notes ? `
-                    <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">Notes</h4>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div><strong>Assignment Notes:</strong><br>${assignment.assignment_notes}</div>
-                        </div>
-                    </div>
+                    <section>
+                        <h4 class="as-sec">Notes</h4>
+                        <div class="as-k">Assignment Notes</div>
+                        <p class="as-note">${assignment.assignment_notes}</p>
+                    </section>
                     ` : ''}
                 </div>
             `;
@@ -250,7 +201,7 @@ document.getElementById('returnAssetForm').addEventListener('submit', function(e
     const originalText = submitBtn.innerHTML;
 
     // Show loading state
-    submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;"></span>Processing...';
+    submitBtn.innerHTML = 'Processing...';
     submitBtn.disabled = true;
 
     fetch(`/asset-assignments/${currentAssignmentForReturn}/return`, {
@@ -307,42 +258,20 @@ document.addEventListener('keydown', function(event) {
 });
 </script>
 
+                {{-- Leftover fragment from an older version of this modal (kept as-is structurally) --}}
                 <!-- Form Actions -->
-                <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn-success" style="flex: 1; background: #2196f3; border-color: #2196f3;">
-                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
-                        Process Return
-                    </button>
-                    <button type="button" onclick="closeReturnModal()" class="btn" style="padding: 10px 20px;">
+                <div class="as-modal-actions">
+                    <button type="button" onclick="closeReturnModal()" class="btn-secondary">
                         Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-undo"/></svg> Process Return
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-<style>
-/* Radio button styling */
-input[type="radio"]:checked + span {
-    color: #2196f3;
-    font-weight: 600;
-}
-
-input[type="radio"]:checked {
-    accent-color: #2196f3;
-}
-
-label:has(input[type="radio"]:checked) {
-    border-color: #2196f3 !important;
-    background: #f3f8ff;
-}
-
-label:has(input[type="radio"]):hover {
-    border-color: #2196f3;
-    background: #fafbff;
-}
-</style>
 
 <script>
 let currentAssignmentForReturn = null;
@@ -418,7 +347,7 @@ document.getElementById('returnAssetForm').addEventListener('submit', function(e
     const originalText = submitBtn.innerHTML;
 
     // Show loading state
-    submitBtn.innerHTML = '<span style="font-size: 16px; margin-right: 8px;"></span>Processing...';
+    submitBtn.innerHTML = 'Processing...';
     submitBtn.disabled = true;
 
     fetch(this.action, {

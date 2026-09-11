@@ -7,6 +7,8 @@ use App\Models\Client;
 use App\Models\Region;
 use App\Models\ImportMapping;
 use App\Models\Category;
+use App\Models\JobAssignment;
+use App\Models\VisitTerminal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Facade;
@@ -728,10 +730,26 @@ public function storeColumnMapping(Request $request)
 
     public function getStatistics(PosTerminal $posTerminal)
     {
+        // job_assignments has no pos_terminal_id column — terminals are stored in
+        // the pos_terminals JSON array (ids may be saved as ints or strings).
+        // service_reports has no link to terminals either; field-visit records
+        // (visit_terminals) are what serve as this terminal's service reports.
+        $id = $posTerminal->id;
+
+        $totalJobs = rescue(fn () => JobAssignment::query()
+            ->where(function ($q) use ($id) {
+                $q->whereJsonContains('pos_terminals', $id)
+                  ->orWhereJsonContains('pos_terminals', (string) $id);
+            })->count(), 0, false);
+
+        $serviceReports = rescue(fn () => VisitTerminal::where('terminal_id', $id)->count(), 0, false);
+
+        $openTickets = rescue(fn () => $posTerminal->tickets()->where('status', 'open')->count(), 0, false);
+
         return response()->json([
-            'total_jobs' => $posTerminal->jobs()->count(),
-            'service_reports' => $posTerminal->serviceReports()->count(),
-            'open_tickets' => $posTerminal->tickets()->where('status', 'open')->count(),
+            'total_jobs' => $totalJobs,
+            'service_reports' => $serviceReports,
+            'open_tickets' => $openTickets,
             'days_since_service' => $posTerminal->last_service_date
                 ? $posTerminal->last_service_date->diffInDays(now())
                 : null

@@ -1,33 +1,188 @@
 @extends('layouts.app')
 @section('title', 'POS Terminals')
 
+@push('styles')
+<style>
+/* ── POS terminals · index ─────────────────────────────── */
+.pt-index .pt-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Stat tiles */
+.pt-index .pt-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.pt-index .stat-card { padding: 14px 16px; gap: 12px; }
+.pt-index .stat-icon { width: 36px; height: 36px; border-radius: 8px; }
+.pt-index .stat-icon .mv-i { width: 18px; height: 18px; }
+.pt-index .stat-number { font-size: 22px; }
+.pt-index .stat-label { margin-top: 3px; }
+@media (max-width: 900px) { .pt-index .pt-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Tabs */
+.pt-index .tab-nav { margin-bottom: 16px; gap: 2px; }
+.pt-index .tab-btn { padding: 10px 12px; font-size: 13.5px; gap: 8px; margin-bottom: -1px; border-bottom-width: 2px; }
+.pt-index .tab-btn .mv-i { width: 16px; height: 16px; }
+.pt-index .pt-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: var(--mv-warn-soft); color: var(--mv-warn); font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Toolbar (filter bar) */
+.pt-index .filter-bar { padding: 10px 12px; gap: 8px; align-items: center; margin-bottom: 12px; }
+.pt-index .filter-bar .ui-input, .pt-index .filter-bar .ui-select { height: 34px; padding-top: 0; padding-bottom: 0; font-size: 13px; min-width: 0; }
+.pt-index .filter-bar .ui-select { width: 150px; }
+.pt-index .filter-actions { align-items: center; gap: 6px; }
+.pt-index .pt-toolbar-end { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.pt-index .pt-search { position: relative; }
+.pt-index .pt-search .mv-i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--mv-muted); pointer-events: none; }
+.pt-index .pt-search .ui-input { width: 240px; padding-left: 32px; }
+.pt-index .ui-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236A7686' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 32px;
+}
+.pt-index .pt-btn { height: 34px; padding: 0 12px; font-size: 13px; }
+
+/* Table card */
+.pt-index .ui-card-header { padding: 12px 16px; }
+.pt-index .pt-card-title { display: flex; align-items: baseline; gap: 10px; }
+.pt-index .pt-card-title h2 { font-size: 14px; font-weight: 600; margin: 0; }
+.pt-index .pt-card-meta { font-size: 12.5px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.pt-index .ui-table tbody td { font-size: 13px; }
+.pt-index .cell-sub { font-size: 12px; color: var(--mv-muted); margin-top: 1px; }
+.pt-index .pt-id { color: var(--mv-ink); font-size: 12.5px; font-weight: 500; text-decoration: none; white-space: nowrap; }
+.pt-index .pt-id:hover { color: var(--mv-accent-ink); text-decoration: underline; }
+.pt-index .pt-none { color: var(--mv-muted); font-size: 12.5px; }
+.pt-index .action-group { gap: 4px; justify-content: flex-end; }
+.pt-index .action-btn { width: 30px; height: 30px; }
+.pt-index th.pt-th-actions, .pt-index td.pt-td-actions { text-align: right; width: 1%; }
+.pt-index .status-badge { gap: 6px; padding: 2px 8px; font-size: 12px; line-height: 18px; }
+.pt-index .status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.pt-index .ui-card-footer { padding: 10px 16px; gap: 12px; flex-wrap: wrap; }
+.pt-index .pt-foot-meta { font-size: 12.5px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+
+/* Empty state */
+.pt-index .ui-table tbody tr.pt-empty-row:hover { background: transparent; }
+.pt-index .pt-empty { padding: 44px 16px; text-align: center; color: var(--mv-muted); font-size: 13px; }
+.pt-index .pt-empty .mv-i { display: block; width: 32px; height: 32px; margin: 0 auto 10px; color: var(--mv-line-strong); }
+.pt-index .pt-empty a { color: var(--mv-accent-ink); font-weight: 500; }
+
+/* Discoveries note */
+.pt-index .pt-note { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; margin-bottom: 12px; background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; font-size: 13px; color: var(--mv-ink-2); }
+.pt-index .pt-note .mv-i { color: var(--mv-warn); margin-top: 1px; }
+
+/* Smart import */
+.pt-index .pt-sub { margin: 2px 0 0; font-size: 12.5px; color: var(--mv-muted); }
+.pt-index .pt-stack > * + * { margin-top: 18px; }
+.pt-index .pt-req { color: var(--mv-crit); }
+.pt-index .pt-opt { color: var(--mv-muted); font-weight: 400; }
+.pt-index .pt-error { margin: 6px 0 0; font-size: 12px; color: var(--mv-crit); }
+.pt-index .ui-hint { font-size: 12px; margin: 5px 0 0; }
+.pt-index .pt-stack .ui-select { height: 38px; padding-top: 0; padding-bottom: 0; font-size: 13.5px; }
+.pt-index .pt-stack .pt-btn-field { height: 38px; }
+.pt-index .pt-drop { border: 1px dashed var(--mv-line-strong); border-radius: 10px; background: var(--mv-surface-2); padding: 26px 20px; text-align: center; cursor: pointer; transition: border-color .15s ease; }
+.pt-index .pt-drop:hover { border-color: var(--mv-muted); }
+.pt-index .pt-drop.bg-blue-50 { background: var(--mv-surface); border-color: var(--mv-accent); }
+.pt-index .pt-drop-icon { width: 36px; height: 36px; margin: 0 auto 10px; border-radius: 9px; background: var(--mv-surface); border: 1px solid var(--mv-line); display: grid; place-items: center; color: var(--mv-ink-2); }
+.pt-index .pt-drop-title { margin: 0; font-size: 13.5px; font-weight: 500; color: var(--mv-ink); }
+.pt-index .pt-drop-sub { margin: 3px 0 14px; font-size: 12.5px; color: var(--mv-muted); }
+.pt-index .pt-drop-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; cursor: default; }
+.pt-index .pt-file { display: flex; align-items: center; gap: 10px; max-width: 460px; margin: 14px auto 0; padding: 9px 12px; background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 8px; text-align: left; }
+.pt-index .pt-file .mv-i { color: var(--mv-good); }
+.pt-index .pt-file-name { font-size: 13px; font-weight: 500; color: var(--mv-ink); word-break: break-all; }
+.pt-index .pt-file-meta { font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.pt-index .pt-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pt-index .pt-option { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; margin: 0; border: 1px solid var(--mv-line); border-radius: 8px; background: var(--mv-surface); cursor: pointer; transition: border-color .15s ease; }
+.pt-index .pt-option:hover { border-color: var(--mv-line-strong); }
+.pt-index .pt-option input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--mv-accent); flex-shrink: 0; }
+.pt-index .pt-option-title { display: block; font-size: 13px; font-weight: 500; color: var(--mv-ink); }
+.pt-index .pt-option-sub { display: block; font-size: 12px; color: var(--mv-muted); margin-top: 2px; }
+@media (max-width: 700px) { .pt-index .pt-options { grid-template-columns: 1fr; } }
+.pt-index .pt-footer-end { justify-content: flex-end; gap: 8px; padding: 12px 16px; }
+.pt-index .pt-side { display: flex; flex-direction: column; gap: 16px; }
+.pt-index .pt-side h3 { font-size: 13.5px; font-weight: 600; margin: 0 0 10px; }
+.pt-index .pt-side-label { margin: 0 0 6px; font-size: 12px; font-weight: 500; color: var(--mv-muted); }
+.pt-index .pt-list { list-style: none; margin: 0 0 14px; padding: 0; }
+.pt-index .pt-list:last-child { margin-bottom: 0; }
+.pt-index .pt-list li { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 13px; color: var(--mv-ink-2); }
+.pt-index .pt-list .mv-i { width: 14px; height: 14px; color: var(--mv-muted); }
+.pt-index .pt-side-text { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--mv-muted); }
+.pt-index button:disabled { cursor: not-allowed; }
+
+/* Modals */
+.pt-index .pt-modal { position: fixed; inset: 0; z-index: 1100; display: flex; align-items: center; justify-content: center; padding: 24px 16px; overflow-y: auto; background: rgba(22, 32, 44, .45); }
+.pt-index .pt-modal-card { width: 100%; max-height: calc(100vh - 48px); display: flex; flex-direction: column; background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; box-shadow: 0 16px 40px rgba(22, 32, 44, .14); overflow: hidden; }
+.pt-index .pt-modal-lg { max-width: 880px; }
+.pt-index .pt-modal-sm { max-width: 400px; }
+.pt-index .pt-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--mv-line); }
+.pt-index .pt-modal-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.pt-index .pt-modal-body { padding: 18px; overflow-y: auto; }
+.pt-index .pt-modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--mv-line); }
+.pt-index .pt-icon-btn { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: var(--mv-muted); cursor: pointer; }
+.pt-index .pt-icon-btn:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.pt-index .pt-loading { padding: 48px 0; text-align: center; color: var(--mv-muted); font-size: 13px; }
+.pt-index .pt-loading .mv-i { display: block; width: 22px; height: 22px; margin: 0 auto 10px; }
+.pt-index .pt-spin { animation: pt-spin 1s linear infinite; }
+@keyframes pt-spin { to { transform: rotate(360deg); } }
+
+/* Preview results (rendered by JS) */
+.pt-index .pt-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.pt-index .pt-summary-box { padding: 12px 14px; border: 1px solid var(--mv-line); border-radius: 8px; background: var(--mv-surface-2); }
+.pt-index .pt-summary-box.is-good { border-color: #C6E6D2; background: var(--mv-good-soft); }
+.pt-index .pt-summary-box.is-crit { border-color: #F2CACA; background: var(--mv-crit-soft); }
+.pt-index .pt-summary-title { margin: 0; font-size: 13px; font-weight: 600; color: var(--mv-ink); }
+.pt-index .pt-summary-text { margin: 3px 0 0; font-size: 12.5px; color: var(--mv-ink-2); font-variant-numeric: tabular-nums; }
+.pt-index .pt-subcard { border: 1px solid var(--mv-line); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+.pt-index .pt-subcard-head { padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--mv-ink); border-bottom: 1px solid var(--mv-line); }
+.pt-index .pt-subcard .ui-table thead th { padding: 8px 14px; }
+.pt-index .pt-subcard .ui-table tbody td { padding: 8px 14px; }
+.pt-index .pt-code { display: inline-block; padding: 1px 6px; border-radius: 5px; background: var(--mv-surface-2); border: 1px solid var(--mv-line); font-family: var(--mv-mono); font-size: 12px; color: var(--mv-ink); }
+.pt-index .pt-row-error { display: block; margin-top: 3px; font-size: 12px; color: var(--mv-crit); }
+.pt-index .pt-result { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--mv-line); }
+.pt-index .pt-result.is-good { background: var(--mv-good-soft); border-color: #C6E6D2; color: var(--mv-good); }
+.pt-index .pt-result.is-crit { background: var(--mv-crit-soft); border-color: #F2CACA; color: var(--mv-crit); }
+.pt-index .pt-result .mv-i { margin-top: 1px; }
+.pt-index .pt-fail { padding: 28px 8px 8px; text-align: center; }
+.pt-index .pt-fail > .mv-i { display: block; width: 28px; height: 28px; margin: 0 auto 10px; color: var(--mv-crit); }
+.pt-index .pt-fail-title { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); }
+.pt-index .pt-fail-msg { margin: 4px 0 18px; font-size: 13px; color: var(--mv-muted); }
+.pt-index .pt-hint-box { text-align: left; padding: 12px 14px; border: 1px solid var(--mv-line); border-radius: 8px; background: var(--mv-surface-2); font-size: 12.5px; color: var(--mv-ink-2); }
+.pt-index .pt-hint-box ul { margin: 6px 0 0; padding-left: 18px; }
+@media (max-width: 700px) { .pt-index .pt-summary { grid-template-columns: 1fr; } }
+
+/* Processing */
+.pt-index .pt-processing { padding: 28px 24px 24px; text-align: center; }
+.pt-index .pt-processing > .mv-i { display: block; width: 22px; height: 22px; margin: 0 auto 12px; color: var(--mv-accent); }
+.pt-index .pt-processing h4 { margin: 0 0 6px; font-size: 14.5px; font-weight: 600; }
+.pt-index .pt-processing p { margin: 0 0 18px; font-size: 13px; color: var(--mv-muted); }
+.pt-index .pt-bar { position: relative; height: 4px; border-radius: 4px; background: var(--mv-line); overflow: hidden; }
+.pt-index .pt-bar span { position: absolute; top: 0; bottom: 0; left: -35%; width: 35%; border-radius: 4px; background: var(--mv-accent); animation: pt-slide 1.4s ease-in-out infinite; }
+@keyframes pt-slide { to { left: 100%; } }
+@media (prefers-reduced-motion: reduce) { .pt-index .pt-spin, .pt-index .pt-bar span { animation: none; } }
+</style>
+@endpush
+
 @section('content')
+<div class="pt-index">
 
 {{-- ── Stats ──────────────────────────────────────────────── --}}
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
+<div class="pt-stats">
     <div class="stat-card">
-        <div class="stat-icon stat-icon-blue"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-card"/></svg></div>
+        <div class="stat-icon stat-icon-gray"><svg class="mv-i" aria-hidden="true"><use href="#i-card"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['total_terminals'] ?? 0 }}</div>
             <div class="stat-label">Total Terminals</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-green"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
+        <div class="stat-icon stat-icon-green"><svg class="mv-i" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['active_terminals'] ?? 0 }}</div>
             <div class="stat-label">Active</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-orange"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
+        <div class="stat-icon stat-icon-orange"><svg class="mv-i" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['faulty_terminals'] ?? 0 }}</div>
             <div class="stat-label">Need Attention</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon stat-icon-red"><svg class="mv-i mv-i-sm mv-ei" style="color:var(--mv-crit)" aria-hidden="true"><use href="#i-dot"/></svg></div>
+        <div class="stat-icon stat-icon-gray"><svg class="mv-i" aria-hidden="true"><use href="#i-x-circle"/></svg></div>
         <div>
             <div class="stat-number">{{ $stats['offline_terminals'] ?? 0 }}</div>
             <div class="stat-label">Offline</div>
@@ -36,18 +191,18 @@
 </div>
 
 {{-- ── Tab Navigation ──────────────────────────────────────── --}}
-<div class="tab-nav mb-5">
+<div class="tab-nav">
     <a href="{{ route('pos-terminals.index') }}" class="tab-btn {{ request('tab') !== 'discoveries' ? 'active' : '' }}">
-        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-card"/></svg> Terminal Overview
+        <svg class="mv-i" aria-hidden="true"><use href="#i-card"/></svg> Terminal Overview
     </a>
     <a href="{{ route('pos-terminals.index', ['tab' => 'discoveries']) }}" class="tab-btn {{ request('tab') === 'discoveries' ? 'active' : '' }}">
-        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-search"/></svg> Field Discoveries
+        <svg class="mv-i" aria-hidden="true"><use href="#i-search"/></svg> Field Discoveries
         @if(($fieldDiscoveryCount ?? 0) > 0)
-            <span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">{{ $fieldDiscoveryCount }}</span>
+            <span class="pt-count">{{ $fieldDiscoveryCount }}</span>
         @endif
     </a>
-    <button class="tab-btn" onclick="switchTab('import', this)">
-        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-upload"/></svg> Smart Import
+    <button type="button" class="tab-btn" onclick="switchTab('import', this)">
+        <svg class="mv-i" aria-hidden="true"><use href="#i-upload"/></svg> Smart Import
     </button>
 </div>
 
@@ -57,31 +212,33 @@
 ════════════════════════════════════════════════════════════ --}}
 @if(request('tab') === 'discoveries')
 {{-- FIELD DISCOVERIES TAB --}}
-<div>
-    <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-        These terminals were found by technicians during site visits and are not yet in the main inventory. Review each one and promote to the main list once verified.
+<div id="discoveries-tab" class="tab-content">
+    <div class="pt-note">
+        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-info"/></svg>
+        <span>These terminals were found by technicians during site visits and are not yet in the main inventory. Review each one and promote to the main list once verified.</span>
     </div>
 
     {{-- Search bar --}}
-    <form method="GET" action="{{ route('pos-terminals.index') }}" class="filter-bar mb-4">
+    <form method="GET" action="{{ route('pos-terminals.index') }}" class="filter-bar">
         <input type="hidden" name="tab" value="discoveries">
-        <div class="filter-group">
-            <label class="ui-label">Search</label>
-            <input type="text" name="search" placeholder="Search discovered terminals…"
+        <div class="filter-group pt-search">
+            <label class="ui-label pt-sr" for="discovery-search">Search</label>
+            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-search"/></svg>
+            <input type="text" name="search" id="discovery-search" placeholder="Search discovered terminals…"
                    value="{{ request('search') }}" class="ui-input"
                    onkeydown="if(event.key==='Enter'){this.form.submit();}">
         </div>
         <div class="filter-actions">
-            <button type="submit" class="btn-primary">Apply</button>
-            <a href="{{ route('pos-terminals.index', ['tab' => 'discoveries']) }}" class="btn-secondary">Reset</a>
+            <button type="submit" class="btn-primary pt-btn">Apply</button>
+            <a href="{{ route('pos-terminals.index', ['tab' => 'discoveries']) }}" class="btn-secondary pt-btn">Reset</a>
         </div>
     </form>
 
     <div class="ui-card overflow-hidden">
         <div class="ui-card-header">
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-semibold text-gray-800">Discovered on Site</span>
-                <span class="badge badge-gray">{{ $discoveries->total() }} terminals</span>
+            <div class="pt-card-title">
+                <h2>Discovered on Site</h2>
+                <span class="pt-card-meta">{{ number_format($discoveries->total()) }} terminals</span>
             </div>
         </div>
         <div class="overflow-x-auto">
@@ -95,13 +252,13 @@
                         <th>Model / Serial</th>
                         <th>Status</th>
                         <th>Discovered</th>
-                        <th>Actions</th>
+                        <th class="pt-th-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($discoveries as $terminal)
                     <tr>
-                        <td><span class="code-chip">{{ $terminal->terminal_id }}</span></td>
+                        <td><a href="{{ route('pos-terminals.show', $terminal) }}" class="pt-id mv-mono">{{ $terminal->terminal_id }}</a></td>
                         <td>
                             <div class="cell-primary">{{ $terminal->merchant_name }}</div>
                             @if($terminal->business_type)
@@ -115,6 +272,9 @@
                             @if($terminal->merchant_phone)
                             <div class="cell-sub">{{ $terminal->merchant_phone }}</div>
                             @endif
+                            @if(!$terminal->merchant_contact_person && !$terminal->merchant_phone)
+                            <span class="pt-none">—</span>
+                            @endif
                         </td>
                         <td>
                             <div class="cell-primary">{{ $terminal->region ?: '—' }}</div>
@@ -127,15 +287,18 @@
                             <div class="cell-primary">{{ $terminal->terminal_model }}</div>
                             @endif
                             @if($terminal->serial_number)
-                            <div class="cell-sub">{{ $terminal->serial_number }}</div>
+                            <div class="cell-sub mv-mono">{{ $terminal->serial_number }}</div>
+                            @endif
+                            @if(!$terminal->terminal_model && !$terminal->serial_number)
+                            <span class="pt-none">—</span>
                             @endif
                         </td>
                         <td>
                             @php
                                 $statusClass = match($terminal->status) {
                                     'active'      => 'badge-green',
-                                    'offline'     => 'badge-yellow',
-                                    'maintenance' => 'badge-blue',
+                                    'offline'     => 'badge-gray',
+                                    'maintenance' => 'badge-yellow',
                                     'faulty'      => 'badge-red',
                                     default       => 'badge-gray',
                                 };
@@ -145,22 +308,24 @@
                         <td>
                             <div class="cell-sub">{{ $terminal->created_at->diffForHumans() }}</div>
                         </td>
-                        <td>
+                        <td class="pt-td-actions">
                             <div class="action-group">
-                                <a href="{{ route('pos-terminals.show', $terminal) }}" class="action-btn action-view" title="View">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <a href="{{ route('pos-terminals.show', $terminal) }}" class="action-btn action-view" title="View" aria-label="View">
+                                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg>
                                 </a>
-                                <a href="{{ route('pos-terminals.edit', $terminal) }}" class="action-btn action-edit" title="Edit / Promote">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                <a href="{{ route('pos-terminals.edit', $terminal) }}" class="action-btn action-edit" title="Edit / Promote" aria-label="Edit / Promote">
+                                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg>
                                 </a>
                             </div>
                         </td>
                     </tr>
                     @empty
-                    <tr>
-                        <td colspan="8" class="py-16 text-center text-gray-400">
-                            <div class="text-4xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-search"/></svg></div>
-                            <p class="text-sm">No field-discovered terminals yet.</p>
+                    <tr class="pt-empty-row">
+                        <td colspan="8">
+                            <div class="pt-empty">
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-search"/></svg>
+                                No field-discovered terminals yet.
+                            </div>
                         </td>
                     </tr>
                     @endforelse
@@ -168,10 +333,10 @@
             </table>
         </div>
         @if($discoveries->hasPages())
-        <div class="ui-card-footer justify-between">
-            <span class="text-xs text-gray-500">
+        <div class="ui-card-footer">
+            <span class="pt-foot-meta">
                 Showing {{ $discoveries->firstItem() ?? 0 }}–{{ $discoveries->lastItem() ?? 0 }}
-                of {{ $discoveries->total() }} terminals
+                of {{ number_format($discoveries->total()) }} terminals
             </span>
             {{ $discoveries->appends(request()->query())->links() }}
         </div>
@@ -184,8 +349,9 @@
 
     {{-- Filter bar --}}
     <form method="GET" action="{{ route('pos-terminals.index') }}" class="filter-bar" id="filter-form">
-        <div class="filter-group">
-            <label class="ui-label">Search</label>
+        <div class="filter-group pt-search">
+            <label class="ui-label pt-sr" for="search-input">Search</label>
+            <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-search"/></svg>
             <input type="text" name="search" id="search-input"
                    placeholder="Search terminals…"
                    value="{{ request('search') }}"
@@ -193,8 +359,8 @@
                    onkeydown="if(event.key==='Enter'){this.form.submit();}">
         </div>
         <div class="filter-group">
-            <label class="ui-label">Client</label>
-            <select name="client" class="ui-select" onchange="this.form.submit()">
+            <label class="ui-label pt-sr" for="filter-client">Client</label>
+            <select name="client" id="filter-client" class="ui-select" onchange="this.form.submit()">
                 <option value="">All Clients</option>
                 @foreach($clients as $client)
                     <option value="{{ $client->id }}" {{ request('client') == $client->id ? 'selected' : '' }}>
@@ -204,8 +370,8 @@
             </select>
         </div>
         <div class="filter-group">
-            <label class="ui-label">Status</label>
-            <select name="status" class="ui-select" onchange="this.form.submit()">
+            <label class="ui-label pt-sr" for="filter-status">Status</label>
+            <select name="status" id="filter-status" class="ui-select" onchange="this.form.submit()">
                 <option value="">All Status</option>
                 <option value="active"       {{ request('status') == 'active'       ? 'selected' : '' }}>Active</option>
                 <option value="offline"      {{ request('status') == 'offline'      ? 'selected' : '' }}>Offline</option>
@@ -214,8 +380,8 @@
             </select>
         </div>
         <div class="filter-group">
-            <label class="ui-label">Region</label>
-            <select name="region" class="ui-select" onchange="this.form.submit()">
+            <label class="ui-label pt-sr" for="filter-region">Region</label>
+            <select name="region" id="filter-region" class="ui-select" onchange="this.form.submit()">
                 <option value="">All Regions</option>
                 @foreach($regions as $region)
                     <option value="{{ $region }}" {{ request('region') == $region ? 'selected' : '' }}>{{ $region }}</option>
@@ -223,8 +389,8 @@
             </select>
         </div>
         <div class="filter-group">
-            <label class="ui-label">City</label>
-            <select name="city" class="ui-select" onchange="this.form.submit()">
+            <label class="ui-label pt-sr" for="filter-city">City</label>
+            <select name="city" id="filter-city" class="ui-select" onchange="this.form.submit()">
                 <option value="">All Cities</option>
                 @foreach($cities as $city)
                     <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
@@ -232,25 +398,27 @@
             </select>
         </div>
         <div class="filter-actions">
-            <button type="submit" class="btn-primary">Apply</button>
-            <a href="{{ route('pos-terminals.index') }}" class="btn-secondary">Reset</a>
-            <a href="{{ route('pos-terminals.export', request()->query()) }}" class="btn-secondary">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                Export
-            </a>
-            <a href="{{ route('pos-terminals.create') }}" class="btn-primary">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Add Terminal
-            </a>
+            <button type="submit" class="btn-primary pt-btn">Apply</button>
+            <a href="{{ route('pos-terminals.index') }}" class="btn-secondary pt-btn">Reset</a>
         </div>
     </form>
 
     {{-- Terminals table --}}
     <div class="ui-card overflow-hidden">
         <div class="ui-card-header">
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-semibold text-gray-800">Terminal Inventory</span>
-                <span class="badge badge-gray">{{ $terminals->total() }} terminals</span>
+            <div class="pt-card-title">
+                <h2>Terminal Inventory</h2>
+                <span class="pt-card-meta">{{ number_format($terminals->total()) }} terminals</span>
+            </div>
+            <div class="pt-toolbar-end">
+                <a href="{{ route('pos-terminals.export', request()->query()) }}" class="btn-secondary pt-btn">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg>
+                    Export
+                </a>
+                <a href="{{ route('pos-terminals.create') }}" class="btn-primary pt-btn">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg>
+                    Add Terminal
+                </a>
             </div>
         </div>
         <div class="overflow-x-auto">
@@ -264,14 +432,14 @@
                         <th>Location</th>
                         <th>Status</th>
                         <th>Last Service</th>
-                        <th>Actions</th>
+                        <th class="pt-th-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($terminals as $terminal)
                     <tr>
                         <td>
-                            <span class="code-chip">{{ $terminal->terminal_id }}</span>
+                            <a href="{{ route('pos-terminals.show', $terminal) }}" class="pt-id mv-mono">{{ $terminal->terminal_id }}</a>
                         </td>
                         <td>
                             <div class="cell-primary">{{ $terminal->client->company_name }}</div>
@@ -289,9 +457,16 @@
                             @if($terminal->merchant_phone)
                             <div class="cell-sub">{{ $terminal->merchant_phone }}</div>
                             @endif
+                            @if(!$terminal->merchant_contact_person && !$terminal->merchant_phone)
+                            <span class="pt-none">—</span>
+                            @endif
                         </td>
                         <td>
-                            <div class="cell-primary">{{ $terminal->region ?: 'No region' }}</div>
+                            @if($terminal->region)
+                            <div class="cell-primary">{{ $terminal->region }}</div>
+                            @else
+                            <div class="pt-none">No region</div>
+                            @endif
                             @if($terminal->city)
                             <div class="cell-sub">{{ $terminal->city }}</div>
                             @endif
@@ -300,8 +475,8 @@
                             @php
                                 $statusClass = match($terminal->status) {
                                     'active'      => 'badge-green',
-                                    'offline'     => 'badge-yellow',
-                                    'maintenance' => 'badge-blue',
+                                    'offline'     => 'badge-gray',
+                                    'maintenance' => 'badge-yellow',
                                     'faulty'      => 'badge-red',
                                     default       => 'badge-gray',
                                 };
@@ -313,27 +488,28 @@
                             <div class="cell-primary">{{ $terminal->last_service_date->format('M d, Y') }}</div>
                             <div class="cell-sub">{{ $terminal->last_service_date->diffForHumans() }}</div>
                             @else
-                            <span class="text-gray-400 text-xs italic">Never serviced</span>
+                            <span class="pt-none">Never serviced</span>
                             @endif
                         </td>
-                        <td>
+                        <td class="pt-td-actions">
                             <div class="action-group">
-                                <a href="{{ route('pos-terminals.show', $terminal) }}" class="action-btn action-view" title="View">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <a href="{{ route('pos-terminals.show', $terminal) }}" class="action-btn action-view" title="View" aria-label="View">
+                                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg>
                                 </a>
-                                <a href="{{ route('pos-terminals.edit', $terminal) }}" class="action-btn action-edit" title="Edit">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                <a href="{{ route('pos-terminals.edit', $terminal) }}" class="action-btn action-edit" title="Edit" aria-label="Edit">
+                                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg>
                                 </a>
                             </div>
                         </td>
                     </tr>
                     @empty
-                    <tr>
-                        <td colspan="8" class="py-16 text-center text-gray-400">
-                            <div class="text-4xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-card"/></svg></div>
-                            <p class="text-sm">No terminals found. Try adjusting your filters or
-                                <a href="{{ route('pos-terminals.create') }}" class="link">add your first terminal</a>.
-                            </p>
+                    <tr class="pt-empty-row">
+                        <td colspan="8">
+                            <div class="pt-empty">
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-card"/></svg>
+                                No terminals found. Try adjusting your filters or
+                                <a href="{{ route('pos-terminals.create') }}">add your first terminal</a>.
+                            </div>
                         </td>
                     </tr>
                     @endforelse
@@ -343,10 +519,10 @@
 
         {{-- Pagination --}}
         @if($terminals->hasPages())
-        <div class="ui-card-footer justify-between">
-            <span class="text-xs text-gray-500">
+        <div class="ui-card-footer">
+            <span class="pt-foot-meta">
                 Showing {{ $terminals->firstItem() ?? 0 }}–{{ $terminals->lastItem() ?? 0 }}
-                of {{ $terminals->total() }} terminals
+                of {{ number_format($terminals->total()) }} terminals
             </span>
             {{ $terminals->appends(request()->query())->links() }}
         </div>
@@ -359,201 +535,193 @@
      TAB 3 — SMART IMPORT
 ════════════════════════════════════════════════════════════ --}}
 <div id="import-tab" class="tab-content hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
 
-    {{-- Header --}}
-    <div class="flex items-start justify-between mb-5">
-        <div>
-            <h2 class="text-lg font-semibold text-gray-900">Terminal Data Import</h2>
-            <p class="text-sm text-gray-500 mt-0.5">Import terminals from Excel, CSV, or TXT files with smart column detection</p>
-        </div>
-        <a href="{{ route('pos-terminals.download-template') }}" class="btn-success">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Download Template
-        </a>
-    </div>
+        {{-- Import form --}}
+        <form id="smart-import-form" action="{{ route('pos-terminals.import') }}" method="POST"
+              enctype="multipart/form-data" class="ui-card lg:col-span-2">
+            @csrf
 
-    {{-- Info cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div class="ui-card ui-card-body">
-            <h3 class="text-sm font-semibold text-gray-800 mb-3">Required Fields</h3>
-            <p class="text-xs font-semibold text-red-600 mb-1">Required</p>
-            <ul class="text-sm text-gray-700 ml-4 list-disc space-y-0.5 mb-3">
-                <li>Terminal ID</li>
-                <li>Merchant Name</li>
-            </ul>
-            <p class="text-xs font-semibold text-green-600 mb-1">Optional</p>
-            <p class="text-xs text-gray-500 leading-relaxed">
-                Contact Person, Phone, Email, Address, City, Province, Region,
-                Business Type, Terminal Model, Serial Number, Installation Date, Status, etc.
-            </p>
-        </div>
-        <div class="ui-card ui-card-body">
-            <h3 class="text-sm font-semibold text-gray-800 mb-3">Smart Features</h3>
-            <ul class="text-sm text-gray-700 ml-4 list-disc space-y-1">
-                <li>Auto-detects column headers</li>
-                <li>Processes any column order</li>
-                <li>Supports CSV, XLSX, XLS, TXT</li>
-                <li>Handles files up to 50 MB</li>
-                <li>Preview before importing</li>
-                <li>Duplicate detection</li>
-            </ul>
-        </div>
-    </div>
-
-    {{-- Import form --}}
-    <form id="smart-import-form" action="{{ route('pos-terminals.import') }}" method="POST"
-          enctype="multipart/form-data" class="ui-card ui-card-body space-y-5">
-        @csrf
-
-        {{-- Client + mapping row --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-                <label class="ui-label" for="client_id">Client / Bank <span class="text-red-500">*</span></label>
-                <select name="client_id" id="client_id" required class="ui-select">
-                    <option value="">Choose the client for these terminals…</option>
-                    @foreach($clients as $client)
-                        <option value="{{ $client->id }}">{{ $client->company_name }}</option>
-                    @endforeach
-                </select>
-                @error('client_id')
-                    <p class="ui-hint text-red-500">{{ $message }}</p>
-                @enderror
+            <div class="ui-card-header">
+                <div>
+                    <h2>Terminal Data Import</h2>
+                    <p class="pt-sub">Import terminals from Excel, CSV, or TXT files with smart column detection</p>
+                </div>
+                <a href="{{ route('pos-terminals.download-template') }}" class="btn-secondary pt-btn">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg>
+                    Download Template
+                </a>
             </div>
-            <div>
-                <label class="ui-label" for="mapping_id">Column Mapping <span class="text-gray-400 normal-case font-normal">(optional)</span></label>
-                <div class="flex gap-2">
-                    <select name="mapping_id" id="mapping_id" class="ui-select flex-1">
-                        <option value="">Auto-detect columns</option>
-                        @if(isset($mappings) && $mappings->count() > 0)
-                            @foreach($mappings as $mapping)
-                                <option value="{{ $mapping->id }}">
-                                    {{ $mapping->mapping_name }}
-                                    @if($mapping->client) ({{ $mapping->client->company_name }}) @endif
-                                </option>
+
+            <div class="ui-card-body pt-stack">
+                {{-- Client + mapping row --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="ui-label" for="client_id">Client / Bank <span class="pt-req">*</span></label>
+                        <select name="client_id" id="client_id" required class="ui-select">
+                            <option value="">Choose the client for these terminals…</option>
+                            @foreach($clients as $client)
+                                <option value="{{ $client->id }}">{{ $client->company_name }}</option>
                             @endforeach
-                        @endif
-                    </select>
-                    <a href="{{ route('pos-terminals.column-mapping') }}" target="_blank" class="btn-secondary">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> Manage
-                    </a>
+                        </select>
+                        @error('client_id')
+                            <p class="pt-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="ui-label" for="mapping_id">Column Mapping <span class="pt-opt">(optional)</span></label>
+                        <div class="flex gap-2">
+                            <select name="mapping_id" id="mapping_id" class="ui-select flex-1">
+                                <option value="">Auto-detect columns</option>
+                                @if(isset($mappings) && $mappings->count() > 0)
+                                    @foreach($mappings as $mapping)
+                                        <option value="{{ $mapping->id }}">
+                                            {{ $mapping->mapping_name }}
+                                            @if($mapping->client) ({{ $mapping->client->company_name }}) @endif
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            <a href="{{ route('pos-terminals.column-mapping') }}" target="_blank" class="btn-secondary pt-btn-field">
+                                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-settings"/></svg> Manage
+                            </a>
+                        </div>
+                        <p class="ui-hint">Leave blank for automatic header detection</p>
+                    </div>
                 </div>
-                <p class="ui-hint">Leave blank for automatic header detection</p>
-            </div>
-        </div>
 
-        {{-- File drop zone --}}
-        <div>
-            <label class="ui-label">Upload Data File <span class="text-red-500">*</span></label>
-            <div id="drop-zone"
-                 class="border-2 border-dashed border-[#1a3a5c]/30 rounded-xl p-10 text-center bg-gray-50 hover:bg-blue-50 hover:border-[#1a3a5c]/60 transition-colors cursor-pointer"
-                 onclick="document.getElementById('smart-file-input').click()">
-                <div class="text-5xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg></div>
-                <p class="text-sm font-medium text-gray-700 mb-1">Drop your file here or click to browse</p>
-                <p class="text-xs text-gray-500 mb-5">Supports Excel (.xlsx, .xls), CSV, and TXT files up to 50 MB</p>
-                <div class="flex gap-3 justify-center" onclick="event.stopPropagation()">
-                    <input type="file" name="file" id="smart-file-input"
-                           accept=".csv,.xlsx,.xls,.txt" required class="hidden">
-                    <button type="button" class="btn-primary btn-sm"
-                            onclick="document.getElementById('smart-file-input').click()">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-folder"/></svg> Choose File
-                    </button>
-                    <button type="button" id="preview-btn" disabled class="btn-success btn-sm opacity-50 cursor-not-allowed">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> Preview & Analyze
-                    </button>
-                </div>
-                @error('file')
-                    <p class="text-red-500 text-xs mt-3">{{ $message }}</p>
-                @enderror
-                <div id="file-info" class="hidden mt-4">
-                    <div class="flash-success">
-                        <span class="text-lg"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg></span>
-                        <div>
-                            <div id="file-name" class="font-medium text-sm"></div>
-                            <div id="file-details" class="text-xs mt-0.5"></div>
+                {{-- File drop zone --}}
+                <div>
+                    <label class="ui-label">Upload Data File <span class="pt-req">*</span></label>
+                    <div id="drop-zone" class="pt-drop"
+                         onclick="document.getElementById('smart-file-input').click()">
+                        <div class="pt-drop-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-upload"/></svg></div>
+                        <p class="pt-drop-title">Drop your file here or click to browse</p>
+                        <p class="pt-drop-sub">Supports Excel (.xlsx, .xls), CSV, and TXT files up to 50 MB</p>
+                        <div class="pt-drop-actions" onclick="event.stopPropagation()">
+                            <input type="file" name="file" id="smart-file-input"
+                                   accept=".csv,.xlsx,.xls,.txt" required class="hidden">
+                            <button type="button" class="btn-secondary pt-btn"
+                                    onclick="document.getElementById('smart-file-input').click()">
+                                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-folder"/></svg> Choose File
+                            </button>
+                            <button type="button" id="preview-btn" disabled class="btn-secondary pt-btn opacity-50 cursor-not-allowed">
+                                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-eye"/></svg> Preview & Analyze
+                            </button>
+                        </div>
+                        @error('file')
+                            <p class="pt-error">{{ $message }}</p>
+                        @enderror
+                        <div id="file-info" class="hidden pt-file">
+                            <svg class="mv-i" aria-hidden="true"><use href="#i-check-circle"/></svg>
+                            <div class="min-w-0">
+                                <div id="file-name" class="pt-file-name"></div>
+                                <div id="file-details" class="pt-file-meta"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <p class="text-xs text-gray-400 mt-4">
-                    <strong>Pro Tip:</strong> No need to worry about column order — our smart system detects and maps columns automatically!
+
+                {{-- Import options --}}
+                <div>
+                    <p class="ui-label">Import Options</p>
+                    <div class="pt-options">
+                        <label class="pt-option">
+                            <input type="checkbox" name="options[]" value="skip_duplicates" checked>
+                            <span>
+                                <span class="pt-option-title">Skip Duplicate Terminal IDs</span>
+                                <span class="pt-option-sub">Existing terminals with the same ID will be ignored during import</span>
+                            </span>
+                        </label>
+                        <label class="pt-option">
+                            <input type="checkbox" name="options[]" value="update_existing">
+                            <span>
+                                <span class="pt-option-title">Update Existing Records</span>
+                                <span class="pt-option-sub">Override existing terminal data with new imported values</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Action buttons --}}
+            <div class="ui-card-footer pt-footer-end">
+                <button type="button" onclick="resetImportForm()" class="btn-secondary">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-refresh"/></svg> Reset Form
+                </button>
+                <button type="submit" id="import-submit-btn" disabled
+                        class="btn-primary opacity-50 cursor-not-allowed">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-upload"/></svg> Start Smart Import
+                </button>
+            </div>
+        </form>
+
+        {{-- Info cards --}}
+        <div class="pt-side">
+            <div class="ui-card ui-card-body">
+                <h3>Required Fields</h3>
+                <p class="pt-side-label">Required</p>
+                <ul class="pt-list">
+                    <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Terminal ID</li>
+                    <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Merchant Name</li>
+                </ul>
+                <p class="pt-side-label">Optional</p>
+                <p class="pt-side-text">
+                    Contact Person, Phone, Email, Address, City, Province, Region,
+                    Business Type, Terminal Model, Serial Number, Installation Date, Status, etc.
                 </p>
             </div>
-        </div>
-
-        {{-- Import options --}}
-        <div>
-            <p class="ui-label">Import Options</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-[#1a3a5c]/40 hover:bg-blue-50 transition-colors">
-                    <input type="checkbox" name="options[]" value="skip_duplicates" checked
-                           class="mt-0.5 w-4 h-4 accent-[#1a3a5c]">
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">Skip Duplicate Terminal IDs</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Existing terminals with the same ID will be ignored during import</p>
-                    </div>
-                </label>
-                <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-[#1a3a5c]/40 hover:bg-blue-50 transition-colors">
-                    <input type="checkbox" name="options[]" value="update_existing"
-                           class="mt-0.5 w-4 h-4 accent-[#1a3a5c]">
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">Update Existing Records</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Override existing terminal data with new imported values</p>
-                    </div>
-                </label>
+            <div class="ui-card ui-card-body">
+                <h3>Smart Features</h3>
+                <ul class="pt-list">
+                    <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Auto-detects column headers</li>
+                    <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Processes any column order</li>
+                    <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Supports CSV, XLSX, XLS, TXT</li>
+                    <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Handles files up to 50 MB</li>
+                    <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Preview before importing</li>
+                    <li><svg class="mv-i" aria-hidden="true"><use href="#i-check"/></svg> Duplicate detection</li>
+                </ul>
             </div>
         </div>
-
-        {{-- Action buttons --}}
-        <div class="flex gap-3 pt-2">
-            <button type="submit" id="import-submit-btn" disabled
-                    class="btn-primary opacity-50 cursor-not-allowed">
-                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-send"/></svg> Start Smart Import
-            </button>
-            <button type="button" onclick="resetImportForm()" class="btn-secondary">
-                <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Reset Form
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
 
 {{-- ── Preview Modal ───────────────────────────────────────── --}}
-<div id="preview-modal" class="hidden fixed inset-0 bg-black/50 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="ui-card w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div class="ui-card-header">
-                <h3 class="text-base font-semibold text-gray-900"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> Smart Import Preview & Analysis</h3>
-                <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none bg-transparent border-none cursor-pointer">&times;</button>
+<div id="preview-modal" class="hidden pt-modal" role="dialog" aria-modal="true" aria-labelledby="preview-modal-title">
+    <div class="pt-modal-card pt-modal-lg">
+        <div class="pt-modal-head">
+            <h3 id="preview-modal-title">Smart Import Preview & Analysis</h3>
+            <button type="button" onclick="closePreviewModal()" class="pt-icon-btn" title="Close" aria-label="Close">
+                <svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg>
+            </button>
+        </div>
+        <div id="preview-content" class="pt-modal-body">
+            <div class="pt-loading">
+                <svg class="mv-i pt-spin" aria-hidden="true"><use href="#i-refresh"/></svg>
+                Analyzing your file…
             </div>
-            <div id="preview-content" class="ui-card-body">
-                <div class="text-center py-16 text-gray-400">
-                    <div class="text-5xl mb-3"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></div>
-                    <p class="text-sm">Analyzing your file…</p>
-                </div>
-            </div>
-            <div class="ui-card-footer">
-                <button onclick="closePreviewModal()" class="btn-secondary">Close Preview</button>
-                <button id="proceed-import-btn" onclick="proceedWithImport()" disabled
-                        class="btn-success opacity-50 cursor-not-allowed">
-                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> Looks Good — Proceed with Import
-                </button>
-            </div>
+        </div>
+        <div class="pt-modal-foot">
+            <button type="button" onclick="closePreviewModal()" class="btn-secondary">Close Preview</button>
+            <button type="button" id="proceed-import-btn" onclick="proceedWithImport()" disabled
+                    class="btn-primary opacity-50 cursor-not-allowed">
+                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-check"/></svg> Looks Good — Proceed with Import
+            </button>
         </div>
     </div>
 </div>
 
 {{-- ── Processing Modal ────────────────────────────────────── --}}
-<div id="processing-modal" class="hidden fixed inset-0 bg-black/70 z-[60]">
-    <div class="flex items-center justify-center h-full">
-        <div class="ui-card p-10 text-center max-w-sm w-full">
-            <div class="text-5xl mb-4"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg></div>
-            <h4 class="text-base font-semibold text-gray-900 mb-2">Processing Your Smart Import</h4>
-            <p class="text-sm text-gray-500 mb-5">Large files are processed in chunks automatically. This may take a few minutes…</p>
-            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-[#1a3a5c] to-green-500 animate-pulse rounded-full"></div>
-            </div>
-        </div>
+<div id="processing-modal" class="hidden pt-modal" style="z-index:1110" role="dialog" aria-modal="true" aria-live="polite">
+    <div class="pt-modal-card pt-modal-sm pt-processing">
+        <svg class="mv-i pt-spin" aria-hidden="true"><use href="#i-refresh"/></svg>
+        <h4>Processing Your Smart Import</h4>
+        <p>Large files are processed in chunks automatically. This may take a few minutes…</p>
+        <div class="pt-bar"><span></span></div>
     </div>
 </div>
 
+</div>
 @endsection
 
 @push('scripts')
@@ -681,36 +849,32 @@ function displayPreviewData(data) {
 
     const content = document.getElementById('preview-content');
     content.innerHTML = `
-        <div class="grid grid-cols-2 gap-4 mb-5">
-            <div class="flash-success">
-                <div>
-                    <p class="font-semibold text-sm">File Analysis</p>
-                    <p class="text-xs mt-1">Mapping: ${data.mapping_name} · ${data.headers.length} columns · ${data.preview_data.length} preview rows</p>
-                </div>
+        <div class="pt-summary">
+            <div class="pt-summary-box">
+                <p class="pt-summary-title">File Analysis</p>
+                <p class="pt-summary-text">Mapping: ${data.mapping_name} · ${data.headers.length} columns · ${data.preview_data.length} preview rows</p>
             </div>
-            <div class="${missing.length ? 'flash-error' : 'flash-success'}">
-                <div>
-                    <p class="font-semibold text-sm">Column Mapping</p>
-                    <p class="text-xs mt-1">${mapped.length} mapped · ${missing.length} missing required · ${missing.length === 0 ? 'All required fields found ' : 'Missing: ' + missing.join(', ')}</p>
-                </div>
+            <div class="pt-summary-box ${missing.length ? 'is-crit' : 'is-good'}">
+                <p class="pt-summary-title">Column Mapping</p>
+                <p class="pt-summary-text">${mapped.length} mapped · ${missing.length} missing required · ${missing.length === 0 ? 'All required fields found' : 'Missing: ' + missing.join(', ')}</p>
             </div>
         </div>
-        <div class="ui-card overflow-hidden mb-5">
-            <div class="ui-card-header"><span class="text-sm font-semibold">Detected Columns</span></div>
+        <div class="pt-subcard">
+            <div class="pt-subcard-head">Detected Columns</div>
             <div class="overflow-x-auto">
                 <table class="ui-table">
                     <thead><tr><th>#</th><th>Column Header</th><th>Status</th></tr></thead>
                     <tbody>
                         ${data.headers.map((h, i) => {
                             const cls = mapped.includes(h.toLowerCase().replace(/\s+/g,'_')) ? 'badge-green' : 'badge-yellow';
-                            return `<tr><td>${i+1}</td><td><code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">${h}</code></td><td><span class="status-badge ${cls}">${cls === 'badge-green' ? 'Mapped' : 'Unmapped'}</span></td></tr>`;
+                            return `<tr><td>${i+1}</td><td><span class="pt-code">${h}</span></td><td><span class="status-badge ${cls}">${cls === 'badge-green' ? 'Mapped' : 'Unmapped'}</span></td></tr>`;
                         }).join('')}
                     </tbody>
                 </table>
             </div>
         </div>
-        <div class="ui-card overflow-hidden mb-5">
-            <div class="ui-card-header"><span class="text-sm font-semibold">Data Preview</span></div>
+        <div class="pt-subcard">
+            <div class="pt-subcard-head">Data Preview</div>
             <div class="overflow-x-auto">
                 <table class="ui-table">
                     <thead><tr><th>Row</th><th>Terminal ID</th><th>Merchant</th><th>Status</th><th>Validation</th></tr></thead>
@@ -718,20 +882,20 @@ function displayPreviewData(data) {
                         ${data.preview_data.map(r => `
                             <tr>
                                 <td>${r.row_number}</td>
-                                <td><code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">${r.mapped_data.terminal_id||'N/A'}</code></td>
+                                <td><span class="pt-code">${r.mapped_data.terminal_id||'N/A'}</span></td>
                                 <td>${r.mapped_data.merchant_name||'N/A'}</td>
                                 <td>${r.mapped_data.status||'active'}</td>
-                                <td><span class="status-badge ${r.validation_status==='valid'?'badge-green':'badge-red'}">${r.validation_status==='valid'?'Valid':'Error'}</span>${r.validation_status!=='valid'?'<br><span class="text-xs text-red-500">'+r.validation_message+'</span>':''}</td>
+                                <td><span class="status-badge ${r.validation_status==='valid'?'badge-green':'badge-red'}">${r.validation_status==='valid'?'Valid':'Error'}</span>${r.validation_status!=='valid'?'<span class="pt-row-error">'+r.validation_message+'</span>':''}</td>
                             </tr>`).join('')}
                     </tbody>
                 </table>
             </div>
         </div>
-        <div class="${canImport ? 'flash-success' : 'flash-error'}">
-            <span class="text-xl">${canImport ? '' : ''}</span>
+        <div class="pt-result ${canImport ? 'is-good' : 'is-crit'}">
+            <svg class="mv-i" aria-hidden="true"><use href="#i-${canImport ? 'check-circle' : 'alert-circle'}"/></svg>
             <div>
-                <p class="font-semibold text-sm">${canImport ? 'Ready for Import' : 'Issues Detected'}</p>
-                <p class="text-xs mt-0.5">${canImport ? 'All required fields present and validation passed.' : 'Resolve issues before importing.'}</p>
+                <p class="pt-summary-title">${canImport ? 'Ready for Import' : 'Issues Detected'}</p>
+                <p class="pt-summary-text">${canImport ? 'All required fields present and validation passed.' : 'Resolve issues before importing.'}</p>
             </div>
         </div>
     `;
@@ -746,18 +910,17 @@ function displayPreviewData(data) {
 
 function displayPreviewError(msg) {
     document.getElementById('preview-content').innerHTML = `
-        <div class="text-center py-16">
-            <div class="text-5xl mb-3"></div>
-            <p class="text-sm font-semibold text-gray-800 mb-2">Preview Failed</p>
-            <p class="text-sm text-gray-500 mb-5">${msg}</p>
-            <div class="flash-warning text-left">
-                <span></span>
-                <div class="text-xs">
-                    <strong>Troubleshooting:</strong><br>
-                    • Ensure the file is valid CSV, XLSX, XLS, or TXT<br>
-                    • Check it contains Terminal ID and Merchant Name columns<br>
-                    • Verify the file is not corrupted or password-protected
-                </div>
+        <div class="pt-fail">
+            <svg class="mv-i" aria-hidden="true"><use href="#i-alert-circle"/></svg>
+            <p class="pt-fail-title">Preview Failed</p>
+            <p class="pt-fail-msg">${msg}</p>
+            <div class="pt-hint-box">
+                <strong>Troubleshooting:</strong>
+                <ul>
+                    <li>Ensure the file is valid CSV, XLSX, XLS, or TXT</li>
+                    <li>Check it contains Terminal ID and Merchant Name columns</li>
+                    <li>Verify the file is not corrupted or password-protected</li>
+                </ul>
             </div>
         </div>
     `;

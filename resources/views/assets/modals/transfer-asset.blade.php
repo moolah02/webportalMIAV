@@ -1,47 +1,25 @@
+{{-- Transfer Asset Modal. Not currently included by any view; styles (.as-*) live in
+     assets/index.blade.php. --}}
 <!-- Transfer Asset Modal -->
-<div id="transferAssetModal" style="display: none; position: fixed; top: 0; left: 0; inline-size: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1004; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-inline-size: 500px; inline-size: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></span>
-                <span>Transfer Asset</span>
-            </h3>
-            <button onclick="closeTransferModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
+<div id="transferAssetModal" class="as-overlay" style="display: none;" role="dialog" aria-modal="true">
+    <div class="as-modal">
+        <div class="as-modal-head">
+            <h3>Transfer Asset</h3>
+            <button type="button" onclick="closeTransferModal()" class="as-x" title="Close" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
 
-        <!-- Modal Body -->
-        <div style="padding: 20px;">
+        <div class="as-modal-body">
             <!-- Current Assignment Info -->
-            <div id="transferAssignmentInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-block-end: 20px;">
-                <h4 style="margin: 0 0 15px 0; color: #333;">Current Assignment</h4>
-
-                <div style="display: grid; gap: 12px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Asset</label>
-                            <div style="font-weight: bold; color: #333;" id="transfer_asset_name">Asset Name</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Current Employee</label>
-                            <div style="font-weight: bold; color: #333;" id="transfer_current_employee">Employee Name</div>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Assigned Since</label>
-                            <div style="color: #333;" id="transfer_assigned_date">Date</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Duration</label>
-                            <div style="color: #333;" id="transfer_days_assigned">0 days</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Quantity</label>
-                            <div style="color: #333;" id="transfer_quantity">1</div>
-                        </div>
-                    </div>
+            <div id="transferAssignmentInfo" class="as-summary">
+                <h4 class="as-sec">Current Assignment</h4>
+                <div class="as-kv">
+                    <div><div class="as-k">Asset</div><div class="as-v is-strong" id="transfer_asset_name">Asset Name</div></div>
+                    <div><div class="as-k">Current Employee</div><div class="as-v is-strong" id="transfer_current_employee">Employee Name</div></div>
+                </div>
+                <div class="as-kv is-3" style="margin-top:12px;">
+                    <div><div class="as-k">Assigned Since</div><div class="as-v" id="transfer_assigned_date">Date</div></div>
+                    <div><div class="as-k">Duration</div><div class="as-v" id="transfer_days_assigned">0 days</div></div>
+                    <div><div class="as-k">Quantity</div><div class="as-v" id="transfer_quantity">1</div></div>
                 </div>
             </div>
 
@@ -50,41 +28,28 @@
                 @method('PATCH')
                 <input type="hidden" id="transfer_assignment_id" name="assignment_id">
 
-                <div style="display: grid; gap: 20px;">
+                <div class="as-stack">
                     <!-- New Employee Selection -->
                     <div>
-                        <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
-                            Transfer To <span style="color: #f44336;">*</span>
-                        </label>
-                        <div style="position: relative;">
-                            <input type="text" id="transfer_employee_search" placeholder="Search for new employee..."
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; margin-block-end: 5px;">
-                            <select name="new_employee_id" id="transfer_new_employee_id" required
-                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                                <option value="">Choose new employee...</option>
-                            </select>
-                        </div>
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            Search by name or employee number
-                        </div>
+                        <label class="ui-label" for="transfer_new_employee_id">Transfer To <span class="as-req">*</span></label>
+                        <input type="text" id="transfer_employee_search" placeholder="Search for new employee..."
+                               class="ui-input w-full" style="margin-bottom:6px;">
+                        <select name="new_employee_id" id="transfer_new_employee_id" required class="ui-select w-full">
+                            <option value="">Choose new employee...</option>
+                        </select>
+                        <p class="as-hint">Search by name or employee number</p>
                     </div>
 
                     <!-- Transfer Details -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="as-grid">
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Transfer Date <span style="color: #f44336;">*</span>
-                            </label>
-                            <input type="date" name="transfer_date" id="transfer_date" value="{{ now()->format('Y-m-d') }}" required
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <label class="ui-label" for="transfer_date">Transfer Date <span class="as-req">*</span></label>
+                            <input type="date" name="transfer_date" id="transfer_date" value="{{ now()->format('Y-m-d') }}" required class="ui-input w-full">
                         </div>
 
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Current Condition <span style="color: #f44336;">*</span>
-                            </label>
-                            <select name="condition_at_transfer" id="transfer_condition" required
-                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <label class="ui-label" for="transfer_condition">Current Condition <span class="as-req">*</span></label>
+                            <select name="condition_at_transfer" id="transfer_condition" required class="ui-select w-full">
                                 <option value="">Assess current condition...</option>
                                 <option value="new">New - Like brand new</option>
                                 <option value="good">Good - Minor wear, fully functional</option>
@@ -96,11 +61,8 @@
 
                     <!-- Transfer Reason -->
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                            Reason for Transfer <span style="color: #f44336;">*</span>
-                        </label>
-                        <select name="transfer_reason" id="transfer_reason" required
-                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <label class="ui-label" for="transfer_reason">Reason for Transfer <span class="as-req">*</span></label>
+                        <select name="transfer_reason" id="transfer_reason" required class="ui-select w-full">
                             <option value="">Select reason...</option>
                             <option value="employee_departure">Employee Departure</option>
                             <option value="role_change">Role Change</option>
@@ -115,47 +77,31 @@
 
                     <!-- Custom Reason (shown when "Other" is selected) -->
                     <div id="custom_reason_section" style="display: none;">
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                            Specify Reason <span style="color: #f44336;">*</span>
-                        </label>
+                        <label class="ui-label" for="custom_transfer_reason">Specify Reason <span class="as-req">*</span></label>
                         <input type="text" name="custom_transfer_reason" id="custom_transfer_reason"
-                               placeholder="Please specify the reason for transfer..."
-                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                               placeholder="Please specify the reason for transfer..." class="ui-input w-full">
                     </div>
 
                     <!-- Transfer Notes -->
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                            Transfer Notes
-                        </label>
-                        <textarea name="transfer_notes" rows="3"
-                                  placeholder="Additional notes about this transfer (handover instructions, special considerations, etc.)..."
-                                  style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
+                        <label class="ui-label">Transfer Notes</label>
+                        <textarea name="transfer_notes" rows="3" class="ui-textarea w-full"
+                                  placeholder="Additional notes about this transfer (handover instructions, special considerations, etc.)..."></textarea>
                     </div>
 
                     <!-- New Assignment Details -->
-                    <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffcc02;">
-                        <h5 style="margin: 0 0 15px 0; color: #e65100; display: flex; align-items: center; gap: 8px;">
-                            <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-target"/></svg></span>
-                            New Assignment Settings
-                        </h5>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="as-panel">
+                        <h4 class="as-sec">New Assignment Settings</h4>
+                        <div class="as-grid">
                             <div>
-                                <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                    Expected Return Date
-                                </label>
-                                <input type="date" name="new_expected_return_date"
-                                       style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                                <div style="font-size: 12px; color: #666; margin-top: 2px;">Optional for new assignment</div>
+                                <label class="ui-label">Expected Return Date</label>
+                                <input type="date" name="new_expected_return_date" class="ui-input w-full">
+                                <p class="as-hint">Optional for new assignment</p>
                             </div>
 
                             <div>
-                                <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                    Priority Level
-                                </label>
-                                <select name="transfer_priority"
-                                        style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                                <label class="ui-label">Priority Level</label>
+                                <select name="transfer_priority" class="ui-select w-full">
                                     <option value="normal">Normal</option>
                                     <option value="urgent">Urgent</option>
                                     <option value="immediate">Immediate</option>
@@ -166,19 +112,17 @@
 
                     <!-- Notification Settings -->
                     <div>
-                        <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
-                            Notifications
-                        </label>
-                        <div style="display: grid; gap: 8px;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <span class="ui-label">Notifications</span>
+                        <div class="as-checks">
+                            <label class="as-check">
                                 <input type="checkbox" name="notify_current_employee" value="1" checked>
                                 <span>Notify current employee about transfer</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <label class="as-check">
                                 <input type="checkbox" name="notify_new_employee" value="1" checked>
                                 <span>Notify new employee about incoming assignment</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <label class="as-check">
                                 <input type="checkbox" name="notify_managers" value="1">
                                 <span>Notify department managers</span>
                             </label>
@@ -187,14 +131,9 @@
                 </div>
 
                 <!-- Form Actions -->
-                <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn-secondary" style="flex: 1; background: #ff9800; border-color: #ff9800; color: white;">
-                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></span>
-                        Process Transfer
-                    </button>
-                    <button type="button" onclick="closeTransferModal()" class="btn" style="padding: 10px 20px;">
-                        Cancel
-                    </button>
+                <div class="as-modal-actions">
+                    <button type="button" onclick="closeTransferModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-refresh"/></svg> Process Transfer</button>
                 </div>
             </form>
         </div>

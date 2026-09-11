@@ -1,175 +1,161 @@
-
-<!-- Complete Assignments Tab Section -->
-<!-- Add this at the very top of your blade file or ensure it's in your layout -->
+{{-- Current Assignments tab (styles live in assets/index.blade.php) --}}
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <meta name="app-base-url" content="{{ url('/') }}">
 
-<!-- Assignment Statistics Cards -->
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+@php
+    $condBadge = ['new' => 'badge-green', 'good' => 'badge-green', 'fair' => 'badge-yellow', 'poor' => 'badge-red'];
+@endphp
+
+{{-- Assignment Statistics --}}
+<div class="as-stats">
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
-        <div class="flex-1 min-w-0">
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-user-check"/></svg></div>
+        <div class="min-w-0">
             <div class="stat-number">{{ $assignmentStats['active_assignments'] ?? 0 }}</div>
             <div class="stat-label">Active Assignments</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clock"/></svg></div>
-        <div class="flex-1 min-w-0">
+        <div class="stat-icon {{ ($assignmentStats['overdue_assignments'] ?? 0) > 0 ? 'stat-icon-red' : '' }}"><svg class="mv-i" aria-hidden="true"><use href="#i-clock"/></svg></div>
+        <div class="min-w-0">
             <div class="stat-number">{{ $assignmentStats['overdue_assignments'] ?? 0 }}</div>
             <div class="stat-label">Overdue Returns</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trending-up"/></svg></div>
-        <div class="flex-1 min-w-0">
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-undo"/></svg></div>
+        <div class="min-w-0">
             <div class="stat-number">{{ $assignmentStats['returned_this_month'] ?? 0 }}</div>
             <div class="stat-label">Returned This Month</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg></div>
-        <div class="flex-1 min-w-0">
+        <div class="stat-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-layers"/></svg></div>
+        <div class="min-w-0">
             <div class="stat-number">{{ $assignmentStats['total_assignments'] ?? 0 }}</div>
             <div class="stat-label">Total Assignments</div>
         </div>
     </div>
 </div>
 
-<!-- Filters -->
-<div class="content-card" style="margin-block-end: 20px;">
-    <form method="GET" style="display: grid; grid-template-columns: 2fr 2fr 1fr auto auto auto; gap: 15px; align-items: end;">
-        <input type="hidden" name="tab" value="assignments">
+{{-- Filters --}}
+<form method="GET" class="filter-bar">
+    <input type="hidden" name="tab" value="assignments">
 
-        <div>
-            <label style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Search Employee</label>
-            <input type="text" name="employee_search" value="{{ request('employee_search') }}"
-                   placeholder="Search by employee name or number..."
-                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-        </div>
+    <div class="filter-group as-grow">
+        <label class="ui-label" for="asg_employee_search">Search Employee</label>
+        <input type="text" name="employee_search" id="asg_employee_search" value="{{ request('employee_search') }}"
+               placeholder="Search by employee name or number..." class="ui-input">
+    </div>
 
-        <div>
-            <label style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Search Asset</label>
-            <input type="text" name="asset_search" value="{{ request('asset_search') }}"
-                   placeholder="Search by asset name or SKU..."
-                   style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-        </div>
+    <div class="filter-group as-grow">
+        <label class="ui-label" for="asg_asset_search">Search Asset</label>
+        <input type="text" name="asset_search" id="asg_asset_search" value="{{ request('asset_search') }}"
+               placeholder="Search by asset name or SKU..." class="ui-input">
+    </div>
 
-        <div>
-            <label style="display: block; margin-block-end: 5px; font-weight: 500; color: #333;">Department</label>
-            <select name="department" style="inline-size: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
-                <option value="">All Departments</option>
-                @foreach($departments as $department)
-                    <option value="{{ $department->id }}" {{ request('department') == $department->id ? 'selected' : '' }}>
-                        {{ $department->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+    <div class="filter-group">
+        <label class="ui-label" for="asg_department">Department</label>
+        <select name="department" id="asg_department" class="ui-select">
+            <option value="">All Departments</option>
+            @foreach($departments as $department)
+                <option value="{{ $department->id }}" {{ request('department') == $department->id ? 'selected' : '' }}>
+                    {{ $department->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
 
-        <div style="display: flex; align-items: center; gap: 8px; padding: 10px 0;">
-            <input type="checkbox" name="overdue_only" value="1" {{ request('overdue_only') ? 'checked' : '' }}
-                   id="overdue_filter" style="transform: scale(1.2);">
-            <label for="overdue_filter" style="font-weight: 500; color: #f44336;">Overdue Only</label>
-        </div>
+    <div class="filter-group">
+        <label class="as-check" for="overdue_filter">
+            <input type="checkbox" name="overdue_only" value="1" {{ request('overdue_only') ? 'checked' : '' }} id="overdue_filter">
+            Overdue Only
+        </label>
+    </div>
 
-        <button type="submit" class="btn-primary">Filter</button>
-
+    <div class="filter-actions">
         @if(request()->hasAny(['employee_search', 'asset_search', 'department', 'overdue_only']))
-        <a href="{{ route('assets.index', ['tab' => 'assignments']) }}" class="btn">Clear</a>
+        <a href="{{ route('assets.index', ['tab' => 'assignments']) }}" class="btn-secondary">Clear</a>
         @endif
-    </form>
-</div>
+        <button type="submit" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-filter"/></svg> Filter</button>
+    </div>
+</form>
 
-<!-- Current Assignments Table -->
+{{-- Current Assignments Table --}}
 @if($assignments->count() > 0)
-    <div class="content-card">
-        <div style="overflow-x: auto;">
+    <div class="ui-card overflow-hidden">
+        <div class="overflow-x-auto">
             <table class="assignment-table">
                 <thead>
                     <tr>
                         <th>Employee</th>
                         <th>Asset</th>
-                        <th>Quantity</th>
+                        <th class="as-right">Quantity</th>
                         <th>Assigned Date</th>
                         <th>Expected Return</th>
-                        <th>Days Assigned</th>
+                        <th class="as-right">Days Assigned</th>
                         <th>Condition</th>
-                        <th>Actions</th>
+                        <th class="as-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($assignments as $assignment)
                     <tr class="{{ $assignment->is_overdue ? 'overdue-row' : '' }}">
                         <td>
-                            <div class="employee-info">
-                                <div class="employee-avatar">
-                                    {{ strtoupper(substr($assignment->employee->first_name, 0, 1)) }}{{ strtoupper(substr($assignment->employee->last_name, 0, 1)) }}
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600; color: #333;">{{ $assignment->employee->full_name }}</div>
-                                    <div style="font-size: 12px; color: #666;">{{ $assignment->employee->employee_number }}</div>
-                                    <div style="font-size: 12px; color: #666;">{{ $assignment->employee->department->name ?? 'No Department' }}</div>
+                            <div class="as-cell">
+                                <span class="mv-avatar" aria-hidden="true">{{ strtoupper(substr($assignment->employee->first_name, 0, 1)) }}{{ strtoupper(substr($assignment->employee->last_name, 0, 1)) }}</span>
+                                <div class="min-w-0">
+                                    <div class="cell-primary">{{ $assignment->employee->full_name }}</div>
+                                    <div class="cell-sub"><span class="mv-mono">{{ $assignment->employee->employee_number }}</span> &middot; {{ $assignment->employee->department->name ?? 'No Department' }}</div>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <div class="asset-info">
-                                <div class="asset-icon"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg></div>
-                                <div>
-                                    <div style="font-weight: 600; color: #333;">{{ $assignment->asset->name }}</div>
-                                    <div style="font-size: 12px; color: #666;">{{ $assignment->asset->category }}</div>
-                                    @if($assignment->asset->sku)
-                                        <div style="font-size: 12px; color: #999;">SKU: {{ $assignment->asset->sku }}</div>
-                                    @endif
-                                </div>
+                            <div class="cell-primary">{{ $assignment->asset->name }}</div>
+                            <div class="cell-sub">
+                                {{ $assignment->asset->category }}
+                                @if($assignment->asset->sku)
+                                    &middot; SKU <span class="mv-mono">{{ $assignment->asset->sku }}</span>
+                                @endif
                             </div>
                         </td>
+                        <td class="as-right"><span class="as-num">{{ $assignment->quantity_assigned }}</span></td>
                         <td>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-weight: 600;">
-                                {{ $assignment->quantity_assigned }}
-                            </span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 500; color: #333;">{{ $assignment->assignment_date->format('M d, Y') }}</div>
-                            <div style="font-size: 12px; color: #666;">by {{ $assignment->assignedBy->full_name ?? 'System' }}</div>
+                            <div class="as-v">{{ $assignment->assignment_date->format('M d, Y') }}</div>
+                            <div class="cell-sub">by {{ $assignment->assignedBy->full_name ?? 'System' }}</div>
                         </td>
                         <td>
                             @if($assignment->expected_return_date)
-                                <div style="color: {{ $assignment->is_overdue ? '#f44336' : '#333' }}; font-weight: {{ $assignment->is_overdue ? '600' : '500' }};">
+                                <div class="as-v {{ $assignment->is_overdue ? 'as-late' : '' }}">
                                     {{ $assignment->expected_return_date->format('M d, Y') }}
                                 </div>
                                 @if($assignment->is_overdue)
-                                    <div style="font-size: 12px; color: #f44336; font-weight: 600;">
-                                        {{ $assignment->days_overdue }} days overdue
-                                    </div>
+                                    <span class="badge badge-red mt-1">{{ $assignment->days_overdue }} days overdue</span>
                                 @endif
                             @else
-                                <span style="color: #999;">No due date</span>
+                                <span class="as-muted">No due date</span>
                             @endif
                         </td>
+                        <td class="as-right"><span class="as-num">{{ (int)$assignment->days_assigned }} days</span></td>
                         <td>
-                            <span style="font-weight: 600; color: #666;">{{ (int)$assignment->days_assigned }} days</span>
-                        </td>
-                        <td>
-                            <span class="status-badge" style="background: {{ $assignment->condition_when_assigned == 'new' ? '#e8f5e8' : ($assignment->condition_when_assigned == 'good' ? '#e3f2fd' : ($assignment->condition_when_assigned == 'fair' ? '#fff3e0' : '#ffebee')) }}; color: {{ $assignment->condition_when_assigned == 'new' ? '#2e7d32' : ($assignment->condition_when_assigned == 'good' ? '#1976d2' : ($assignment->condition_when_assigned == 'fair' ? '#f57c00' : '#d32f2f')) }};">
+                            <span class="badge {{ $condBadge[$assignment->condition_when_assigned] ?? 'badge-gray' }}">
                                 {{ ucfirst($assignment->condition_when_assigned) }}
                             </span>
                         </td>
-                        <td>
-                            <div style="display: flex; gap: 5px;">
-                                <button onclick="openReturnModal({{ $assignment->id }})"
-                                        class="btn-small btn-success" title="Return Asset">
-                                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg> Return
+                        <td class="as-right">
+                            <div class="action-group">
+                                <button type="button" onclick="openReturnModal({{ $assignment->id }})"
+                                        class="action-btn" title="Return Asset" aria-label="Return Asset">
+                                    <svg class="mv-i" aria-hidden="true"><use href="#i-undo"/></svg>
                                 </button>
-                                <button onclick="openTransferModal({{ $assignment->id }})"
-                                        class="btn-small btn-warning" title="Transfer Asset">
-                                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Transfer
+                                <button type="button" onclick="openTransferModal({{ $assignment->id }})"
+                                        class="action-btn" title="Transfer Asset" aria-label="Transfer Asset">
+                                    <svg class="mv-i" aria-hidden="true"><use href="#i-refresh"/></svg>
                                 </button>
-                                <button onclick="viewAssignmentDetails({{ $assignment->id }})"
-                                        class="btn-small btn-info" title="View Details">
-                                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-eye"/></svg> Details
+                                <button type="button" onclick="viewAssignmentDetails({{ $assignment->id }})"
+                                        class="action-btn" title="View Details" aria-label="View Details">
+                                    <svg class="mv-i" aria-hidden="true"><use href="#i-eye"/></svg>
                                 </button>
                             </div>
                         </td>
@@ -179,74 +165,48 @@
             </table>
         </div>
 
-        <!-- Pagination -->
         @if($assignments->hasPages())
-        <div style="margin-top: 20px; display: flex; justify-content: center;">
+        <div class="ui-card-footer as-pager">
             {{ $assignments->appends(request()->query())->links() }}
         </div>
         @endif
     </div>
 @else
-    <div class="content-card" style="text-align: center; padding: 60px; color: #666;">
-        <div style="font-size: 64px; margin-block-end: 20px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg></div>
-        <h3>No Active Assignments</h3>
-        <p>No assets are currently assigned to employees.</p>
-        <a href="{{ route('assets.index', ['tab' => 'assign']) }}" class="btn-primary" style="margin-block-start: 15px;">
-            Assign First Asset
-        </a>
+    <div class="ui-card">
+        <div class="empty-state">
+            <div class="empty-state-icon"><svg class="mv-i" aria-hidden="true"><use href="#i-user-check"/></svg></div>
+            <h3>No Active Assignments</h3>
+            <p class="empty-state-msg">No assets are currently assigned to employees.</p>
+            <a href="{{ route('assets.index', ['tab' => 'assign']) }}" class="btn-primary btn-sm">Assign First Asset</a>
+        </div>
     </div>
 @endif
 
-<!-- MODALS SECTION -->
+{{-- MODALS --}}
 
-<!-- Return Asset Modal -->
-<div id="returnAssetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1003; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
-                <span>Return Asset</span>
-            </h3>
-            <button onclick="closeReturnModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
+{{-- Return Asset Modal --}}
+<div id="returnAssetModal" class="as-overlay" style="display: none;" role="dialog" aria-modal="true">
+    <div class="as-modal">
+        <div class="as-modal-head">
+            <h3>Return Asset</h3>
+            <button type="button" onclick="closeReturnModal()" class="as-x" title="Close" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
 
-        <!-- Modal Body -->
-        <div style="padding: 20px;">
-            <!-- Assignment Info Display -->
-            <div id="returnAssignmentInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-block-end: 20px;">
-                <h4 style="margin: 0 0 15px 0; color: #333;">Assignment Details</h4>
-
-                <div style="display: grid; gap: 12px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Asset</label>
-                            <div style="font-weight: bold; color: #333;" id="return_asset_name">Loading...</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Employee</label>
-                            <div style="font-weight: bold; color: #333;" id="return_employee_name">Loading...</div>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Assigned Date</label>
-                            <div style="color: #333;" id="return_assigned_date">Loading...</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Days Assigned</label>
-                            <div style="color: #333;" id="return_days_assigned">0 days</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Quantity</label>
-                            <div style="color: #333;" id="return_quantity">1</div>
-                        </div>
-                    </div>
+        <div class="as-modal-body">
+            <div id="returnAssignmentInfo" class="as-summary">
+                <h4 class="as-sec">Assignment Details</h4>
+                <div class="as-kv">
+                    <div><div class="as-k">Asset</div><div class="as-v is-strong" id="return_asset_name">Loading...</div></div>
+                    <div><div class="as-k">Employee</div><div class="as-v is-strong" id="return_employee_name">Loading...</div></div>
+                </div>
+                <div class="as-kv is-3" style="margin-top:12px;">
+                    <div><div class="as-k">Assigned Date</div><div class="as-v" id="return_assigned_date">Loading...</div></div>
+                    <div><div class="as-k">Days Assigned</div><div class="as-v" id="return_days_assigned">0 days</div></div>
+                    <div><div class="as-k">Quantity</div><div class="as-v" id="return_quantity">1</div></div>
                 </div>
 
-                <!-- Overdue Warning -->
-                <div id="overdue_warning" style="display: none; margin-top: 15px; padding: 10px; background: #ffebee; color: #c62828; border-radius: 6px; font-weight: 500;"></div>
+                {{-- Overdue Warning --}}
+                <div id="overdue_warning" class="as-alert" style="display: none;"></div>
             </div>
 
             <form id="returnAssetForm" method="POST">
@@ -254,23 +214,15 @@
                 @method('PATCH')
                 <input type="hidden" id="return_assignment_id" name="assignment_id">
 
-                <div style="display: grid; gap: 20px;">
-                    <!-- Return Details -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="as-stack">
+                    <div class="as-grid">
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Return Date <span style="color: #f44336;">*</span>
-                            </label>
-                            <input type="date" name="return_date" id="return_date" value="{{ now()->format('Y-m-d') }}" required
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <label class="ui-label" for="return_date">Return Date <span class="as-req">*</span></label>
+                            <input type="date" name="return_date" id="return_date" value="{{ now()->format('Y-m-d') }}" required class="ui-input w-full">
                         </div>
-
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Condition When Returned <span style="color: #f44336;">*</span>
-                            </label>
-                            <select name="condition_when_returned" id="return_condition" required
-                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <label class="ui-label" for="return_condition">Condition When Returned <span class="as-req">*</span></label>
+                            <select name="condition_when_returned" id="return_condition" required class="ui-select w-full">
                                 <option value="">Select condition...</option>
                                 <option value="new">New - Like brand new</option>
                                 <option value="good">Good - Minor wear, fully functional</option>
@@ -280,101 +232,63 @@
                         </div>
                     </div>
 
-                    <!-- Return Notes -->
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                            Return Notes
-                        </label>
-                        <textarea name="return_notes" rows="3"
-                                  placeholder="Optional notes about the return (e.g., reason for return, any issues)..."
-                                  style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
+                        <label class="ui-label">Return Notes</label>
+                        <textarea name="return_notes" rows="3" class="ui-textarea w-full"
+                                  placeholder="Optional notes about the return (e.g., reason for return, any issues)..."></textarea>
                     </div>
 
-                    <!-- Asset Status Update -->
                     <div>
-                        <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
-                            Update Asset Status
-                        </label>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
-                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
+                        <span class="ui-label">Update Asset Status</span>
+                        <div class="as-choices">
+                            <label class="as-choice">
                                 <input type="radio" name="update_asset_status" value="available" checked>
-                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-box"/></svg> Available</span>
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-box"/></svg> Available
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
+                            <label class="as-choice">
                                 <input type="radio" name="update_asset_status" value="maintenance">
-                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-wrench"/></svg> Maintenance</span>
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-wrench"/></svg> Maintenance
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
+                            <label class="as-choice">
                                 <input type="radio" name="update_asset_status" value="damaged">
-                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Damaged</span>
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Damaged
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">
+                            <label class="as-choice">
                                 <input type="radio" name="update_asset_status" value="retired">
-                                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-ban"/></svg> Retired</span>
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-ban"/></svg> Retired
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <!-- Form Actions -->
-                <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn-primary" style="flex: 1; background: #2196f3; border-color: #2196f3; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
-                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-undo"/></svg></span>
-                        Process Return
-                    </button>
-                    <button type="button" onclick="closeReturnModal()" style="padding: 10px 20px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">
-                        Cancel
-                    </button>
+                <div class="as-modal-actions">
+                    <button type="button" onclick="closeReturnModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-undo"/></svg> Process Return</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Transfer Asset Modal -->
-<div id="transferAssetModal" style="display: none; position: fixed; top: 0; left: 0; inline-size: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1004; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-inline-size: 500px; inline-size: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></span>
-                <span>Transfer Asset</span>
-            </h3>
-            <button onclick="closeTransferModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
+{{-- Transfer Asset Modal --}}
+<div id="transferAssetModal" class="as-overlay" style="display: none;" role="dialog" aria-modal="true">
+    <div class="as-modal">
+        <div class="as-modal-head">
+            <h3>Transfer Asset</h3>
+            <button type="button" onclick="closeTransferModal()" class="as-x" title="Close" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
 
-        <!-- Modal Body -->
-        <div style="padding: 20px;">
-            <!-- Current Assignment Info -->
-            <div id="transferAssignmentInfo" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-block-end: 20px;">
-                <h4 style="margin: 0 0 15px 0; color: #333;">Current Assignment</h4>
-
-                <div style="display: grid; gap: 12px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Asset</label>
-                            <div style="font-weight: bold; color: #333;" id="transfer_asset_name">Loading...</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Current Employee</label>
-                            <div style="font-weight: bold; color: #333;" id="transfer_current_employee">Loading...</div>
-                        </div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Assigned Since</label>
-                            <div style="color: #333;" id="transfer_assigned_date">Loading...</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Duration</label>
-                            <div style="color: #333;" id="transfer_days_assigned">0 days</div>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; color: #666; text-transform: uppercase;">Quantity</label>
-                            <div style="color: #333;" id="transfer_quantity">1</div>
-                        </div>
-                    </div>
+        <div class="as-modal-body">
+            <div id="transferAssignmentInfo" class="as-summary">
+                <h4 class="as-sec">Current Assignment</h4>
+                <div class="as-kv">
+                    <div><div class="as-k">Asset</div><div class="as-v is-strong" id="transfer_asset_name">Loading...</div></div>
+                    <div><div class="as-k">Current Employee</div><div class="as-v is-strong" id="transfer_current_employee">Loading...</div></div>
+                </div>
+                <div class="as-kv is-3" style="margin-top:12px;">
+                    <div><div class="as-k">Assigned Since</div><div class="as-v" id="transfer_assigned_date">Loading...</div></div>
+                    <div><div class="as-k">Duration</div><div class="as-v" id="transfer_days_assigned">0 days</div></div>
+                    <div><div class="as-k">Quantity</div><div class="as-v" id="transfer_quantity">1</div></div>
                 </div>
             </div>
 
@@ -383,34 +297,22 @@
                 @method('PATCH')
                 <input type="hidden" id="transfer_assignment_id" name="assignment_id">
 
-                <div style="display: grid; gap: 20px;">
-                    <!-- New Employee Selection -->
+                <div class="as-stack">
                     <div>
-                        <label style="display: block; margin-block-end: 8px; font-weight: 600; color: #333;">
-                            Transfer To <span style="color: #f44336;">*</span>
-                        </label>
-                        <select name="new_employee_id" id="transfer_new_employee_id" required
-                                style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <label class="ui-label" for="transfer_new_employee_id">Transfer To <span class="as-req">*</span></label>
+                        <select name="new_employee_id" id="transfer_new_employee_id" required class="ui-select w-full">
                             <option value="">Loading employees...</option>
                         </select>
                     </div>
 
-                    <!-- Transfer Details -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="as-grid">
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Transfer Date <span style="color: #f44336;">*</span>
-                            </label>
-                            <input type="date" name="transfer_date" id="transfer_date" value="{{ now()->format('Y-m-d') }}" required
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <label class="ui-label" for="transfer_date">Transfer Date <span class="as-req">*</span></label>
+                            <input type="date" name="transfer_date" id="transfer_date" value="{{ now()->format('Y-m-d') }}" required class="ui-input w-full">
                         </div>
-
                         <div>
-                            <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                                Transfer Reason <span style="color: #f44336;">*</span>
-                            </label>
-                            <select name="transfer_reason" id="transfer_reason" required
-                                    style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <label class="ui-label" for="transfer_reason">Transfer Reason <span class="as-req">*</span></label>
+                            <select name="transfer_reason" id="transfer_reason" required class="ui-select w-full">
                                 <option value="">Select reason...</option>
                                 <option value="Employee departure">Employee Departure</option>
                                 <option value="Role change">Role Change</option>
@@ -421,178 +323,36 @@
                         </div>
                     </div>
 
-                    <!-- Transfer Notes -->
                     <div>
-                        <label style="display: block; margin-block-end: 5px; font-weight: 600; color: #333;">
-                            Transfer Notes
-                        </label>
-                        <textarea name="transfer_notes" rows="3"
-                                  placeholder="Additional notes about this transfer..."
-                                  style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
+                        <label class="ui-label">Transfer Notes</label>
+                        <textarea name="transfer_notes" rows="3" class="ui-textarea w-full"
+                                  placeholder="Additional notes about this transfer..."></textarea>
                     </div>
                 </div>
 
-                <!-- Form Actions -->
-                <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-                    <button type="submit" class="btn-secondary" style="flex: 1; background: #ff9800; border-color: #ff9800; color: white; padding: 12px; border-radius: 6px; border: none; cursor: pointer;">
-                        <span style="font-size: 16px; margin-right: 8px;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg></span>
-                        Process Transfer
-                    </button>
-                    <button type="button" onclick="closeTransferModal()" style="padding: 10px 20px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">
-                        Cancel
-                    </button>
+                <div class="as-modal-actions">
+                    <button type="button" onclick="closeTransferModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-refresh"/></svg> Process Transfer</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Assignment Details Modal -->
-<div id="assignmentDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1002; justify-content: center; align-items: center;">
-    <div style="background: white; border-radius: 12px; padding: 0; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;">
-        <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
-                <span id="detailsModalTitle">Assignment Details</span>
-            </h3>
-            <button onclick="closeDetailsModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
+{{-- Assignment Details Modal --}}
+<div id="assignmentDetailsModal" class="as-overlay" style="display: none;" role="dialog" aria-modal="true">
+    <div class="as-modal is-wide">
+        <div class="as-modal-head">
+            <h3 id="detailsModalTitle">Assignment Details</h3>
+            <button type="button" onclick="closeDetailsModal()" class="as-x" title="Close" aria-label="Close"><svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>
 
-        <!-- Modal Body -->
-        <div id="detailsModalBody" style="padding: 20px;">
-            <!-- Content will be loaded here -->
+        <div id="detailsModalBody" class="as-modal-body">
+            {{-- Content will be loaded here --}}
         </div>
     </div>
 </div>
 
-<!-- STYLES -->
-<style>
-.metric-card {
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.content-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.assignment-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.assignment-table th {
-    background: #f5f5f5;
-    padding: 12px;
-    text-align: left;
-    font-weight: 600;
-    color: #333;
-    border-bottom: 2px solid #ddd;
-}
-
-.assignment-table td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-}
-
-.assignment-table tr:hover {
-    background: #f9f9f9;
-}
-
-.employee-info, .asset-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.employee-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #2196f3;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.asset-icon {
-    font-size: 24px;
-}
-
-.overdue-row {
-    background-color: #fff5f5 !important;
-    border-left: 4px solid #f44336;
-}
-
-.overdue-row:hover {
-    background-color: #ffebee !important;
-}
-
-.btn-small {
-    padding: 5px 10px;
-    font-size: 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-success {
-    background: #4caf50;
-    color: white;
-}
-
-.btn-success:hover {
-    background: #388e3c;
-}
-
-.btn-warning {
-    background: #ff9800;
-    color: white;
-}
-
-.btn-warning:hover {
-    background: #f57c00;
-}
-
-.btn-info {
-    background: #2196f3;
-    color: white;
-}
-
-.btn-info:hover {
-    background: #1976d2;
-}
-
-input[type="radio"]:checked + span {
-    color: #2196f3;
-    font-weight: 600;
-}
-
-input[type="radio"]:checked {
-    accent-color: #2196f3;
-}
-
-label:has(input[type="radio"]:checked) {
-    border-color: #2196f3 !important;
-    background: #f3f8ff;
-}
-
-label:has(input[type="radio"]):hover {
-    border-color: #2196f3;
-    background: #fafbff;
-}
-</style>
-
-<!-- JAVASCRIPT -->
 <script>
 
     const BASE = document.querySelector('meta[name="app-base-url"]').content.replace(/\/$/, '');
@@ -755,7 +515,7 @@ function viewAssignmentDetails(assignmentId) {
     currentAssignmentForDetails = assignmentId;
 
     // Show loading state
-    document.getElementById('detailsModalBody').innerHTML = '<p>Loading...</p>';
+    document.getElementById('detailsModalBody').innerHTML = '<p class="as-muted" style="margin:0;">Loading...</p>';
     document.getElementById('assignmentDetailsModal').style.display = 'flex';
 
    fetch(`${BASE}/asset-assignments/${assignmentId}/data`, {
@@ -774,45 +534,37 @@ function viewAssignmentDetails(assignmentId) {
 
             const modalBody = document.getElementById('detailsModalBody');
             modalBody.innerHTML = `
-                <div style="display: grid; gap: 20px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="as-detail">
+                    <section class="as-kv">
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">Employee Details</h4>
-                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                                <div><strong>Name:</strong> ${assignment.employee.first_name} ${assignment.employee.last_name}</div>
-                                <div><strong>Number:</strong> ${assignment.employee.employee_number}</div>
-                                <div><strong>Department:</strong> ${assignment.employee.department?.name || 'Not assigned'}</div>
-                            </div>
+                            <h4 class="as-sec">Employee Details</h4>
+                            <div class="as-k">Name</div><div class="as-v is-strong">${assignment.employee.first_name} ${assignment.employee.last_name}</div>
+                            <div class="as-k" style="margin-top:8px">Number</div><div class="as-v mv-mono">${assignment.employee.employee_number}</div>
+                            <div class="as-k" style="margin-top:8px">Department</div><div class="as-v">${assignment.employee.department?.name || 'Not assigned'}</div>
                         </div>
                         <div>
-                            <h4 style="margin-block-end: 10px; color: #333;">Asset Details</h4>
-                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                                <div><strong>Name:</strong> ${assignment.asset.name}</div>
-                                <div><strong>Category:</strong> ${assignment.asset.category}</div>
-                                <div><strong>SKU:</strong> ${assignment.asset.sku || 'Not assigned'}</div>
-                            </div>
+                            <h4 class="as-sec">Asset Details</h4>
+                            <div class="as-k">Name</div><div class="as-v is-strong">${assignment.asset.name}</div>
+                            <div class="as-k" style="margin-top:8px">Category</div><div class="as-v">${assignment.asset.category}</div>
+                            <div class="as-k" style="margin-top:8px">SKU</div><div class="as-v mv-mono">${assignment.asset.sku || 'Not assigned'}</div>
                         </div>
-                    </div>
+                    </section>
 
-                    <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">Assignment Timeline</h4>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div><strong>Assigned Date:</strong> ${new Date(assignment.assignment_date).toLocaleDateString()}</div>
-                                <div><strong>Expected Return:</strong> ${assignment.expected_return_date ? new Date(assignment.expected_return_date).toLocaleDateString() : 'Not set'}</div>
-                                <div><strong>Quantity:</strong> ${assignment.quantity_assigned}</div>
-                                <div><strong>Days Assigned:</strong> ${data.days_assigned || 0} days</div>
-                            </div>
+                    <section>
+                        <h4 class="as-sec">Assignment Timeline</h4>
+                        <div class="as-kv">
+                            <div><div class="as-k">Assigned Date</div><div class="as-v">${new Date(assignment.assignment_date).toLocaleDateString()}</div></div>
+                            <div><div class="as-k">Expected Return</div><div class="as-v">${assignment.expected_return_date ? new Date(assignment.expected_return_date).toLocaleDateString() : 'Not set'}</div></div>
+                            <div><div class="as-k">Quantity</div><div class="as-v">${assignment.quantity_assigned}</div></div>
+                            <div><div class="as-k">Days Assigned</div><div class="as-v">${data.days_assigned || 0} days</div></div>
                         </div>
-                    </div>
+                    </section>
 
                     ${assignment.assignment_notes ? `
-                    <div>
-                        <h4 style="margin-block-end: 10px; color: #333;">Notes</h4>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            ${assignment.assignment_notes}
-                        </div>
-                    </div>
+                    <section>
+                        <h4 class="as-sec">Notes</h4>
+                        <p class="as-note">${assignment.assignment_notes}</p>
+                    </section>
                     ` : ''}
                 </div>
             `;

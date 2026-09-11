@@ -2,65 +2,149 @@
 @extends('layouts.app')
 @section('title', 'License Details')
 
+@push('styles')
+<style>
+    .bl-show { display: flex; flex-direction: column; gap: 16px; }
+
+    /* Header row */
+    .bl-show .bl-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; }
+    .bl-show .bl-head-main { min-width: 0; }
+    .bl-show .bl-head-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .bl-show .bl-title { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.3; color: var(--mv-ink); }
+    .bl-show .bl-sub { margin: 3px 0 0; font-size: 13px; color: var(--mv-muted); }
+    .bl-show .code-chip { padding: 2px 7px; font-size: 12px; }
+    .bl-show .bl-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    /* Layout + cards */
+    .bl-show .bl-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+    .bl-show .bl-main,
+    .bl-show .bl-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+    .bl-show .ui-card-header { padding: 12px 18px; gap: 12px; flex-wrap: wrap; }
+    .bl-show .bl-card-title { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--mv-ink); }
+    .bl-show .ui-card-body { padding: 16px 18px; }
+    .bl-show .bl-side .ui-card-body { padding: 14px 16px; }
+    .bl-show .bl-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .bl-show .badge { gap: 6px; white-space: nowrap; }
+    .bl-show .bl-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+    /* Expiry banner */
+    .bl-show .bl-banner { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; padding: 10px 12px; border: 1px solid; border-radius: 8px; font-size: 13px; }
+    .bl-show .bl-banner.is-crit { background: var(--mv-crit-soft); border-color: #F2CACA; color: var(--mv-crit); }
+    .bl-show .bl-banner.is-warn { background: var(--mv-warn-soft); border-color: #F0DDB6; color: var(--mv-warn); }
+    .bl-show .bl-banner .mv-i { margin-top: 1px; }
+    .bl-show .bl-banner-title { font-weight: 600; }
+    .bl-show .bl-banner-text { color: var(--mv-ink-2); font-variant-numeric: tabular-nums; }
+
+    /* Key / value */
+    .bl-show .bl-kv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px 24px; margin: 0; }
+    .bl-show .bl-span-all { grid-column: 1 / -1; }
+    .bl-show dt { margin-bottom: 3px; font-size: 12px; font-weight: 400; color: var(--mv-muted); }
+    .bl-show dd { margin: 0; font-size: 13.5px; color: var(--mv-ink); overflow-wrap: anywhere; }
+    .bl-show dd.is-warn { color: var(--mv-warn); }
+    .bl-show dd.is-crit { color: var(--mv-crit); }
+    .bl-show .bl-rel,
+    .bl-show .bl-by { display: block; margin-top: 1px; font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+    .bl-show dd.is-warn .bl-rel,
+    .bl-show dd.is-crit .bl-rel { color: inherit; }
+    .bl-show .bl-money { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .bl-show .bl-prose { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--mv-ink-2); white-space: pre-line; }
+    .bl-show .bl-link { color: var(--mv-accent-ink); text-decoration: none; }
+    .bl-show .bl-link:hover { color: var(--mv-accent-ink); text-decoration: underline; }
+
+    /* Side lists */
+    .bl-show .bl-list { margin: 0; }
+    .bl-show .bl-list > div + div { margin-top: 12px; }
+    .bl-show .bl-person { display: flex; align-items: center; gap: 10px; }
+    .bl-show .bl-avatar { width: 28px; height: 28px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--mv-line); border-radius: 7px; background: var(--mv-surface-2); color: var(--mv-ink-2); font-size: 12px; font-weight: 600; }
+    .bl-show .bl-with-icon { display: flex; align-items: center; gap: 6px; }
+    .bl-show .bl-with-icon .mv-i { color: var(--mv-muted); }
+    .bl-show .bl-quick { display: flex; flex-direction: column; gap: 8px; }
+    .bl-show .bl-quick > a,
+    .bl-show .bl-quick > button { justify-content: center; width: 100%; }
+
+    @media (max-width: 1100px) { .bl-show .bl-layout { grid-template-columns: minmax(0, 1fr); } }
+</style>
+@endpush
+
 @section('content')
-<div>
+@php
+    $blStatusBadge = fn ($s) => match ($s) {
+        'active' => 'badge-green',
+        'expired', 'suspended' => 'badge-red',
+        'pending_renewal', 'under_review' => 'badge-blue',
+        default => 'badge-gray',
+    };
+    $blPriorityBadge = fn ($p) => match ($p) {
+        'critical' => 'badge-red',
+        'high' => 'badge-yellow',
+        default => 'badge-gray',
+    };
+    $blRel = null;
+    if ($businessLicense->expiry_date) {
+        $blD = (int) $businessLicense->days_until_expiry;
+        $blRel = $blD === 0 ? 'today'
+            : ($blD > 0 ? 'in ' . $blD . ' ' . \Illuminate\Support\Str::plural('day', $blD)
+                        : abs($blD) . ' ' . \Illuminate\Support\Str::plural('day', abs($blD)) . ' ago');
+    }
+    $blNeedsRenewal = $businessLicense->is_expired || $businessLicense->is_expiring_soon;
+    $blExpTone = $businessLicense->is_expired ? 'is-crit' : ($businessLicense->is_expiring_soon ? 'is-warn' : '');
+@endphp
+<div class="bl-show">
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 30px;">
-        <div>
-            <h2 style="margin: 0; color: #333;">
-                {{ $businessLicense->isCompanyHeld() ? '' : '' }} {{ $businessLicense->license_name }}
-            </h2>
-            <p style="color: #666; margin: 5px 0 0 0;">
-                License #{{ $businessLicense->license_number }} • {{ $businessLicense->license_direction_name }}
-            </p>
+    <div class="bl-head">
+        <div class="bl-head-main">
+            <div class="bl-head-line">
+                <span class="code-chip" title="License number">{{ $businessLicense->license_number }}</span>
+                <h2 class="bl-title">{{ $businessLicense->license_name }}</h2>
+                <span class="badge {{ $blStatusBadge($businessLicense->status) }}"><span class="bl-dot"></span>{{ $businessLicense->status_name }}</span>
+            </div>
+            <p class="bl-sub">{{ $businessLicense->license_direction_name }}</p>
         </div>
-        <div style="display: flex; gap: 10px;">
+        <div class="bl-actions">
+            <a href="{{ route('business-licenses.index', ['direction' => $businessLicense->license_direction]) }}" class="btn-secondary">
+                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>Back
+            </a>
             @if($businessLicense->document_path)
-            <a href="{{ route('business-licenses.download', $businessLicense) }}" class="btn-secondary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg> Download</a>
+            <a href="{{ route('business-licenses.download', $businessLicense) }}" class="btn-secondary">
+                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
             @endif
+            <a href="{{ route('business-licenses.edit', $businessLicense) }}" class="btn-secondary">
+                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg>Edit
+            </a>
             @if($businessLicense->canRenew())
-            <a href="{{ route('business-licenses.renew', $businessLicense) }}" class="btn-secondary" style="background: #ff9800; color: white; border-color: #ff9800;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Renew</a>
+            <a href="{{ route('business-licenses.renew', $businessLicense) }}" class="{{ $blNeedsRenewal ? 'btn-primary' : 'btn-secondary' }}">
+                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-refresh"/></svg>Renew
+            </a>
             @endif
-            <a href="{{ route('business-licenses.edit', $businessLicense) }}" class="btn-secondary"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit</a>
-            <a href="{{ route('business-licenses.index', ['direction' => $businessLicense->license_direction]) }}" class="btn-secondary">← Back</a>
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+    <div class="bl-layout">
         <!-- Main Content -->
-        <div>
+        <div class="bl-main">
             <!-- License Status & Overview -->
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 20px;">
-                    <h4 style="margin: 0; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-chart"/></svg> License Overview</h4>
-                    <div style="display: flex; gap: 10px;">
-                        <span class="direction-badge" style="padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; background: #e3f2fd; color: #1976d2;">
-                            {{ $businessLicense->license_direction_name }}
-                        </span>
-                        <span class="status-badge" style="padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; {{ $businessLicense->getStatusColorClass() }}">
-                            {{ $businessLicense->status_name }}
-                        </span>
+            <section class="ui-card">
+                <div class="ui-card-header">
+                    <h3 class="bl-card-title">License Overview</h3>
+                    <div class="bl-chips">
+                        <span class="badge badge-gray">{{ $businessLicense->license_direction_name }}</span>
                         @if($businessLicense->isCompanyHeld())
-                        <span class="priority-badge" style="padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; {{ $businessLicense->getPriorityColorClass() }}">
-                            {{ $businessLicense->priority_level_name }} Priority
-                        </span>
+                        <span class="badge {{ $blPriorityBadge($businessLicense->priority_level) }}">{{ $businessLicense->priority_level_name }} Priority</span>
                         @else
-                        <span class="support-badge" style="padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; background: #e3f2fd; color: #1976d2;">
-                            {{ $businessLicense->support_level_name }}
-                        </span>
+                        <span class="badge badge-gray">{{ $businessLicense->support_level_name }}</span>
                         @endif
                     </div>
                 </div>
-
-                @if($businessLicense->is_expired || $businessLicense->is_expiring_soon)
-                <div style="background: {{ $businessLicense->is_expired ? '#ffebee' : '#fff3e0' }}; border: 1px solid {{ $businessLicense->is_expired ? '#f44336' : '#ff9800' }}; padding: 15px; border-radius: 6px; margin-block-end: 20px;">
-                    <div style="display: flex; align-items: center; gap: 10px; color: {{ $businessLicense->is_expired ? '#f44336' : '#f57c00' }};">
-                        <div style="font-size: 20px;">{{ $businessLicense->is_expired ? '' : '' }}</div>
+                <div class="ui-card-body">
+                    @if($blNeedsRenewal)
+                    <div class="bl-banner {{ $businessLicense->is_expired ? 'is-crit' : 'is-warn' }}" role="status">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-{{ $businessLicense->is_expired ? 'alert-circle' : 'alert-triangle' }}"/></svg>
                         <div>
-                            <div style="font-weight: bold;">
+                            <div class="bl-banner-title">
                                 {{ $businessLicense->is_expired ? 'License Expired' : 'License Expiring Soon' }}
                             </div>
-                            <div style="font-size: 14px;">
+                            <div class="bl-banner-text">
                                 @if($businessLicense->is_expired)
                                     Expired {{ abs($businessLicense->days_until_expiry) }} days ago
                                 @else
@@ -69,349 +153,358 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                @endif
+                    @endif
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">License Type</label>
-                        <div style="font-weight: 500;">{{ $businessLicense->license_type_name }}</div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Issuing Authority</label>
-                        <div style="font-weight: 500;">{{ $businessLicense->issuing_authority }}</div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Issue Date</label>
-                        <div style="font-weight: 500;">{{ $businessLicense->issue_date ? $businessLicense->issue_date->format('M d, Y') : 'N/A' }}</div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Expiry Date</label>
-                        <div style="font-weight: 500; {{ $businessLicense->is_expired ? 'color: #f44336;' : ($businessLicense->is_expiring_soon ? 'color: #ff9800;' : '') }}">
-                            {{ $businessLicense->expiry_date ? $businessLicense->expiry_date->format('M d, Y') : 'N/A' }}
+                    <dl class="bl-kv-grid">
+                        <div>
+                            <dt>License Type</dt>
+                            <dd>{{ $businessLicense->license_type_name }}</dd>
                         </div>
-                    </div>
+                        <div>
+                            <dt>Issuing Authority</dt>
+                            <dd>{{ $businessLicense->issuing_authority }}</dd>
+                        </div>
+                        <div>
+                            <dt>Issue Date</dt>
+                            <dd>
+                                {{ $businessLicense->issue_date ? $businessLicense->issue_date->format('M d, Y') : 'N/A' }}
+                                @if($businessLicense->issue_date)<span class="bl-rel">{{ $businessLicense->issue_date->diffForHumans() }}</span>@endif
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Expiry Date</dt>
+                            <dd class="{{ $blExpTone }}">
+                                {{ $businessLicense->expiry_date ? $businessLicense->expiry_date->format('M d, Y') : 'N/A' }}
+                                @if($blRel)<span class="bl-rel">{{ $blRel }}</span>@endif
+                            </dd>
+                        </div>
+                    </dl>
                 </div>
-            </div>
+            </section>
 
             @if($businessLicense->isCustomerIssued())
             <!-- Customer Information -->
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-user"/></svg> Customer Information</h4>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-block-end: 15px;">
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Customer Name</label>
-                        <div style="font-weight: 500;">{{ $businessLicense->customer_name }}</div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Email</label>
-                        <div style="font-weight: 500;">
-                            <a href="mailto:{{ $businessLicense->customer_email }}" style="color: #2196f3; text-decoration: none;">
-                                {{ $businessLicense->customer_email }}
-                            </a>
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Customer Information</h3></div>
+                <div class="ui-card-body">
+                    <dl class="bl-kv-grid">
+                        <div>
+                            <dt>Customer Name</dt>
+                            <dd>{{ $businessLicense->customer_name }}</dd>
                         </div>
-                    </div>
-                    @if($businessLicense->customer_company)
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Company</label>
-                        <div style="font-weight: 500;">{{ $businessLicense->customer_company }}</div>
-                    </div>
-                    @endif
-                    @if($businessLicense->customer_phone)
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Phone</label>
-                        <div style="font-weight: 500;">
-                            <a href="tel:{{ $businessLicense->customer_phone }}" style="color: #2196f3; text-decoration: none;">
-                                {{ $businessLicense->customer_phone }}
-                            </a>
+                        <div>
+                            <dt>Email</dt>
+                            <dd><a href="mailto:{{ $businessLicense->customer_email }}" class="bl-link">{{ $businessLicense->customer_email }}</a></dd>
                         </div>
-                    </div>
-                    @endif
+                        @if($businessLicense->customer_company)
+                        <div>
+                            <dt>Company</dt>
+                            <dd>{{ $businessLicense->customer_company }}</dd>
+                        </div>
+                        @endif
+                        @if($businessLicense->customer_phone)
+                        <div>
+                            <dt>Phone</dt>
+                            <dd><a href="tel:{{ $businessLicense->customer_phone }}" class="bl-link">{{ $businessLicense->customer_phone }}</a></dd>
+                        </div>
+                        @endif
+                        @if($businessLicense->customer_reference)
+                        <div>
+                            <dt>Customer Reference</dt>
+                            <dd class="mv-mono">{{ $businessLicense->customer_reference }}</dd>
+                        </div>
+                        @endif
+                        @if($businessLicense->customer_address)
+                        <div class="bl-span-all">
+                            <dt>Address</dt>
+                            <dd class="bl-prose">{{ $businessLicense->customer_address }}</dd>
+                        </div>
+                        @endif
+                    </dl>
                 </div>
-
-                @if($businessLicense->customer_address)
-                <div style="margin-block-end: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Address</label>
-                    <div style="background: #f8f9fa; padding: 10px; border-radius: 4px;">{{ $businessLicense->customer_address }}</div>
-                </div>
-                @endif
-
-                @if($businessLicense->customer_reference)
-                <div>
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Customer Reference</label>
-                    <div style="font-weight: 500;">{{ $businessLicense->customer_reference }}</div>
-                </div>
-                @endif
-            </div>
+            </section>
             @endif
 
             <!-- Description & Details -->
             @if($businessLicense->description)
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Description</h4>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
-                    {{ $businessLicense->description }}
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Description</h3></div>
+                <div class="ui-card-body">
+                    <p class="bl-prose">{{ $businessLicense->description }}</p>
                 </div>
-            </div>
+            </section>
             @endif
 
             <!-- Financial Information -->
             @if($businessLicense->isCompanyHeld() && ($businessLicense->cost || $businessLicense->renewal_cost))
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg> Financial Information</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                    @if($businessLicense->cost)
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Initial Cost</label>
-                        <div style="font-weight: 500; color: #2196f3; font-size: 18px;">${{ number_format($businessLicense->cost, 2) }}</div>
-                    </div>
-                    @endif
-                    @if($businessLicense->renewal_cost)
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Renewal Cost</label>
-                        <div style="font-weight: 500; color: #2196f3; font-size: 18px;">${{ number_format($businessLicense->renewal_cost, 2) }}</div>
-                    </div>
-                    @endif
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Financial Information</h3></div>
+                <div class="ui-card-body">
+                    <dl class="bl-kv-grid">
+                        @if($businessLicense->cost)
+                        <div>
+                            <dt>Initial Cost</dt>
+                            <dd class="bl-money">${{ number_format($businessLicense->cost, 2) }}</dd>
+                        </div>
+                        @endif
+                        @if($businessLicense->renewal_cost)
+                        <div>
+                            <dt>Renewal Cost</dt>
+                            <dd class="bl-money">${{ number_format($businessLicense->renewal_cost, 2) }}</dd>
+                        </div>
+                        @endif
+                    </dl>
                 </div>
-            </div>
+            </section>
             @elseif($businessLicense->isCustomerIssued())
             <!-- Revenue Information -->
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-banknote"/></svg> Revenue Information</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Revenue Amount</label>
-                        <div style="font-weight: 500; color: #4caf50; font-size: 18px;">${{ number_format($businessLicense->revenue_amount, 2) }}</div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Billing Cycle</label>
-                        <div style="font-weight: 500;">{{ $businessLicense->billing_cycle_name }}</div>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Annual Revenue</label>
-                        <div style="font-weight: 500; color: #4caf50; font-size: 18px;">${{ number_format($businessLicense->annual_revenue, 2) }}</div>
-                    </div>
-                    @if($businessLicense->license_quantity)
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">License Quantity</label>
-                        <div style="font-weight: 500;">{{ $businessLicense->license_quantity }}</div>
-                    </div>
-                    @endif
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Revenue Information</h3></div>
+                <div class="ui-card-body">
+                    <dl class="bl-kv-grid">
+                        <div>
+                            <dt>Revenue Amount</dt>
+                            <dd class="bl-money">${{ number_format($businessLicense->revenue_amount, 2) }}</dd>
+                        </div>
+                        <div>
+                            <dt>Billing Cycle</dt>
+                            <dd>{{ $businessLicense->billing_cycle_name }}</dd>
+                        </div>
+                        <div>
+                            <dt>Annual Revenue</dt>
+                            <dd class="bl-money">${{ number_format($businessLicense->annual_revenue, 2) }}</dd>
+                        </div>
+                        @if($businessLicense->license_quantity)
+                        <div>
+                            <dt>License Quantity</dt>
+                            <dd>{{ $businessLicense->license_quantity }}</dd>
+                        </div>
+                        @endif
+                    </dl>
                 </div>
-            </div>
+            </section>
             @endif
 
             @if($businessLicense->isCustomerIssued() && ($businessLicense->usage_limit || $businessLicense->service_start_date))
             <!-- License Details -->
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> License Details</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                    @if($businessLicense->usage_limit)
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Usage Limit</label>
-                        <div style="font-weight: 500;">{{ $businessLicense->usage_limit }}</div>
-                    </div>
-                    @endif
-                    @if($businessLicense->service_start_date)
-                    <div>
-                        <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Service Start Date</label>
-                        <div style="font-weight: 500;">{{ $businessLicense->service_start_date->format('M d, Y') }}</div>
-                    </div>
-                    @endif
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">License Details</h3></div>
+                <div class="ui-card-body">
+                    <dl class="bl-kv-grid">
+                        @if($businessLicense->usage_limit)
+                        <div>
+                            <dt>Usage Limit</dt>
+                            <dd>{{ $businessLicense->usage_limit }}</dd>
+                        </div>
+                        @endif
+                        @if($businessLicense->service_start_date)
+                        <div>
+                            <dt>Service Start Date</dt>
+                            <dd>
+                                {{ $businessLicense->service_start_date->format('M d, Y') }}
+                                <span class="bl-rel">{{ $businessLicense->service_start_date->diffForHumans() }}</span>
+                            </dd>
+                        </div>
+                        @endif
+                    </dl>
                 </div>
-            </div>
+            </section>
             @endif
 
             @if($businessLicense->isCompanyHeld() && $businessLicense->business_impact)
             <!-- Business Impact -->
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-building"/></svg> Business Impact</h4>
-                <div style="background: #fff3e0; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #ff9800;">
-                    {{ $businessLicense->business_impact }}
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Business Impact</h3></div>
+                <div class="ui-card-body">
+                    <p class="bl-prose">{{ $businessLicense->business_impact }}</p>
                 </div>
-            </div>
+            </section>
             @endif
 
             <!-- License Conditions / Terms -->
             @if($businessLicense->license_conditions || $businessLicense->license_terms)
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;">
-                    <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-clipboard"/></svg> {{ $businessLicense->isCompanyHeld() ? 'License Conditions' : 'License Terms' }}
-                </h4>
-                <div style="background: #e3f2fd; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #2196f3;">
-                    {{ $businessLicense->isCompanyHeld() ? $businessLicense->license_conditions : $businessLicense->license_terms }}
+            <section class="ui-card">
+                <div class="ui-card-header">
+                    <h3 class="bl-card-title">{{ $businessLicense->isCompanyHeld() ? 'License Conditions' : 'License Terms' }}</h3>
                 </div>
-            </div>
+                <div class="ui-card-body">
+                    <p class="bl-prose">{{ $businessLicense->isCompanyHeld() ? $businessLicense->license_conditions : $businessLicense->license_terms }}</p>
+                </div>
+            </section>
             @endif
 
             @if($businessLicense->isCompanyHeld() && $businessLicense->compliance_notes)
             <!-- Compliance Notes -->
-            <div class="ui-card p-6">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-check-circle"/></svg> Compliance Notes</h4>
-                <div style="background: #e8f5e8; padding: 15px; border-radius: 6px; border-inline-start: 4px solid #4caf50;">
-                    {{ $businessLicense->compliance_notes }}
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Compliance Notes</h3></div>
+                <div class="ui-card-body">
+                    <p class="bl-prose">{{ $businessLicense->compliance_notes }}</p>
                 </div>
-            </div>
+            </section>
             @endif
         </div>
 
         <!-- Sidebar -->
-        <div>
+        <aside class="bl-side">
             @if($businessLicense->isCompanyHeld())
             <!-- Assignment Information -->
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-users"/></svg> Assignment</h4>
-                
-                <div style="margin-block-end: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Department</label>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="inline-size: 32px; height: 32px; border-radius: 50%; background: #2196f3; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
-                            {{ substr($businessLicense->department->name ?? 'N/A', 0, 1) }}
-                        </div>
-                        <div style="font-weight: 500;">{{ $businessLicense->department->name ?? 'Not Assigned' }}</div>
-                    </div>
-                </div>
-
-                @if($businessLicense->responsibleEmployee)
-                <div style="margin-block-end: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Responsible Employee</label>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="inline-size: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #1a3a5c 0%, #152e4a 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold;">
-                            {{ substr($businessLicense->responsibleEmployee->full_name, 0, 1) }}
-                        </div>
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Assignment</h3></div>
+                <div class="ui-card-body">
+                    <dl class="bl-list">
                         <div>
-                            <div style="font-weight: 500;">{{ $businessLicense->responsibleEmployee->full_name }}</div>
-                            @if($businessLicense->responsibleEmployee->email)
-                            <div style="font-size: 12px; color: #666;">{{ $businessLicense->responsibleEmployee->email }}</div>
-                            @endif
+                            <dt>Department</dt>
+                            <dd>{{ $businessLicense->department->name ?? 'Not Assigned' }}</dd>
                         </div>
-                    </div>
-                </div>
-                @endif
 
-                @if($businessLicense->location)
-                <div>
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Location</label>
-                    <div style="font-weight: 500;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-pin"/></svg> {{ $businessLicense->location }}</div>
+                        @if($businessLicense->responsibleEmployee)
+                        <div>
+                            <dt>Responsible Employee</dt>
+                            <dd class="bl-person">
+                                <span class="bl-avatar" aria-hidden="true">{{ substr($businessLicense->responsibleEmployee->full_name, 0, 1) }}</span>
+                                <span>
+                                    {{ $businessLicense->responsibleEmployee->full_name }}
+                                    @if($businessLicense->responsibleEmployee->email)
+                                    <span class="bl-by">{{ $businessLicense->responsibleEmployee->email }}</span>
+                                    @endif
+                                </span>
+                            </dd>
+                        </div>
+                        @endif
+
+                        @if($businessLicense->location)
+                        <div>
+                            <dt>Location</dt>
+                            <dd class="bl-with-icon"><svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-pin"/></svg>{{ $businessLicense->location }}</dd>
+                        </div>
+                        @endif
+                    </dl>
                 </div>
-                @endif
-            </div>
+            </section>
 
             <!-- Renewal Settings -->
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Renewal Settings</h4>
-                
-                <div style="margin-block-end: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Reminder Days</label>
-                    <div style="font-weight: 500;">{{ $businessLicense->renewal_reminder_days }} days before expiry</div>
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Renewal Settings</h3></div>
+                <div class="ui-card-body">
+                    <dl class="bl-list">
+                        <div>
+                            <dt>Reminder Days</dt>
+                            <dd>{{ $businessLicense->renewal_reminder_days }} days before expiry</dd>
+                        </div>
+                        <div>
+                            <dt>Auto Renewal</dt>
+                            <dd><span class="badge {{ $businessLicense->auto_renewal ? 'badge-green' : 'badge-gray' }}"><span class="bl-dot"></span>{{ $businessLicense->auto_renewal ? 'Enabled' : 'Disabled' }}</span></dd>
+                        </div>
+                        @if($businessLicense->renewal_date)
+                        <div>
+                            <dt>Last Renewed</dt>
+                            <dd>
+                                {{ $businessLicense->renewal_date->format('M d, Y') }}
+                                <span class="bl-rel">{{ $businessLicense->renewal_date->diffForHumans() }}</span>
+                            </dd>
+                        </div>
+                        @endif
+                    </dl>
                 </div>
-
-                <div style="margin-block-end: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Auto Renewal</label>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 16px;">{{ $businessLicense->auto_renewal ? '' : '' }}</span>
-                        <span style="font-weight: 500;">{{ $businessLicense->auto_renewal ? 'Enabled' : 'Disabled' }}</span>
-                    </div>
-                </div>
-
-                @if($businessLicense->renewal_date)
-                <div>
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Last Renewed</label>
-                    <div style="font-weight: 500;">{{ $businessLicense->renewal_date->format('M d, Y') }}</div>
-                </div>
-                @endif
-            </div>
+            </section>
             @else
             <!-- Customer License Settings -->
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-settings"/></svg> License Settings</h4>
-                
-                <div style="margin-block-end: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Support Level</label>
-                    <div style="font-weight: 500;">{{ $businessLicense->support_level_name }}</div>
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">License Settings</h3></div>
+                <div class="ui-card-body">
+                    <dl class="bl-list">
+                        <div>
+                            <dt>Support Level</dt>
+                            <dd>{{ $businessLicense->support_level_name }}</dd>
+                        </div>
+                        <div>
+                            <dt>Auto Renewal</dt>
+                            <dd><span class="badge {{ $businessLicense->auto_renewal_customer ? 'badge-green' : 'badge-gray' }}"><span class="bl-dot"></span>{{ $businessLicense->auto_renewal_customer ? 'Enabled' : 'Disabled' }}</span></dd>
+                        </div>
+                        @if($businessLicense->renewal_date)
+                        <div>
+                            <dt>Last Renewed</dt>
+                            <dd>
+                                {{ $businessLicense->renewal_date->format('M d, Y') }}
+                                <span class="bl-rel">{{ $businessLicense->renewal_date->diffForHumans() }}</span>
+                            </dd>
+                        </div>
+                        @endif
+                    </dl>
                 </div>
-
-                <div style="margin-block-end: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Auto Renewal</label>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 16px;">{{ $businessLicense->auto_renewal_customer ? '' : '' }}</span>
-                        <span style="font-weight: 500;">{{ $businessLicense->auto_renewal_customer ? 'Enabled' : 'Disabled' }}</span>
-                    </div>
-                </div>
-
-                @if($businessLicense->renewal_date)
-                <div>
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Last Renewed</label>
-                    <div style="font-weight: 500;">{{ $businessLicense->renewal_date->format('M d, Y') }}</div>
-                </div>
-                @endif
-            </div>
+            </section>
             @endif
 
             <!-- Additional Information -->
-            <div class="ui-card p-6" style="margin-block-end: 20px;">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-info"/></svg> Additional Info</h4>
-                
-                @if($businessLicense->isCompanyHeld() && $businessLicense->regulatory_body)
-                <div style="margin-block-end: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Regulatory Body</label>
-                    <div style="font-weight: 500;">{{ $businessLicense->regulatory_body }}</div>
-                </div>
-                @endif
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Additional Info</h3></div>
+                <div class="ui-card-body">
+                    <dl class="bl-list">
+                        @if($businessLicense->isCompanyHeld() && $businessLicense->regulatory_body)
+                        <div>
+                            <dt>Regulatory Body</dt>
+                            <dd>{{ $businessLicense->regulatory_body }}</dd>
+                        </div>
+                        @endif
 
-                <div style="margin-block-end: 15px;">
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Created</label>
-                    <div style="font-weight: 500;">{{ $businessLicense->created_at->format('M d, Y') }}</div>
-                    @if($businessLicense->creator)
-                    <div style="font-size: 12px; color: #666;">by {{ $businessLicense->creator->full_name }}</div>
-                    @endif
-                </div>
+                        <div>
+                            <dt>Created</dt>
+                            <dd>
+                                {{ $businessLicense->created_at->format('M d, Y') }}
+                                @if($businessLicense->creator)
+                                <span class="bl-by">by {{ $businessLicense->creator->full_name }}</span>
+                                @endif
+                            </dd>
+                        </div>
 
-                @if($businessLicense->updated_at != $businessLicense->created_at)
-                <div>
-                    <label style="font-size: 12px; color: #666; text-transform: uppercase; margin-block-end: 5px; display: block;">Last Updated</label>
-                    <div style="font-weight: 500;">{{ $businessLicense->updated_at->format('M d, Y') }}</div>
-                    @if($businessLicense->updater)
-                    <div style="font-size: 12px; color: #666;">by {{ $businessLicense->updater->full_name }}</div>
-                    @endif
+                        @if($businessLicense->updated_at != $businessLicense->created_at)
+                        <div>
+                            <dt>Last Updated</dt>
+                            <dd>
+                                {{ $businessLicense->updated_at->format('M d, Y') }}
+                                @if($businessLicense->updater)
+                                <span class="bl-by">by {{ $businessLicense->updater->full_name }}</span>
+                                @endif
+                            </dd>
+                        </div>
+                        @endif
+                    </dl>
                 </div>
-                @endif
-            </div>
+            </section>
 
             <!-- Quick Actions -->
-            <div class="ui-card p-6">
-                <h4 style="margin-block-end: 15px; color: #333;"><svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-zap"/></svg> Quick Actions</h4>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
+            <section class="ui-card">
+                <div class="ui-card-header"><h3 class="bl-card-title">Quick Actions</h3></div>
+                <div class="ui-card-body bl-quick">
                     @if($businessLicense->canRenew() && ($businessLicense->is_expired || $businessLicense->is_expiring_soon))
-                    <a href="{{ route('business-licenses.renew', $businessLicense) }}" class="btn-secondary" style="background: #ff9800; color: white; border-color: #ff9800; text-align: center;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-refresh"/></svg> Renew License
+                    <a href="{{ route('business-licenses.renew', $businessLicense) }}" class="btn-secondary">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-refresh"/></svg>Renew License
                     </a>
                     @endif
-                    
-                    <a href="{{ route('business-licenses.edit', $businessLicense) }}" class="btn-secondary" style="text-align: center;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-edit"/></svg> Edit License
+
+                    <a href="{{ route('business-licenses.edit', $businessLicense) }}" class="btn-secondary">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-edit"/></svg>Edit License
                     </a>
-                    
+
                     @if($businessLicense->document_path)
-                    <a href="{{ route('business-licenses.download', $businessLicense) }}" class="btn-secondary" style="background: #2196f3; color: white; border-color: #2196f3; text-align: center;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-file"/></svg> Download Document
+                    <a href="{{ route('business-licenses.download', $businessLicense) }}" class="btn-secondary">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg>Download Document
                     </a>
                     @endif
-                    
+
                     @if($businessLicense->isCustomerIssued() && $businessLicense->customer_email)
-                    <a href="mailto:{{ $businessLicense->customer_email }}?subject=Regarding License {{ $businessLicense->license_number }}" class="btn-secondary" style="background: #4caf50; color: white; border-color: #4caf50; text-align: center;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-mail"/></svg> Email Customer
+                    <a href="mailto:{{ $businessLicense->customer_email }}?subject=Regarding License {{ $businessLicense->license_number }}" class="btn-secondary">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-mail"/></svg>Email Customer
                     </a>
                     @endif
-                    
-                    <button onclick="if(confirm('Are you sure you want to delete this license?')) { document.getElementById('delete-form').submit(); }" 
-                            class="btn-secondary" style="background: #f44336; color: white; border-color: #f44336;">
-                        <svg class="mv-i mv-ei" aria-hidden="true"><use href="#i-trash"/></svg> Delete License
+
+                    <button type="button" onclick="if(confirm('Are you sure you want to delete this license?')) { document.getElementById('delete-form').submit(); }"
+                            class="btn-danger">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-trash"/></svg>Delete License
                     </button>
                 </div>
-            </div>
-        </div>
+            </section>
+        </aside>
     </div>
 </div>
 
