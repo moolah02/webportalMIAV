@@ -19,8 +19,9 @@
 (function () {
   var bar = document.getElementById('mvProgress'), root = document.documentElement;
   var active = 0, width = 0, trickle = null, showTimer = null, safety = null;
-  var FILE_URL = /\/(export|download)|\.(csv|xlsx?|pdf|zip)(\?|$)|[?&](export|format)=/i;
-  var QUIET_URL = /\/notifications/i;
+  var FILE_URL = /\/(export|download|template)|\.(csv|xlsx?|pdf|zip)(\?|$)|[?&](export|format)=/i;
+  // Background polls that shouldn't flash the bar: the notification bell and the job page's visit refresh.
+  var QUIET_URL = /\/notifications|\/api\/jobs\/assignments\/\d+\/visits/i;
 
   function set(w) { width = w; bar.style.width = w + '%'; }
   function start() {
