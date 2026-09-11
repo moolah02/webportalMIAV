@@ -135,7 +135,29 @@ class ProjectController extends Controller
             ->limit(20)
             ->get();
 
-        return view('projects.create-improved', compact('clients', 'projectManagers', 'recentProjects'));
+        // Real per-client figures for the client summary on the form
+        // (total terminals, active terminals, the region most of them are in).
+        $clientIds = $clients->pluck('id');
+        $activeCounts = PosTerminal::whereIn('client_id', $clientIds)
+            ->where('status', 'active')
+            ->select('client_id', DB::raw('count(*) as c'))
+            ->groupBy('client_id')
+            ->pluck('c', 'client_id');
+        $mainRegions = PosTerminal::whereIn('client_id', $clientIds)
+            ->whereNotNull('region')->where('region', '!=', '')
+            ->select('client_id', 'region', DB::raw('count(*) as c'))
+            ->groupBy('client_id', 'region')
+            ->orderByDesc('c')
+            ->get()
+            ->groupBy('client_id')
+            ->map(fn ($rows) => $rows->first()->region);
+        $clientInfo = $clients->mapWithKeys(fn ($c) => [$c->id => [
+            'total_terminals'  => (int) $c->pos_terminals_count,
+            'active_terminals' => (int) ($activeCounts[$c->id] ?? 0),
+            'primary_region'   => $mainRegions[$c->id] ?? null,
+        ]]);
+
+        return view('projects.create-improved', compact('clients', 'projectManagers', 'recentProjects', 'clientInfo'));
     }
 
 

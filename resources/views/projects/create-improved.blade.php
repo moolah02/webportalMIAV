@@ -72,15 +72,11 @@
          budget: null,
          budgetTemplate: '',
 
-         async loadClientInfo(clientId) {
-             if (!clientId) return;
+         clientInfoMap: @js($clientInfo ?? []),
 
-             try {
-                 const response = await fetch(`/api/clients/${clientId}/info`);
-                 this.clientInfo = await response.json();
-             } catch (error) {
-                 console.error('Failed to load client info:', error);
-             }
+         loadClientInfo(clientId) {
+             // Figures come with the page (see ProjectController::createImproved).
+             this.clientInfo = clientId ? (this.clientInfoMap[clientId] || null) : null;
          },
 
          selectProjectType(type) {
@@ -287,26 +283,4 @@
     </div>
 </div>
 
-<!-- Client info lookup (served from the client list on this page) -->
-<script>
-if (!window.fetch.original) {
-    window.fetch.original = window.fetch;
-    window.fetch = function(url, options) {
-        if (url.includes('/api/clients/') && url.includes('/info')) {
-            const clientId = url.match(/\/api\/clients\/(\d+)\/info/)[1];
-            const client = @json($clients);
-            const selectedClient = client.find(c => c.id == clientId);
-
-            return Promise.resolve({
-                json: () => Promise.resolve({
-                    total_terminals: selectedClient?.pos_terminals_count || 0,
-                    active_terminals: Math.floor((selectedClient?.pos_terminals_count || 0) * 0.8),
-                    primary_region: 'Harare'
-                })
-            });
-        }
-        return window.fetch.original(url, options);
-    };
-}
-</script>
 @endsection
