@@ -5,163 +5,137 @@
 
 @section('content')
 @php
-$sBadge = [
-    'completed'   => 'badge-green',
-    'in_progress' => 'badge-blue',
-    'assigned'    => 'badge-gray',
-    'cancelled'   => 'badge-red',
-    'approved'    => 'badge-green',
-    'pending'     => 'badge-yellow',
-][$assignment->status] ?? 'badge-gray';
-$pBadge = [
-    'emergency' => 'badge-red',
-    'high'      => 'badge-orange',
-    'normal'    => 'badge-blue',
-    'low'       => 'badge-gray',
-][$assignment->priority] ?? 'badge-gray';
+$statusTone = [
+    'completed'   => 'is-good',
+    'in_progress' => 'is-warn',
+    'assigned'    => 'is-accent',
+    'cancelled'   => 'is-crit',
+    'approved'    => 'is-good',
+    'pending'     => 'is-warn',
+][$assignment->status] ?? '';
+$priorityTone = [
+    'emergency' => 'is-crit',
+    'high'      => 'is-warn',
+][$assignment->priority] ?? '';
+$me = auth()->user();
+$canManage = $me->hasPermission('manage_jobs') || $me->hasPermission('all');
 @endphp
-<div>
-    {{-- Back Button --}}
-    <div class="mb-4">
-        <a href="{{ route('jobs.index') }}" class="btn-secondary">&#x2190; Back to Assignments</a>
-    </div>
+<div class="js-page">
+    <a href="{{ route('jobs.index') }}" class="js-crumb">
+        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Back to Assignments
+    </a>
 
-    {{-- Assignment Header --}}
-    <div class="ui-card mb-4">
-        <div class="ui-card-body">
-            {{-- Title / Status / Actions row --}}
-            <div class="flex flex-wrap justify-between items-start gap-4 mb-6">
-                <div class="flex-1 min-w-[280px]">
-                    <div class="flex gap-2 flex-wrap">
-                        <span class="badge {{ $sBadge }}">{{ \Illuminate\Support\Str::headline($assignment->status) }}</span>
-                        <span class="badge {{ $pBadge }}">{{ \Illuminate\Support\Str::headline($assignment->priority) }}</span>
-                    </div>
-                </div>
-                <div class="flex-shrink-0">
-                    <div class="flex gap-3 items-center flex-wrap">
-                        {{-- Register Terminal (always available to managers/technicians on this job) --}}
-                        @if(auth()->user()->hasPermission('manage_terminals') || auth()->user()->hasPermission('all') || auth()->user()->hasPermission('manage_jobs') || (auth()->user()->id == $assignment->technician_id))
-                        <button type="button" class="btn-secondary" onclick="document.getElementById('registerTerminalModal').classList.remove('hidden')" style="border-color:#6366f1;color:#6366f1;">
-                            &#x2B; Register Terminal
-                        </button>
-                        @endif
-
-                        {{-- Transfer button (only when transferrable) --}}
-                        @if(!in_array($assignment->status, ['completed','cancelled','reassigned']) && (auth()->user()->hasPermission('manage_jobs') || auth()->user()->hasPermission('all') || auth()->user()->id == $assignment->technician_id))
-                        <button type="button" class="btn-secondary" onclick="document.getElementById('transferModal').classList.remove('hidden')" style="border-color:#f59e0b;color:#b45309;">
-                            &#8644; Transfer
-                        </button>
-                        @endif
-
-                        {{-- Status action --}}
-                        @if(auth()->user()->can('update', $assignment) || auth()->user()->hasPermission('manage_jobs') || auth()->user()->hasPermission('all') || (auth()->user()->id == $assignment->technician_id))
-                        @if($assignment->status === 'assigned')
-                            <button type="button" class="btn-primary" onclick="updateStatus({{ $assignment->id }}, 'in_progress', this)">
-                                &#x25B6; Start Assignment
-                            </button>
-                        @elseif($assignment->status === 'in_progress')
-                            <button type="button" class="btn-success" onclick="updateStatus({{ $assignment->id }}, 'completed', this)">
-                                &#x2713; Mark Complete
-                            </button>
-                        @elseif($assignment->status === 'completed')
-                            <span class="text-green-600 font-semibold text-sm flex items-center gap-1">
-                                &#x2705; Assignment Completed
-                            </span>
-                        @endif
-                        @endif
-                    </div>
+    {{-- Assignment header --}}
+    <section class="js-card">
+        <div class="js-head">
+            <div class="js-head-main">
+                <div class="js-id">{{ $assignment->assignment_id }}</div>
+                <div class="js-chips">
+                    <span class="js-chip {{ $statusTone }}">{{ \Illuminate\Support\Str::headline($assignment->status) }}</span>
+                    <span class="js-chip {{ $priorityTone }}">{{ \Illuminate\Support\Str::headline($assignment->priority) }} priority</span>
                 </div>
             </div>
+            <div class="js-head-actions">
+                {{-- Register Terminal (always available to managers/technicians on this job) --}}
+                @if($me->hasPermission('manage_terminals') || $me->hasPermission('all') || $me->hasPermission('manage_jobs') || ($me->id == $assignment->technician_id))
+                <button type="button" class="btn-secondary" onclick="document.getElementById('registerTerminalModal').classList.remove('hidden')">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-plus"/></svg> Register Terminal
+                </button>
+                @endif
 
-            {{-- Details Grid --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {{-- Assignment Details --}}
-                <div>
-                    <h6 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3 pb-2 border-b border-gray-100">Assignment Details</h6>
-                    <div class="space-y-0">
-                        <div class="flex justify-between items-start py-2.5 border-b border-gray-50">
-                            <span class="text-sm font-medium text-gray-500 min-w-[120px] flex-shrink-0">Technician</span>
-                            <div class="text-sm text-gray-800 text-right flex-1">
-                                @if($assignment->technician)
-                                <div class="flex items-center gap-2 justify-end">
-                                    <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-xs">
-                                        {{ substr($assignment->technician->first_name,0,1) }}{{ substr($assignment->technician->last_name,0,1) }}
-                                    </div>
-                                    <span>{{ $assignment->technician->first_name }} {{ $assignment->technician->last_name }}</span>
-                                </div>
-                                @else
-                                <span class="text-gray-400">Unassigned</span>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-start py-2.5 border-b border-gray-50">
-                            <span class="text-sm font-medium text-gray-500 min-w-[120px] flex-shrink-0">Client</span>
-                            <span class="text-sm text-gray-800 text-right">{{ $assignment->client->company_name ?? '&#x2014;' }}</span>
-                        </div>
-                        @if($assignment->project)
-                        <div class="flex justify-between items-start py-2.5">
-                            <span class="text-sm font-medium text-gray-500 min-w-[120px] flex-shrink-0">Project</span>
-                            <span class="text-sm text-gray-800 text-right">{{ $assignment->project->project_name }}</span>
-                        </div>
-                        @endif
-                    </div>
-                </div>
+                {{-- Transfer button (only when transferrable) --}}
+                @if(!in_array($assignment->status, ['completed','cancelled','reassigned']) && ($canManage || $me->id == $assignment->technician_id))
+                <button type="button" class="btn-secondary" onclick="document.getElementById('transferModal').classList.remove('hidden')">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-route"/></svg> Transfer
+                </button>
+                @endif
 
-                {{-- Service Information --}}
-                <div>
-                    <h6 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3 pb-2 border-b border-gray-100">Service Information</h6>
-                    <div class="space-y-0">
-                        <div class="flex justify-between items-start py-2.5 border-b border-gray-50">
-                            <span class="text-sm font-medium text-gray-500 min-w-[120px] flex-shrink-0">Scheduled Date</span>
-                            <div class="text-sm text-gray-800 text-right">
-                                @if($assignment->scheduled_date)
-                                <div>{{ $assignment->scheduled_date->format('M j, Y') }}</div>
-                                <div class="text-xs text-gray-400 mt-0.5">{{ $assignment->scheduled_date->diffForHumans() }}</div>
-                                @else
-                                <span class="text-gray-400">Not scheduled</span>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-start py-2.5 border-b border-gray-50">
-                            <span class="text-sm font-medium text-gray-500 min-w-[120px] flex-shrink-0">Service Type</span>
-                            <span class="text-sm text-gray-800 text-right">{{ \Illuminate\Support\Str::headline($assignment->service_type) }}</span>
-                        </div>
-                        <div class="flex justify-between items-start py-2.5">
-                            <span class="text-sm font-medium text-gray-500 min-w-[120px] flex-shrink-0">Created</span>
-                            <span class="text-sm text-gray-800 text-right">{{ $assignment->created_at?->format('M j, Y') ?? '&#x2014;' }}</span>
-                        </div>
-                    </div>
-                </div>
+                {{-- Status action --}}
+                @if($me->can('update', $assignment) || $canManage || ($me->id == $assignment->technician_id))
+                @if($assignment->status === 'assigned')
+                    <button type="button" class="btn-primary" onclick="updateStatus({{ $assignment->id }}, 'in_progress', this)">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-play"/></svg> Start Assignment
+                    </button>
+                @elseif($assignment->status === 'in_progress')
+                    <button type="button" class="btn-success" onclick="updateStatus({{ $assignment->id }}, 'completed', this)">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-check"/></svg> Mark Complete
+                    </button>
+                @elseif($assignment->status === 'completed')
+                    <span class="js-done">
+                        <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-check-circle"/></svg> Assignment Completed
+                    </span>
+                @endif
+                @endif
             </div>
         </div>
-    </div>
 
-    {{-- Terminals Section --}}
+        <div class="js-facts">
+            <div>
+                <h3 class="js-facts-title">Assignment Details</h3>
+                <dl class="js-dl">
+                    <div>
+                        <dt>Technician</dt>
+                        <dd>
+                            @if($assignment->technician)
+                                <span class="js-person">
+                                    <span class="js-avatar">{{ substr($assignment->technician->first_name,0,1) }}{{ substr($assignment->technician->last_name,0,1) }}</span>
+                                    {{ $assignment->technician->first_name }} {{ $assignment->technician->last_name }}
+                                </span>
+                            @else
+                                <span class="js-muted">Unassigned</span>
+                            @endif
+                        </dd>
+                    </div>
+                    <div><dt>Client</dt><dd>{{ $assignment->client->company_name ?? '—' }}</dd></div>
+                    @if($assignment->project)
+                    <div><dt>Project</dt><dd>{{ $assignment->project->project_name }}</dd></div>
+                    @endif
+                    @if($assignment->region)
+                    <div><dt>Region</dt><dd>{{ $assignment->region->name }}</dd></div>
+                    @endif
+                </dl>
+            </div>
+            <div>
+                <h3 class="js-facts-title">Service Information</h3>
+                <dl class="js-dl">
+                    <div>
+                        <dt>Scheduled Date</dt>
+                        <dd>
+                            @if($assignment->scheduled_date)
+                                {{ $assignment->scheduled_date->format('M j, Y') }}
+                                <span class="js-muted">· {{ $assignment->scheduled_date->diffForHumans() }}</span>
+                            @else
+                                <span class="js-muted">Not scheduled</span>
+                            @endif
+                        </dd>
+                    </div>
+                    <div><dt>Service Type</dt><dd>{{ \Illuminate\Support\Str::headline($assignment->service_type) }}</dd></div>
+                    <div><dt>Created</dt><dd>{{ $assignment->created_at?->format('M j, Y') ?? '—' }}</dd></div>
+                </dl>
+            </div>
+        </div>
+    </section>
+
+    {{-- Terminals --}}
     @if($terminals->isEmpty())
-    <div class="ui-card mb-4">
-        <div class="ui-card-body">
-            <div class="empty-state">
-                <div class="empty-state-icon">&#x1F5A5;</div>
-                <p class="empty-state-msg">No terminals assigned</p>
-                <p class="text-sm text-gray-400 mt-1">This assignment doesn't have any terminals associated with it.</p>
-            </div>
+    <section class="js-card">
+        <div class="js-empty">
+            <svg class="mv-i" aria-hidden="true"><use href="#i-monitor"/></svg>
+            <strong>No terminals assigned</strong>
+            This assignment doesn't have any terminals associated with it.
         </div>
-    </div>
+    </section>
     @else
-    <div class="ui-card mb-4">
-        <div class="ui-card-header">
-            <h6 class="text-sm font-semibold text-gray-700 m-0">Terminals</h6>
-            <div class="flex items-center gap-3">
-                <span class="badge badge-gray">{{ $terminals->count() }} {{ \Illuminate\Support\Str::plural('terminal', $terminals->count()) }}</span>
-                <div class="relative">
-                    <input type="text" id="terminalSearch" placeholder="Search terminals..."
-                           class="ui-input !py-1.5 !text-xs pr-7 min-w-[200px]">
-                    <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-                </div>
-            </div>
+    <section class="js-card">
+        <div class="js-card-head">
+            <h2>Terminals <span class="js-count">{{ $terminals->count() }}</span></h2>
+            <label class="js-search">
+                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-search"/></svg>
+                <input type="text" id="terminalSearch" placeholder="Search terminals..." aria-label="Search terminals">
+            </label>
         </div>
-        <div class="overflow-x-auto">
-            <table class="ui-table">
+        <div style="overflow-x:auto;">
+            <table class="js-table">
                 <thead>
                     <tr>
                         <th>Merchant</th>
@@ -175,69 +149,93 @@ $pBadge = [
                 @foreach($terminals as $t)
                 @php
                 $ts = strtolower($t->current_status ?? $t->status ?? 'unknown');
-                $tb = $ts === 'active' ? 'badge-green' : ($ts === 'inactive' ? 'badge-red' : 'badge-gray');
+                $tb = ['active' => 'is-good', 'inactive' => 'is-crit', 'offline' => 'is-crit', 'faulty' => 'is-crit', 'maintenance' => 'is-warn'][$ts] ?? '';
                 @endphp
                 <tr class="terminal-row" data-searchable="{{ strtolower($t->merchant_name . ' ' . $t->terminal_id . ' ' . ($t->physical_address ?? $t->address ?? '') . ' ' . ($t->city ?? '') . ' ' . ($t->province ?? '')) }}">
                     <td>
-                        <div class="font-semibold text-gray-800 text-sm">{{ $t->merchant_name ?? '&#x2014;' }}</div>
-                        <div class="text-xs text-gray-400 mt-0.5">{{ $t->client->company_name ?? '&#x2014;' }}</div>
+                        <div class="js-strong">{{ $t->merchant_name ?? '—' }}</div>
+                        <div class="js-sub">{{ $t->client->company_name ?? '—' }}</div>
                     </td>
-                    <td>
-                        <code class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-xs border border-gray-200 font-mono">{{ $t->terminal_id }}</code>
-                    </td>
-                    <td class="text-sm text-gray-700">{{ $t->physical_address ?? $t->address ?? '&#x2014;' }}</td>
-                    <td class="text-sm text-gray-700">
-                        {{ $t->city ?? '&#x2014;' }}@if($t->province)<span class="text-gray-400">, {{ $t->province }}</span>@endif
-                    </td>
-                    <td><span class="badge {{ $tb }}">{{ \Illuminate\Support\Str::headline($t->current_status ?? $t->status ?? 'unknown') }}</span></td>
+                    <td><span class="js-mono">{{ $t->terminal_id }}</span></td>
+                    <td>{{ $t->physical_address ?? $t->address ?? '—' }}</td>
+                    <td>{{ $t->city ?? '—' }}@if($t->province)<span class="js-muted">, {{ $t->province }}</span>@endif</td>
+                    <td><span class="js-chip {{ $tb }}">{{ \Illuminate\Support\Str::headline($t->current_status ?? $t->status ?? 'unknown') }}</span></td>
                 </tr>
                 @endforeach
                 </tbody>
             </table>
         </div>
-        <div id="noResults" class="hidden text-center py-6 border-t border-gray-100">
-            <p class="text-sm text-gray-400">No terminals match your search criteria</p>
-        </div>
-    </div>
+        <div id="noResults" class="hidden js-noresults">No terminals match your search criteria</div>
+    </section>
     @endif
 
     {{-- Live Site Visits --}}
-    <div class="ui-card mb-4" id="liveSiteVisitsCard">
-        <div class="ui-card-header">
-            <h6 class="text-sm font-semibold text-gray-700 m-0">Live Site Visits</h6>
-            <span class="badge badge-gray" id="liveVisitCount">0</span>
+    <section class="js-card" id="liveSiteVisitsCard">
+        <div class="js-card-head">
+            <h2>Live Site Visits <span class="js-count" id="liveVisitCount">0</span></h2>
+            <span class="js-sub"><span class="js-pulse"></span>Updates every 10 seconds</span>
         </div>
-        <div class="ui-card-body">
-            <div id="liveVisitsList" class="max-h-[420px] overflow-y-auto">
-                <div class="text-sm text-gray-400">Waiting for updates...</div>
+        <div class="js-card-body">
+            <div id="liveVisitsList" class="js-visits">
+                <div class="js-muted">Waiting for updates...</div>
             </div>
         </div>
-    </div>
+    </section>
 
     {{-- Notes --}}
     @if($assignment->notes)
-    <div class="ui-card">
-        <div class="ui-card-header">
-            <h6 class="text-sm font-semibold text-gray-700 m-0">Notes</h6>
+    <section class="js-card">
+        <div class="js-card-head"><h2>Notes</h2></div>
+        <div class="js-card-body">
+            <p class="js-notes">{{ $assignment->notes }}</p>
         </div>
-        <div class="ui-card-body">
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{ $assignment->notes }}</div>
-        </div>
-    </div>
+    </section>
+    @endif
+
+    {{-- Transfer History (populated when a job is transferred) --}}
+    @php $history = $assignment->assignment_history ?? []; @endphp
+    @if(count($history) > 0)
+    <section class="js-card">
+        <div class="js-card-head"><h2>Transfer History <span class="js-count">{{ count($history) }}</span></h2></div>
+        <ol class="js-history">
+            @foreach($history as $i => $entry)
+            <li>
+                <span class="js-step">{{ $i+1 }}</span>
+                <div>
+                    <div class="js-strong">
+                        {{ $entry['from_technician_name'] ?? '—' }}
+                        <svg class="mv-i mv-i-sm js-arrow" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+                        {{ $entry['to_technician_name'] ?? '—' }}
+                    </div>
+                    <div class="js-history-line"><span class="js-muted">Reason:</span> {{ $entry['reason'] ?? '—' }}</div>
+                    @if(!empty($entry['notes']))
+                    <div class="js-history-line">{{ $entry['notes'] }}</div>
+                    @endif
+                    <div class="js-sub">
+                        By {{ $entry['transferred_by_name'] ?? '—' }}
+                        @if(isset($entry['transferred_at'])) · {{ \Carbon\Carbon::parse($entry['transferred_at'])->format('M j, Y H:i') }} @endif
+                    </div>
+                </div>
+            </li>
+            @endforeach
+        </ol>
+    </section>
     @endif
 
     {{-- ======================================================== --}}
     {{-- TRANSFER MODAL --}}
     {{-- ======================================================== --}}
-    <div id="transferModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.5);">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h3 class="text-base font-semibold text-gray-800">&#8644; Transfer Assignment</h3>
-                <button onclick="document.getElementById('transferModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+    <div id="transferModal" class="hidden js-overlay">
+        <div class="js-modal" role="dialog" aria-modal="true" aria-labelledby="transferTitle">
+            <div class="js-modal-head">
+                <h3 id="transferTitle">Transfer Assignment</h3>
+                <button type="button" class="js-x" aria-label="Close" onclick="document.getElementById('transferModal').classList.add('hidden')">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg>
+                </button>
             </div>
-            <div class="px-6 py-5 space-y-4">
-                <div>
-                    <label class="ui-label">Transfer to <span class="text-red-500">*</span></label>
+            <div class="js-modal-body">
+                <div class="js-field">
+                    <label class="ui-label" for="transferTechnicianId">Transfer to <span class="js-req">*</span></label>
                     <select id="transferTechnicianId" class="ui-select">
                         <option value="">— Select technician —</option>
                         @foreach($technicians as $tech)
@@ -247,18 +245,18 @@ $pBadge = [
                         @endforeach
                     </select>
                 </div>
-                <div>
-                    <label class="ui-label">Reason <span class="text-red-500">*</span></label>
-                    <textarea id="transferReason" rows="3" class="ui-input resize-y" placeholder="Why is this job being transferred?"></textarea>
+                <div class="js-field">
+                    <label class="ui-label" for="transferReason">Reason <span class="js-req">*</span></label>
+                    <textarea id="transferReason" rows="3" class="ui-input" placeholder="Why is this job being transferred?"></textarea>
                 </div>
-                <div>
-                    <label class="ui-label">Notes for receiving technician</label>
-                    <textarea id="transferNotes" rows="2" class="ui-input resize-y" placeholder="Any additional handover notes…"></textarea>
+                <div class="js-field">
+                    <label class="ui-label" for="transferNotes">Notes for receiving technician</label>
+                    <textarea id="transferNotes" rows="2" class="ui-input" placeholder="Any additional handover notes…"></textarea>
                 </div>
             </div>
-            <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
-                <button onclick="document.getElementById('transferModal').classList.add('hidden')" class="btn-secondary">Cancel</button>
-                <button id="transferSubmitBtn" onclick="submitTransfer()" class="btn-primary" style="background:#f59e0b;border-color:#f59e0b;">Transfer Job</button>
+            <div class="js-modal-foot">
+                <button type="button" onclick="document.getElementById('transferModal').classList.add('hidden')" class="btn-secondary">Cancel</button>
+                <button type="button" id="transferSubmitBtn" onclick="submitTransfer()" class="btn-primary">Transfer Job</button>
             </div>
         </div>
     </div>
@@ -266,36 +264,38 @@ $pBadge = [
     {{-- ======================================================== --}}
     {{-- REGISTER TERMINAL MODAL --}}
     {{-- ======================================================== --}}
-    <div id="registerTerminalModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,.5);">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4" style="max-height:90vh;overflow-y:auto;">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-                <h3 class="text-base font-semibold text-gray-800">&#x2B; Register On-Site Terminal</h3>
-                <button onclick="document.getElementById('registerTerminalModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+    <div id="registerTerminalModal" class="hidden js-overlay">
+        <div class="js-modal js-modal-lg" role="dialog" aria-modal="true" aria-labelledby="registerTitle">
+            <div class="js-modal-head">
+                <h3 id="registerTitle">Register On-Site Terminal</h3>
+                <button type="button" class="js-x" aria-label="Close" onclick="document.getElementById('registerTerminalModal').classList.add('hidden')">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-x"/></svg>
+                </button>
             </div>
-            <div class="px-6 py-5 space-y-4">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                        <label class="ui-label">Terminal ID (TID) <span class="text-red-500">*</span></label>
+            <div class="js-modal-body">
+                <div class="js-form-grid">
+                    <div class="js-field">
+                        <label class="ui-label" for="regTerminalId">Terminal ID (TID) <span class="js-req">*</span></label>
                         <input type="text" id="regTerminalId" class="ui-input" placeholder="e.g. TID-00123">
                     </div>
-                    <div>
-                        <label class="ui-label">Merchant Name <span class="text-red-500">*</span></label>
+                    <div class="js-field">
+                        <label class="ui-label" for="regMerchantName">Merchant Name <span class="js-req">*</span></label>
                         <input type="text" id="regMerchantName" class="ui-input" placeholder="e.g. Joe's Butchery">
                     </div>
-                    <div>
-                        <label class="ui-label">Contact Person</label>
+                    <div class="js-field">
+                        <label class="ui-label" for="regContactPerson">Contact Person</label>
                         <input type="text" id="regContactPerson" class="ui-input" placeholder="e.g. Joe Moyo">
                     </div>
-                    <div>
-                        <label class="ui-label">Phone</label>
+                    <div class="js-field">
+                        <label class="ui-label" for="regPhone">Phone</label>
                         <input type="text" id="regPhone" class="ui-input" placeholder="e.g. 0771234567">
                     </div>
-                    <div>
-                        <label class="ui-label">City</label>
+                    <div class="js-field">
+                        <label class="ui-label" for="regCity">City</label>
                         <input type="text" id="regCity" class="ui-input" placeholder="e.g. Harare">
                     </div>
-                    <div>
-                        <label class="ui-label">Client / Bank</label>
+                    <div class="js-field">
+                        <label class="ui-label" for="regClientId">Client / Bank</label>
                         <select id="regClientId" class="ui-select">
                             <option value="">— Select client —</option>
                             @foreach($clients as $client)
@@ -303,73 +303,124 @@ $pBadge = [
                             @endforeach
                         </select>
                     </div>
-                </div>
-                <div>
-                    <label class="ui-label">Physical Address</label>
-                    <input type="text" id="regAddress" class="ui-input" placeholder="Street address">
-                </div>
-                <div>
-                    <label class="ui-label">Field Notes</label>
-                    <textarea id="regNotes" rows="2" class="ui-input resize-y" placeholder="Any observations about this terminal…"></textarea>
+                    <div class="js-field js-span">
+                        <label class="ui-label" for="regAddress">Physical Address</label>
+                        <input type="text" id="regAddress" class="ui-input" placeholder="Street address">
+                    </div>
+                    <div class="js-field js-span">
+                        <label class="ui-label" for="regNotes">Field Notes</label>
+                        <textarea id="regNotes" rows="2" class="ui-input" placeholder="Any observations about this terminal…"></textarea>
+                    </div>
                 </div>
             </div>
-            <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 sticky bottom-0 bg-white">
-                <button onclick="document.getElementById('registerTerminalModal').classList.add('hidden')" class="btn-secondary">Cancel</button>
-                <button id="regSubmitBtn" onclick="submitRegisterTerminal()" class="btn-primary" style="background:#6366f1;border-color:#6366f1;">Register Terminal</button>
+            <div class="js-modal-foot">
+                <button type="button" onclick="document.getElementById('registerTerminalModal').classList.add('hidden')" class="btn-secondary">Cancel</button>
+                <button type="button" id="regSubmitBtn" onclick="submitRegisterTerminal()" class="btn-primary">Register Terminal</button>
             </div>
         </div>
     </div>
-
-    {{-- Transfer History (populated when a job is transferred) --}}
-    @php $history = $assignment->assignment_history ?? []; @endphp
-    @if(count($history) > 0)
-    <div class="ui-card" style="border-left:3px solid #f59e0b;">
-        <div class="ui-card-header" style="background:#fffbeb;">
-            <h6 class="text-sm font-semibold m-0" style="color:#92400e;">
-                &#8644; Transfer History
-                <span style="margin-left:8px;background:#f59e0b;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;">{{ count($history) }}</span>
-            </h6>
-        </div>
-        <div class="ui-card-body" style="padding:0;">
-            @foreach($history as $i => $entry)
-            <div style="padding:14px 18px;{{ !$loop->last ? 'border-bottom:1px solid #fef3c7;' : '' }}display:flex;gap:14px;align-items:flex-start;">
-                <div style="width:30px;height:30px;border-radius:50%;background:#fef3c7;color:#92400e;display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0;">{{ $i+1 }}</div>
-                <div style="flex:1;min-width:0;">
-                    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:4px;">
-                        {{ $entry['from_technician_name'] ?? '—' }}
-                        <span style="color:#9ca3af;font-weight:400;margin:0 6px;">&#8594;</span>
-                        {{ $entry['to_technician_name'] ?? '—' }}
-                    </div>
-                    <div style="font-size:12px;color:#374151;margin-bottom:3px;">
-                        <strong>Reason:</strong> {{ $entry['reason'] ?? '—' }}
-                    </div>
-                    @if(!empty($entry['notes']))
-                    <div style="font-size:12px;color:#6b7280;margin-bottom:3px;">{{ $entry['notes'] }}</div>
-                    @endif
-                    <div style="font-size:11px;color:#9ca3af;margin-top:4px;display:flex;gap:12px;flex-wrap:wrap;">
-                        <span>By: {{ $entry['transferred_by_name'] ?? '—' }}</span>
-                        <span>{{ isset($entry['transferred_at']) ? \Carbon\Carbon::parse($entry['transferred_at'])->format('M j, Y H:i') : '' }}</span>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
 </div>
 @endsection
 
 @push('styles')
 <style>
+.js-page { display: flex; flex-direction: column; gap: 16px; }
+.js-crumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--mv-muted); text-decoration: none; align-self: flex-start; }
+.js-crumb:hover { color: var(--mv-ink); }
+.js-card { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 10px; }
+.js-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--mv-line); min-height: 52px; }
+.js-card-head h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--mv-ink); display: flex; align-items: center; gap: 8px; }
+.js-card-body { padding: 16px 18px; }
+.js-count { font-size: 12px; font-weight: 500; color: var(--mv-ink-2); background: var(--mv-surface-2); border: 1px solid var(--mv-line); border-radius: 6px; padding: 0 7px; line-height: 1.7; font-variant-numeric: tabular-nums; }
+
+.js-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 18px; border-bottom: 1px solid var(--mv-line); flex-wrap: wrap; }
+.js-id { font-family: var(--mv-mono); font-size: 15px; font-weight: 500; color: var(--mv-ink); }
+.js-head-main { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.js-chips { display: flex; gap: 6px; }
+.js-head-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.js-done { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--mv-good); }
+
+.js-chip { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; line-height: 1.7; white-space: nowrap; background: var(--mv-surface-2); color: var(--mv-ink-2); border: 1px solid var(--mv-line); }
+.js-chip.is-accent { background: var(--mv-accent-soft); color: var(--mv-accent-ink); border-color: transparent; }
+.js-chip.is-good { background: var(--mv-good-soft); color: var(--mv-good); border-color: transparent; }
+.js-chip.is-warn { background: var(--mv-warn-soft); color: var(--mv-warn); border-color: transparent; }
+.js-chip.is-crit { background: var(--mv-crit-soft); color: var(--mv-crit); border-color: transparent; }
+
+.js-facts { display: grid; grid-template-columns: 1fr 1fr; }
+.js-facts > div { padding: 14px 18px 16px; }
+.js-facts > div + div { border-left: 1px solid var(--mv-line); }
+.js-facts-title { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--mv-muted); letter-spacing: .04em; text-transform: uppercase; }
+.js-dl { margin: 0; }
+.js-dl > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--mv-line); font-size: 13px; }
+.js-dl > div:last-child { border-bottom: 0; }
+.js-dl dt { color: var(--mv-muted); font-weight: 400; }
+.js-dl dd { margin: 0; color: var(--mv-ink); text-align: right; font-variant-numeric: tabular-nums; }
+.js-person { display: inline-flex; align-items: center; gap: 8px; }
+.js-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--mv-accent-soft); color: var(--mv-accent-ink); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+.js-muted { color: var(--mv-muted); }
+
+.js-search { display: flex; align-items: center; gap: 6px; border: 1px solid var(--mv-line-strong); border-radius: 8px; padding: 0 10px; background: var(--mv-surface); color: var(--mv-muted); }
+.js-search:focus-within { border-color: var(--mv-accent); box-shadow: 0 0 0 3px rgba(43, 100, 168, .15); }
+.js-search input { border: 0; outline: 0; padding: 6px 0; font: inherit; font-size: 13px; min-width: 200px; background: transparent; color: var(--mv-ink); }
+.js-table { width: 100%; border-collapse: collapse; }
+.js-table th { background: var(--mv-surface-2); color: var(--mv-muted); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--mv-line); }
+.js-table td { padding: 11px 14px; border-bottom: 1px solid var(--mv-line); vertical-align: middle; font-size: 13px; color: var(--mv-ink-2); }
+.js-table tbody tr:last-child td { border-bottom: 0; }
+.js-table tbody tr:hover { background: var(--mv-surface-2); }
+.js-strong { color: var(--mv-ink); font-weight: 500; font-size: 13px; }
+.js-sub { font-size: 12px; color: var(--mv-muted); margin-top: 2px; display: inline-flex; align-items: center; gap: 6px; }
+.js-mono { font-family: var(--mv-mono); font-size: 12.5px; color: var(--mv-ink); }
+.js-noresults { padding: 18px; text-align: center; font-size: 13px; color: var(--mv-muted); border-top: 1px solid var(--mv-line); }
+.js-empty { padding: 36px 20px; text-align: center; color: var(--mv-muted); font-size: 13.5px; }
+.js-empty .mv-i { width: 28px; height: 28px; color: var(--mv-line-strong); display: block; margin: 0 auto 10px; }
+.js-empty strong { display: block; color: var(--mv-ink); font-weight: 500; margin-bottom: 2px; }
+.js-pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--mv-good); display: inline-block; }
+.js-visits { max-height: 420px; overflow-y: auto; font-size: 13px; }
+.js-notes { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--mv-ink-2); white-space: pre-wrap; }
+
+.js-history { list-style: none; margin: 0; padding: 0; }
+.js-history li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--mv-line); }
+.js-history li:last-child { border-bottom: 0; }
+.js-step { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--mv-line-strong); display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--mv-ink-2); }
+.js-arrow { vertical-align: -3px; color: var(--mv-muted); margin: 0 4px; }
+.js-history-line { font-size: 13px; color: var(--mv-ink-2); margin-top: 3px; }
+
+.js-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(22, 32, 44, .45); padding: 16px; }
+.js-modal { background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; box-shadow: 0 16px 40px rgba(22, 32, 44, .18); }
+.js-modal-lg { max-width: 560px; }
+.js-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--mv-line); position: sticky; top: 0; background: var(--mv-surface); }
+.js-modal-head h3 { margin: 0; font-size: 15px; font-weight: 600; color: var(--mv-ink); }
+.js-x { width: 32px; height: 32px; border: 0; border-radius: 7px; background: transparent; color: var(--mv-muted); display: grid; place-items: center; cursor: pointer; }
+.js-x:hover { background: var(--mv-surface-2); color: var(--mv-ink); }
+.js-modal-body { padding: 16px 18px; }
+.js-modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--mv-line); background: var(--mv-surface-2); border-radius: 0 0 12px 12px; position: sticky; bottom: 0; }
+.js-field { margin-bottom: 14px; }
+.js-field:last-child { margin-bottom: 0; }
+.js-field .ui-label { display: block; margin-bottom: 6px; }
+.js-field .ui-input, .js-field .ui-select { width: 100%; }
+.js-field textarea { resize: vertical; }
+.js-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.js-form-grid .js-field { margin-bottom: 14px; }
+.js-span { grid-column: 1 / -1; }
+.js-req { color: var(--mv-crit); }
+
 /* Classes used only in JS-generated live visits HTML */
-.lv-item  { padding:10px 0; border-bottom:1px solid #f1f5f9; }
-.lv-item:last-child { border-bottom:none; }
-.lv-hdr   { display:flex; justify-content:space-between; align-items:center; }
-.lv-name  { font-weight:600; font-size:0.875rem; color:#111827; }
-.lv-tid   { color:#6b7280; font-weight:400; }
-.lv-meta  { color:#6b7280; font-size:0.75rem; margin-top:4px; }
-.lv-det   { margin-top:6px; font-size:0.8125rem; color:#374151; }
-.lv-cmt   { color:#374151; margin-top:4px; }
+.lv-item  { padding: 10px 0; border-bottom: 1px solid var(--mv-line); }
+.lv-item:first-child { padding-top: 0; }
+.lv-item:last-child { border-bottom: none; }
+.lv-hdr   { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.lv-name  { font-weight: 500; font-size: 13px; color: var(--mv-ink); }
+.lv-tid   { color: var(--mv-muted); font-weight: 400; font-family: var(--mv-mono); font-size: 12px; }
+.lv-meta  { color: var(--mv-muted); font-size: 12px; margin-top: 4px; }
+.lv-det   { margin-top: 6px; font-size: 13px; color: var(--mv-ink-2); }
+.lv-cmt   { color: var(--mv-ink-2); margin-top: 4px; }
+.lv-err   { color: var(--mv-crit); }
+
+@media (max-width: 900px) {
+    .js-facts { grid-template-columns: 1fr; }
+    .js-facts > div + div { border-left: 0; border-top: 1px solid var(--mv-line); }
+    .js-form-grid { grid-template-columns: 1fr; }
+}
 </style>
 @endpush
 
@@ -482,7 +533,6 @@ async function submitRegisterTerminal() {
         if (res.ok && data.success) {
             document.getElementById('registerTerminalModal').classList.add('hidden');
             showNotification('success', `Terminal ${terminalId} registered successfully.`);
-            // Clear the form
             ['regTerminalId','regMerchantName','regContactPerson','regPhone','regCity','regAddress','regNotes'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('regClientId').value = '';
         } else {
@@ -510,7 +560,7 @@ async function submitRegisterTerminal() {
 function updateStatus(assignmentId, newStatus, btn) {
     const orig = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '&#x23F1; Updating...';
+    btn.textContent = 'Updating...';
 
     fetch(`/api/assignments/${assignmentId}/status`, {
         method: 'PUT',
@@ -538,26 +588,15 @@ function updateStatus(assignmentId, newStatus, btn) {
     });
 }
 
-// ==============================
-// Toast notification
-// ==============================
-function showNotification(type, message) {
-    const el = document.createElement('div');
-    el.style.cssText = 'position:fixed;top:20px;right:20px;min-width:280px;background:#fff;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,.15);border:1px solid #e5e7eb;z-index:9999;opacity:0;transition:opacity .3s;';
-    el.style.borderLeft = `4px solid ${type === 'success' ? '#10b981' : '#ef4444'}`;
-    el.innerHTML = `<div style="padding:12px 16px;font-size:14px;color:#374151;">${message}</div>`;
-    document.body.appendChild(el);
-    setTimeout(() => el.style.opacity = '1', 50);
-    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 4000);
-}
+// Toasts: showNotification(type, message) comes from the portal layout.
 
 // ==============================
 // Live Site Visits Polling
 // ==============================
 (function(){
-    const assignmentId = {{ (int)$assignment->id }};
     const listEl  = document.getElementById('liveVisitsList');
     const countEl = document.getElementById('liveVisitCount');
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
     async function fetchVisits() {
         try {
@@ -569,23 +608,23 @@ function showNotification(type, message) {
 
             countEl.textContent = data.count;
             if (data.count === 0) {
-                listEl.innerHTML = '<div class="text-sm text-gray-400">No visits yet for this assignment.</div>';
+                listEl.innerHTML = '<div class="js-muted">No visits yet for this assignment.</div>';
                 return;
             }
 
             listEl.innerHTML = data.visits.map(v => `
                 <div class="lv-item">
                     <div class="lv-hdr">
-                        <div class="lv-name">${v.merchant_name ?? '&#x2014;'} <span class="lv-tid">(${v.terminal_id ?? '&#x2014;'})</span></div>
-                        <span class="badge badge-gray lv-status">${v.status ? v.status.replace('_',' ') : 'open'}</span>
+                        <div class="lv-name">${esc(v.merchant_name ?? '—')} <span class="lv-tid">${esc(v.terminal_id ?? '—')}</span></div>
+                        <span class="js-chip lv-status">${v.status ? esc(v.status.replace('_',' ')) : 'open'}</span>
                     </div>
-                    <div class="lv-meta">Tech: ${v.technician ?? '&#x2014;'} &bull; Started: ${v.started_at ?? '&#x2014;'} ${v.ended_at ? '&bull; Ended: '+v.ended_at : ''}</div>
-                    <div class="lv-det"><strong>Terminal Status:</strong> ${v.terminal_status ?? '&#x2014;'}${v.comments ? '<div class="lv-cmt">'+v.comments+'</div>' : ''}</div>
+                    <div class="lv-meta">Tech: ${esc(v.technician ?? '—')} · Started: ${esc(v.started_at ?? '—')} ${v.ended_at ? '· Ended: ' + esc(v.ended_at) : ''}</div>
+                    <div class="lv-det"><span class="js-muted">Terminal Status:</span> ${esc(v.terminal_status ?? '—')}${v.comments ? '<div class="lv-cmt">' + esc(v.comments) + '</div>' : ''}</div>
                 </div>
             `).join('');
         } catch (e) {
             console.error(e);
-            listEl.innerHTML = '<div class="text-sm text-red-500">Failed to load live visits.</div>';
+            listEl.innerHTML = '<div class="lv-err">Failed to load live visits.</div>';
         }
     }
 
