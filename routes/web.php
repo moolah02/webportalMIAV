@@ -863,21 +863,14 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->middleware('permission:view_technician_visits,all')
             ->name('technician-visits.filter');
 
-        Route::get('/technician-visits/{visit}', [TechnicianReportsController::class, 'show'])
-            ->middleware('permission:view_technician_visits,all')
-            ->name('technician-visits.show');
-
-        Route::get('/technician-visits/{visit}/photos', [TechnicianReportsController::class, 'getPhotos'])
-            ->middleware('permission:view_technician_visits,all')
-            ->name('technician-visits.photos');
-
-        Route::get('/technician-visits/{visit}/pdf', [TechnicianReportsController::class, 'generatePDF'])
-            ->middleware('permission:view_technician_visits,all')
-            ->name('technician-visits.pdf');
-
+        // Registered before /{visit} so "export" isn't taken as a visit id.
         Route::get('/technician-visits/export', [TechnicianReportsController::class, 'export'])
             ->middleware('permission:export_reports,all')
             ->name('technician-visits.export');
+
+        Route::get('/technician-visits/{visit}', [TechnicianReportsController::class, 'show'])
+            ->middleware('permission:view_technician_visits,all')
+            ->name('technician-visits.show');
     });
 
     // ==============================================
