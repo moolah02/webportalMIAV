@@ -111,11 +111,10 @@ class ReportQueryBuilder
                 $referencedTables[] = $table;
             }
         }
-        // ...and the date column used for sorting
+        // The sort column is validated but never adds a join by itself: linking a
+        // table only to sort by it would repeat rows (see applySort).
         if (!empty($config['sort_column'])) {
             $this->validateFilterColumn($config['sort_column']);
-            [$table] = explode('.', $config['sort_column'], 2);
-            $referencedTables[] = $table;
         }
 
         // Track joined tables by name to avoid duplicate joins
@@ -200,8 +199,13 @@ class ReportQueryBuilder
         $sort = $config['sort'];
 
         if (in_array($sort, ['date_desc', 'date_asc'], true) && !empty($config['sort_column'])) {
-            $query->orderBy($config['sort_column'], $sort === 'date_asc' ? 'asc' : 'desc');
-            return;
+            [$sortTable] = explode('.', $config['sort_column'], 2);
+            if (in_array($sortTable, $joinedTables, true)) {
+                $query->orderBy($config['sort_column'], $sort === 'date_asc' ? 'asc' : 'desc');
+                return;
+            }
+            // That date's table isn't part of the report: newest added or edited first instead.
+            $sort = 'activity';
         }
 
         if ($sort === 'activity') {
