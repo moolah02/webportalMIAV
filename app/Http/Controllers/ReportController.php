@@ -7,6 +7,7 @@ use App\Models\ReportRun;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
@@ -44,12 +45,28 @@ class ReportController extends Controller
                 'having.*.value'    => 'required_with:having|numeric',
                 'group_by'          => 'sometimes|array',
                 'order_by'          => 'sometimes|array',
+                'sort'              => 'sometimes|nullable|string|in:activity,date_desc,date_asc',
+                'sort_column'       => 'sometimes|nullable|string',
                 'limit'             => 'sometimes|integer|min:1|max:10000',
                 'download_all'      => 'sometimes|boolean',
             ]);
 
             $queryData = $this->queryBuilder->buildQuery($validated);
             $results = $queryData['query']->get();
+
+            // When the preview hit its row limit, tell the page how many rows there really are.
+            $total = $results->count();
+            $limit = min($validated['limit'] ?? 100, 10000);
+            if (empty($validated['download_all']) && $total >= $limit) {
+                try {
+                    $countQuery = clone $queryData['query'];
+                    $countQuery->limit  = null;
+                    $countQuery->orders = null;
+                    $total = DB::query()->fromSub($countQuery, 'report_rows')->count();
+                } catch (\Throwable $e) {
+                    $total = null;
+                }
+            }
 
             // Log the report run
             ReportRun::create([
@@ -67,6 +84,7 @@ class ReportController extends Controller
                 'success' => true,
                 'data' => $results,
                 'count' => $results->count(),
+                'total' => $total,
             ]);
 
         } catch (Exception $e) {
@@ -100,6 +118,8 @@ class ReportController extends Controller
                 'having.*.value'    => 'required_with:having|numeric',
                 'group_by'          => 'sometimes|array',
                 'order_by'          => 'sometimes|array',
+                'sort'              => 'sometimes|nullable|string|in:activity,date_desc,date_asc',
+                'sort_column'       => 'sometimes|nullable|string',
                 'limit'             => 'sometimes|integer|min:1|max:100000',
                 'format'            => 'required|string|in:csv,xlsx,pdf',
                 'title'             => 'sometimes|nullable|string|max:120',

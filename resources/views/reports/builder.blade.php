@@ -347,6 +347,20 @@
 .rb-having-row { display:flex; gap:6px; align-items:center; flex-direction:row !important; }
 .rb-having-paren { color:var(--rb-sub); }
 
+/* ─── Row count + active filters under the results title ─────── */
+.rb-results-head { flex-wrap:wrap; }
+.rb-row-badge.is-partial { background:var(--mv-warn-soft); color:var(--mv-warn); }
+.rb-results-notes { width:100%; display:flex; flex-direction:column; gap:6px; }
+.rb-limit-note { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12.5px; color:var(--mv-warn); }
+.rb-limit-note .mv-i { width:14px; height:14px; }
+.rb-filter-summary { display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:12.5px; color:var(--rb-sub); }
+.rb-fs-chip { display:inline-flex; align-items:center; gap:4px; padding:1px 4px 1px 8px; border:1px solid var(--rb-border); border-radius:6px; background:var(--rb-muted); color:var(--rb-text); }
+.rb-fs-chip button { border:0; background:transparent; color:var(--rb-sub); cursor:pointer; font-size:14px; line-height:1; padding:0 3px; border-radius:4px; }
+.rb-fs-chip button:hover { color:var(--mv-crit); background:var(--mv-crit-soft); }
+.rb-link-btn { border:0; background:transparent; padding:0; font:inherit; font-size:12.5px; font-weight:500; color:var(--mv-accent-ink); cursor:pointer; }
+.rb-link-btn:hover { text-decoration:underline; }
+.rb-strip-select:disabled { opacity:.55; cursor:not-allowed; }
+
 @media (max-width: 1100px) { .rb-body { grid-template-columns:200px minmax(0,1fr); } }
 </style>
 
@@ -444,9 +458,11 @@
 
             <div class="rb-strip-group">
                 <label>Region</label>
-                <select class="rb-strip-select" x-model="config.regionId">
-                    <option value="">All Regions</option>
-                    <template x-for="(name,id) in availableFilters.regions" :key="id">
+                <select class="rb-strip-select" x-model="config.regionId"
+                        :disabled="!regionMode() || !Object.keys(regionOptions()).length"
+                        :title="regionHint()">
+                    <option value="" x-text="regionMode() && !Object.keys(regionOptions()).length ? 'No regions recorded' : 'All Regions'"></option>
+                    <template x-for="(name,id) in regionOptions()" :key="id">
                         <option :value="id" x-text="name"></option>
                     </template>
                 </select>
@@ -454,7 +470,8 @@
 
             <div class="rb-strip-group">
                 <label>Client</label>
-                <select class="rb-strip-select" x-model="config.clientId">
+                <select class="rb-strip-select" x-model="config.clientId" :disabled="!clientColumn()"
+                        :title="clientColumn() ? '' : 'This data source is not linked to a single client'">
                     <option value="">All Clients</option>
                     <template x-for="(name,id) in availableFilters.clients" :key="id">
                         <option :value="id" x-text="name"></option>
@@ -464,8 +481,8 @@
 
             <div class="rb-strip-group">
                 <label>Terminals</label>
-                <select class="rb-strip-select" x-model="config.terminalSource"
-                        title="Terminals found on site by technicians are extra work — they were not on the original list">
+                <select class="rb-strip-select" x-model="config.terminalSource" :disabled="!terminalSourceApplies()"
+                        :title="terminalSourceApplies() ? 'Terminals found on site by technicians are extra work — they were not on the original list' : 'This data source is not about terminals'">
                     <option value="">All terminals</option>
                     <option value="office">Original list only</option>
                     <option value="field_discovery">Discovered on site (extra work)</option>
@@ -478,11 +495,16 @@
                 <label>Date Column</label>
                 <select class="rb-strip-select" x-model="config.dateColumn" style="min-width:160px;">
                     <option value="">No date filter</option>
-                    <template x-for="(t,tn) in availableFields" :key="tn">
-                        <template x-for="f in t.fields.filter(f=>f.type==='date')" :key="f.expression">
-                            <option :value="f.expression" x-text="t.label+' › '+f.label"></option>
+                    <optgroup label="In this report">
+                        <template x-for="o in dateColumnOptions().inReport" :key="o.value">
+                            <option :value="o.value" x-text="o.label"></option>
                         </template>
-                    </template>
+                    </optgroup>
+                    <optgroup label="Other tables (only rows that have one)">
+                        <template x-for="o in dateColumnOptions().other" :key="o.value">
+                            <option :value="o.value" x-text="o.label"></option>
+                        </template>
+                    </optgroup>
                 </select>
             </div>
 
@@ -501,6 +523,16 @@
             <div class="rb-strip-group">
                 <label>Rows</label>
                 <input type="number" class="rb-strip-input" x-model.number="config.limit" min="1" max="10000" style="text-align:center;">
+            </div>
+
+            <div class="rb-strip-group">
+                <label>Order</label>
+                <select class="rb-strip-select" x-model="config.sort" :disabled="hasAggregates()"
+                        :title="hasAggregates() ? 'Grouped reports are not sorted' : ''">
+                    <option value="activity">Newest added or edited first</option>
+                    <option value="date_desc" :disabled="!config.dateColumn">Date column, newest first</option>
+                    <option value="date_asc" :disabled="!config.dateColumn">Date column, oldest first</option>
+                </select>
             </div>
 
         </div>
@@ -688,14 +720,32 @@
                         <div class="rb-results-title">
                             Results
                             <span x-show="reportData && reportData.length > 0"
-                                  class="rb-row-badge"
-                                  x-text="(reportData?.length||0)+' row'+((reportData?.length??0)===1?'':'s')">
+                                  class="rb-row-badge" :class="{ 'is-partial': isPartial() }"
+                                  x-text="rowBadgeText()">
                             </span>
                         </div>
                         <span x-show="reportData && reportData.length > 0"
                               class="rb-results-meta"
                               x-text="fields.length + ' column' + (fields.length===1?'':'s')">
                         </span>
+                        <div class="rb-results-notes" x-show="reportData" x-cloak>
+                            <div class="rb-limit-note" x-show="isPartial()">
+                                <svg class="mv-i" aria-hidden="true"><use href="#i-alert-triangle"/></svg>
+                                <span x-text="'Showing the first ' + reportData?.length + ' of ' + reportTotal + ' rows. Exports include all rows.'"></span>
+                                <button type="button" class="rb-link-btn" @click="showAllRows()"
+                                        x-text="reportTotal > 10000 ? 'Show 10,000' : 'Show all ' + reportTotal"></button>
+                            </div>
+                            <div class="rb-filter-summary">
+                                <span x-text="activeFilters().length ? 'Filtered by:' : 'No filters: every record is included.'"></span>
+                                <template x-for="f in activeFilters()" :key="f.key">
+                                    <span class="rb-fs-chip">
+                                        <span x-text="f.text"></span>
+                                        <button type="button" @click="clearFilter(f.key)" :aria-label="'Remove filter: ' + f.text" title="Remove this filter">&times;</button>
+                                    </span>
+                                </template>
+                                <button type="button" class="rb-link-btn" x-show="activeFilters().length > 1" @click="clearAllFilters()">Clear all</button>
+                            </div>
+                        </div>
                     </div>
 
                     {{-- Idle --}}
@@ -859,9 +909,11 @@ document.addEventListener('alpine:init', () => {
       dateFrom:   '',
       dateTo:     '',
       limit:      100,
+      sort:       'activity', // 'activity' | 'date_desc' | 'date_asc'
     },
 
     having: [],
+    reportTotal: null, // all matching rows (the preview may show fewer)
 
     havingOperators: ['=', '!=', '<', '<=', '>', '>='],
     havingFunctions: ['COUNT', 'SUM', 'AVG', 'MIN', 'MAX'],
@@ -887,6 +939,7 @@ document.addEventListener('alpine:init', () => {
           const p = JSON.parse(runData);
           if (p.base?.table) this.config.baseTable = p.base.table;
           if (p.limit)       this.config.limit      = p.limit;
+          if (p.sort)        this.config.sort       = p.sort;
           this.fields = (p.select || []).map(item => ({
             label:      item.aggregate
                           ? item.as.replace(new RegExp('^'+item.aggregate+'\\('), '').replace(/\)$/, '')
@@ -1210,6 +1263,107 @@ document.addEventListener('alpine:init', () => {
       return this.fields.some(f => f.aggregate && f.aggregate !== '');
     },
 
+    // ── Filters that fit the data source ─────────────────────────────
+    baseFieldNames() {
+      return (this.availableFields[this.config.baseTable]?.fields || []).map(f => f.name);
+    },
+    // 'column' = the table has its own region text · 'regions' = linked to a region record
+    // 'terminal' = region of the visited terminal · null = not applicable
+    regionMode() {
+      const names = this.baseFieldNames();
+      if (names.includes('region')) return 'column';
+      if (names.includes('region_id')) return 'regions';
+      if (['technician_visits', 'visits', 'visit_terminals', 'tickets'].includes(this.config.baseTable)) return 'terminal';
+      return null;
+    },
+    regionOptions() {
+      const mode = this.regionMode();
+      if (!mode) return {};
+      const terminalBased = mode === 'terminal' || this.config.baseTable === 'pos_terminals';
+      return (terminalBased ? this.availableFilters.terminal_regions : this.availableFilters.regions) || {};
+    },
+    regionHint() {
+      if (!this.regionMode()) return 'This data source is not linked to a region';
+      if (!Object.keys(this.regionOptions()).length) return 'No terminals have a region filled in yet, so a region filter would hide every row';
+      return '';
+    },
+    regionColumn() {
+      const mode = this.regionMode();
+      if (mode === 'column')  return this.config.baseTable + '.region';
+      if (mode === 'regions') return 'regions.name';
+      if (mode === 'terminal') return 'pos_terminals.region';
+      return null;
+    },
+    clientColumn() {
+      const base = this.config.baseTable;
+      if (base === 'clients') return 'clients.id';
+      if (this.baseFieldNames().includes('client_id')) return base + '.client_id';
+      if (['technician_visits', 'visits', 'visit_terminals'].includes(base)) return 'pos_terminals.client_id';
+      return null;
+    },
+    terminalSourceApplies() {
+      return ['pos_terminals', 'technician_visits', 'visits', 'visit_terminals', 'tickets'].includes(this.config.baseTable);
+    },
+    dateColumnOptions() {
+      const inReport = new Set([this.config.baseTable, ...this.fields.map(f => (f.expression || '').split('.')[0])]);
+      const out = { inReport: [], other: [] };
+      Object.entries(this.availableFields).forEach(([tn, t]) => {
+        t.fields.filter(f => f.type === 'date').forEach(f => {
+          (inReport.has(tn) ? out.inReport : out.other).push({ value: f.expression, label: t.label + ' › ' + f.label });
+        });
+      });
+      return out;
+    },
+    dateColumnLabel(expr) {
+      const [tn] = (expr || '').split('.');
+      const t = this.availableFields[tn];
+      const f = t?.fields.find(x => x.expression === expr);
+      return t && f ? t.label + ' › ' + f.label : expr;
+    },
+
+    // ── What the results show ────────────────────────────────────────
+    isPartial() {
+      return !!(this.reportData && this.reportTotal && this.reportTotal > this.reportData.length);
+    },
+    rowBadgeText() {
+      const n = this.reportData?.length || 0;
+      if (this.isPartial()) return n + ' of ' + this.reportTotal + ' rows';
+      return n + ' row' + (n === 1 ? '' : 's');
+    },
+    showAllRows() {
+      this.config.limit = Math.min(this.reportTotal || 10000, 10000);
+      this.runReport();
+    },
+    activeFilters() {
+      const out = [];
+      const fmt = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '…';
+      if (this.config.regionId && this.regionColumn()) out.push({ key: 'region', text: 'Region: ' + (this.regionOptions()[this.config.regionId] || this.config.regionId) });
+      if (this.config.clientId && this.clientColumn()) out.push({ key: 'client', text: 'Client: ' + (this.availableFilters.clients?.[this.config.clientId] || this.config.clientId) });
+      if (this.config.terminalSource && this.terminalSourceApplies()) {
+        out.push({ key: 'source', text: this.config.terminalSource === 'office' ? 'Terminals: original list only' : 'Terminals: discovered on site' });
+      }
+      if (this.config.dateColumn && (this.config.dateFrom || this.config.dateTo)) {
+        out.push({ key: 'date', text: this.dateColumnLabel(this.config.dateColumn) + ': ' + fmt(this.config.dateFrom) + ' to ' + fmt(this.config.dateTo) });
+      }
+      this.having.filter(h => h.fn && h.column && h.operator && h.value !== '').forEach((h, i) => {
+        out.push({ key: 'having:' + i, text: h.fn + '(' + h.column + ') ' + h.operator + ' ' + h.value });
+      });
+      return out;
+    },
+    clearFilter(key) {
+      if (key === 'region') this.config.regionId = '';
+      else if (key === 'client') this.config.clientId = '';
+      else if (key === 'source') this.config.terminalSource = '';
+      else if (key === 'date') { this.config.dateFrom = ''; this.config.dateTo = ''; }
+      else if (key.startsWith('having:')) this.having = [];
+      this.runReport();
+    },
+    clearAllFilters() {
+      Object.assign(this.config, { regionId: '', clientId: '', terminalSource: '', dateFrom: '', dateTo: '' });
+      this.having = [];
+      this.runReport();
+    },
+
     buildPayload() {
       const withAgg = this.hasAggregates();
       const select = [], group_by = [];
@@ -1222,29 +1376,28 @@ document.addEventListener('alpine:init', () => {
         }
       });
       const where = [];
-      if (this.config.regionId) {
-        const bf = this.availableFields[this.config.baseTable]?.fields || [];
-        if (bf.some(f => f.name === 'region_id')) {
-          // Table has FK region_id — filter via regions.name (auto-join handles the JOIN)
-          where.push({ column: 'regions.name', operator: '=', value: this.config.regionId });
-        } else {
-          // Table stores region as a plain string column (e.g. pos_terminals.region)
-          where.push({ column: this.config.baseTable + '.region', operator: '=', value: this.config.regionId });
-        }
+      // Only filters that fit the data source are sent (see regionMode / clientColumn / terminalSourceApplies).
+      if (this.config.regionId && this.regionColumn()) {
+        where.push({ column: this.regionColumn(), operator: '=', value: this.config.regionId });
       }
-      if (this.config.clientId) {
-        const bf = this.availableFields[this.config.baseTable]?.fields || [];
-        where.push({ column: bf.some(f=>f.name==='client_id') ? this.config.baseTable+'.client_id' : 'pos_terminals.client_id', operator:'=', value:this.config.clientId });
+      if (this.config.clientId && this.clientColumn()) {
+        where.push({ column: this.clientColumn(), operator: '=', value: this.config.clientId });
       }
-      if (this.config.terminalSource) {
-        // Auto-join brings in pos_terminals from any data source
+      if (this.config.terminalSource && this.terminalSourceApplies()) {
         where.push({ column: 'pos_terminals.source', operator: '=', value: this.config.terminalSource });
       }
       if (this.config.dateColumn && (this.config.dateFrom || this.config.dateTo)) {
         where.push({ column:this.config.dateColumn, operator:'between_dates', value:{from:this.config.dateFrom||null, to:this.config.dateTo||null} });
       }
       const having = this.having.filter(h => h.fn && h.column && h.operator && h.value !== '');
-      return { base:{table:this.config.baseTable}, select, joins:[], group_by, where, limit:this.config.limit, ...(having.length ? { having: having.map(h => ({ column: h.fn+'('+h.column+')', operator: h.operator, value: parseFloat(h.value) })) } : {}) };
+      // Row order (grouped reports are left unsorted)
+      const order = {};
+      if (!withAgg) {
+        const sort = (this.config.sort || 'activity').startsWith('date') && !this.config.dateColumn ? 'activity' : (this.config.sort || 'activity');
+        order.sort = sort;
+        if (sort !== 'activity') order.sort_column = this.config.dateColumn;
+      }
+      return { base:{table:this.config.baseTable}, select, joins:[], group_by, where, limit:this.config.limit, ...order, ...(having.length ? { having: having.map(h => ({ column: h.fn+'('+h.column+')', operator: h.operator, value: parseFloat(h.value) })) } : {}) };
     },
 
     async runReport() {
@@ -1261,6 +1414,7 @@ document.addEventListener('alpine:init', () => {
         const r = JSON.parse(text);
         if (r.success) {
           this.reportData    = r.data;
+          this.reportTotal   = (r.total ?? r.count ?? r.data.length);
           this.reportColumns = r.data.length ? Object.keys(r.data[0]) : [];
           if (this.showChart && r.data.length > 0) {
             this.chartLabelCol = '';
@@ -1328,7 +1482,7 @@ document.addEventListener('alpine:init', () => {
 
     applyPreset(preset) {
       this.fields = preset.fields.map(f => ({ ...f, aggregate: '' }));
-      this.config = { baseTable: preset.baseTable, regionId: '', clientId: '', terminalSource: preset.terminalSource || '', dateColumn: preset.dateColumn || '', dateFrom: '', dateTo: '', limit: 100 };
+      this.config = { baseTable: preset.baseTable, regionId: '', clientId: '', terminalSource: preset.terminalSource || '', dateColumn: preset.dateColumn || '', dateFrom: '', dateTo: '', limit: 100, sort: preset.sort || 'activity' };
       this.reportTitle = preset.name;
       this.reportData = null; this.reportColumns = [];
       this.showTemplateModal = false;
@@ -1377,6 +1531,27 @@ document.addEventListener('alpine:init', () => {
           { label: 'Serial Number',     expression: 'pos_terminals.serial_number',           category: 'dimensions' },
           { label: 'Contact Person',    expression: 'pos_terminals.merchant_contact_person', category: 'dimensions' },
           { label: 'Phone',             expression: 'pos_terminals.merchant_phone',          category: 'dimensions' },
+        ],
+      },
+      {
+        id: 'new-terminals',
+        icon: '',
+        name: 'New Terminals (Added in Period)',
+        desc: 'Every terminal added in a date range, whether imported or added by the office or found on site by a technician, with where it came from. Set From and To.',
+        baseTable: 'pos_terminals',
+        dateColumn: 'pos_terminals.created_at',
+        sort: 'date_desc',
+        fields: [
+          { label: 'Terminal Code',     expression: 'pos_terminals.terminal_id',             category: 'dimensions' },
+          { label: 'Merchant Name',     expression: 'pos_terminals.merchant_name',           category: 'dimensions' },
+          { label: 'Client',            expression: 'clients.company_name',                  category: 'dimensions' },
+          { label: 'Source',            expression: 'pos_terminals.source',                  category: 'dimensions' },
+          { label: 'Added On',          expression: 'pos_terminals.created_at',              category: 'dimensions' },
+          { label: 'City',              expression: 'pos_terminals.city',                    category: 'dimensions' },
+          { label: 'Physical Address',  expression: 'pos_terminals.physical_address',        category: 'dimensions' },
+          { label: 'Terminal Model',    expression: 'pos_terminals.terminal_model',          category: 'dimensions' },
+          { label: 'Serial Number',     expression: 'pos_terminals.serial_number',           category: 'dimensions' },
+          { label: 'Current Status',    expression: 'pos_terminals.current_status',          category: 'dimensions' },
         ],
       },
       {
@@ -1520,7 +1695,7 @@ document.addEventListener('alpine:init', () => {
         if (!raw) { this.errorMessage='Template has no payload.'; return; }
         const p = (typeof raw === 'string') ? JSON.parse(raw) : raw;
         this.fields = Array.isArray(p.fields) ? p.fields : [];
-        this.config = { baseTable:p.baseTable||'pos_terminals', regionId:p.regionId||'', clientId:p.clientId||'', terminalSource:p.terminalSource||'', dateColumn:p.dateColumn||'', dateFrom:p.dateFrom||'', dateTo:p.dateTo||'', limit:p.limit||100 };
+        this.config = { baseTable:p.baseTable||'pos_terminals', regionId:p.regionId||'', clientId:p.clientId||'', terminalSource:p.terminalSource||'', dateColumn:p.dateColumn||'', dateFrom:p.dateFrom||'', dateTo:p.dateTo||'', limit:p.limit||100, sort:p.sort||'activity' };
         this.having = Array.isArray(p.having) ? p.having : [];
         this.reportTitle = tpl.name || '';
         this.reportData = null; this.reportColumns = [];
@@ -1534,7 +1709,7 @@ document.addEventListener('alpine:init', () => {
         const res = await fetch('/api/report/templates', {
           method:'POST', credentials:'same-origin',
           headers:{ 'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'X-Requested-With':'XMLHttpRequest' },
-          body: JSON.stringify({ name:this.saveForm.name, description:this.saveForm.description, is_global:this.saveForm.isGlobal, payload:{fields:this.fields,baseTable:this.config.baseTable,regionId:this.config.regionId,clientId:this.config.clientId,terminalSource:this.config.terminalSource,dateColumn:this.config.dateColumn,dateFrom:this.config.dateFrom,dateTo:this.config.dateTo,limit:this.config.limit} })
+          body: JSON.stringify({ name:this.saveForm.name, description:this.saveForm.description, is_global:this.saveForm.isGlobal, payload:{fields:this.fields,baseTable:this.config.baseTable,regionId:this.config.regionId,clientId:this.config.clientId,terminalSource:this.config.terminalSource,dateColumn:this.config.dateColumn,dateFrom:this.config.dateFrom,dateTo:this.config.dateTo,limit:this.config.limit,sort:this.config.sort} })
         });
         const text = await res.text();
         if (text.trim().startsWith('<!')) { this.errorMessage='Session expired.'; return; }

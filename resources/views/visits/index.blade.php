@@ -22,6 +22,10 @@
 .vi-strong{font-weight:500;color:var(--mv-ink)}
 .vi-sub{margin-top:2px;font-size:12px;color:var(--mv-muted)}
 .vi-nowrap{white-space:nowrap}
+.vi-flag{display:inline-flex;align-items:center;gap:4px;margin-top:4px;padding:0 6px;border-radius:5px;font-size:11.5px;font-weight:500;white-space:nowrap}
+.vi-flag.is-edited{background:var(--mv-accent-soft);color:var(--mv-accent-ink)}
+.vi-flag.is-repeat{background:var(--mv-warn-soft);color:var(--mv-warn)}
+#visits-filter .ui-select{width:13.5rem;padding:8px 10px;font-size:13px}
 .vi-summary{min-width:180px;max-width:260px;line-height:1.45}
 .vi-chips{display:flex;flex-wrap:wrap;gap:4px}
 .vi-disclose summary{list-style:none;display:inline-flex;align-items:center;gap:4px;margin-top:5px;cursor:pointer;font-size:12px;font-weight:500;color:var(--mv-accent-ink);white-space:nowrap;user-select:none}
@@ -85,6 +89,13 @@
         <label class="ui-label">Keywords</label>
         <input type="text" name="q" value="{{ request('q') }}" class="ui-input" placeholder="Keywords...">
     </div>
+    <div class="vi-f">
+        <label class="ui-label" for="sort">Order</label>
+        <select id="sort" name="sort" class="ui-select">
+            <option value="activity" @selected(($sort ?? 'activity') === 'activity')>Newest added or edited first</option>
+            <option value="date" @selected(($sort ?? 'activity') === 'date')>Visit date, newest first</option>
+        </select>
+    </div>
     <div class="vi-actions">
         <button type="submit" class="btn-primary">Apply Filters</button>
         <a href="{{ route('visits.index') }}" class="btn-secondary">Reset All</a>
@@ -135,6 +146,14 @@
                                 <div class="vi-sub mv-mono">{{ $v->completed_at->format('H:i') }}</div>
                             @else
                                 <span class="vi-sub">Not completed</span>
+                            @endif
+                            {{-- Record times are UTC; visit times are already local (Harare). Photo uploads right after saving don't count as an edit. --}}
+                            @if($v->updated_at && $v->created_at && $v->updated_at->gt($v->created_at->copy()->addMinutes(15)))
+                                @php $editedAt = $v->updated_at->copy()->timezone('Africa/Harare'); @endphp
+                                <div><span class="vi-flag is-edited" title="Last edited {{ $editedAt->format('j M Y, H:i') }}">Edited {{ $editedAt->format('M j, H:i') }}</span></div>
+                            @endif
+                            @if(!empty($repeatOf[$v->id]))
+                                <div><span class="vi-flag is-repeat" title="Same technician and terminal as visit #{{ $repeatOf[$v->id] }}, within 30 minutes. Probably sent twice.">Possible repeat of #{{ $repeatOf[$v->id] }}</span></div>
                             @endif
                         </td>
                         <td>

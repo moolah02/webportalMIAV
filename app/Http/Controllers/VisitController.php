@@ -19,8 +19,10 @@ class VisitController extends Controller
     public function index(Request $request)
     {
         $q = Visit::query()
-            ->with(['employee'])  // Only load employee relation since terminal data is now JSON
-            ->orderByDesc('completed_at');
+            ->with(['employee']);  // Only load employee relation since terminal data is now JSON
+
+        // Order: newest added or edited first (default), or by visit date.
+        $sort = $request->input('sort') === 'date' ? 'date' : 'activity';
 
         // Filter by merchant name (string)
         if ($request->filled('merchant')) {
@@ -68,8 +70,42 @@ class VisitController extends Controller
             });
         }
 
-        $visits = $q->get();
-        return view('visits.index', compact('visits'));
+        if ($sort === 'date') {
+            $q->orderByDesc('completed_at')->orderByDesc('id');
+        } else {
+            $q->orderByDesc('updated_at')->orderByDesc('id');
+        }
+
+        $visits   = $q->get();
+        $repeatOf = $this->repeatSubmissions($visits->pluck('id'));
+
+        return view('visits.index', compact('visits', 'sort', 'repeatOf'));
+    }
+
+    /**
+     * visit id => id of an earlier visit sent by the same technician for the same
+     * terminal within 30 minutes (usually the same visit submitted twice).
+     */
+    private function repeatSubmissions($visitIds): array
+    {
+        if ($visitIds->isEmpty()) {
+            return [];
+        }
+
+        return DB::table('visits as b')
+            ->join('visit_terminals as vtb', 'vtb.visit_id', '=', 'b.id')
+            ->join('visits as a', function ($join) {
+                $join->on('a.employee_id', '=', 'b.employee_id')->on('a.id', '<', 'b.id');
+            })
+            ->join('visit_terminals as vta', function ($join) {
+                $join->on('vta.visit_id', '=', 'a.id')->on('vta.terminal_id', '=', 'vtb.terminal_id');
+            })
+            ->whereIn('b.id', $visitIds->all())
+            ->whereRaw('ABS(TIMESTAMPDIFF(MINUTE, a.completed_at, b.completed_at)) <= 30')
+            ->groupBy('b.id')
+            ->selectRaw('b.id as visit_id, MAX(a.id) as earlier_id')
+            ->pluck('earlier_id', 'visit_id')
+            ->all();
     }
 // In Visit model
 public function posTerminal()

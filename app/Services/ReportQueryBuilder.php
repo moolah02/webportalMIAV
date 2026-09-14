@@ -78,6 +78,12 @@ class ReportQueryBuilder
         'job_assignments.technician_id = employees.id',
     ];
 
+    // A visit, its terminal row and its report detail row describe the same visit.
+    // When a report needs more than one of these tables they are linked to each
+    // other through the visit, never separately to the terminal: joined separately,
+    // a terminal with three visits repeats every visit's details three times.
+    private const VISIT_TABLES = ['technician_visits', 'visit_terminals', 'visits'];
+
     private const AGGREGATE_FUNCTIONS = ['COUNT', 'SUM', 'AVG', 'MIN', 'MAX'];
 
     private const ALLOWED_OPERATORS = ['=', '!=', '<', '>', '<=', '>=', 'like', 'not like', 'between_dates', 'in'];
@@ -104,6 +110,12 @@ class ReportQueryBuilder
                 [$table] = explode('.', $filter['column'], 2);
                 $referencedTables[] = $table;
             }
+        }
+        // ...and the date column used for sorting
+        if (!empty($config['sort_column'])) {
+            $this->validateFilterColumn($config['sort_column']);
+            [$table] = explode('.', $config['sort_column'], 2);
+            $referencedTables[] = $table;
         }
 
         // Track joined tables by name to avoid duplicate joins
@@ -157,6 +169,8 @@ class ReportQueryBuilder
             foreach ($config['order_by'] as $order) {
                 $query->orderBy(DB::raw($this->quoteExpression($order['expr'])), $order['dir'] ?? 'ASC');
             }
+        } elseif (!empty($config['sort']) && empty($config['group_by'])) {
+            $this->applySort($query, $config, $baseTable, $joinedTables);
         }
 
         // Apply limit
@@ -173,6 +187,41 @@ class ReportQueryBuilder
             'query' => $query,
             'sql'   => $query->toSql()
         ];
+    }
+
+    /**
+     * Row order for reports without aggregates.
+     *   activity  — most recently added or edited first (a visit report uses the visit table)
+     *   date_desc — the chosen date column, newest first
+     *   date_asc  — the chosen date column, oldest first
+     */
+    private function applySort($query, array $config, string $baseTable, array $joinedTables): void
+    {
+        $sort = $config['sort'];
+
+        if (in_array($sort, ['date_desc', 'date_asc'], true) && !empty($config['sort_column'])) {
+            $query->orderBy($config['sort_column'], $sort === 'date_asc' ? 'asc' : 'desc');
+            return;
+        }
+
+        if ($sort === 'activity') {
+            $table = $baseTable;
+            if (!in_array($baseTable, self::VISIT_TABLES, true)) {
+                foreach (self::VISIT_TABLES as $visitTable) {
+                    if (in_array($visitTable, $joinedTables, true)) {
+                        $table = $visitTable;
+                        break;
+                    }
+                }
+            }
+            $columns = self::ALLOWED_TABLES[$table] ?? [];
+            if (in_array('updated_at', $columns, true)) {
+                $query->orderBy("{$table}.updated_at", 'desc');
+            }
+            if (in_array('created_at', $columns, true)) {
+                $query->orderBy("{$table}.created_at", 'desc');
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -230,15 +279,36 @@ class ReportQueryBuilder
         }
 
         // For each target trace back to base — collect ONLY needed intermediate nodes
-        $neededTables = [];
-        foreach ($targets as $target) {
-            $node = $target;
-            while ($node !== $baseTable) {
-                if (!isset($neededTables[$node])) {
-                    $neededTables[$node] = $parentCon[$node];
+        $collectNeeded = function () use ($targets, $baseTable, &$parent, &$parentCon): array {
+            $needed = [];
+            foreach ($targets as $target) {
+                $node = $target;
+                while ($node !== $baseTable) {
+                    if (!isset($needed[$node])) {
+                        $needed[$node] = $parentCon[$node];
+                    }
+                    $node = $parent[$node];
                 }
-                $node = $parent[$node];
             }
+            return $needed;
+        };
+        $neededTables = $collectNeeded();
+
+        // Visit tables: link them through the visit (see VISIT_TABLES).
+        $visitTablesInUse = array_values(array_filter(
+            self::VISIT_TABLES,
+            fn ($t) => $t === $baseTable || isset($neededTables[$t])
+        ));
+        if (count($visitTablesInUse) > 1) {
+            $anchor = $this->visitAnchor($baseTable, $visitTablesInUse, $parent);
+            foreach (self::VISIT_TABLES as $visitTable) {
+                if ($visitTable === $anchor || $visitTable === $baseTable) {
+                    continue;
+                }
+                $parent[$visitTable]    = $anchor;
+                $parentCon[$visitTable] = $this->visitLink($anchor, $visitTable);
+            }
+            $neededTables = $collectNeeded();
         }
 
         // Emit join plan in BFS order so each table is joined after its parent
@@ -262,6 +332,45 @@ class ReportQueryBuilder
         }
 
         return $joinPlan;
+    }
+
+    /**
+     * The visit table the others hang off: the base table if it is one, otherwise
+     * the preferred visit table that the report reaches without passing through
+     * another visit table (technician_visits, then visit_terminals, then visits).
+     */
+    private function visitAnchor(string $baseTable, array $visitTablesInUse, array $parent): string
+    {
+        if (in_array($baseTable, self::VISIT_TABLES, true)) {
+            return $baseTable;
+        }
+        foreach ($visitTablesInUse as $table) {
+            $node = $parent[$table] ?? null;
+            $viaOtherVisitTable = false;
+            while ($node !== null && $node !== $baseTable) {
+                if (in_array($node, self::VISIT_TABLES, true)) {
+                    $viaOtherVisitTable = true;
+                    break;
+                }
+                $node = $parent[$node] ?? null;
+            }
+            if (!$viaOtherVisitTable) {
+                return $table;
+            }
+        }
+        return $visitTablesInUse[0];
+    }
+
+    /** Join condition linking two visit tables on the same visit. */
+    private function visitLink(string $from, string $to): string
+    {
+        $pair = [$from, $to];
+        sort($pair);
+        return match (implode('|', $pair)) {
+            'technician_visits|visits'          => 'technician_visits.visit_id = visits.id',
+            'visit_terminals|visits'            => 'visit_terminals.visit_id = visits.id',
+            'technician_visits|visit_terminals' => 'technician_visits.visit_id = visit_terminals.visit_id',
+        };
     }
 
     // -------------------------------------------------------------------------
@@ -762,6 +871,9 @@ class ReportQueryBuilder
                 'custom'       => 'Custom Range'
             ],
             'regions' => DB::table('regions')->pluck('name', 'name'),
+            // Regions actually recorded on terminals (terminal reports filter on this text column)
+            'terminal_regions' => DB::table('pos_terminals')->whereNotNull('region')->where('region', '!=', '')
+                ->distinct()->orderBy('region')->pluck('region', 'region'),
             'clients' => DB::table('clients')->where('status', 'active')->pluck('company_name', 'id'),
             'projects' => DB::table('projects')->where('status', 'active')->pluck('project_name', 'id')
         ];
