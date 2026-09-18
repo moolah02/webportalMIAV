@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Auth;  // ← Add this
 use Illuminate\Pagination\LengthAwarePaginator;  // ← Add this
 use Illuminate\Support\Facades\DB;
+use App\Models\ActivityLog;
+use App\Models\Visit;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 
 class PosTerminalController extends Controller
@@ -488,6 +492,161 @@ public function storeColumnMapping(Request $request)
 }
 
 
+    /**
+     * Field-discovered terminals with the Field Discoveries tab's filters:
+     * search, and the date found (picked in Harare time; stored in UTC).
+     */
+    private function discoveryQuery(Request $request)
+    {
+        $query = PosTerminal::with(['client'])->where('source', 'field_discovery');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('pos_terminals.terminal_id', 'like', "%{$search}%")
+                  ->orWhere('pos_terminals.merchant_name', 'like', "%{$search}%")
+                  ->orWhere('pos_terminals.serial_number', 'like', "%{$search}%");
+            });
+        }
+
+        foreach (['found_from' => 'startOfDay', 'found_to' => 'endOfDay'] as $field => $edge) {
+            if (!$request->filled($field)) {
+                continue;
+            }
+            try {
+                $moment = Carbon::parse($request->input($field), 'Africa/Harare')->$edge()->utc();
+                $query->where('pos_terminals.created_at', $field === 'found_from' ? '>=' : '<=', $moment);
+            } catch (\Throwable $e) {
+                // Ignore a malformed date rather than failing the page
+            }
+        }
+
+        return $query;
+    }
+
+    /**
+     * Who found each discovered terminal and on which visit.
+     * terminal id => ['found_by' => name|null, 'note' => text|null,
+     *                 'visit' => ['id', 'merchant', 'date']|null, 'visits' => int]
+     */
+    private function discoveryDetails($terminals): array
+    {
+        $ids = collect($terminals)->pluck('id')->map(fn ($id) => (int) $id)->all();
+        if (!$ids) {
+            return [];
+        }
+
+        // The tablet logs "Terminal X registered on-site by <name> — <note>" when it registers one.
+        $logs = ActivityLog::with('employee:id,first_name,last_name')
+            ->where('model_type', 'PosTerminal')->where('action', 'created')->whereIn('model_id', $ids)
+            ->orderBy('id')->get()->unique('model_id')->keyBy('model_id');
+
+        // The visit that lists the terminal under "other terminals found" is the visit it was found on.
+        $foundOn = [];
+        $visits = Visit::whereNotNull('other_terminals_found')
+            ->whereRaw('JSON_LENGTH(other_terminals_found) > 0')
+            ->orderBy('id')
+            ->get(['id', 'merchant_name', 'completed_at', 'other_terminals_found']);
+        foreach ($visits as $v) {
+            foreach ((array) $v->other_terminals_found as $entry) {
+                $tid = is_array($entry) ? ($entry['id'] ?? null) : $entry;
+                if (is_numeric($tid) && in_array((int) $tid, $ids, true) && !isset($foundOn[(int) $tid])) {
+                    $foundOn[(int) $tid] = $v;
+                }
+            }
+        }
+
+        $visitCounts = DB::table('visit_terminals')->whereIn('terminal_id', $ids)
+            ->select('terminal_id', DB::raw('count(*) as c'))->groupBy('terminal_id')->pluck('c', 'terminal_id');
+
+        $out = [];
+        foreach ($ids as $id) {
+            $log  = $logs->get($id);
+            $name = $log && $log->employee ? trim($log->employee->first_name . ' ' . $log->employee->last_name) : null;
+            if (!$name && $log && preg_match('/registered on-site by (.+?)(?: — |$)/u', $log->description, $m)) {
+                $name = $m[1];
+            }
+            $note  = $log && str_contains($log->description, ' — ') ? trim(explode(' — ', $log->description, 2)[1]) : null;
+            $visit = $foundOn[$id] ?? null;
+
+            $out[$id] = [
+                'found_by' => $name,
+                'note'     => $note,
+                'visit'    => $visit ? ['id' => $visit->id, 'merchant' => $visit->merchant_name, 'date' => $visit->completed_at] : null,
+                'visits'   => (int) ($visitCounts[$id] ?? 0),
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Discovered Terminals report (PDF or CSV) — the terminals on the Field
+     * Discoveries tab, with the same search and dates, plus who found each one.
+     */
+    public function exportDiscoveries(Request $request)
+    {
+        $format    = $request->input('format') === 'csv' ? 'csv' : 'pdf';
+        $terminals = $this->discoveryQuery($request)->orderByDesc('created_at')->get();
+        $info      = $this->discoveryDetails($terminals);
+        $tz        = 'Africa/Harare';
+
+        $rows = $terminals->map(function ($t) use ($info, $tz) {
+            $d     = $info[$t->id] ?? [];
+            $visit = $d['visit'] ?? null;
+            return [
+                'found_on'   => $t->created_at ? $t->created_at->copy()->timezone($tz)->format('d M Y, H:i') : '',
+                'found_by'   => $d['found_by'] ?? '',
+                'terminal'   => $t->terminal_id,
+                'merchant'   => $t->merchant_name,
+                'client'     => optional($t->client)->company_name,
+                'business'   => $t->business_type,
+                'contact'    => $t->merchant_contact_person,
+                'phone'      => $t->merchant_phone,
+                'address'    => $t->physical_address,
+                'city'       => $t->city,
+                'region'     => $t->region,
+                'model'      => $t->terminal_model,
+                'serial'     => $t->serial_number,
+                'status'     => $t->current_status ?: $t->status,
+                'found_visit'=> $visit ? 'Visit #' . $visit['id'] . ($visit['merchant'] ? ' · ' . $visit['merchant'] : '') : '',
+                'note'       => $d['note'] ?? '',
+                'visits'     => $d['visits'] ?? 0,
+            ];
+        });
+
+        $period = 'All dates';
+        if ($request->filled('found_from') || $request->filled('found_to')) {
+            $fmt    = fn ($v) => $v ? Carbon::parse($v)->format('j M Y') : '…';
+            $period = 'Found ' . $fmt($request->input('found_from')) . ' to ' . $fmt($request->input('found_to'));
+        }
+        $filename = 'discovered-terminals_' . now($tz)->format('Y-m-d');
+
+        if ($format === 'csv') {
+            return response()->streamDownload(function () use ($rows) {
+                $out = fopen('php://output', 'w');
+                fwrite($out, "\xEF\xBB\xBF"); // Excel reads UTF-8
+                fputcsv($out, ['Found On', 'Found By', 'Terminal ID', 'Merchant', 'Client', 'Business Type', 'Contact Person', 'Phone',
+                               'Address', 'City', 'Region', 'Model', 'Serial Number', 'Status', 'Found During', 'Technician Note', 'Visits Since']);
+                foreach ($rows as $r) {
+                    fputcsv($out, array_values($r));
+                }
+                fclose($out);
+            }, $filename . '.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        }
+
+        $byTechnician = $rows->groupBy(fn ($r) => $r['found_by'] ?: 'Not recorded')->map->count()->sortDesc();
+
+        return Pdf::loadView('pos-terminals.discoveries-pdf', [
+            'rows'         => $rows,
+            'period'       => $period,
+            'search'       => $request->input('search'),
+            'byTechnician' => $byTechnician,
+            'generatedAt'  => now($tz)->format('j M Y, H:i'),
+            'filename'     => $filename,
+        ])->setPaper('a4', 'landscape')->download($filename . '.pdf');
+    }
+
     public function index(Request $request)
     {
         // Count field-discovered terminals for the tab badge (always, regardless of active tab)
@@ -495,17 +654,8 @@ public function storeColumnMapping(Request $request)
 
         // Field discoveries tab — show only terminals found by technicians on-site
         if ($request->get('tab') === 'discoveries') {
-            $query = PosTerminal::with(['client'])->where('source', 'field_discovery');
-
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('pos_terminals.terminal_id', 'like', "%{$search}%")
-                      ->orWhere('pos_terminals.merchant_name', 'like', "%{$search}%");
-                });
-            }
-
-            $discoveries = $query->orderByDesc('created_at')->paginate(20);
+            $discoveries   = $this->discoveryQuery($request)->orderByDesc('created_at')->paginate(20);
+            $discoveryInfo = $this->discoveryDetails($discoveries->getCollection());
 
             $clients      = Client::orderBy('company_name')->get();
             $regions      = Region::orderBy('name')->pluck('name');
@@ -519,7 +669,7 @@ public function storeColumnMapping(Request $request)
             }));
 
             return view('pos-terminals.index', compact(
-                'discoveries', 'terminals', 'clients', 'regions', 'cities',
+                'discoveries', 'discoveryInfo', 'terminals', 'clients', 'regions', 'cities',
                 'provinces', 'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount'
             ));
         }

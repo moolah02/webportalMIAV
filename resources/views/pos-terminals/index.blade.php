@@ -41,6 +41,7 @@
 .pt-index .pt-card-title { display: flex; align-items: baseline; gap: 10px; }
 .pt-index .pt-card-title h2 { font-size: 14px; font-weight: 600; margin: 0; }
 .pt-index .pt-card-meta { font-size: 12.5px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.pt-index .pt-report-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 .pt-index .ui-table tbody td { font-size: 13px; }
 .pt-index .cell-sub { font-size: 12px; color: var(--mv-muted); margin-top: 1px; }
 .pt-index .pt-id { color: var(--mv-ink); font-size: 12.5px; font-weight: 500; text-decoration: none; white-space: nowrap; }
@@ -228,17 +229,35 @@
                    value="{{ request('search') }}" class="ui-input"
                    onkeydown="if(event.key==='Enter'){this.form.submit();}">
         </div>
+        <div class="filter-group">
+            <label class="ui-label" for="found-from">Found from</label>
+            <input type="date" name="found_from" id="found-from" value="{{ request('found_from') }}" class="ui-input">
+        </div>
+        <div class="filter-group">
+            <label class="ui-label" for="found-to">Found to</label>
+            <input type="date" name="found_to" id="found-to" value="{{ request('found_to') }}" class="ui-input">
+        </div>
         <div class="filter-actions">
             <button type="submit" class="btn-primary pt-btn">Apply</button>
             <a href="{{ route('pos-terminals.index', ['tab' => 'discoveries']) }}" class="btn-secondary pt-btn">Reset</a>
         </div>
     </form>
 
+    @php $reportParams = array_filter(request()->only(['search', 'found_from', 'found_to'])); @endphp
     <div class="ui-card overflow-hidden">
         <div class="ui-card-header">
             <div class="pt-card-title">
                 <h2>Discovered on Site</h2>
                 <span class="pt-card-meta">{{ number_format($discoveries->total()) }} terminals</span>
+            </div>
+            <div class="pt-report-actions">
+                <span class="pt-card-meta">Report of these terminals:</span>
+                <a href="{{ route('pos-terminals.discoveries.export', $reportParams + ['format' => 'pdf']) }}" class="btn-secondary btn-sm">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg>Download PDF
+                </a>
+                <a href="{{ route('pos-terminals.discoveries.export', $reportParams + ['format' => 'csv']) }}" class="btn-secondary btn-sm">
+                    <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-download"/></svg>Download CSV
+                </a>
             </div>
         </div>
         <div class="overflow-x-auto">
@@ -306,7 +325,11 @@
                             <span class="status-badge {{ $statusClass }}">{{ ucfirst($terminal->status) }}</span>
                         </td>
                         <td>
-                            <div class="cell-sub">{{ $terminal->created_at->diffForHumans() }}</div>
+                            @php $found = $discoveryInfo[$terminal->id] ?? []; @endphp
+                            <div class="cell-primary">{{ $terminal->created_at->copy()->timezone('Africa/Harare')->format('j M Y, H:i') }}</div>
+                            <div class="cell-sub">
+                                {{ !empty($found['found_by']) ? 'by ' . $found['found_by'] : $terminal->created_at->diffForHumans() }}@if(!empty($found['visit'])) · visit #{{ $found['visit']['id'] }}@endif
+                            </div>
                         </td>
                         <td class="pt-td-actions">
                             <div class="action-group">

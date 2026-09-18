@@ -221,6 +221,11 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->middleware('permission:export_data,manage_terminals,all')
             ->name('export');
 
+        // Discovered Terminals report (Field Discoveries tab) — PDF or CSV
+        Route::get('/discoveries/export', [PosTerminalController::class, 'exportDiscoveries'])
+            ->middleware('permission:view_terminals,manage_terminals,export_data,all')
+            ->name('discoveries.export');
+
         // CRUD routes
         Route::get('/', [PosTerminalController::class, 'index'])
             ->middleware('permission:view_terminals,manage_terminals,all')
