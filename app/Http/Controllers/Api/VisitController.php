@@ -264,6 +264,9 @@ class VisitController extends Controller
             'condition_notes'  => ['sometimes','nullable','string','max:2000'],
             'evidence'         => ['sometimes','nullable','array'],
             'evidence.*'       => ['nullable','string'],
+            'remove_evidence'  => ['sometimes','nullable','array'],   // photo URLs to take off the visit
+            'remove_evidence.*'=> ['nullable','string'],
+            'evidence_replace' => ['sometimes','boolean'],            // true = the sent list is the complete set
             'signature'        => ['sometimes','nullable','string'],
         ]);
 
@@ -282,9 +285,26 @@ class VisitController extends Controller
             if (array_key_exists('merchant_phone', $data)) {
                 $visitUpdates['phone_number'] = $data['merchant_phone'];
             }
-            foreach (['new_contact_person','new_phone_number','new_physical_address','visit_summary','action_points','terminal_comments','condition_notes','evidence','signature'] as $field) {
+            foreach (['new_contact_person','new_phone_number','new_physical_address','visit_summary','action_points','terminal_comments','condition_notes','signature'] as $field) {
                 if (array_key_exists($field, $data)) {
                     $visitUpdates[$field] = $data[$field];
+                }
+            }
+
+            // Photos: an edit ADDS the photos it sends and keeps the ones already on
+            // the visit. The tablet's edit screen doesn't load existing photos, so it
+            // sent an empty (or new-only) list and wiped them. Photos are removed only
+            // when asked explicitly (remove_evidence) or with evidence_replace=true.
+            if (array_key_exists('evidence', $data) || !empty($data['remove_evidence'])) {
+                $current = is_array($visit->evidence) ? $visit->evidence : [];
+                $sent    = array_values(array_filter((array) ($data['evidence'] ?? []), fn ($u) => is_string($u) && $u !== ''));
+                $photos  = !empty($data['evidence_replace']) ? $sent : array_merge($current, $sent);
+                if (!empty($data['remove_evidence'])) {
+                    $photos = array_diff($photos, (array) $data['remove_evidence']);
+                }
+                $photos = array_values(array_unique($photos));
+                if ($photos !== array_values($current)) {
+                    $visitUpdates['evidence'] = $photos;
                 }
             }
             if (!empty($visitUpdates)) {
