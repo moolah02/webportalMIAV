@@ -252,7 +252,7 @@
         <div class="ui-card-header">
             <div class="pt-card-title">
                 <h2>Discovered on Site</h2>
-                <span class="pt-card-meta">{{ number_format($discoveries->total()) }} terminals</span>
+                <span class="pt-card-meta">{{ number_format($discoveries->total()) }} {{ IlluminateSupportStr::plural('terminal', $discoveries->total()) }}</span>
             </div>
             <div class="pt-report-actions">
                 <span class="pt-card-meta">Report of these terminals:</span>
