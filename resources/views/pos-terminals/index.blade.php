@@ -30,6 +30,10 @@
 .pt-index .pt-search { position: relative; }
 .pt-index .pt-search .mv-i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--mv-muted); pointer-events: none; }
 .pt-index .pt-search .ui-input { width: 240px; padding-left: 32px; }
+/* Date filters sit on the same line as the other controls: label beside the box */
+.pt-index .pt-date { flex-direction: row; align-items: center; gap: 6px; }
+.pt-index .pt-date label { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--mv-ink-2); white-space: nowrap; }
+.pt-index .pt-date .ui-input { width: 148px; }
 .pt-index .ui-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236A7686' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 32px;
@@ -229,12 +233,12 @@
                    value="{{ request('search') }}" class="ui-input"
                    onkeydown="if(event.key==='Enter'){this.form.submit();}">
         </div>
-        <div class="filter-group">
-            <label class="ui-label" for="found-from">Found from</label>
+        <div class="filter-group pt-date">
+            <label for="found-from">Found from</label>
             <input type="date" name="found_from" id="found-from" value="{{ request('found_from') }}" class="ui-input">
         </div>
-        <div class="filter-group">
-            <label class="ui-label" for="found-to">Found to</label>
+        <div class="filter-group pt-date">
+            <label for="found-to">to</label>
             <input type="date" name="found_to" id="found-to" value="{{ request('found_to') }}" class="ui-input">
         </div>
         <div class="filter-actions">
