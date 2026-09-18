@@ -135,11 +135,14 @@ class SearchController extends Controller
 
     private function item(string $group, string $icon, ?string $title, array $sub, string $url): array
     {
+        // Merchant names often carry runs of spaces from imports ("FCA   Bulawayo")
+        $clean = fn ($v) => is_string($v) ? trim(preg_replace('/\s+/u', ' ', $v)) : $v;
+
         return [
             'group' => $group,
             'icon'  => $icon,
-            'title' => (string) $title,
-            'sub'   => implode(' · ', array_filter(array_map(fn ($p) => is_string($p) ? trim($p) : $p, $sub), fn ($p) => $p !== null && $p !== '')),
+            'title' => (string) $clean((string) $title),
+            'sub'   => implode(' · ', array_filter(array_map($clean, $sub), fn ($p) => $p !== null && $p !== '')),
             'url'   => $url,
         ];
     }

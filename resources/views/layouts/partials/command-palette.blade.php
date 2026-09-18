@@ -36,7 +36,7 @@
   function collectPages() {
     pages = []; seen = {};
     document.querySelectorAll('.mv-side a[href]').forEach(function (a) {
-      if (a.closest('.mv-me')) return;
+      if (a.closest('.mv-me, .mv-brand')) return; // skip the logo link and the user row
       var clone = a.cloneNode(true);
       clone.querySelectorAll('.mv-ver, svg').forEach(function (n) { n.remove(); });
       var title = clone.textContent.replace(/\s+/g, ' ').trim();
