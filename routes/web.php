@@ -1036,6 +1036,9 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
 
     Route::middleware('auth')->group(function () {
         Route::get('/mobile-app', [\App\Http\Controllers\MobileAppController::class, 'index'])->name('mobile-app.index');
+
+        // Ctrl+K search (each result group follows the user's permissions)
+        Route::get('/search', [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
         Route::get('/mobile-app/download', [\App\Http\Controllers\MobileAppController::class, 'download'])->name('mobile-app.download');
     });
     // ==============================================

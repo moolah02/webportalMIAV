@@ -38,6 +38,7 @@
 <body class="mv-body">
   @include('layouts.partials.progress')
   @include('layouts.partials.icons')
+  @include('layouts.partials.command-palette')
 
   @php
     $me = auth()->user();
@@ -219,6 +220,13 @@
       </div>
 
       <div class="mv-top-right">
+        {{-- Search (Ctrl+K / ⌘K) --}}
+        <button type="button" class="mv-search-btn" onclick="window.mvPalette && mvPalette.open()" aria-label="Search (Ctrl+K)" title="Search (Ctrl+K)">
+          <svg class="mv-i" aria-hidden="true"><use href="#i-search"/></svg>
+          <span>Search…</span>
+          <kbd class="mv-kbd" data-mv-kbd>Ctrl K</kbd>
+        </button>
+
         {{-- Notifications --}}
         <div style="position:relative" id="notifWrapper">
           <button type="button" id="notifBtn" onclick="toggleNotifDropdown(event)" class="mv-icon-btn" aria-label="Notifications">
