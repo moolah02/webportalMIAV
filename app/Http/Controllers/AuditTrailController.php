@@ -127,7 +127,11 @@ class AuditTrailController extends Controller
             ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
             ->groupBy(DB::raw('DATE(created_at)'))->orderBy('date')->get();
 
-        $recentEvents = ActivityLog::with('employee')->latest()->limit(20)->get()
+        // Inside the reported period, like every other figure in this PDF —
+        // it used to list the newest 20 events whenever they happened.
+        $recentEvents = ActivityLog::with('employee')
+            ->whereBetween(DB::raw('DATE(created_at)'), [$dateFrom, $dateTo])
+            ->latest()->limit(20)->get()
             ->map(function ($log) {
                 $log->category = self::CATEGORY_MAP[$log->model_type] ?? ($log->model_type ? 'Other' : 'System');
                 return $log;

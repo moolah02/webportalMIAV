@@ -654,9 +654,11 @@ public function generateReport($assignmentId)
                     $assignment->assignment_id,
                     $technicianName,
                     $assignment->region->name ?? 'N/A',
-                    count($assignment->pos_terminals),
+                    // Both are nullable; counting null threw mid-stream and the
+                    // browser saved a truncated CSV with no error shown.
+                    count($assignment->pos_terminals ?? []),
                     $assignment->client->company_name ?? 'N/A',
-                    $assignment->scheduled_date->format('Y-m-d'),
+                    optional($assignment->scheduled_date)->format('Y-m-d'),
                     $serviceTypeName,
                     $assignment->priority,
                     $assignment->status,

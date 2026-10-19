@@ -281,7 +281,7 @@
                                                         {{ $region->completion_rate }}%
                                                     </span>
                                                 </td>
-                                                <td>{{ number_format($region->avg_duration / 60, 1) }} hrs</td>
+                                                <td>{{ $region->avg_duration ? number_format($region->avg_duration / 60, 1) . ' hrs' : '—' }}</td>
                                             </tr>
                                             @endforeach
                                         @else
@@ -326,7 +326,7 @@
                             </div>
                             <div class="metric-item">
                                 <span class="metric-label">Average Assignment Duration</span>
-                                <span class="metric-value">{{ number_format($progressData['team_metrics']['avg_assignment_duration'] ?? 0, 1) }} hours</span>
+                                <span class="metric-value">{{ ($progressData['team_metrics']['avg_assignment_duration'] ?? null) ? number_format($progressData['team_metrics']['avg_assignment_duration'], 1) . ' hours' : 'Not recorded' }}</span>
                             </div>
                             @else
                             <p class="text-muted">

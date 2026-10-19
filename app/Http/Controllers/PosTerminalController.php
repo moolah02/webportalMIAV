@@ -323,7 +323,13 @@ public function getFilteredStats(Request $request)
     public function export(Request $request)
 {
     try {
-        $query = PosTerminal::with('client');
+        // Terminal Inventory hides field discoveries (they have their own tab
+        // and their own export), so the export must hide them too — otherwise
+        // the file holds more devices than the screen it came from.
+        $query = PosTerminal::with('client')
+            ->where(function ($q) {
+                $q->where('source', '!=', 'field_discovery')->orWhereNull('source');
+            });
 
         // Apply same filters as index (qualified columns to avoid ambiguity)
         if ($request->filled('search')) {

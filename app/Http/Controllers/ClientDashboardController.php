@@ -254,7 +254,10 @@ public function exportData(Client $client)
                     $terminal->merchant_contact_person ?? '',
                     $terminal->merchant_phone ?? '',
                     $terminal->city ?? '',
-                    $terminal->region->name ?? 'Unknown',
+                    // pos_terminals has both a region column and a region()
+                    // relation; the column wins on the model, so ->region->name
+                    // was always null and every row read "Unknown".
+                    $terminal->region_name ?: 'Unknown',
                     strtoupper($terminal->current_status ?? 'UNKNOWN'),
                     $terminal->last_service_date ?? 'Never',
                     $terminal->installation_date ?? '',
@@ -473,160 +476,14 @@ public function viewTerminal(Client $client, PosTerminal $terminal)
     // Generate reports
     public function generateReport(Client $client, $reportType)
     {
-        try {
-            switch ($reportType) {
-                case 'monthly':
-                    return $this->generateMonthlyReport($client);
-                case 'terminals':
-                    return $this->generateTerminalReport($client);
-                case 'activity':
-                    return $this->generateActivityReport($client);
-                default:
-                    return back()->with('error', 'Invalid report type');
-            }
-        } catch (\Exception $e) {
-            return back()->with('error', 'Failed to generate report: ' . $e->getMessage());
-        }
-    }
-
-    // Monthly summary report
-    private function generateMonthlyReport(Client $client)
-    {
-        $currentMonth = Carbon::now()->startOfMonth();
-        $lastMonth = Carbon::now()->subMonth()->startOfMonth();
-
-        $data = [
-            'client' => $client->company_name,
-            'report_period' => $currentMonth->format('F Y'),
-            'terminal_stats' => $this->getTerminalStatistics($client),
-            'visits_current_month' => TechnicianVisit::where('client_id', $client->id)
-                ->where('visit_date', '>=', $currentMonth)
-                ->count(),
-            'visits_last_month' => TechnicianVisit::where('client_id', $client->id)
-                ->where('visit_date', '>=', $lastMonth)
-                ->where('visit_date', '<', $currentMonth)
-                ->count(),
-            'tickets_opened' => Ticket::where('client_id', $client->id)
-                ->where('created_at', '>=', $currentMonth)
-                ->count(),
-            'tickets_resolved' => Ticket::where('client_id', $client->id)
-                ->where('status', 'resolved')
-                ->where('updated_at', '>=', $currentMonth)
-                ->count(),
-            'generated_at' => now(),
-        ];
-
-        return view('reports.monthly', $data);
-    }
-
-    // Terminal performance report
-    private function generateTerminalReport(Client $client)
-    {
-        $terminals = $client->posTerminals()->with(['region'])->get();
-        $terminalStats = $this->getTerminalStatistics($client);
-
-        $terminalData = $terminals->map(function ($terminal) {
-            $recentVisits = TechnicianVisit::where('pos_terminal_id', $terminal->id)
-                ->where('visit_date', '>=', Carbon::now()->subDays(90))
-                ->count();
-
-            $openTickets = Ticket::where('pos_terminal_id', $terminal->id)
-                ->whereIn('status', ['open', 'in_progress'])
-                ->count();
-
-            return [
-                'terminal_id' => $terminal->terminal_id,
-                'merchant_name' => $terminal->merchant_name,
-                'city' => $terminal->city,
-                'region' => $terminal->region->name ?? 'Unknown',
-                'status' => $terminal->current_status,
-                'last_service' => $terminal->last_service_date,
-                'recent_visits' => $recentVisits,
-                'open_tickets' => $openTickets,
-                'installation_date' => $terminal->installation_date,
-            ];
-        });
-
-        return view('reports.terminals', [
-            'client' => $client,
-            'terminals' => $terminalData,
-            'stats' => $terminalStats,
-            'generated_at' => now(),
-        ]);
-    }
-
-    // Activity report
-    private function generateActivityReport(Client $client)
-    {
-        $visits = TechnicianVisit::with(['technician', 'posTerminal'])
-            ->where('client_id', $client->id)
-            ->where('visit_date', '>=', Carbon::now()->subDays(90))
-            ->orderBy('visit_date', 'desc')
-            ->get();
-
-        $tickets = Ticket::with(['technician', 'posTerminal'])
-            ->where('client_id', $client->id)
-            ->where('created_at', '>=', Carbon::now()->subDays(90))
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('reports.activity', [
-            'client' => $client,
-            'visits' => $visits,
-            'tickets' => $tickets,
-            'generated_at' => now(),
-        ]);
-    }
-
-    // AJAX endpoint to get filter data
-    public function getFilterData(Client $client): JsonResponse
-    {
-        try {
-            $cities = PosTerminal::where('client_id', $client->id)
-                ->select('city')
-                ->distinct()
-                ->whereNotNull('city')
-                ->orderBy('city')
-                ->pluck('city');
-
-            $regions = Region::orderBy('name')->get(['id', 'name']);
-
-            return response()->json([
-                'cities' => $cities,
-                'regions' => $regions,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    // Private helper methods
-    private function getTerminalStatistics(Client $client)
-    {
-        $terminals = $client->posTerminals();
-
-        return [
-            'total' => $terminals->count(),
-            'by_status' => $terminals->select('current_status', DB::raw('count(*) as count'))
-                ->groupBy('current_status')
-                ->pluck('count', 'current_status')
-                ->toArray(),
-            'by_region' => $terminals->with('region')
-                ->select('region_id', DB::raw('count(*) as count'))
-                ->groupBy('region_id')
-                ->get()
-                ->mapWithKeys(function ($item) {
-                    return [
-                        $item->region->name ?? 'Unknown Region' => $item->count
-                    ];
-                })
-                ->toArray(),
-            'by_city' => $terminals->select('city', DB::raw('count(*) as count'))
-                ->groupBy('city')
-                ->orderBy('count', 'desc')
-                ->pluck('count', 'city')
-                ->toArray(),
-        ];
+        // These three rendered Blade files that were never created, so every
+        // one of them failed with "View not found". They now open the report
+        // that covers the same ground and works.
+        return match ($reportType) {
+            'monthly' => redirect()->route('reports.executive', ['client_id' => $client->id]),
+            'terminals', 'activity' => redirect()->route('client-dashboards.export-data', $client),
+            default => back()->with('error', 'Invalid report type'),
+        };
     }
 
     private function generateProjectCode(Client $client, $projectName)

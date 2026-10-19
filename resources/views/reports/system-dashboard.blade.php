@@ -198,11 +198,13 @@
             <div class="sd-kpi-value">{{ number_format($systemOverview['open_tickets']) }}</div>
             <div class="sd-kpi-sub">Need attention</div>
         </div>
-        <div class="sd-kpi">
-            <div class="sd-kpi-top">Revenue Impact <svg class="mv-i" aria-hidden="true"><use href="#i-banknote"/></svg></div>
-            <div class="sd-kpi-value">${{ number_format($systemOverview['revenue_impact'] / 1000) }}K</div>
-            <div class="sd-kpi-sub">Monthly estimate</div>
-        </div>
+        @if(!empty($systemOverview['revenue_impact']))
+            <div class="sd-kpi">
+                <div class="sd-kpi-top">Revenue Impact <svg class="mv-i" aria-hidden="true"><use href="#i-banknote"/></svg></div>
+                <div class="sd-kpi-value">${{ number_format($systemOverview['revenue_impact'] / 1000) }}K</div>
+                <div class="sd-kpi-sub">Active devices at the rate set in System Settings</div>
+            </div>
+        @endif
     </div>
 
     {{-- System health --}}

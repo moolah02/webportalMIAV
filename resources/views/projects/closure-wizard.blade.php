@@ -216,7 +216,7 @@
                                         <td>{{ $region->region ?? 'Unknown' }}</td>
                                         <td class="cw-num">{{ $region->total_terminals }}</td>
                                         <td class="cw-num"><span class="badge {{ $rate >= 95 ? 'badge-green' : ($rate >= 80 ? 'badge-blue' : 'badge-gray') }}">{{ $rate }}%</span></td>
-                                        <td class="cw-num">{{ number_format($region->avg_duration / 60, 1) }} hrs</td>
+                                        <td class="cw-num">{{ $region->avg_duration ? number_format($region->avg_duration / 60, 1) . ' hrs' : '—' }}</td>
                                     </tr>
                                     @endforeach
                                 @else

@@ -411,6 +411,9 @@
                         <button @click="exportReport('csv');open=false">
                             <svg class="mv-i" aria-hidden="true"><use href="#i-table"/></svg> Download CSV
                         </button>
+                        <button @click="exportReport('xlsx');open=false">
+                            <svg class="mv-i" aria-hidden="true"><use href="#i-table"/></svg> Download Excel
+                        </button>
                         <button @click="exportReport('pdf');open=false">
                             <svg class="mv-i" aria-hidden="true"><use href="#i-file"/></svg> Download PDF
                         </button>

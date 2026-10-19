@@ -68,10 +68,6 @@ public function getTerminalId(): ?string
         return $this->hasOne(VisitTerminal::class);
     }
 
-    public function getCompletedAtLocalAttribute()
-    {
-        return optional($this->completed_at)?->timezone(config('app.timezone'));
-    }
 
     public function scopeForMerchant($query, $merchantId)
     {
@@ -144,14 +140,17 @@ public function getTerminalId(): ?string
     ->first();;
 
         if ($posTerminal) {
-            $data = array_merge($data, [
+            // Only fill gaps: what the technician recorded on the visit wins over
+            // the master record. The old version read columns that do not exist
+            // (model, condition), so it blanked the model on every visit and
+            // could wipe the serial the technician actually captured.
+            $data = array_merge($data, array_filter([
                 'found_in_pos_terminals' => true,
-                'terminal_model' => $posTerminal->model ?? null,
-                'condition_status' => $posTerminal->condition ?? null,
-                'serial_number' => $posTerminal->serial_number ?? null,
+                'terminal_model' => $data['terminal_model'] ?? $posTerminal->terminal_model ?? null,
+                'serial_number' => $data['serial_number'] ?? $posTerminal->serial_number ?? null,
                 'last_service_date' => $posTerminal->last_service_date ?? null,
                 'next_service_due' => $posTerminal->next_service_due ?? null,
-            ]);
+            ], fn ($value) => $value !== null));
         } else {
             $data['found_in_pos_terminals'] = false;
         }

@@ -19,8 +19,10 @@ class ReportQueryBuilder
             'id', 'client_code', 'company_name', 'email', 'phone', 'address', 'city', 'region',
             'contract_start_date', 'contract_end_date', 'status', 'priority', 'created_at', 'updated_at'
         ],
+        // regions has no is_active column — offering it broke the report with a
+        // raw SQL error as soon as it was ticked.
         'regions' => [
-            'id', 'name', 'description', 'is_active', 'created_at', 'updated_at'
+            'id', 'name', 'description', 'created_at', 'updated_at'
         ],
         'visits' => [
             'id', 'merchant_id', 'merchant_name', 'employee_id', 'assignment_id', 'completed_at',
@@ -449,14 +451,35 @@ class ReportQueryBuilder
                 continue;
             }
 
-            // column must be an aggregate expression like COUNT(*) or SUM(table.col)
-            // We allow aggregate functions with optional table.col argument
-            if (!preg_match('/^(COUNT|SUM|AVG|MIN|MAX)\s*\(/i', $column)) {
-                throw new InvalidArgumentException('HAVING column must be an aggregate expression: ' . $column);
-            }
-
-            $query->havingRaw(DB::raw($column) . ' ' . $operator . ' ?', [$value]);
+            // The column must be an aggregate over an allowed column, e.g. COUNT(*)
+            // or SUM(visits.id). Anything else — including extra SQL smuggled after
+            // the function name — is rejected, and the expression is rebuilt here
+            // rather than passed through, so nothing from the request reaches SQL.
+            $query->havingRaw($this->buildAggregateExpression($column) . ' ' . $operator . ' ?', [$value]);
         }
+    }
+
+    /**
+     * Rebuild "COUNT(*)" / "SUM(table.column)" from its parts after checking both
+     * against the allow-lists. The returned string is built here, never taken
+     * from the request, so a HAVING clause cannot carry SQL into the query.
+     */
+    private function buildAggregateExpression(string $expression): string
+    {
+        if (!preg_match('/^\s*(COUNT|SUM|AVG|MIN|MAX)\s*\(\s*(\*|[A-Za-z0-9_]+\.[A-Za-z0-9_]+)\s*\)\s*$/i', $expression, $parts)) {
+            throw new InvalidArgumentException('HAVING column must be an aggregate expression such as COUNT(*) or SUM(table.column): ' . $expression);
+        }
+
+        $function = strtoupper($parts[1]);
+        $argument = $parts[2];
+
+        if ($argument === '*') {
+            return $function . '(*)';
+        }
+
+        $this->validateFilterColumn($argument);
+
+        return $function . '(' . $this->quoteExpression($argument) . ')';
     }
 
     private function validateFilterColumn(string $column): void
@@ -508,6 +531,22 @@ class ReportQueryBuilder
             foreach ($config['where'] as $filter) {
                 if (!empty($filter['column'])) {
                     $this->validateFilterColumn($filter['column']);
+                }
+            }
+        }
+
+        // Grouping and ordering are quoted straight into the SQL, so they are
+        // checked against the allow-list exactly like a filter column.
+        if (!empty($config['group_by'])) {
+            foreach ($config['group_by'] as $group) {
+                $this->validateFilterColumn((string) $group);
+            }
+        }
+
+        if (!empty($config['order_by'])) {
+            foreach ($config['order_by'] as $order) {
+                if (!empty($order['expr'])) {
+                    $this->validateFilterColumn((string) $order['expr']);
                 }
             }
         }
@@ -600,12 +639,13 @@ class ReportQueryBuilder
 
     private function quoteExpression(string $expr): string
     {
-        // table.column → `table`.`column`
+        // table.column → `table`.`column`. Backticks in the input are stripped:
+        // leaving them in would let an identifier close itself and run on.
         if (strpos($expr, '.') !== false) {
             [$table, $column] = explode('.', $expr, 2);
-            return '`' . $table . '`.`' . $column . '`';
+            return '`' . str_replace('`', '', $table) . '`.`' . str_replace('`', '', $column) . '`';
         }
-        return '`' . $expr . '`';
+        return '`' . str_replace('`', '', $expr) . '`';
     }
 
     // -------------------------------------------------------------------------

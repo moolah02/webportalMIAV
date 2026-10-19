@@ -896,11 +896,14 @@ private function generateComprehensiveReport($project, $completionData, $reportT
             'report_type' => $reportType,
         ];
 
+        // Every name here must be a Blade that exists: 'detailed' pointed at
+        // reports.detailed-technical and the default at reports.project-completion,
+        // neither of which was ever created, so regenerating a report always failed.
         $viewName = match($reportType) {
             'executive' => 'reports.executive-summary',
-            'detailed' => 'reports.detailed-technical',
+            'detailed' => 'reports.detailed-summary',
             'client' => 'reports.client-presentation',
-            default => 'reports.project-completion',
+            default => 'reports.executive-summary',
         };
 
         Log::info("Using view: {$viewName}");
@@ -1148,49 +1151,40 @@ public function completionSuccess(Project $project)
 private function calculateRegionalPerformance($project)
 {
     try {
+        // Visits live in technician_visits: the `visits` table has no
+        // pos_terminal_id, job_assignment_id or duration_minutes, so this query
+        // always threw and the project reports fell back to invented rows.
+        $regionExpression = "COALESCE(NULLIF(t.region, ''), NULLIF(t.city, ''), 'Unknown region')";
+
         return DB::table('project_terminals as pt')
             ->join('pos_terminals as t', 'pt.pos_terminal_id', '=', 't.id')
-            ->leftJoin('visits as v', function($join) use ($project) {
-                $join->on('pt.pos_terminal_id', '=', 'v.pos_terminal_id')
-                     ->leftJoin('job_assignments as ja', 'v.job_assignment_id', '=', 'ja.id')
-                     ->where('ja.project_id', $project->id);
+            ->leftJoin('technician_visits as v', function ($join) use ($project) {
+                $join->on('v.pos_terminal_id', '=', 'pt.pos_terminal_id')
+                     ->whereIn('v.job_assignment_id', function ($query) use ($project) {
+                         $query->select('id')->from('job_assignments')->where('project_id', $project->id);
+                     });
             })
             ->where('pt.project_id', $project->id)
             ->where('pt.is_active', true)
-            ->selectRaw('
-                COALESCE(t.city, "Unknown Region") as region,
+            ->selectRaw($regionExpression . ' as region,
                 COUNT(DISTINCT pt.pos_terminal_id) as total_terminals,
-                COUNT(DISTINCT CASE WHEN v.pos_terminal_id IS NOT NULL THEN v.pos_terminal_id END) as completed_terminals,
-                AVG(COALESCE(v.duration_minutes, 120)) as avg_duration
-            ')
-            ->groupBy('t.city')
+                COUNT(DISTINCT v.pos_terminal_id) as completed_terminals,
+                AVG(v.duration_minutes) as avg_duration')
+            ->groupBy(DB::raw($regionExpression))
             ->get()
-            ->map(function($region) {
+            ->map(function ($region) {
                 $region->completion_rate = $region->total_terminals > 0
                     ? round(($region->completed_terminals / $region->total_terminals) * 100, 1)
                     : 0;
+                $region->avg_duration = $region->avg_duration !== null ? round($region->avg_duration) : null;
                 return $region;
             });
     } catch (\Exception $e) {
         Log::warning('Could not calculate regional performance: ' . $e->getMessage());
 
-        // Return sample data if real data fails
-        return collect([
-            (object)[
-                'region' => 'Harare CBD',
-                'total_terminals' => 45,
-                'completed_terminals' => 45,
-                'completion_rate' => 100,
-                'avg_duration' => 140
-            ],
-            (object)[
-                'region' => 'Chitungwiza',
-                'total_terminals' => 30,
-                'completed_terminals' => 29,
-                'completion_rate' => 96.7,
-                'avg_duration' => 180
-            ]
-        ]);
+        // Nothing to show is reported as nothing. A report must never carry
+        // figures the system did not measure.
+        return collect();
     }
 }
 
@@ -1212,18 +1206,18 @@ private function calculateTeamMetrics($project)
                 ->whereNotNull('actual_start_time')
                 ->whereNotNull('actual_end_time')
                 ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, actual_start_time, actual_end_time)) as avg_hours')
-                ->value('avg_hours') ?? 2.4, // Default fallback
+                ->value('avg_hours'),   // null when nothing has been timed yet
         ];
     } catch (\Exception $e) {
         Log::warning('Could not calculate team metrics: ' . $e->getMessage());
 
-        // Return sample data if real calculation fails
+        // No invented numbers: an unmeasured figure is reported as unknown.
         return [
-            'total_assignments' => 4,
-            'completed_assignments' => 4,
-            'completion_rate' => 100,
-            'unique_technicians' => 2,
-            'avg_assignment_duration' => 2.4,
+            'total_assignments' => 0,
+            'completed_assignments' => 0,
+            'completion_rate' => 0,
+            'unique_technicians' => 0,
+            'avg_assignment_duration' => null,
         ];
     }
 }

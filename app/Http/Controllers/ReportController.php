@@ -148,6 +148,8 @@ class ReportController extends Controller
             switch ($validated['format']) {
                 case 'csv':
                     return $this->exportCsv($results, $filename);
+                case 'xlsx':
+                    return $this->exportXlsx($results, $filename, $validated);
                 case 'pdf':
                     return $this->exportPdf($results, $filename, $validated);
                 default:
@@ -162,15 +164,51 @@ class ReportController extends Controller
         }
     }
 
+    /**
+     * Excel workbook of the same rows. The format was accepted by validation
+     * and then refused by the switch, so asking for it only produced an error.
+     */
+    private function exportXlsx($results, string $filename, array $config)
+    {
+        @ini_set('memory_limit', '512M');
+
+        $book = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+        $sheet = $book->getActiveSheet();
+        $sheet->setTitle('Report');
+
+        $columns = $results->isNotEmpty() ? array_keys((array) $results->first()) : [];
+        $rows = [$columns];
+        foreach ($results as $result) {
+            $rows[] = array_values((array) $result);
+        }
+        if ($columns) {
+            $sheet->fromArray($rows, null, 'A1');
+            $sheet->freezePane('A2');
+            foreach (range(1, count($columns)) as $index) {
+                $sheet->getColumnDimensionByColumn($index)->setAutoSize(true);
+            }
+        }
+        $book->getProperties()
+            ->setTitle($config['title'] ?? 'MIAV report')
+            ->setCreator('Revival Technologies');
+
+        return response()->streamDownload(function () use ($book) {
+            (new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($book))->save('php://output');
+        }, $filename . '.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
     private function exportCsv($results, string $filename)
     {
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}.csv\"",
         ];
 
         $callback = function() use ($results) {
             $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF");   // BOM, so Excel reads accents correctly
 
             if ($results->isNotEmpty()) {
                 fputcsv($file, array_keys((array) $results->first()));
@@ -240,11 +278,18 @@ class ReportController extends Controller
 
     public function history(Request $request)
     {
+        // The builder is open to every employee, so the history is scoped: you
+        // see your own runs unless you may view reports generally. It carries
+        // other people's names, emails and IP addresses.
+        $user = Auth::user();
+        $seesAll = $user && ($user->hasPermission('view_reports') || $user->hasPermission('all'));
+
         $runs = ReportRun::with('user')
+            ->when(! $seesAll, fn ($query) => $query->where('user_id', $user?->id))
             ->orderByDesc('executed_at')
             ->paginate(50);
 
-        return view('reports.history', compact('runs'));
+        return view('reports.history', compact('runs', 'seesAll'));
     }
 
     public function getAvailableFields(): JsonResponse

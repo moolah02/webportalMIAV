@@ -125,9 +125,6 @@ class SystemReportsController extends Controller
         'city_distribution' => $terminals->groupBy('city')
             ->map->count()
             ->toArray(),
-        'deployment_status' => $terminals->groupBy('deployment_status')
-            ->map->count()
-            ->toArray(),
         'terminals_needing_service' => $terminals->whereIn('current_status', ['maintenance', 'faulty'])->count(),
         'average_terminal_age' => $this->calculateAverageTerminalAge(),
         'service_due_analysis' => $this->getServiceDueAnalysis(),
@@ -292,12 +289,21 @@ class SystemReportsController extends Controller
         return round(array_sum($metrics) / count($metrics), 1);
     }
 
+    /**
+     * Revenue impact is active devices x an agreed monthly rate per device.
+     * The rate is not something this system can know, so it comes from System
+     * Settings; with no rate set there is no figure to show, and the dashboard
+     * leaves the tile out rather than publishing a guess.
+     */
     private function calculateRevenueImpact()
     {
-        // Simplified revenue impact calculation
-        $activeTerminals = PosTerminal::where('current_status', 'active')->count();
-        $estimatedRevenuePerTerminal = 1500; // Monthly revenue estimate
-        return $activeTerminals * $estimatedRevenuePerTerminal;
+        $rate = (float) (\App\Models\SystemSetting::get('revenue_per_terminal', 0) ?: 0);
+
+        if ($rate <= 0) {
+            return null;
+        }
+
+        return PosTerminal::where('current_status', 'active')->count() * $rate;
     }
 
     private function getTopClientsByActivity()
@@ -607,7 +613,7 @@ class SystemReportsController extends Controller
             ->pluck('total', 'month');
 
         return [
-            'labels'   => $months->map(fn($m) => Carbon::createFromFormat('Y-m', $m)->format('M Y'))->values()->toArray(),
+            'labels'   => $months->map(fn($m) => Carbon::createFromFormat('Y-m-d', $m . '-01')->format('M Y'))->values()->toArray(),
             'created'  => $months->map(fn($m) => $created->get($m, 0))->values()->toArray(),
             'resolved' => $months->map(fn($m) => $resolved->get($m, 0))->values()->toArray(),
         ];
@@ -626,7 +632,7 @@ class SystemReportsController extends Controller
             ->pluck('total', 'month');
 
         return [
-            'labels' => $months->map(fn($m) => Carbon::createFromFormat('Y-m', $m)->format('M Y'))->values()->toArray(),
+            'labels' => $months->map(fn($m) => Carbon::createFromFormat('Y-m-d', $m . '-01')->format('M Y'))->values()->toArray(),
             'visits' => $months->map(fn($m) => $visits->get($m, 0))->values()->toArray(),
         ];
     }
@@ -675,15 +681,32 @@ class SystemReportsController extends Controller
             case 'employees':
                 $csvData = $this->exportEmployeesData();
                 break;
-            default:
+            case 'service':
+                $csvData = $this->exportServiceData();
+                break;
+            case 'assets':
+                $csvData = $this->exportAssetsData();
+                break;
+            case 'projects':
+                $csvData = $this->exportProjectsData();
+                break;
+            case 'regional':
+                $csvData = $this->exportRegionalData();
+                break;
+            case 'overview':
                 $csvData = $this->exportOverviewData();
                 break;
+            default:
+                // Previously any unknown section quietly downloaded the overview
+                // file under the requested name, which looked like it had worked.
+                abort(404, 'Unknown report section: ' . $section);
         }
 
         $filename = 'system_report_' . $section . '_' . date('Y-m-d_H-i-s') . '.csv';
 
         $callback = function() use ($csvData) {
             $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF");   // BOM, so Excel reads accented names correctly
             foreach ($csvData as $row) {
                 fputcsv($file, $row);
             }
@@ -691,7 +714,7 @@ class SystemReportsController extends Controller
         };
 
         return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
@@ -750,6 +773,108 @@ class SystemReportsController extends Controller
                 $terminal->region ?? 'N/A',
                 $terminal->installation_date ?? 'N/A',
             ];
+        }
+
+        return $csvData;
+    }
+
+    /** Field service activity: one row per recorded visit. */
+    private function exportServiceData()
+    {
+        $visits = TechnicianVisit::with(['technician:id,first_name,last_name', 'posTerminal:id,terminal_id,merchant_name', 'client:id,company_name'])
+            ->orderByDesc('visit_date')
+            ->limit(5000)
+            ->get();
+
+        $csvData = [['Visit Date', 'Technician', 'Terminal ID', 'Merchant', 'Client', 'Status on Visit', 'Condition', 'Issues Found', 'Corrective Action']];
+
+        foreach ($visits as $visit) {
+            $csvData[] = [
+                optional($visit->visit_date)->format('Y-m-d') ?? '',
+                $visit->technician ? $visit->technician->first_name . ' ' . $visit->technician->last_name : 'N/A',
+                $visit->posTerminal->terminal_id ?? 'N/A',
+                $visit->posTerminal->merchant_name ?? 'N/A',
+                $visit->client->company_name ?? 'N/A',
+                $visit->terminal_status_during_visit ?? 'N/A',
+                $visit->terminal_condition ?? 'N/A',
+                $visit->issues_found ?? '',
+                $visit->corrective_action ?? '',
+            ];
+        }
+
+        return $csvData;
+    }
+
+    /** Internal asset register. */
+    private function exportAssetsData()
+    {
+        $assets = Asset::orderBy('name')->get();
+
+        $csvData = [['Asset', 'Category', 'Brand', 'Model', 'In Stock', 'Assigned', 'Minimum Level', 'Status']];
+
+        foreach ($assets as $asset) {
+            $csvData[] = [
+                $asset->name,
+                $asset->category ?? 'N/A',
+                $asset->brand ?? 'N/A',
+                $asset->model ?? 'N/A',
+                $asset->stock_quantity ?? 0,
+                $asset->assigned_quantity ?? 0,
+                $asset->min_stock_level ?? 0,
+                strtoupper($asset->status ?? 'UNKNOWN'),
+            ];
+        }
+
+        return $csvData;
+    }
+
+    private function exportProjectsData()
+    {
+        $projects = Project::with('client:id,company_name')->orderByDesc('start_date')->get();
+
+        $csvData = [['Project Code', 'Project', 'Client', 'Type', 'Status', 'Start Date', 'End Date', 'Devices Planned', 'Devices Done', 'Completion %']];
+
+        foreach ($projects as $project) {
+            $csvData[] = [
+                $project->project_code,
+                $project->project_name,
+                $project->client->company_name ?? 'N/A',
+                $project->project_type ?? 'N/A',
+                strtoupper($project->status ?? 'UNKNOWN'),
+                optional($project->start_date)->format('Y-m-d') ?? '',
+                optional($project->end_date)->format('Y-m-d') ?? '',
+                $project->estimated_terminals_count ?? 0,
+                $project->actual_terminals_count ?? 0,
+                $project->completion_percentage ?? 0,
+            ];
+        }
+
+        return $csvData;
+    }
+
+    /** Devices, visits and open tickets per region. */
+    private function exportRegionalData()
+    {
+        $terminals = PosTerminal::select(['id', 'region', 'current_status'])->get();
+        $visitCounts = TechnicianVisit::select('pos_terminal_id', DB::raw('count(*) as total'))
+            ->groupBy('pos_terminal_id')->pluck('total', 'pos_terminal_id');
+        $openTickets = Ticket::whereNotIn(DB::raw('LOWER(status)'), ['resolved', 'closed', 'cancelled', 'completed'])
+            ->select('pos_terminal_id', DB::raw('count(*) as total'))
+            ->groupBy('pos_terminal_id')->pluck('total', 'pos_terminal_id');
+
+        $rows = [];
+        foreach ($terminals as $terminal) {
+            $region = $terminal->region ?: 'Not set';
+            $rows[$region]['devices'] = ($rows[$region]['devices'] ?? 0) + 1;
+            $rows[$region]['active'] = ($rows[$region]['active'] ?? 0) + (strtolower((string) $terminal->current_status) === 'active' ? 1 : 0);
+            $rows[$region]['visits'] = ($rows[$region]['visits'] ?? 0) + (int) ($visitCounts[$terminal->id] ?? 0);
+            $rows[$region]['open_tickets'] = ($rows[$region]['open_tickets'] ?? 0) + (int) ($openTickets[$terminal->id] ?? 0);
+        }
+        ksort($rows);
+
+        $csvData = [['Region', 'Devices', 'Active Devices', 'Visits Recorded', 'Open Tickets']];
+        foreach ($rows as $region => $row) {
+            $csvData[] = [$region, $row['devices'], $row['active'], $row['visits'], $row['open_tickets']];
         }
 
         return $csvData;

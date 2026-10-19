@@ -118,9 +118,11 @@
             <div class="tv-actions">
                 <button type="submit" class="btn-primary">Apply</button>
                 <a href="{{ route('reports.technician-visits') }}" class="btn-secondary">Reset</a>
-                <a href="{{ route('reports.technician-visits.export') }}?{{ http_build_query(request()->all()) }}" class="btn-secondary">
-                    <svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export CSV
-                </a>
+                @if(auth()->user()?->hasPermission('export_reports') || auth()->user()?->hasPermission('all'))
+                    <a href="{{ route('reports.technician-visits.export') }}?{{ http_build_query(request()->all()) }}" class="btn-secondary">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Export CSV
+                    </a>
+                @endif
             </div>
         </form>
     </div>

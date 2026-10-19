@@ -292,7 +292,7 @@
                         <td>{{ $visit->visit_date ? \Carbon\Carbon::parse($visit->visit_date)->format('M d, Y') : 'N/A' }}</td>
                         <td>{{ $visit->posTerminal->terminal_id ?? 'N/A' }}</td>
                         <td>{{ $visit->technician->full_name ?? 'N/A' }}</td>
-                        <td>{{ ucfirst($visit->visit_type ?? 'maintenance') }}</td>
+                        <td>{{ $visit->terminal_status_during_visit ?: ($visit->asset_type ?: 'Site visit') }}</td>
                         <td><span class="status-badge status-{{ $visit->status }}">{{ strtoupper($visit->status) }}</span></td>
                     </tr>
                     @endforeach
@@ -391,10 +391,25 @@
         new Chart(serviceCtx, {
             type: 'line',
             data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                @php
+                    // Real weekly counts from the visits in the period. This line
+                    // used to split the 30-day total by fixed fractions, so the
+                    // shape of the chart was invented.
+                    $weekBuckets = ['Week 1' => 0, 'Week 2' => 0, 'Week 3' => 0, 'Week 4' => 0, 'Week 5' => 0];
+                    $windowStart = \Carbon\Carbon::now()->subDays(30)->startOfDay();
+                    foreach ($recentVisits as $visitRow) {
+                        $when = $visitRow->visit_date ?? $visitRow->created_at;
+                        if (! $when) { continue; }
+                        $index = (int) floor($windowStart->diffInDays(\Carbon\Carbon::parse($when)) / 7);
+                        $label = 'Week ' . min($index + 1, 5);
+                        $weekBuckets[$label] = ($weekBuckets[$label] ?? 0) + 1;
+                    }
+                    if ($weekBuckets['Week 5'] === 0) { unset($weekBuckets['Week 5']); }
+                @endphp
+                labels: @json(array_keys($weekBuckets)),
                 datasets: [{
                     label: 'Service Visits',
-                    data: [{{ floor($recentVisits->count() * 0.2) }}, {{ floor($recentVisits->count() * 0.3) }}, {{ floor($recentVisits->count() * 0.25) }}, {{ floor($recentVisits->count() * 0.25) }}],
+                    data: @json(array_values($weekBuckets)),
                     borderColor: '#4CAF50',
                     backgroundColor: 'rgba(76, 175, 80, 0.1)',
                     fill: true,

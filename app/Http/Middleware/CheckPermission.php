@@ -13,11 +13,17 @@ class CheckPermission
         $user = Auth::user(); // Changed from auth()->user()
 
         if (!$user) {
-            return redirect()->route('login');
+            // API callers get an answer they can read, not a redirect to a login page.
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401)
+                : redirect()->route('login');
         }
 
         // Check if user is active
         if (!$user->isActive()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'This account has been deactivated.'], 403);
+            }
             Auth::logout(); // Changed from auth()->logout()
             return redirect()->route('login')->withErrors(['email' => 'Your account has been deactivated.']);
         }

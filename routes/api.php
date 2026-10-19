@@ -320,30 +320,21 @@ Route::middleware(['auth:sanctum'])->prefix('assets')->group(function () {
     // REPORTS ROUTES - ENHANCED
     // ==============================================
 
+    // Only the endpoints that exist are declared here. The analytics, export and
+    // builder routes that used to sit in this group called methods that were
+    // never written, so every one of them answered with a 500.
     Route::prefix('reports')->group(function () {
-        // Dashboard and overview
-        Route::get('/', [ReportsController::class, 'index']);
-        Route::get('/dashboard', [ReportsController::class, 'dashboardStats']);
+        // Organisation-wide figures: same permission as the web reports, since
+        // they cover every client and every technician.
+        Route::middleware('permission:view_reports,all')->group(function () {
+            Route::get('/dashboard', [ReportsController::class, 'dashboardStats']);
+            Route::get('/assignments', [ReportsController::class, 'assignmentReports']);
+            Route::get('/terminals', [ReportsController::class, 'terminalReports']);
+            Route::get('/technician-performance', [ReportsController::class, 'technicianPerformance']);
+        });
 
-        // Core reports
-        Route::get('/assignments', [ReportsController::class, 'assignmentReports']);
-        Route::get('/terminals', [ReportsController::class, 'terminalReports']);
-        Route::get('/technician-performance', [ReportsController::class, 'technicianPerformance']);
+        // A technician's own figures — no extra permission needed.
         Route::get('/my-performance', [ReportsController::class, 'myPerformance']);
-
-        // Enhanced Analytics
-        Route::get('/terminal-analytics', [ReportsController::class, 'getTerminalAnalytics']);
-        Route::get('/service-analytics', [ReportsController::class, 'getServiceAnalytics']);
-        Route::get('/performance-metrics', [ReportsController::class, 'getPerformanceMetrics']);
-        Route::get('/trends-analysis', [ReportsController::class, 'getTrendsAnalysis']);
-
-        // Export capabilities
-        Route::get('/export/{type}', [ReportsController::class, 'export']);
-        Route::post('/custom-report', [ReportsController::class, 'generateCustomReport']);
-
-        // Report builder
-        Route::get('/builder', [ReportsController::class, 'getBuilderData']);
-        Route::post('/builder/generate', [ReportsController::class, 'generateBuilderReport']);
     });
 
     // ==============================================
@@ -599,40 +590,16 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
     // then sends the returned URL in evidence[]). Replaces Firebase Storage.
     Route::post('/uploads/evidence', [ApiVisitController::class, 'uploadEvidence']);
 });
-Route::middleware(['auth'])->group(function () {
-    Route::get('/visits', [VisitController::class, 'index'])->name('api.visits.index');
-    Route::get('/visits/{visit}', [VisitController::class, 'show'])->name('api.visits.show');
-});
+// GET /api/visits and /api/visits/{visit} are served by the sanctum group above.
+// They were re-registered here behind the session guard, which the api routes
+// never start, so both answered "Unauthenticated" to every token request.
 
 //reports routes
 
 
-Route::middleware(['auth:sanctum'])->group(function () {
-    // Report operations
-    Route::prefix('report')->group(function () {
-        Route::post('/preview', [ReportController::class, 'preview'])
-            ->name('api.report.preview');
-        Route::post('/export', [ReportController::class, 'export'])
-            ->name('api.report.export');
-        Route::get('/fields', [ReportController::class, 'getAvailableFields'])
-            ->name('api.report.fields');
-    });
-
-    // Report template CRUD (static routes MUST come before parameterised /{id})
-    Route::prefix('report/templates')->group(function () {
-        Route::get('/', [ReportTemplateController::class, 'index'])
-            ->name('api.report.templates.index');
-        Route::post('/', [ReportTemplateController::class, 'store'])
-            ->name('api.report.templates.store');
-        Route::get('/tags/list', [ReportTemplateController::class, 'getTags'])
-            ->name('api.report.templates.tags');
-        Route::get('/{id}', [ReportTemplateController::class, 'show'])
-            ->name('api.report.templates.show');
-        Route::put('/{id}', [ReportTemplateController::class, 'update'])
-            ->name('api.report.templates.update');
-        Route::delete('/{id}', [ReportTemplateController::class, 'destroy'])
-            ->name('api.report.templates.destroy');
-        Route::post('/{id}/duplicate', [ReportTemplateController::class, 'duplicate'])
-            ->name('api.report.templates.duplicate');
-    });
-});
+// The Report Builder's own endpoints (/api/report/preview, /export, /fields and
+// the template CRUD) are declared once, in routes/web.php, where they run under
+// the session guard the builder page actually uses. A second copy lived here
+// pointing at Api\ReportController, which has none of those methods, and it
+// registered the same route names — so whichever file loaded first decided
+// whether the builder worked at all.

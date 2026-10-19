@@ -22,8 +22,10 @@ class ReportsController extends Controller
      */
     public function dashboardStats(Request $request)
     {
-        $dateFrom = $request->get('date_from', now()->subDays(30));
-        $dateTo = $request->get('date_to', now());
+        // A plain date like 2026-10-19 means midnight, which dropped the whole
+        // last day from every one of these reports.
+        $dateFrom = \Carbon\CarbonImmutable::parse($request->get('date_from', now()->subDays(30)))->startOfDay();
+        $dateTo = \Carbon\CarbonImmutable::parse($request->get('date_to', now()))->endOfDay();
 
         $stats = [
             'terminals' => [
@@ -81,10 +83,12 @@ class ReportsController extends Controller
      */
     public function assignmentReports(Request $request)
     {
-        $dateFrom = $request->get('date_from', now()->subDays(30));
-        $dateTo = $request->get('date_to', now());
+        // A plain date like 2026-10-19 means midnight, which dropped the whole
+        // last day from every one of these reports.
+        $dateFrom = \Carbon\CarbonImmutable::parse($request->get('date_from', now()->subDays(30)))->startOfDay();
+        $dateTo = \Carbon\CarbonImmutable::parse($request->get('date_to', now()))->endOfDay();
 
-        $assignments = JobAssignment::with(['technician:id,first_name,last_name', 'client:id,company_name'])
+        $assignments = JobAssignment::with(['technician:id,first_name,last_name', 'client:id,company_name', 'region:id,name'])
                                    ->whereBetween('created_at', [$dateFrom, $dateTo])
                                    ->get();
 
@@ -110,7 +114,10 @@ class ReportsController extends Controller
                                                  'avg_completion_time' => $this->calculateAvgTime($techJobs->where('status', 'completed')),
                                              ];
                                          }),
-            'by_region' => $assignments->groupBy('region')
+            // job_assignments has region_id, not region: grouping on 'region'
+            // resolved the relation and tried to use a Region model as an array
+            // key, which threw. Group on the region's name instead.
+            'by_region' => $assignments->groupBy(fn ($job) => $job->region->name ?? 'Unknown')
                                      ->map(function($regionJobs, $region) {
                                          return [
                                              'region' => $region ?: 'Unknown',
@@ -205,8 +212,10 @@ class ReportsController extends Controller
      */
     public function technicianPerformance(Request $request)
     {
-        $dateFrom = $request->get('date_from', now()->subDays(30));
-        $dateTo = $request->get('date_to', now());
+        // A plain date like 2026-10-19 means midnight, which dropped the whole
+        // last day from every one of these reports.
+        $dateFrom = \Carbon\CarbonImmutable::parse($request->get('date_from', now()->subDays(30)))->startOfDay();
+        $dateTo = \Carbon\CarbonImmutable::parse($request->get('date_to', now()))->endOfDay();
 
         $performance = $this->getTechnicianPerformance($dateFrom, $dateTo);
 
@@ -228,8 +237,10 @@ class ReportsController extends Controller
     public function myPerformance(Request $request)
     {
         $user = $request->user();
-        $dateFrom = $request->get('date_from', now()->subDays(30));
-        $dateTo = $request->get('date_to', now());
+        // A plain date like 2026-10-19 means midnight, which dropped the whole
+        // last day from every one of these reports.
+        $dateFrom = \Carbon\CarbonImmutable::parse($request->get('date_from', now()->subDays(30)))->startOfDay();
+        $dateTo = \Carbon\CarbonImmutable::parse($request->get('date_to', now()))->endOfDay();
 
         $myJobs = JobAssignment::where('technician_id', $user->id)
                               ->whereBetween('created_at', [$dateFrom, $dateTo])

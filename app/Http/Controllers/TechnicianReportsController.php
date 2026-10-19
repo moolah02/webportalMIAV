@@ -14,7 +14,7 @@ class TechnicianReportsController extends Controller
         $query = $this->buildQuery($request);
         $visits = $query->paginate(25)->withQueryString();
 
-        $stats = $this->calcStats();
+        $stats = $this->calcStats($request);
         $technicians = Employee::orderBy('first_name')->get(['id', 'first_name', 'last_name']);
 
         return view('reports.technician-visits', compact('visits', 'stats', 'technicians'));
@@ -23,7 +23,7 @@ class TechnicianReportsController extends Controller
     public function filter(Request $request)
     {
         $visits = $this->buildQuery($request)->get();
-        $stats  = $this->calcStats();
+        $stats  = $this->calcStats($request);
 
         return response()->json([
             'success' => true,
@@ -45,12 +45,13 @@ class TechnicianReportsController extends Controller
 
         $filename = 'visit-reports-' . date('Y-m-d') . '.csv';
         $headers  = [
-            'Content-Type'        => 'text/csv',
+            'Content-Type'        => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
         return response()->stream(function () use ($visits) {
             $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF");   // BOM, so Excel reads accented names correctly
             fputcsv($file, ['ID', 'Date', 'Merchant', 'Merchant ID', 'Employee', 'Assignment', 'Terminal ID', 'Status', 'Summary', 'Action Points']);
             foreach ($visits as $v) {
                 fputcsv($file, [
@@ -83,18 +84,26 @@ class TechnicianReportsController extends Controller
                 $query->where('completed_at', '>=', $request->start_date . ' 00:00:00');
             }
             if ($request->filled('end_date')) {
-                $query->where('completed_at', '<=', $request->end_date . '23:59:59');
+                $query->where('completed_at', '<=', $request->end_date . ' 23:59:59');
             }
         } else {
+            // completed_at holds Harare local time, so the boundaries are built
+            // on the Harare clock; using the UTC app clock shifted every range
+            // by two hours.
+            $now = Carbon::now('Africa/Harare');
             $from = match ($range) {
-                'today'        => Carbon::today(),
-                'yesterday'    => Carbon::yesterday(),
-                'last_7_days'  => Carbon::now()->subDays(7),
-                'last_30_days' => Carbon::now()->subDays(30),
-                'this_month'   => Carbon::now()->startOfMonth(),
-                default        => Carbon::now()->subDays(7),
+                'today'        => $now->copy()->startOfDay(),
+                'yesterday'    => $now->copy()->subDay()->startOfDay(),
+                'last_7_days'  => $now->copy()->subDays(7),
+                'last_30_days' => $now->copy()->subDays(30),
+                'this_month'   => $now->copy()->startOfMonth(),
+                default        => $now->copy()->subDays(7),
             };
-            $query->where('completed_at', '>=', $from);
+            $query->where('completed_at', '>=', $from->format('Y-m-d H:i:s'));
+
+            if ($range === 'yesterday') {
+                $query->where('completed_at', '<=', $now->copy()->subDay()->endOfDay()->format('Y-m-d H:i:s'));
+            }
         }
 
         // Employee / technician filter
@@ -124,13 +133,23 @@ class TechnicianReportsController extends Controller
         return $query;
     }
 
-    private function calcStats(): array
+    /**
+     * The cards sit beside the table, so they count the same filtered set —
+     * they used to show all-time totals next to a filtered list.
+     *
+     * "Today" is today in Harare: completed_at holds local time while the app
+     * clock is UTC, so Carbon::today() moved the boundary by two hours.
+     */
+    private function calcStats(?Request $request = null): array
     {
+        $base = fn () => $request ? $this->buildQuery($request) : Visit::query();
+        $localToday = Carbon::now('Africa/Harare')->toDateString();
+
         return [
-            'today_visits'    => Visit::whereDate('completed_at', Carbon::today())->count(),
-            'completed'       => Visit::whereNotNull('completed_at')->count(),
-            'pending'         => Visit::whereNull('completed_at')->count(),
-            'total_visits'    => Visit::count(),
+            'today_visits'    => $base()->whereBetween('completed_at', [$localToday.' 00:00:00', $localToday.' 23:59:59'])->count(),
+            'completed'       => $base()->whereNotNull('completed_at')->count(),
+            'pending'         => $base()->whereNull('completed_at')->count(),
+            'total_visits'    => $base()->count(),
         ];
     }
 
