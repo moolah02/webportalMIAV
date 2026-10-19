@@ -76,13 +76,13 @@ class TechnicianVisitMirror
 
             // What the visit actually found. This used to be the constant
             // 'completed' for every visit, which made any report of outcomes
-            // say nothing.
+            // say nothing. Values come from the enum the column already
+            // defines — 'partial' meaning the device was found with a fault.
             $outcome = match ($state) {
-                'not_found' => 'device_not_found',
-                'inactive' => 'fault_found',
-                'active' => 'completed',
-                'relocated' => 'device_relocated',
-                'replaced' => 'device_replaced',
+                'not_found' => 'terminal_not_found',
+                'relocated' => 'terminal_relocated',
+                'inactive' => 'partial',
+                'active', 'replaced' => 'completed',
                 default => null,
             };
 
