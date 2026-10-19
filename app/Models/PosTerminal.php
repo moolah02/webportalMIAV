@@ -28,6 +28,7 @@ class PosTerminal extends Model
         'terminal_model',
         'serial_number',
         'contract_details',
+        'monthly_transaction_target',
         'status',
         'current_status',
         'source',

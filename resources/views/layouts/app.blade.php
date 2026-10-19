@@ -92,9 +92,12 @@
         ['jobs.mine',          'list-todo',  'My Assignments', ['jobs.mine']],
       ]],
       ['Reports', 'chart', [
-        ['reports.index',             'chart', 'Reports Dashboard', ['reports.index', 'reports.system']],
-        ['reports.technician-visits', 'pin',   'Technician Visits', ['reports.technician-visits*']],
-        ['reports.builder',           'table', 'Report Builder',    ['reports.builder', 'reports.history']],
+        ['reports.index',             'chart',      'Reports Dashboard',          ['reports.index', 'reports.system']],
+        ['reports.technician-visits', 'pin',        'Technician Visits',          ['reports.technician-visits*']],
+        ['reports.builder',           'table',      'Report Builder',             ['reports.builder', 'reports.history']],
+        ['reports.operational',       'clipboard',  'Weekly Operational Report',  ['reports.operational']],
+        ['reports.executive',         'file-check', 'Monthly Executive Report',   ['reports.executive']],
+        ['reports.transactions',      'banknote',   'Transaction Activity',       ['reports.transactions*']],
       ]],
       ['Administration', 'settings', [
         ['settings.index',    'sliders', 'System Settings', ['settings.*']],

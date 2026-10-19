@@ -22,6 +22,7 @@ class Client extends Model
         'status',
         'contract_start_date',
         'contract_end_date',
+        'monthly_transaction_target',
     ];
 
     protected $casts = [

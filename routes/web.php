@@ -13,6 +13,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\BusinessLicenseController;
 use App\Http\Controllers\JobAssignmentController;
 use App\Http\Controllers\TechnicianReportsController;
+use App\Http\Controllers\ContractReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\BackupController;
@@ -876,6 +877,28 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         Route::get('/technician-visits/{visit}', [TechnicianReportsController::class, 'show'])
             ->middleware('permission:view_technician_visits,all')
             ->name('technician-visits.show');
+
+        // ------------------------------------------------------------------
+        // Contractual service reports (supply agreement clause 10):
+        // weekly operational + monthly executive, with the transaction figures
+        // the client supplies and the reasons the office records.
+        // ------------------------------------------------------------------
+        Route::get('/operational', [ContractReportController::class, 'operational'])->name('operational');
+        Route::get('/executive', [ContractReportController::class, 'executive'])->name('executive');
+
+        Route::get('/contract/export', [ContractReportController::class, 'export'])
+            ->middleware('permission:export_reports,export_data,view_reports,all')
+            ->name('contract.export');
+
+        Route::post('/contract/notes', [ContractReportController::class, 'saveNotes'])->name('contract.notes');
+        Route::post('/contract/issue', [ContractReportController::class, 'issue'])->name('contract.issue');
+        Route::post('/contract/exception', [ContractReportController::class, 'saveException'])->name('contract.exception');
+
+        Route::get('/transactions', [ContractReportController::class, 'transactions'])->name('transactions');
+        Route::get('/transactions/template', [ContractReportController::class, 'transactionTemplate'])->name('transactions.template');
+        Route::post('/transactions/import', [ContractReportController::class, 'importTransactions'])
+            ->middleware('permission:import_data,view_reports,all')
+            ->name('transactions.import');
     });
 
     // ==============================================
