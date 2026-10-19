@@ -117,7 +117,7 @@
         <p class="tx-note" style="margin:10px 0 0">
             Common spellings are accepted (for example <code>Terminal ID</code>, <code>TID</code>, <code>Txn Count</code>,
             <code>Volume</code>). Where no target is supplied, the target set on the device is used, then the client's
-            default, then the system default@if($defaultTarget) (currently {{ $defaultTarget }} per device per month)@endif.
+            default, then the system default{{ $defaultTarget ? ' (currently '.$defaultTarget.' per device per month)' : '' }}.
         </p>
     </div>
 </div>
