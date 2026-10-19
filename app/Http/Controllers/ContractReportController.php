@@ -395,7 +395,9 @@ class ContractReportController extends Controller
             ['Recommendations', $record->recommendations],
             ['Action required from the client', $record->client_actions],
         ];
-        $summary->fromArray($rows, null, 'A1');
+        // Strict null comparison, or PhpSpreadsheet treats 0 and '' as empty and
+        // leaves the cell blank — a zero would read as "no data".
+        $summary->fromArray($rows, null, 'A1', true);
         $summary->getColumnDimension('A')->setWidth(34);
         $summary->getColumnDimension('B')->setWidth(60);
 
@@ -420,7 +422,7 @@ class ContractReportController extends Controller
                 $device['transactions']['achievement'] ?? '', $device['evidence_count'],
             ];
         }
-        $devices->fromArray($deviceRows, null, 'A1');
+        $devices->fromArray($deviceRows, null, 'A1', true);
 
         $issues = $book->createSheet();
         $issues->setTitle('Open issues');
@@ -432,7 +434,7 @@ class ContractReportController extends Controller
                 $item['age_days'], $item['age_bucket'], $item['owner'],
             ];
         }
-        $issues->fromArray($issueRows, null, 'A1');
+        $issues->fromArray($issueRows, null, 'A1', true);
 
         $faults = $book->createSheet();
         $faults->setTitle('Faults');
@@ -445,7 +447,7 @@ class ContractReportController extends Controller
         foreach ($report['corrective']['by_type'] as $action => $count) {
             $faultRows[] = [$action, $count];
         }
-        $faults->fromArray($faultRows, null, 'A1');
+        $faults->fromArray($faultRows, null, 'A1', true);
 
         $txn = $book->createSheet();
         $txn->setTitle('Transactions');
@@ -459,7 +461,7 @@ class ContractReportController extends Controller
                 $device['transactions']['achievement'] ?? '',
             ];
         }
-        $txn->fromArray($txnRows, null, 'A1');
+        $txn->fromArray($txnRows, null, 'A1', true);
 
         foreach ([$devices, $issues, $faults, $txn] as $sheet) {
             foreach (range('A', 'W') as $column) {

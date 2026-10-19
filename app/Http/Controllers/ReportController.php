@@ -182,7 +182,8 @@ class ReportController extends Controller
             $rows[] = array_values((array) $result);
         }
         if ($columns) {
-            $sheet->fromArray($rows, null, 'A1');
+            // Strict comparison so a 0 or an empty string is written, not skipped.
+            $sheet->fromArray($rows, null, 'A1', true);
             $sheet->freezePane('A2');
             foreach (range(1, count($columns)) as $index) {
                 $sheet->getColumnDimensionByColumn($index)->setAutoSize(true);
