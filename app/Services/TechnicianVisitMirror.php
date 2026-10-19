@@ -74,6 +74,18 @@ class TechnicianVisitMirror
 
             $model = $vt->terminal_model ?? $vt->device_type ?? ($t['device_type'] ?? ($t['terminal_model'] ?? null));
 
+            // What the visit actually found. This used to be the constant
+            // 'completed' for every visit, which made any report of outcomes
+            // say nothing.
+            $outcome = match ($state) {
+                'not_found' => 'device_not_found',
+                'inactive' => 'fault_found',
+                'active' => 'completed',
+                'relocated' => 'device_relocated',
+                'replaced' => 'device_replaced',
+                default => null,
+            };
+
             $row = TechnicianVisit::updateOrCreate(
                 ['visit_id' => (string) $visit->id],
                 [
@@ -87,7 +99,7 @@ class TechnicianVisitMirror
                     'started_at'                   => $visit->completed_at,
                     'ended_at'                     => $visit->completed_at,
                     'status'                       => 'closed',
-                    'outcome'                      => 'completed',
+                    'outcome'                      => $outcome,
                     'terminal_status_during_visit' => $state,
                     'terminal_condition'           => $condition,
                     'issues_found'                 => $visit->action_points,
