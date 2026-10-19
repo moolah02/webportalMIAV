@@ -486,6 +486,34 @@ public function viewTerminal(Client $client, PosTerminal $terminal)
         };
     }
 
+    // Private helper methods
+    private function getTerminalStatistics(Client $client)
+    {
+        // A fresh query per figure. Reusing one relation builder meant each
+        // select() and groupBy() piled onto the previous one, so the region and
+        // city counts were grouped by status as well and came out understated.
+        $query = fn () => $client->posTerminals();
+
+        return [
+            'total' => $query()->count(),
+            'by_status' => $query()->select('current_status', DB::raw('count(*) as count'))
+                ->groupBy('current_status')
+                ->pluck('count', 'current_status')
+                ->toArray(),
+            'by_region' => $query()->select('region_id', DB::raw('count(*) as count'))
+                ->groupBy('region_id')
+                ->with('region:id,name')
+                ->get()
+                ->mapWithKeys(fn ($item) => [$item->region->name ?? 'Unknown Region' => $item->count])
+                ->toArray(),
+            'by_city' => $query()->select('city', DB::raw('count(*) as count'))
+                ->groupBy('city')
+                ->orderBy('count', 'desc')
+                ->pluck('count', 'city')
+                ->toArray(),
+        ];
+    }
+
     private function generateProjectCode(Client $client, $projectName)
     {
         $clientPrefix = substr($client->client_code, 0, 3);
