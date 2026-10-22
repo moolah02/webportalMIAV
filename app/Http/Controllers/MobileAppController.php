@@ -16,6 +16,9 @@ class MobileAppController extends Controller
         return view('mobile-app.index', [
             'release'   => MobileAppRelease::latest('current'),
             'newDesign' => MobileAppRelease::latest('new-design'),
+            // Chrome refuses to download an app file over a plain connection,
+            // so the buttons point at the secure address when one is set.
+            'secureBase' => rtrim((string) \App\Models\SystemSetting::get('secure_base_url', ''), '/'),
         ]);
     }
 
@@ -28,7 +31,13 @@ class MobileAppController extends Controller
         return response()->download(
             MobileAppRelease::path($release['file']),
             basename($release['file']),
-            ['Content-Type' => 'application/vnd.android.package-archive']
+            [
+                'Content-Type' => 'application/vnd.android.package-archive',
+                // Keep the browser from second-guessing the type, and from
+                // serving a stale copy after a new version is published.
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'no-store, must-revalidate',
+            ]
         );
     }
 }

@@ -304,7 +304,7 @@
                             <svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg>
                             <strong>Evidence {{ $idx + 1 }}:</strong>
                             @if(\Illuminate\Support\Str::startsWith($e, ['http://','https://','/storage/']))
-                                <a href="{{ $e }}" target="_blank" rel="noopener">View Evidence</a>
+                                <a href="{{ \App\Support\MediaUrl::display($e) }}" target="_blank" rel="noopener">View Evidence</a>
                             @else
                                 <span class="vs-raw">{{ $e }}</span>
                             @endif

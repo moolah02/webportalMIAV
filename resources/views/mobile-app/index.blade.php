@@ -41,6 +41,16 @@
 
     <p class="ma-intro">Android app for field technicians. Download a version below to install or update it on the tablets.</p>
 
+    <div class="alert alert-info ma-note">
+        <svg class="mv-i" aria-hidden="true"><use href="#i-info"/></svg>
+        <div>
+            <strong>Installing on a tablet.</strong>
+            Open this page on the tablet, sign in and tap Download. Android then asks for permission to
+            install from the browser the first time — allow it, then tap <strong>Install</strong>.
+            Installing over an existing app keeps saved visits and anything still waiting to sync.
+        </div>
+    </div>
+
     @if($newDesign)
     <div class="alert alert-info ma-note">
         <svg class="mv-i" aria-hidden="true"><use href="#i-info"/></svg>
@@ -76,7 +86,13 @@
                         <span><b>{{ number_format($r['size'] / 1048576, 1) }} MB</b></span>
                     </div>
                 </div>
-                <a href="{{ route('mobile-app.download', ['channel' => $v['channel']]) }}" class="btn-primary ma-download">
+                @php
+                    $downloadPath = route('mobile-app.download', ['channel' => $v['channel']], false);
+                    $downloadUrl = $secureBase
+                        ? $secureBase.$downloadPath
+                        : route('mobile-app.download', ['channel' => $v['channel']]);
+                @endphp
+                <a href="{{ $downloadUrl }}" class="btn-primary ma-download">
                     <svg class="mv-i" aria-hidden="true"><use href="#i-download"/></svg> Download APK
                 </a>
             </div>

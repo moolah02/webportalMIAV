@@ -133,7 +133,7 @@ a.ve-ev-name:hover{text-decoration:underline}
                         @foreach($evidence as $i => $url)
                         <div class="ve-ev">
                             @if(\Illuminate\Support\Str::startsWith($url, ['http://','https://','/storage/']))
-                                <a href="{{ $url }}" target="_blank" rel="noopener" class="ve-ev-name"><svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg><span>{{ basename($url) }}</span></a>
+                                <a href="{{ \App\Support\MediaUrl::display($url) }}" target="_blank" rel="noopener" class="ve-ev-name"><svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg><span>{{ basename($url) }}</span></a>
                             @else
                                 <span class="ve-ev-name"><svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg><span>{{ $url }}</span></span>
                             @endif
