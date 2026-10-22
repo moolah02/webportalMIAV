@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    /** How far back the dashboard's "Recent activity" list looks. */
+    private const RECENT_ACTIVITY_DAYS = 30;
+
     public function index()
     {
         // Update user's last login when they access dashboard
@@ -285,8 +288,13 @@ class DashboardController extends Controller
     {
         $activities = collect();
 
+        // "Recent" means recent: without a window, a record added months ago
+        // kept appearing as news whenever nothing newer existed.
+        $since = now()->subDays(self::RECENT_ACTIVITY_DAYS);
+
         // Recent terminals added (last 10)
         $recentTerminals = PosTerminal::with('client')
+            ->where('created_at', '>=', $since)
             ->latest()
             ->limit(5)
             ->get();
@@ -306,7 +314,7 @@ class DashboardController extends Controller
         }
 
         // Recent clients added
-        $recentClients = Client::latest()->limit(3)->get();
+        $recentClients = Client::where('created_at', '>=', $since)->latest()->limit(3)->get();
 
         foreach ($recentClients as $client) {
             $activities->push([
@@ -325,6 +333,7 @@ class DashboardController extends Controller
         // NEW: Recent license activities
         if (class_exists(\App\Models\BusinessLicense::class)) {
             $recentLicenses = \App\Models\BusinessLicense::with(['creator', 'department'])
+                ->where('created_at', '>=', $since)
                 ->latest()
                 ->limit(3)
                 ->get();
@@ -387,6 +396,7 @@ class DashboardController extends Controller
         // Recent job assignments
         try {
             $recentJobs = JobAssignment::with('technician')
+                ->where('created_at', '>=', $since)
                 ->latest()
                 ->limit(3)
                 ->get();
