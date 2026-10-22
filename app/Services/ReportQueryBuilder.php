@@ -26,19 +26,21 @@ class ReportQueryBuilder
         ],
         'visits' => [
             'id', 'merchant_id', 'merchant_name', 'employee_id', 'assignment_id', 'completed_at',
+            'site_visited', 'non_visit_reason', 'non_activation_reason', 'escalation_owner_name',
             'contact_person', 'phone_number', 'new_contact_person', 'new_phone_number',
             'new_physical_address', 'visit_summary', 'action_points', 'terminal_comments',
-            'created_at', 'updated_at'
+            'condition_notes', 'created_at', 'updated_at'
         ],
         'technician_visits' => [
             'id', 'visit_id', 'technician_id', 'pos_terminal_id', 'job_assignment_id',
-            'started_at', 'ended_at', 'terminal_status_during_visit', 'terminal_condition',
+            'started_at', 'ended_at', 'visit_date', 'terminal_status_during_visit', 'terminal_condition',
             'condition_notes', 'issues_found', 'corrective_action', 'visit_summary',
             'outcome', 'serial_snapshot', 'device_type_snapshot',
+            'site_visited', 'non_visit_reason', 'non_activation_reason', 'escalation_owner_name',
             'created_at', 'updated_at'
         ],
         'visit_terminals' => [
-            'id', 'visit_id', 'terminal_id', 'status', 'condition', 'serial_number', 'terminal_model',
+            'id', 'visit_id', 'terminal_id', 'status', 'state', 'condition', 'serial_number', 'terminal_model',
             'device_type', 'comments', 'created_at', 'updated_at'
         ],
         'tickets' => [
@@ -742,6 +744,11 @@ class ReportQueryBuilder
                 'job_assignment_id' => 'Assignment (link)',
                 'serial_snapshot'      => 'Serial No. (at visit)',
                 'device_type_snapshot' => 'Model (at visit)',
+                'site_visited'          => 'Site Visited?',
+                'non_visit_reason'      => 'Reason Not Visited',
+                'non_activation_reason' => 'Reason Device Not Active',
+                'escalation_owner_name' => 'Escalation Owner',
+                'visit_date'            => 'Visit Date',
             ],
             'visit_terminals' => [
                 'id'          => 'Visit Terminal Record ID',
@@ -766,6 +773,12 @@ class ReportQueryBuilder
                 'employee_id'       => 'Technician (link)',
                 'assignment_id'     => 'Assignment (link)',
                 'terminal_comments' => 'Corrective Action',
+                'action_points'     => 'Issues Found',
+                'site_visited'          => 'Site Visited?',
+                'non_visit_reason'      => 'Reason Not Visited',
+                'non_activation_reason' => 'Reason Device Not Active',
+                'escalation_owner_name' => 'Escalation Owner',
+                'condition_notes'       => 'Condition Notes',
             ],
             'projects' => [
                 'client_id'  => 'Client (link)',
@@ -788,6 +801,15 @@ class ReportQueryBuilder
 
     private function getFieldDescription(string $column, string $table): string
     {
+        // Recorded by the technician on the tablet; the same wording on both
+        // visit datasets so a report reads the same whichever one it is built on.
+        $visitCapture = [
+            'site_visited'          => 'Did the technician reach the site? "1" means yes, "0" means the site was not visited',
+            'non_visit_reason'      => 'Why the site was not visited, written by the technician on site',
+            'non_activation_reason' => 'Why the device is not active, written by the technician on site',
+            'escalation_owner_name' => 'The person this device or issue was escalated to',
+        ];
+
         $descriptions = [
             'pos_terminals' => [
                 'terminal_id'        => 'The unique code identifying this terminal (e.g. 77202614)',
@@ -882,6 +904,11 @@ class ReportQueryBuilder
                 'priority'     => 'Project priority level',
             ],
         ];
+
+        // Merged in rather than declared above, where the later 'visits' and
+        // 'technician_visits' keys would have overridden them.
+        $descriptions['visits'] = ($descriptions['visits'] ?? []) + $visitCapture;
+        $descriptions['technician_visits'] = ($descriptions['technician_visits'] ?? []) + $visitCapture;
 
         return $descriptions[$table][$column] ?? '';
     }

@@ -576,6 +576,9 @@ Route::prefix('webhooks')->group(function () {
 
 
 Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
+    // Names for the tablet's escalation-owner box (autocomplete, cached offline).
+    Route::get('/employees/search', [\App\Http\Controllers\Api\EmployeeLookupController::class, 'search']);
+
     Route::get('/visits', [ApiVisitController::class, 'index']);
     Route::get('/visits/{visit}', [ApiVisitController::class, 'show']);
     Route::get('/assignments/{assignmentId}/visits', [ApiVisitController::class, 'indexByAssignment']);

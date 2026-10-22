@@ -313,7 +313,13 @@
                             <div class="cr-reason">
                                 {{ $reason['reason'] }}
                                 @if(!empty($reason['note']))<div class="cr-muted">{{ $reason['note'] }}</div>@endif
-                                <div class="cr-src">{{ $reason['source'] === 'recorded' ? 'Recorded by the office' : 'From the job and visit records' }}</div>
+                                <div class="cr-src">
+                                    @switch($reason['source'])
+                                        @case('recorded') Recorded by the office @break
+                                        @case('technician') Recorded by the technician on site @break
+                                        @default From the job and visit records
+                                    @endswitch
+                                </div>
                             </div>
                         @else
                             <span class="cr-muted">—</span>

@@ -203,6 +203,8 @@ class ContractReportService
                 'v.id as visit_id', 'v.completed_at', 'v.created_at', 'v.employee_id',
                 'v.visit_summary', 'v.action_points', 'v.terminal_comments as corrective_action',
                 'v.condition_notes', 'v.evidence',
+                // Recorded by the technician on site.
+                'v.site_visited', 'v.non_visit_reason', 'v.non_activation_reason', 'v.escalation_owner_name',
                 'e.first_name', 'e.last_name',
             ])
             ->get();
@@ -501,8 +503,14 @@ class ContractReportService
         array $openIssues,
         ?array $transactions
     ): array {
-        $visited = count($visits) > 0;
-        $last = $visited ? $visits[count($visits) - 1] : null;
+        // A visit record can say the site was NOT reached. Those rows explain a
+        // non-visit; they do not count as a visit.
+        $attended = array_values(array_filter($visits, fn ($v) => ! $this->isNonVisit($v)));
+        $notReached = array_values(array_filter($visits, fn ($v) => $this->isNonVisit($v)));
+
+        $visited = count($attended) > 0;
+        $last = $visited ? $attended[count($attended) - 1] : null;
+        $lastNotReached = $notReached ? $notReached[count($notReached) - 1] : null;
 
         $status = $last?->status ?: null;
         $state = $last?->state ? strtoupper($last->state) : null;
@@ -513,7 +521,7 @@ class ContractReportService
         $faults = [];
         $actions = [];
         $technicians = [];
-        foreach ($visits as $visit) {
+        foreach ($attended as $visit) {
             foreach ($this->splitList($visit->action_points) as $fault) {
                 $faults[] = $fault;
             }
@@ -526,7 +534,7 @@ class ContractReportService
             }
         }
 
-        $nonVisit = $visited ? null : $this->nonVisitReason($terminal, $lastBefore, $assignment, $exceptions);
+        $nonVisit = $visited ? null : $this->nonVisitReason($terminal, $lastBefore, $assignment, $exceptions, $lastNotReached);
         $nonActivation = ($visited && ! $active)
             ? $this->nonActivationReason($terminal, $last, $faults, $actions, $exceptions)
             : null;
@@ -544,7 +552,8 @@ class ContractReportService
             'serial' => $terminal->serial_number,
             'source' => $terminal->source,
             'visited' => $visited,
-            'visit_count' => count($visits),
+            'visit_count' => count($attended),
+            'attempts' => count($notReached),
             'last_visit_date' => $last ? $this->visitDate($last) : null,
             'technicians' => array_keys($technicians),
             'device_status' => $visited ? ($status ?: 'Not recorded') : $this->statusWithoutVisit($terminal),
@@ -562,7 +571,10 @@ class ContractReportService
             'open_issues' => $openIssues,
             'open_issue_count' => count($openIssues),
             'oldest_issue_days' => $openIssues ? max(array_column($openIssues, 'age_days')) : 0,
-            'escalation_owner' => $openIssues[0]['owner'] ?? ($nonVisit['owner'] ?? $nonActivation['owner'] ?? null),
+            'escalation_owner' => $openIssues[0]['owner']
+                ?? ($last->escalation_owner_name ?? null)
+                ?? ($lastNotReached->escalation_owner_name ?? null)
+                ?? ($nonVisit['owner'] ?? $nonActivation['owner'] ?? null),
             'transactions' => $transactions,
         ];
     }
@@ -575,11 +587,18 @@ class ContractReportService
         return $status ? ucfirst(str_replace('_', ' ', $status)).' (no visit in period)' : 'Not visited in period';
     }
 
+    /** A visit row where the technician answered "no" to reaching the site. */
+    private function isNonVisit(object $visit): bool
+    {
+        return $visit->site_visited !== null && (int) $visit->site_visited === 0;
+    }
+
     /**
-     * Reason a device was not visited: what the office recorded, else what the
-     * system can tell from the jobs and the previous visit.
+     * Reason a device was not visited. In order of authority: what the office
+     * recorded for this period, then what the technician wrote on site, then
+     * what the jobs and the previous visit imply.
      */
-    private function nonVisitReason(PosTerminal $terminal, ?object $lastBefore, ?object $assignment, array $exceptions): array
+    private function nonVisitReason(PosTerminal $terminal, ?object $lastBefore, ?object $assignment, array $exceptions, ?object $notReached = null): array
     {
         $recorded = $exceptions[$terminal->id.'|'.ReportException::TYPE_NON_VISIT] ?? null;
         if ($recorded) {
@@ -590,6 +609,19 @@ class ContractReportService
                 'note' => $recorded->reason_note,
                 'owner' => $recorded->owner ? trim($recorded->owner->first_name.' '.$recorded->owner->last_name) : null,
                 'status' => $recorded->status,
+            ];
+        }
+
+        if ($notReached && trim((string) $notReached->non_visit_reason) !== '') {
+            $when = $notReached->completed_at ?: $notReached->created_at;
+
+            return [
+                'source' => 'technician',
+                'code' => null,
+                'reason' => trim((string) $notReached->non_visit_reason),
+                'note' => $when ? 'Recorded on site '.CarbonImmutable::parse($when)->format('d M Y') : null,
+                'owner' => $notReached->escalation_owner_name ?: null,
+                'status' => 'open',
             ];
         }
 
@@ -644,6 +676,17 @@ class ContractReportService
                 'note' => $recorded->reason_note,
                 'owner' => $recorded->owner ? trim($recorded->owner->first_name.' '.$recorded->owner->last_name) : null,
                 'status' => $recorded->status,
+            ];
+        }
+
+        if ($last && trim((string) ($last->non_activation_reason ?? '')) !== '') {
+            return [
+                'source' => 'technician',
+                'code' => null,
+                'reason' => trim((string) $last->non_activation_reason),
+                'note' => $actions ? 'Action taken: '.implode('; ', $actions) : null,
+                'owner' => $last->escalation_owner_name ?: null,
+                'status' => 'open',
             ];
         }
 

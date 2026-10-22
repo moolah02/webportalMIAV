@@ -136,6 +136,31 @@
                     <dd>{{ $visit->condition_notes }}</dd>
                 </div>
                 @endif
+                {{-- Recorded on the tablet when a site could not be visited or a device is not live --}}
+                @if($visit->site_visited !== null)
+                <div>
+                    <dt>Site Visited</dt>
+                    <dd>{{ $visit->site_visited ? 'Yes' : 'No' }}</dd>
+                </div>
+                @endif
+                @if(!empty($visit->non_visit_reason))
+                <div>
+                    <dt>Reason Not Visited</dt>
+                    <dd>{{ $visit->non_visit_reason }}</dd>
+                </div>
+                @endif
+                @if(!empty($visit->non_activation_reason))
+                <div>
+                    <dt>Reason Device Not Active</dt>
+                    <dd>{{ $visit->non_activation_reason }}</dd>
+                </div>
+                @endif
+                @if(!empty($visit->escalation_owner_name))
+                <div>
+                    <dt>Escalation Owner</dt>
+                    <dd>{{ $visit->escalation_owner_name }}</dd>
+                </div>
+                @endif
             </dl>
         </section>
 

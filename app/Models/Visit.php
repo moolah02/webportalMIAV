@@ -14,6 +14,11 @@ class Visit extends Model
         'employee_id',
         'assignment_id',
         'completed_at',
+        'site_visited',
+        'non_visit_reason',
+        'non_activation_reason',
+        'escalation_owner_id',
+        'escalation_owner_name',
         'contact_person',
         'phone_number',
         'new_contact_person',
@@ -31,6 +36,7 @@ class Visit extends Model
 
     protected $casts = [
         'completed_at'          => 'datetime',
+        'site_visited'          => 'boolean',
         'terminal'              => 'array',   // <-- singular
         'evidence'              => 'array',
         'other_terminals_found' => 'array',

@@ -33,7 +33,12 @@ class TechnicianVisit extends Model
 
         // lifecycle
         'status',   // open | in_progress | closed
-        'outcome',  // completed | could_not_access_site | parts_required | reschedule | terminal_not_found | terminal_relocated
+        'outcome',
+        'site_visited',
+        'non_visit_reason',
+        'non_activation_reason',
+        'escalation_owner_id',
+        'escalation_owner_name',  // completed | could_not_access_site | parts_required | reschedule | terminal_not_found | terminal_relocated
 
         // timing
         'visit_date',     // legacy
@@ -83,6 +88,7 @@ class TechnicianVisit extends Model
      */
     protected $casts = [
         'visit_date'              => 'datetime',
+        'site_visited'            => 'boolean',
         'scheduled_at'            => 'datetime',
         'started_at'              => 'datetime',
         'ended_at'                => 'datetime',

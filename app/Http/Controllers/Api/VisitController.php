@@ -9,6 +9,7 @@ use App\Models\TechnicianVisit;
 use App\Models\PosTerminal;
 use App\Models\JobAssignment;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -151,11 +152,20 @@ class VisitController extends Controller
             'new_phone_number'         => ['nullable','string','max:50'],
             'new_physical_address'     => ['nullable','string','max:500'],
 
+            // What the technician found before anything else: was the site visited
+            // at all, and if not (or if the device is not live) why.
+            'site_visited'             => ['sometimes','nullable','boolean'],
+            'non_visit_reason'         => ['nullable','string','max:2000'],
+            'non_activation_reason'    => ['nullable','string','max:2000'],
+            'escalation_owner_id'      => ['sometimes','nullable','integer','exists:employees,id'],
+            'escalation_owner_name'    => ['nullable','string','max:191'],
+
             'terminal'                        => ['required','array'],
             'terminal.terminal_id'            => ['required'], // int or string
-            'terminal.status'                 => ['required','string','max:100'],
+            // A site that was not visited has no device status or condition to report.
+            'terminal.status'                 => [Rule::requiredIf(fn () => request()->input('site_visited') !== false), 'nullable','string','max:100'],
             'terminal.state'                  => ['nullable','string','max:50'],
-            'terminal.condition'              => ['required','string','max:100'],
+            'terminal.condition'              => [Rule::requiredIf(fn () => request()->input('site_visited') !== false), 'nullable','string','max:100'],
             'terminal.serial_number'          => ['nullable','string','max:191'],
             'terminal.terminal_model'         => ['nullable','string','max:191'],
             'terminal.device_type'            => ['nullable','string','max:191'], // mobile sends the model as device_type
@@ -187,6 +197,12 @@ class VisitController extends Controller
                 'new_contact_person'     => $data['new_contact_person'] ?? null,
                 'new_phone_number'       => $data['new_phone_number'] ?? null,
                 'new_physical_address'   => $data['new_physical_address'] ?? null,
+
+                'site_visited'           => $data['site_visited'] ?? null,
+                'non_visit_reason'       => $data['non_visit_reason'] ?? null,
+                'non_activation_reason'  => $data['non_activation_reason'] ?? null,
+                'escalation_owner_id'    => $data['escalation_owner_id'] ?? null,
+                'escalation_owner_name'  => $data['escalation_owner_name'] ?? null,
 
                 'visit_summary'          => $data['visit_summary'] ?? null,
                 'action_points'          => $data['action_points'] ?? null,
@@ -257,6 +273,12 @@ class VisitController extends Controller
             'terminal.terminal_model'      => ['sometimes','nullable','string','max:191'],
             'terminal.device_type'         => ['sometimes','nullable','string','max:191'], // mobile sends model as device_type
 
+            'site_visited'          => ['sometimes','nullable','boolean'],
+            'non_visit_reason'      => ['sometimes','nullable','string','max:2000'],
+            'non_activation_reason' => ['sometimes','nullable','string','max:2000'],
+            'escalation_owner_id'   => ['sometimes','nullable','integer','exists:employees,id'],
+            'escalation_owner_name' => ['sometimes','nullable','string','max:191'],
+
             'visit_summary'    => ['sometimes','nullable','string'],
             'action_points'    => ['sometimes','nullable','string'],
             'corrective_action'=> ['sometimes','nullable','string','max:500'],
@@ -285,7 +307,7 @@ class VisitController extends Controller
             if (array_key_exists('merchant_phone', $data)) {
                 $visitUpdates['phone_number'] = $data['merchant_phone'];
             }
-            foreach (['new_contact_person','new_phone_number','new_physical_address','visit_summary','action_points','terminal_comments','condition_notes','signature'] as $field) {
+            foreach (['new_contact_person','new_phone_number','new_physical_address','visit_summary','action_points','terminal_comments','condition_notes','signature','site_visited','non_visit_reason','non_activation_reason','escalation_owner_id','escalation_owner_name'] as $field) {
                 if (array_key_exists($field, $data)) {
                     $visitUpdates[$field] = $data[$field];
                 }
