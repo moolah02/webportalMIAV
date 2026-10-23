@@ -142,7 +142,11 @@ class VisitController extends Controller
             'merchant_id'              => ['required'],   // string "12" is fine; cast in DB if needed
             'merchant_name'            => ['required','string','max:255'],
             'employee_id'              => ['required','integer'],
-            'assignment_id'            => ['required'], // accepts integer or string from mobile app
+            // A walk-in visit belongs to no job, and the column is nullable.
+            // Requiring it meant a technician could not record anything until
+            // an admin had assigned work — which also broke every visit on a
+            // freshly loaded system.
+            'assignment_id'            => ['sometimes','nullable'], // integer or string from the tablet
             'completed_at'             => ['required','date'],
 
             'merchant_contact_person'  => ['nullable','string','max:255'],
@@ -188,7 +192,7 @@ class VisitController extends Controller
                 'merchant_id'            => $data['merchant_id'],
                 'merchant_name'          => $data['merchant_name'],
                 'employee_id'            => $data['employee_id'],
-                'assignment_id'          => $data['assignment_id'],
+                'assignment_id'          => $data['assignment_id'] ?? null,
                 'completed_at'           => $data['completed_at'],
 
                 'contact_person'         => $data['merchant_contact_person'] ?? null,
