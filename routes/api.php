@@ -159,6 +159,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Public (auth required) template options — used by mobile app for Issues Found / Corrective Action dropdowns
 Route::middleware('auth:sanctum')->get('/visit-templates', [VisitController::class, 'templates']);
 
+// The tablet updates itself: the browser warns about every APK it downloads,
+// so the app asks what the newest build is and fetches it with its own token.
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/mobile-app/latest',   [\App\Http\Controllers\Api\MobileAppUpdateController::class, 'latest']);
+    Route::get('/mobile-app/download', [\App\Http\Controllers\Api\MobileAppUpdateController::class, 'download']);
+});
+
 Route::middleware('auth:sanctum')->prefix('visits')->group(function () {
     Route::get('/all', [VisitController::class, 'index']);     // ?assignmentId=&employeeId=&merchantId=&dateFrom=&dateTo=
     Route::post('/', [VisitController::class, 'store']);
