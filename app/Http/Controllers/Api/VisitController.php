@@ -278,9 +278,12 @@ class VisitController extends Controller
             'new_physical_address'     => ['sometimes','nullable','string','max:500'],
 
             'terminal'                     => ['sometimes','array'],
-            'terminal.status'              => ['sometimes','string','max:100'],
+            // A site that was not visited reports no condition and no state, so
+            // these must accept nothing. Without that, switching a visit to
+            // "not visited" was refused with a validation error.
+            'terminal.status'              => ['sometimes','nullable','string','max:100'],
             'terminal.state'               => ['sometimes','nullable','string','max:50'],
-            'terminal.condition'           => ['sometimes','string','max:100'],
+            'terminal.condition'           => ['sometimes','nullable','string','max:100'],
             'terminal.serial_number'       => ['sometimes','nullable','string','max:191'],
             'terminal.terminal_model'      => ['sometimes','nullable','string','max:191'],
             'terminal.device_type'         => ['sometimes','nullable','string','max:191'], // mobile sends model as device_type
