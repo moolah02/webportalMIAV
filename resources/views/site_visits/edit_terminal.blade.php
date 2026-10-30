@@ -189,7 +189,7 @@
                 <label class="ui-label" for="upd_issues_found">Issues Found</label>
                 <select id="upd_issues_found" class="ui-select">
                     <option value="">— No change —</option>
-                    @foreach(['No issues','Not In Use','Denied access','Missing Device','Technical Issues','Device relocated','Merchant Closed','Merchant Relocated','Merchant Not Located','Returned to HQ','Returned to Bank'] as $opt)
+                    @foreach(['No issues','Not In Use','Denied access','Missing Device','Technical Issues','Hardware Fault','Device relocated','Merchant Closed','Merchant Relocated','Merchant Not Located','Returned to HQ','Returned to Bank'] as $opt)
                         <option value="{{ $opt }}" {{ $existingVisit->issues_found === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
                 </select>
@@ -368,7 +368,7 @@ async function saveUpdate() {
                 <label class="ui-label">Issues Found</label>
                 <select name="issues_found" class="ui-select">
                     <option value="">— Select issue —</option>
-                    @foreach(['No issues','Not In Use','Denied access','Missing Device','Technical Issues','Device relocated','Merchant Closed','Merchant Relocated','Merchant Not Located','Returned to HQ','Returned to Bank'] as $opt)
+                    @foreach(['No issues','Not In Use','Denied access','Missing Device','Technical Issues','Hardware Fault','Device relocated','Merchant Closed','Merchant Relocated','Merchant Not Located','Returned to HQ','Returned to Bank'] as $opt)
                         <option value="{{ $opt }}" {{ old('issues_found') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
                 </select>

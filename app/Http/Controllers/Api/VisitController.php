@@ -29,6 +29,7 @@ class VisitController extends Controller
                     'Merchant Closed',
                     'Merchant Relocated',
                     'Technical Update Failure',
+                    'Hardware Fault',
                     'Returned to HQ',
                 ],
                 'corrective_action' => [

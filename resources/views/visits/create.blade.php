@@ -180,7 +180,8 @@ body > .ts-dropdown .ts-no-results{padding:8px 10px;color:var(--mv-muted)}
                 <label class="ui-label">Issues Found</label>
                 <select name="issues_found" id="issues_found" class="ui-select">
                     <option value="">— Select issue —</option>
-                    @foreach(['No issues','Not In Use','Denied access','Missing Device','Technical Issues','Device relocated','Merchant Closed','Merchant Relocated','Merchant Not Located','Returned to HQ','Returned to Bank'] as $opt)
+                    @foreach(['No issues','Not In Use','Denied access','Missing Device','Technical Issues',
+                        'Hardware Fault','Device relocated','Merchant Closed','Merchant Relocated','Merchant Not Located','Returned to HQ','Returned to Bank'] as $opt)
                         <option value="{{ $opt }}" {{ old('issues_found') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
                 </select>
