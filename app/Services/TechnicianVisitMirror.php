@@ -70,6 +70,11 @@ class TechnicianVisitMirror
             $state = $this->normalise($t['state'] ?? null, self::STATUS_ENUM, self::STATUS_ALIASES)
                 ?? $this->normalise($vt->status ?? ($t['status'] ?? null), self::STATUS_ENUM, self::STATUS_ALIASES);
 
+            // What the technician actually chose - Working / Not Working / Not Found -
+            // kept as written. Reports were only ever offered the normalised state
+            // (active / inactive), so the status itself could not be reported on.
+            $recordedStatus = $vt->status ?? ($t['status'] ?? null);
+
             $condition = $this->normalise($vt->condition ?? ($t['condition'] ?? null), self::CONDITION_ENUM, self::CONDITION_ALIASES);
 
             $model = $vt->terminal_model ?? $vt->device_type ?? ($t['device_type'] ?? ($t['terminal_model'] ?? null));
@@ -106,6 +111,7 @@ class TechnicianVisitMirror
                     'non_activation_reason'        => $visit->non_activation_reason,
                     'escalation_owner_id'          => $visit->escalation_owner_id,
                     'escalation_owner_name'        => $visit->escalation_owner_name,
+                    'terminal_status'              => $recordedStatus,
                     'terminal_status_during_visit' => $state,
                     'terminal_condition'           => $condition,
                     'issues_found'                 => $visit->action_points,

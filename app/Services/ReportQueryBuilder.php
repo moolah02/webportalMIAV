@@ -33,7 +33,7 @@ class ReportQueryBuilder
         ],
         'technician_visits' => [
             'id', 'visit_id', 'technician_id', 'pos_terminal_id', 'job_assignment_id',
-            'started_at', 'ended_at', 'visit_date', 'terminal_status_during_visit', 'terminal_condition',
+            'started_at', 'ended_at', 'visit_date', 'terminal_status', 'terminal_status_during_visit', 'terminal_condition',
             'condition_notes', 'issues_found', 'corrective_action', 'visit_summary',
             'outcome', 'serial_snapshot', 'device_type_snapshot',
             'site_visited', 'non_visit_reason', 'non_activation_reason', 'escalation_owner_name',
@@ -749,11 +749,16 @@ class ReportQueryBuilder
                 'non_activation_reason' => 'Reason Device Not Active',
                 'escalation_owner_name' => 'Escalation Owner',
                 'visit_date'            => 'Visit Date',
+                'terminal_status'              => 'Status on Visit (Working / Not Working / Not Found)',
+                'terminal_status_during_visit' => 'Device State (Active / Inactive)',
             ],
             'visit_terminals' => [
                 'id'          => 'Visit Terminal Record ID',
                 'terminal_id' => 'Terminal (link)',
                 'visit_id'    => 'Visit (link)',
+                'status'      => 'Status on Visit (Working / Not Working / Not Found)',
+                'state'       => 'Device State (Active / Inactive)',
+                'condition'   => 'Condition (Good / Fair / Bad)',
             ],
             'tickets' => [
                 'pos_terminal_id' => 'Terminal (link)',
@@ -803,6 +808,11 @@ class ReportQueryBuilder
     {
         // Recorded by the technician on the tablet; the same wording on both
         // visit datasets so a report reads the same whichever one it is built on.
+        $statusHelp = [
+            'terminal_status'              => 'What the technician chose on the visit: Working, Not Working or Not Found',
+            'terminal_status_during_visit' => 'The same visit reduced to Active or Inactive, for counting',
+        ];
+
         $visitCapture = [
             'site_visited'          => 'Did the technician reach the site? "1" means yes, "0" means the site was not visited',
             'non_visit_reason'      => 'Why the site was not visited, written by the technician on site',
@@ -908,7 +918,11 @@ class ReportQueryBuilder
         // Merged in rather than declared above, where the later 'visits' and
         // 'technician_visits' keys would have overridden them.
         $descriptions['visits'] = ($descriptions['visits'] ?? []) + $visitCapture;
-        $descriptions['technician_visits'] = ($descriptions['technician_visits'] ?? []) + $visitCapture;
+        $descriptions['technician_visits'] = ($descriptions['technician_visits'] ?? []) + $visitCapture + $statusHelp;
+        $descriptions['visit_terminals'] = ($descriptions['visit_terminals'] ?? []) + [
+            'status' => 'What the technician chose on the visit: Working, Not Working or Not Found',
+            'state'  => 'Whether the device was live: Active or Inactive',
+        ];
 
         return $descriptions[$table][$column] ?? '';
     }

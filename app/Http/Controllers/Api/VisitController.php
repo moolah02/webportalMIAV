@@ -222,12 +222,19 @@ class VisitController extends Controller
 
             // Persist the normalized single terminal row
             $t = $data['terminal'];
+            // A site that was not reached has no device status to report, and the
+            // column does not accept null, so the fact itself is recorded. Without
+            // this the whole visit failed to save with a database error.
+            $recordedStatus = trim((string) ($t['status'] ?? '')) !== ''
+                ? $t['status']
+                : (($data['site_visited'] ?? null) === false ? 'Not Visited' : 'Not Recorded');
+
             VisitTerminal::create([
                 'visit_id'       => $visit->id,
                 'terminal_id'    => (string) ($t['terminal_id']), // store as string to be safe
-                'status'         => $t['status'],
+                'status'         => $recordedStatus,
                 'state'          => $t['state'] ?? null,
-                'condition'      => $t['condition'],
+                'condition'      => $t['condition'] ?? null,
                 'serial_number'  => $t['serial_number'] ?? null,
                 // Mobile sends the model as device_type; keep both columns in sync.
                 'terminal_model' => $t['terminal_model'] ?? ($t['device_type'] ?? null),
@@ -344,6 +351,13 @@ class VisitController extends Controller
                 if ($visitTerminal) {
                     $terminalUpdates = [];
                     if (isset($t['status']))                       $terminalUpdates['status']         = $t['status'];
+                    // An edit that turns the visit into "site not visited" leaves no
+                    // device status behind; record the fact rather than the old value.
+                    if (($data['site_visited'] ?? null) === false && empty($t['status'])) {
+                        $terminalUpdates['status'] = 'Not Visited';
+                        $terminalUpdates['state'] = null;
+                        $terminalUpdates['condition'] = null;
+                    }
                     if (array_key_exists('state', $t))             $terminalUpdates['state']          = $t['state'];
                     if (isset($t['condition']))                    $terminalUpdates['condition']      = $t['condition'];
                     if (array_key_exists('serial_number', $t))    $terminalUpdates['serial_number']  = $t['serial_number'];
