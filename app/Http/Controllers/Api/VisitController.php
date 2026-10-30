@@ -205,7 +205,11 @@ class VisitController extends Controller
 
                 'site_visited'           => $data['site_visited'] ?? null,
                 'non_visit_reason'       => $data['non_visit_reason'] ?? null,
-                'non_activation_reason'  => $data['non_activation_reason'] ?? null,
+                // Nobody saw the device on a site that was not reached, so there is
+                // no "why is it not active" to record for it.
+                'non_activation_reason'  => ($data['site_visited'] ?? null) === false
+                    ? null
+                    : ($data['non_activation_reason'] ?? null),
                 'escalation_owner_id'    => $data['escalation_owner_id'] ?? null,
                 'escalation_owner_name'  => $data['escalation_owner_name'] ?? null,
 
@@ -326,6 +330,12 @@ class VisitController extends Controller
                 if (array_key_exists($field, $data)) {
                     $visitUpdates[$field] = $data[$field];
                 }
+            }
+
+            // An edit that turns the visit into "site not visited" drops the reason
+            // the device was not active: there was no device seen to explain.
+            if (($data['site_visited'] ?? null) === false) {
+                $visitUpdates['non_activation_reason'] = null;
             }
 
             // Photos: an edit ADDS the photos it sends and keeps the ones already on
