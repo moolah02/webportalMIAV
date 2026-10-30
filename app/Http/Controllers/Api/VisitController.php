@@ -149,7 +149,7 @@ class VisitController extends Controller
         $data = $request->validate([
             'merchant_id'              => ['required'],   // string "12" is fine; cast in DB if needed
             'merchant_name'            => ['required','string','max:255'],
-            'employee_id'              => ['required','integer'],
+            'employee_id'              => ['required','integer','exists:employees,id'],
             // A walk-in visit belongs to no job, and the column is nullable.
             // Requiring it meant a technician could not record anything until
             // an admin had assigned work — which also broke every visit on a
@@ -173,7 +173,10 @@ class VisitController extends Controller
             'escalation_owner_name'    => ['nullable','string','max:191'],
 
             'terminal'                        => ['required','array'],
-            'terminal.terminal_id'            => ['required'], // int or string
+            // Must be a device this system knows: without this a typo or a stale id
+            // on a tablet silently files the visit against a device that does not
+            // exist, and the row shows up in reports with no merchant behind it.
+            'terminal.terminal_id'            => ['required','integer','exists:pos_terminals,id'],
             // A site that was not visited has no device status or condition to report.
             'terminal.status'                 => [Rule::requiredIf(fn () => request()->input('site_visited') !== false), 'nullable','string','max:100'],
             'terminal.state'                  => ['nullable','string','max:50'],
@@ -199,7 +202,10 @@ class VisitController extends Controller
             $visit = Visit::create([
                 'merchant_id'            => $data['merchant_id'],
                 'merchant_name'          => $data['merchant_name'],
-                'employee_id'            => $data['employee_id'],
+                // The tablet speaks for whoever is signed in on it. Taking the id from
+                // the payload let an authenticated technician file a visit under a
+                // colleague's name, which the contractual report then attributes to them.
+                'employee_id'            => auth()->id() ?? $data['employee_id'],
                 'assignment_id'          => $data['assignment_id'] ?? null,
                 'completed_at'           => $data['completed_at'],
 
