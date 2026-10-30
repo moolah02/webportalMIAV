@@ -355,16 +355,18 @@ class VisitController extends Controller
                 if ($visitTerminal) {
                     $terminalUpdates = [];
                     if (isset($t['status']))                       $terminalUpdates['status']         = $t['status'];
-                    // An edit that turns the visit into "site not visited" leaves no
-                    // device status behind; record the fact rather than the old value.
-                    if (($data['site_visited'] ?? null) === false && empty($t['status'])) {
-                        $terminalUpdates['status'] = 'Not Visited';
-                        $terminalUpdates['state'] = null;
-                        $terminalUpdates['condition'] = null;
-                    }
                     if (array_key_exists('state', $t))             $terminalUpdates['state']          = $t['state'];
                     if (isset($t['condition']))                    $terminalUpdates['condition']      = $t['condition'];
                     if (array_key_exists('serial_number', $t))    $terminalUpdates['serial_number']  = $t['serial_number'];
+                    // An edit that turns the visit into "site not visited" leaves no
+                    // device findings behind: the old status, state and condition
+                    // describe a visit that no longer happened.
+                    if (($data['site_visited'] ?? null) === false) {
+                        $terminalUpdates['status']    = $t['status'] ?: 'Not Visited';
+                        $terminalUpdates['state']     = null;
+                        $terminalUpdates['condition'] = null;
+                    }
+
                     // Model: mobile sends device_type; accept either and keep both columns in sync.
                     $modelVal = $t['terminal_model'] ?? ($t['device_type'] ?? null);
                     if (array_key_exists('terminal_model', $t) || array_key_exists('device_type', $t)) {
