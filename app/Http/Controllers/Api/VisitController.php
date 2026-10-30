@@ -22,15 +22,22 @@ class VisitController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
+                // The one findings vocabulary, same as the apps offer and the web
+                // accepts (SiteVisitController's 'issues_found' rule). A list that
+                // drifts from that rule hands callers options the web then rejects.
                 'issues_found' => [
                     'No issues',
+                    'Not In Use',
+                    'Denied access',
                     'Missing Device',
+                    'Technical Issues',
+                    'Hardware Fault',
                     'Device relocated',
                     'Merchant Closed',
                     'Merchant Relocated',
-                    'Technical Update Failure',
-                    'Hardware Fault',
+                    'Merchant Not Located',
                     'Returned to HQ',
+                    'Returned to Bank',
                 ],
                 'corrective_action' => [
                     'No Action needed',
