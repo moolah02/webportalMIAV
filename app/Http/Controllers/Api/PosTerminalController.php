@@ -87,6 +87,60 @@ protected function updateRules(bool $requireAll = false): array
 }
 
 /**
+ * The values pos_terminals.status can actually hold.
+ *
+ * It is an enum and it is NOT NULL, so anything else is not a bad value -
+ * it is a value MySQL refuses, which takes the whole UPDATE down with it.
+ */
+private const DEVICE_STATUSES = ['active', 'offline', 'maintenance', 'faulty', 'decommissioned'];
+
+/**
+ * Keeps a device status this column can store, and drops one it cannot.
+ *
+ * A visit's reading of a device - "Working", "Not Working", "Not Found" - is
+ * a different vocabulary from the device's own lifecycle, and it belongs to
+ * the visit, which already records it. Tablets have been sending it here as
+ * `status`, and because the column is a NOT NULL enum, MySQL rejected the
+ * value and the entire update was lost: the merchant contact, the phone, the
+ * serial, the model and the coordinates the technician had just captured all
+ * went with it, and the tablet showed "Failed to update terminal".
+ *
+ * Dropping the one field the column cannot hold keeps the rest of the visit's
+ * work. The reading is not lost - it is on the visit - and the device's own
+ * status is left alone, which is what it was always meant to be.
+ *
+ * @return array{0: array, 1: ?string} the data to apply, and a warning to
+ *                                     return to the caller, if one applies.
+ */
+private function usableStatus(array $data, PosTerminal $terminal, $user): array
+{
+    if (!array_key_exists('status', $data)) {
+        return [$data, null];
+    }
+
+    $sent = $data['status'];
+    if (is_string($sent) && in_array(strtolower($sent), self::DEVICE_STATUSES, true)) {
+        $data['status'] = strtolower($sent);
+        return [$data, null];
+    }
+
+    unset($data['status']);
+
+    Log::info('Ignored a device status this terminal cannot hold', [
+        'terminal_id' => $terminal->terminal_id,
+        'sent'        => $sent,
+        'by'          => $user->id ?? null,
+    ]);
+
+    return [$data, sprintf(
+        'Device status %s was ignored - it is not one of: %s. Everything else was saved, '
+        . 'and the reading is kept on the visit.',
+        var_export($sent, true),
+        implode(', ', self::DEVICE_STATUSES)
+    )];
+}
+
+/**
  * PUT/PATCH /api/pos-terminals/id/{id}
  * Update by numeric DB id.
  */
@@ -100,6 +154,8 @@ public function updateById(Request $request, int $id)
     $terminal = PosTerminal::query()->whereKey($id)->firstOrFail();
     $data = $request->validate($this->updateRules(false)); // PATCH-friendly
 
+    [$data, $warning] = $this->usableStatus($data, $terminal, $user);
+
     $terminal->fill($data);
 
     if (!$request->filled('last_updated_by')) {
@@ -108,11 +164,12 @@ public function updateById(Request $request, int $id)
 
     $terminal->save();
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Terminal updated successfully.',
-        'data'    => $terminal->fresh(),
-    ]);
+    return response()->json(array_filter([
+        'success'  => true,
+        'message'  => 'Terminal updated successfully.',
+        'data'     => $terminal->fresh(),
+        'warnings' => $warning ? [$warning] : null,
+    ], fn ($v) => $v !== null));
 }
 
 /**
@@ -132,6 +189,8 @@ public function updateByTerminalId(Request $request, string $terminalId)
 
     $data = $request->validate($this->updateRules(false));
 
+    [$data, $warning] = $this->usableStatus($data, $terminal, $user);
+
     $terminal->fill($data);
 
     if (!$request->filled('last_updated_by')) {
@@ -140,11 +199,12 @@ public function updateByTerminalId(Request $request, string $terminalId)
 
     $terminal->save();
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Terminal updated successfully.',
-        'data'    => $terminal->fresh(),
-    ]);
+    return response()->json(array_filter([
+        'success'  => true,
+        'message'  => 'Terminal updated successfully.',
+        'data'     => $terminal->fresh(),
+        'warnings' => $warning ? [$warning] : null,
+    ], fn ($v) => $v !== null));
 }
 
 /**
@@ -164,7 +224,8 @@ public function bulkUpdateByTerminalId(Request $request)
     }
 
     $rules = $this->updateRules(false);
-    $updated = [];
+    $updated  = [];
+    $warnings = [];
 
     foreach ($rows as $i => $row) {
         // Validate each row
@@ -180,6 +241,13 @@ public function bulkUpdateByTerminalId(Request $request)
         $data = $row;
         unset($data['terminal_id']); // avoid changing the key during bulk unless you intend to
 
+        // One unusable status must not cost this row its other fields, nor the
+        // rows after it - see usableStatus().
+        [$data, $warning] = $this->usableStatus($data, $t, $user);
+        if ($warning) {
+            $warnings[] = ['terminal_id' => $t->terminal_id, 'warning' => $warning];
+        }
+
         $t->fill($data);
 
         if (empty($row['last_updated_by'])) {
@@ -190,11 +258,12 @@ public function bulkUpdateByTerminalId(Request $request)
         $updated[] = $t->fresh();
     }
 
-    return response()->json([
-        'success' => true,
-        'count'   => count($updated),
-        'data'    => $updated,
-    ]);
+    return response()->json(array_filter([
+        'success'  => true,
+        'count'    => count($updated),
+        'data'     => $updated,
+        'warnings' => $warnings ?: null,
+    ], fn ($v) => $v !== null));
 }
 
 
