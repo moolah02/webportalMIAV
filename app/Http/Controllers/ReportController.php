@@ -14,6 +14,12 @@ use Exception;
 
 class ReportController extends Controller
 {
+    /**
+     * The most rows a format that must be built in memory will attempt.
+     * A CSV is streamed and has no such limit.
+     */
+    private const MAX_FILE_ROWS = 50000;
+
     private ReportQueryBuilder $queryBuilder;
 
     public function __construct(ReportQueryBuilder $queryBuilder)
@@ -129,13 +135,35 @@ class ReportController extends Controller
 
             $validated['download_all'] = true;
             $queryData = $this->queryBuilder->buildQuery($validated);
-            $results = $queryData['query']->get();
+
+            // An export has no row limit, so the size of the answer is the
+            // caller's choice. A CSV is streamed straight from the database and
+            // costs one row of memory at a time; a workbook and a PDF have to
+            // hold every row to build a single file, so those are capped and
+            // say so instead of running the server out of memory.
+            $rowCount = $this->countRows($queryData['query']);
+
+            if ($validated['format'] !== 'csv' && $rowCount !== null && $rowCount > self::MAX_FILE_ROWS) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => sprintf(
+                        'That is %s rows, and a %s file is built in memory - the limit is %s. '
+                        . 'Narrow the report with a date range or a filter, or export it as CSV, '
+                        . 'which has no limit.',
+                        number_format($rowCount),
+                        strtoupper($validated['format']),
+                        number_format(self::MAX_FILE_ROWS)
+                    ),
+                ], 400);
+            }
+
+            $results = $validated['format'] === 'csv' ? null : $queryData['query']->get();
 
             // Log the export
             ReportRun::create([
                 'user_id'      => $user->id,
                 'payload'      => $validated,
-                'result_count' => $results->count(),
+                'result_count' => $rowCount ?? ($results?->count() ?? 0),
                 'executed_at'  => now(),
                 'action'       => 'export',
                 'format'       => $validated['format'],
@@ -147,7 +175,7 @@ class ReportController extends Controller
 
             switch ($validated['format']) {
                 case 'csv':
-                    return $this->exportCsv($results, $filename);
+                    return $this->exportCsv($queryData['query'], $filename);
                 case 'xlsx':
                     return $this->exportXlsx($results, $filename, $validated);
                 case 'pdf':
@@ -200,22 +228,41 @@ class ReportController extends Controller
         ]);
     }
 
-    private function exportCsv($results, string $filename)
+    /**
+     * Streams the rows straight from the database.
+     *
+     * Takes the query rather than a result set on purpose: ->get() used to
+     * load every matching row into memory first, so a wide enough report
+     * could exhaust the server before a single byte was sent. cursor() reads
+     * one row at a time, so a ten-row export and a million-row export cost
+     * the same.
+     */
+    private function exportCsv($query, string $filename)
     {
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}.csv\"",
         ];
 
-        $callback = function() use ($results) {
+        $callback = function () use ($query) {
             $file = fopen('php://output', 'w');
             fwrite($file, "\xEF\xBB\xBF");   // BOM, so Excel reads accents correctly
 
-            if ($results->isNotEmpty()) {
-                fputcsv($file, array_keys((array) $results->first()));
+            $wroteHeader = false;
+            foreach ($query->cursor() as $row) {
+                $row = (array) $row;
 
-                foreach ($results as $result) {
-                    fputcsv($file, array_values((array) $result));
+                if (!$wroteHeader) {
+                    fputcsv($file, array_keys($row));
+                    $wroteHeader = true;
+                }
+
+                fputcsv($file, array_values($row));
+
+                // Keep the connection moving on a long export rather than
+                // letting the whole file queue up in PHP's output buffer.
+                if (connection_aborted()) {
+                    break;
                 }
             }
 
@@ -223,6 +270,23 @@ class ReportController extends Controller
         };
 
         return Response::stream($callback, 200, $headers);
+    }
+
+    /**
+     * How many rows this report really has, or null if it cannot be counted.
+     * Used to refuse an in-memory format before it is attempted.
+     */
+    private function countRows($query): ?int
+    {
+        try {
+            $counted = clone $query;
+            $counted->limit  = null;
+            $counted->orders = null;
+
+            return DB::query()->fromSub($counted, 'report_rows')->count();
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     private function exportPdf($results, string $filename, array $config)

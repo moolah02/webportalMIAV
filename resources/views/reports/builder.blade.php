@@ -970,15 +970,13 @@ document.addEventListener('alpine:init', () => {
         this.restoreDraft();
       }
 
-      // Keep this tab's session alive while it is actually being used.
+      // Keep this tab's CSRF token current while the page is being used.
       //
-      // A report is built entirely in the browser, so picking columns sends
-      // nothing to the server. The session is idle-timed at two hours, which
-      // made a long careful build end in a signed-out surprise at the very
-      // moment the user pressed Run Report. Refreshing the token on a visible,
-      // recently-used tab restores what the timeout was meant to mean - idle
-      // means the person stopped working, not that the page stopped talking.
-      // A tab left open and untouched still times out as before.
+      // The session itself does not go stale here - the layout polls
+      // notifications every 30 seconds, which keeps it alive. The token can
+      // still go stale: signing in again in another tab regenerates the
+      // session, and this tab is left holding the old token. That is a 419 on
+      // the next Run Report, which is what used to read as "Unknown error".
       ['click', 'keydown'].forEach(ev => window.addEventListener(
         ev, () => { this.lastInteraction = Date.now(); }, { passive: true }
       ));

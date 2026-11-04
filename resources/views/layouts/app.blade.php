@@ -360,10 +360,35 @@
       if (!e.target.closest('#notifWrapper')) dd.classList.add('hidden');
     });
 
+    /* ── Losing the session ────────────────────────
+       This poll runs on every page every 30 seconds, which is also what keeps
+       a session alive while someone is reading. When it comes back signed out
+       the page used to swallow it and carry on looking perfectly normal, so
+       the first sign of trouble was a button that quietly refused to work.
+       Say it once, plainly, where it can be seen. */
+    let mvSignedOutShown = false;
+    function mvSessionLost(res) {
+      const lost = res.status === 401 || res.status === 419
+                || (res.redirected && /\/login\b/.test(res.url));
+      if (!lost || mvSignedOutShown) return lost;
+      mvSignedOutShown = true;
+
+      const bar = document.createElement('div');
+      bar.setAttribute('role', 'alert');
+      bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:9999;'
+        + 'padding:10px 16px;background:#7f1d1d;color:#fff;font:500 14px/1.4 system-ui,sans-serif;'
+        + 'display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap';
+      bar.innerHTML = 'You have been signed out, so nothing on this page will save. '
+        + '<a href="{{ route("login") }}" style="color:#fff;text-decoration:underline;font-weight:600">Sign in again</a>';
+      document.body.appendChild(bar);
+      return true;
+    }
+
     function fetchUnreadCount() {
-      fetch('{{ route("notifications.unread-count") }}')
-        .then(r => r.json())
+      fetch('{{ route("notifications.unread-count") }}', { headers: { 'Accept': 'application/json' } })
+        .then(r => mvSessionLost(r) ? null : r.json())
         .then(data => {
+          if (!data) return;
           const badge = document.getElementById('notifBadge');
           if (!badge) return;
           if (data.count > 0) {
