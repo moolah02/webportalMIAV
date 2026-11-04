@@ -101,13 +101,9 @@ class PosTerminalController extends Controller
             Log::warning('Could not load regionModel: ' . $e->getMessage());
         }
 
-        try {
-            if (method_exists($posTerminal, 'jobAssignments')) {
-                $posTerminal->load(['jobAssignments']);
-            }
-        } catch (\Exception $e) {
-            Log::warning('Could not load jobAssignments: ' . $e->getMessage());
-        }
+        // jobAssignments() is a query, not a relation - it cannot be eager
+        // loaded. See PosTerminal::jobAssignments(). Nothing in this view reads
+        // it, so there is nothing to load here.
 
         try {
             if (method_exists($posTerminal, 'tickets')) {

@@ -82,10 +82,14 @@ class DashboardController extends Controller
         $totalTerminals = PosTerminal::count();
         $totalClients = Client::where('status', 'active')->count();
 
-        // Terminal status breakdown using real data
-        $terminalStats = PosTerminal::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->pluck('count', 'status')
+        // Terminal status breakdown using real data.
+        // Grouped by the effective status so this page and the client
+        // dashboard report the same uptime - see PosTerminal::EFFECTIVE_STATUS_SQL.
+        $terminalStats = PosTerminal::selectRaw(
+                PosTerminal::EFFECTIVE_STATUS_SQL.' as effective_status, count(*) as count'
+            )
+            ->groupBy('effective_status')
+            ->pluck('count', 'effective_status')
             ->toArray();
 
         $activeTerminals = $terminalStats['active'] ?? 0;
@@ -256,16 +260,20 @@ class DashboardController extends Controller
     private function getRegionalData()
     {
         // Get real regional distribution from database
-        $regionalData = PosTerminal::select('region', 'status', DB::raw('count(*) as count'))
+        // The alias must not be called `status`: MySQL would bind GROUP BY to
+        // the real column of that name instead of this expression.
+        $regionalData = PosTerminal::select('region')
+            ->selectRaw(PosTerminal::EFFECTIVE_STATUS_SQL.' as effective_status')
+            ->selectRaw('count(*) as count')
             ->whereNotNull('region')
             ->where('region', '!=', '')
-            ->groupBy('region', 'status')
+            ->groupBy('region', 'effective_status')
             ->get()
             ->groupBy('region')
             ->map(function ($regionTerminals, $region) {
                 $total = $regionTerminals->sum('count');
-                $active = $regionTerminals->where('status', 'active')->sum('count');
-                $issues = $regionTerminals->whereIn('status', ['offline', 'faulty', 'maintenance'])->sum('count');
+                $active = $regionTerminals->where('effective_status', 'active')->sum('count');
+                $issues = $regionTerminals->whereIn('effective_status', ['offline', 'faulty', 'maintenance'])->sum('count');
 
                 return [
                     'total' => $total,

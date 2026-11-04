@@ -315,9 +315,13 @@ public function store(Request $request)
     $notes = $data['notes'] ?? null;
     unset($data['notes']);
 
-    $data['status']         = 'active';
-    $data['current_status'] = $data['current_status'] ?? 'operational';
-    $data['source']         = $data['source'] ?? 'field_discovery';
+    // A terminal's state comes from a field visit, so none is invented here.
+    // This used to default current_status to 'operational' - a word from no
+    // vocabulary the rest of the system uses - which is why two terminals read
+    // as neither active nor inactive and the dashboards disagreed about uptime.
+    // Left unset, the effective status falls back to the lifecycle column
+    // until a technician actually reports what they found.
+    $data['source'] = $data['source'] ?? 'field_discovery';
 
     $terminal = PosTerminal::create($data);
 
@@ -381,10 +385,9 @@ public function index(Request $request)
     // Technician-specific filtering
     $user = $request->user();
     if ($user && $user->isFieldTechnician() && $request->get('my_assignments_only', false)) {
-        $query->whereHas('jobAssignments', function($q) use ($user) {
-            $q->where('technician_id', $user->id)
-              ->whereIn('status', ['assigned', 'in_progress']);
-        });
+        // Not whereHas: assignments hold their terminals in a JSON array, so
+        // there is no relation to traverse. See PosTerminal::scopeAssignedTo.
+        $query->assignedTo($user->id, ['assigned', 'in_progress']);
     }
 
     // NO PAGINATION: fetch everything

@@ -24,10 +24,13 @@ class ClientDashboardController extends Controller
             ->orderBy('company_name')
             ->get()
             ->map(function ($client) {
+                // The effective status, so this agrees with the main dashboard
+                // - see PosTerminal::EFFECTIVE_STATUS_SQL.
                 $statusBreakdown = $client->posTerminals()
-                    ->select('current_status', DB::raw('count(*) as count'))
-                    ->groupBy('current_status')
-                    ->pluck('count', 'current_status')
+                    ->selectRaw(PosTerminal::EFFECTIVE_STATUS_SQL.' as effective_status')
+                    ->selectRaw('count(*) as count')
+                    ->groupBy('effective_status')
+                    ->pluck('count', 'effective_status')
                     ->toArray();
 
                 $recentActivity = TechnicianVisit::where('client_id', $client->id)
@@ -50,7 +53,7 @@ class ClientDashboardController extends Controller
                       ->orWhere('contract_end_date', '>=', now());
                 })->count(),
             'total_terminals' => PosTerminal::count(),
-            'active_terminals' => PosTerminal::where('current_status', 'active')->count(),
+            'active_terminals' => PosTerminal::effectiveStatus('active')->count(),
             'open_tickets'    => Ticket::whereIn('status', ['open', 'in_progress'])->count(),
         ];
 
@@ -105,7 +108,8 @@ class ClientDashboardController extends Controller
 
         // Apply status filter
         if ($request->filled('status')) {
-            $terminalsQuery->where('current_status', $request->status);
+            // Match the buckets the page shows - see EFFECTIVE_STATUS_SQL.
+            $terminalsQuery->effectiveStatus($request->status);
         }
 
         // Apply region filter
@@ -496,9 +500,10 @@ public function viewTerminal(Client $client, PosTerminal $terminal)
 
         return [
             'total' => $query()->count(),
-            'by_status' => $query()->select('current_status', DB::raw('count(*) as count'))
-                ->groupBy('current_status')
-                ->pluck('count', 'current_status')
+            'by_status' => $query()->selectRaw(PosTerminal::EFFECTIVE_STATUS_SQL.' as effective_status')
+                ->selectRaw('count(*) as count')
+                ->groupBy('effective_status')
+                ->pluck('count', 'effective_status')
                 ->toArray(),
             'by_region' => $query()->select('region_id', DB::raw('count(*) as count'))
                 ->groupBy('region_id')

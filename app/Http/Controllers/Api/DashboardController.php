@@ -284,15 +284,20 @@ class DashboardController extends Controller
      */
     private function getRegionalPerformance()
     {
-        $regional = PosTerminal::select('region', 'status', DB::raw('count(*) as count'))
+        // Effective status, so the app's regional uptime matches the portal's
+        // - see PosTerminal::EFFECTIVE_STATUS_SQL.
+        // Alias is not `status`: that name would bind GROUP BY to the column.
+        $regional = PosTerminal::select('region')
+                              ->selectRaw(PosTerminal::EFFECTIVE_STATUS_SQL.' as effective_status')
+                              ->selectRaw('count(*) as count')
                               ->whereNotNull('region')
-                              ->groupBy('region', 'status')
+                              ->groupBy('region', 'effective_status')
                               ->get()
                               ->groupBy('region')
                               ->map(function($regionTerminals, $region) {
                                   $total = $regionTerminals->sum('count');
-                                  $active = $regionTerminals->where('status', 'active')->sum('count');
-                                  $issues = $regionTerminals->whereIn('status', ['offline', 'faulty', 'maintenance'])->sum('count');
+                                  $active = $regionTerminals->where('effective_status', 'active')->sum('count');
+                                  $issues = $regionTerminals->whereIn('effective_status', ['offline', 'faulty', 'maintenance'])->sum('count');
 
                                   return [
                                       'region' => $region,

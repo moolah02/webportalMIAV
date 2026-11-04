@@ -46,20 +46,92 @@ class PosTerminal extends Model
         'coordinates' => 'array',
     ];
 
+    /**
+     * The one definition of whether a terminal is working.
+     *
+     * Two columns describe it and they disagreed, which is why uptime differed
+     * from page to page: `status` is the lifecycle enum set when the record is
+     * created, `current_status` is what the last field visit found. The field
+     * reading wins where there is one - in this system a terminal's state comes
+     * from visits - and the lifecycle value is the fallback for a terminal
+     * nobody has been to yet.
+     *
+     * ContractReportService already read it this way. This is that same rule,
+     * written once, so the dashboards stop contradicting each other.
+     */
+    public const EFFECTIVE_STATUS_SQL = "LOWER(COALESCE(NULLIF(pos_terminals.current_status, ''), pos_terminals.status))";
+
+    public function getEffectiveStatusAttribute(): string
+    {
+        return strtolower((string) ($this->current_status ?: $this->status));
+    }
+
+    /** Counts/filters terminals by the effective status above. */
+    public function scopeEffectiveStatus($query, string|array $status)
+    {
+        $values      = array_map('strtolower', (array) $status);
+        $placeholders = implode(',', array_fill(0, count($values), '?'));
+
+        return $query->whereRaw(self::EFFECTIVE_STATUS_SQL." IN ($placeholders)", $values);
+    }
+
     // Existing Relationships
     public function client()
     {
         return $this->belongsTo(Client::class);
     }
 
+    /**
+     * The assignments this terminal appears in.
+     *
+     * This is deliberately NOT an Eloquent relation. An assignment carries its
+     * terminals in a JSON array column, `job_assignments.pos_terminals`, so
+     * there is no `pos_terminal_id` for hasMany to key on - it was guessing a
+     * column that has never existed, and every read of it threw "Unknown
+     * column job_assignments.pos_terminal_id". On the terminal page that was
+     * caught and logged, so the assignment list just looked empty; on
+     * GET /api/pos-terminals?my_assignments_only=1 nothing caught it at all.
+     *
+     * Returns a query builder, so ->with(), ->latest(), ->limit() and ->get()
+     * all still read the way they did. It cannot be eager-loaded or used with
+     * whereHas - use scopeAssignedTo() for that.
+     */
     public function jobAssignments()
     {
-        return $this->hasMany(JobAssignment::class);
+        return JobAssignment::query()->whereRaw(self::holdsTerminalSql((int) $this->id));
     }
 
-    public function serviceReports()
+    /**
+     * Terminals that appear in an assignment held by this technician.
+     *
+     * The whereHas() this replaces could never run: see jobAssignments().
+     */
+    public function scopeAssignedTo($query, $technicianId, array $statuses = [])
     {
-        return $this->hasManyThrough(ServiceReport::class, JobAssignment::class);
+        return $query->whereExists(function ($q) use ($technicianId, $statuses) {
+            $q->selectRaw('1')
+              ->from('job_assignments')
+              ->whereRaw(self::holdsTerminalSql('pos_terminals.id'))
+              ->where('job_assignments.technician_id', $technicianId);
+
+            if ($statuses) {
+                $q->whereIn('job_assignments.status', $statuses);
+            }
+        });
+    }
+
+    /**
+     * SQL that is true when an assignment's JSON terminal list holds this id.
+     *
+     * The list has been written both ways over the life of the table - [3] and
+     * ["3"] - so match both rather than betting on one and silently returning
+     * nothing. $idExpr is either an integer cast by the caller or a column
+     * name, never user input.
+     */
+    private static function holdsTerminalSql(string|int $idExpr): string
+    {
+        return "(JSON_CONTAINS(job_assignments.pos_terminals, CAST($idExpr AS JSON))"
+             . " OR JSON_CONTAINS(job_assignments.pos_terminals, JSON_QUOTE(CAST($idExpr AS CHAR))))";
     }
 
     public function tickets()
