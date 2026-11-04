@@ -1098,6 +1098,12 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         });
 
         Route::post('/ping', fn () => response()->json(['ok' => true, 'time' => now()]));
+
+        // A fresh CSRF token for a page that has been open a long time, and the
+        // request that keeps its session alive while it is being used. Answers
+        // 401 - not a token - once the session really is gone, which is how the
+        // builder tells "your token went stale" from "you are signed out".
+        Route::get('/csrf', fn () => response()->json(['token' => csrf_token()]))->name('api.report.csrf');
     });
 
     // ==============================================

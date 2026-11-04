@@ -370,6 +370,8 @@
     <template x-if="errorMessage">
         <div class="rb-alert rb-alert-err" x-transition>
             <span x-text="errorMessage"></span>
+            <a x-show="signedOut" href="{{ route('login') }}" target="_blank" rel="noopener"
+               class="rb-link-btn">Sign in</a>
             <button @click="errorMessage=''" aria-label="Dismiss">&times;</button>
         </div>
     </template>
@@ -925,6 +927,9 @@ document.addEventListener('alpine:init', () => {
     reportData:    null,
     reportColumns: [],
 
+    signedOut:       false,      // the last request came back unauthenticated
+    lastInteraction: Date.now(), // drives the keep-alive; see init()
+
     showChart:     false,
     chartType:     'bar',
     chartInstance: null,
@@ -961,7 +966,70 @@ document.addEventListener('alpine:init', () => {
           });
           this.successMessage = 'Report loaded from history \u2014 click Run Report to execute.';
         } catch(e) {}
+      } else {
+        this.restoreDraft();
       }
+
+      // Keep this tab's session alive while it is actually being used.
+      //
+      // A report is built entirely in the browser, so picking columns sends
+      // nothing to the server. The session is idle-timed at two hours, which
+      // made a long careful build end in a signed-out surprise at the very
+      // moment the user pressed Run Report. Refreshing the token on a visible,
+      // recently-used tab restores what the timeout was meant to mean - idle
+      // means the person stopped working, not that the page stopped talking.
+      // A tab left open and untouched still times out as before.
+      ['click', 'keydown'].forEach(ev => window.addEventListener(
+        ev, () => { this.lastInteraction = Date.now(); }, { passive: true }
+      ));
+      setInterval(() => {
+        if (document.visibilityState !== 'visible') return;
+        if (Date.now() - this.lastInteraction > 30 * 60 * 1000) return;
+        this.refreshCsrf();
+      }, 10 * 60 * 1000);
+
+      // Nothing a person spent time arranging should be lost to a refresh.
+      ['fields', 'config', 'having', 'reportTitle'].forEach(
+        prop => this.$watch(prop, () => this.saveDraft())
+      );
+    },
+
+    // \u2500\u2500 Surviving a sign-out \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    // The columns, filters and title live only in this tab until the report is
+    // run, so a refresh - or signing in again - used to throw the work away.
+    DRAFT_KEY: 'rb_draft_v1',
+
+    saveDraft() {
+      try {
+        localStorage.setItem(this.DRAFT_KEY, JSON.stringify({
+          at: Date.now(),
+          fields: this.fields,
+          config: this.config,
+          having: this.having,
+          reportTitle: this.reportTitle,
+        }));
+      } catch(e) { /* private browsing, or storage full - not worth an alert */ }
+    },
+
+    restoreDraft() {
+      let d;
+      try {
+        d = JSON.parse(localStorage.getItem(this.DRAFT_KEY) || 'null');
+      } catch(e) { return; }
+      if (!d || !Array.isArray(d.fields) || !d.fields.length) return;
+      // A week old is someone else's Monday, not an interrupted session.
+      if (!d.at || Date.now() - d.at > 7 * 24 * 60 * 60 * 1000) return;
+      if (d.config?.baseTable && !this.availableFields[d.config.baseTable]) return;
+
+      this.fields = d.fields;
+      if (d.config) this.config = { ...this.config, ...d.config };
+      if (Array.isArray(d.having)) this.having = d.having;
+      this.reportTitle = d.reportTitle || '';
+      this.successMessage = 'Picked up where you left off \u2014 click Run Report.';
+    },
+
+    clearDraft() {
+      try { localStorage.removeItem(this.DRAFT_KEY); } catch(e) {}
     },
 
     tableVisible(table) {
@@ -1021,6 +1089,7 @@ document.addEventListener('alpine:init', () => {
     clearAll() {
       this.fields = []; this.reportData = null; this.reportColumns = []; this.reportTitle = '';
       this.errorMessage = ''; this.successMessage = '';
+      this.clearDraft();
       this.destroyChart();
     },
 
@@ -1403,15 +1472,75 @@ document.addEventListener('alpine:init', () => {
       return { base:{table:this.config.baseTable}, select, joins:[], group_by, where, limit:this.config.limit, ...order, ...(having.length ? { having: having.map(h => ({ column: h.fn+'('+h.column+')', operator: h.operator, value: parseFloat(h.value) })) } : {}) };
     },
 
+    // ── Talking to the server ─────────────────────────────────────────
+    // Every button here used to report a failed request as "Unknown error".
+    // The reason was narrow: the page treated an HTML login page as the only
+    // sign of a lost session, but Laravel answers a request that asks for JSON
+    // with JSON - {"message":"CSRF token mismatch."} and a 419 - so the one
+    // failure a user can actually do something about was the one it could not
+    // name. Read the status, and say which of the three things went wrong.
+
+    csrfToken() {
+      return document.querySelector('meta[name="csrf-token"]').content;
+    },
+
+    /** Fetches a fresh CSRF token. False means the session itself is gone. */
+    async refreshCsrf() {
+      try {
+        const res = await fetch('/api/report/csrf', {
+          credentials: 'same-origin',
+          headers: { 'Accept':'application/json', 'X-Requested-With':'XMLHttpRequest' },
+        });
+        if (!res.ok) return false;
+        const r = await res.json();
+        if (!r.token) return false;
+        document.querySelector('meta[name="csrf-token"]').content = r.token;
+        this.signedOut = false;
+        return true;
+      } catch(e) { return false; }
+    },
+
+    /**
+     * POSTs JSON and reports back honestly.
+     *
+     * A stale token on a session that is still alive - which is what a user
+     * gets after signing in again in another tab - is retried once with a
+     * fresh one, so the advice "sign in, then press it again" is true.
+     */
+    async postJson(url, payload, attempt = 0) {
+      const res = await fetch(url, {
+        method: 'POST', credentials: 'same-origin',
+        headers: {
+          'Accept':'application/json', 'Content-Type':'application/json',
+          'X-CSRF-TOKEN': this.csrfToken(), 'X-Requested-With':'XMLHttpRequest',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (res.status === 419 && attempt === 0 && await this.refreshCsrf()) {
+        return this.postJson(url, payload, 1);
+      }
+      return res;
+    },
+
+    /** Why a response failed, in words the person can act on. */
+    async failureText(res) {
+      if (res.status === 419 || res.status === 401 || res.status === 403) {
+        this.signedOut = true;
+        return 'You have been signed out. Sign in again in the tab that opens, '
+             + 'come back here and press the button again — the report you built is kept.';
+      }
+      const body = await res.json().catch(() => null);
+      const said = body && (body.error || body.message);
+      if (said) return said;
+      return `The server could not complete that request (HTTP ${res.status}).`;
+    },
+
     async runReport() {
       if (!this.fields.length) { this.errorMessage = 'Add at least one column first.'; return; }
       this.loading = true; this.errorMessage = ''; this.successMessage = '';
       try {
-        const res  = await fetch('/api/report/preview', {
-          method:'POST', credentials:'same-origin',
-          headers:{ 'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'X-Requested-With':'XMLHttpRequest' },
-          body: JSON.stringify(this.buildPayload())
-        });
+        const res = await this.postJson('/api/report/preview', this.buildPayload());
+        if (!res.ok) { this.errorMessage = await this.failureText(res); return; }
         const text = await res.text();
         if (text.trim().startsWith('<!')) { this.errorMessage = 'Session expired — please refresh.'; return; }
         const r = JSON.parse(text);
@@ -1424,7 +1553,7 @@ document.addEventListener('alpine:init', () => {
             this.chartValueCol = '';
             this.renderChart();
           }
-        } else this.errorMessage = r.error || 'Unknown error';
+        } else this.errorMessage = r.error || r.message || 'The report could not be built.';
       } catch(e) { this.errorMessage = 'Request failed: '+e.message; }
       finally { this.loading = false; }
     },
@@ -1436,19 +1565,14 @@ document.addEventListener('alpine:init', () => {
         const slug = (this.reportTitle || 'report').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'report';
         payload.format = format; payload.filename = slug+'_'+new Date().toISOString().slice(0,10); payload.download_all = true;
         if (this.reportTitle) payload.title = this.reportTitle;
-        const res = await fetch('/api/report/export', {
-          method:'POST', credentials:'same-origin',
-          headers:{ 'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'X-Requested-With':'XMLHttpRequest' },
-          body: JSON.stringify(payload)
-        });
+        const res = await this.postJson('/api/report/export', payload);
         if (res.ok) {
           const blob = await res.blob();
           const url  = URL.createObjectURL(blob);
           const a    = Object.assign(document.createElement('a'),{href:url,download:payload.filename+'.'+format});
           document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
         } else {
-          const r = await res.json().catch(()=>({}));
-          this.errorMessage = 'Export failed: '+(r.error||res.statusText);
+          this.errorMessage = 'Export failed: ' + await this.failureText(res);
         }
       } catch(e) { this.errorMessage = 'Export failed: '+e.message; }
     },
@@ -1458,6 +1582,7 @@ document.addEventListener('alpine:init', () => {
       this.availableTemplates = [];
       try {
         const res  = await fetch('/api/report/templates', { credentials:'same-origin', headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'} });
+        if (!res.ok) { this.errorMessage = await this.failureText(res); return; }
         const text = await res.text();
         if (text.trim().startsWith('<!')) {
           this.errorMessage = 'Session expired — please refresh.';
@@ -1709,11 +1834,8 @@ document.addEventListener('alpine:init', () => {
     async saveTemplate() {
       if (!this.saveForm.name) { this.errorMessage='Enter a template name.'; return; }
       try {
-        const res = await fetch('/api/report/templates', {
-          method:'POST', credentials:'same-origin',
-          headers:{ 'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'X-Requested-With':'XMLHttpRequest' },
-          body: JSON.stringify({ name:this.saveForm.name, description:this.saveForm.description, is_global:this.saveForm.isGlobal, payload:{fields:this.fields,baseTable:this.config.baseTable,regionId:this.config.regionId,clientId:this.config.clientId,terminalSource:this.config.terminalSource,dateColumn:this.config.dateColumn,dateFrom:this.config.dateFrom,dateTo:this.config.dateTo,limit:this.config.limit,sort:this.config.sort} })
-        });
+        const res = await this.postJson('/api/report/templates', { name:this.saveForm.name, description:this.saveForm.description, is_global:this.saveForm.isGlobal, payload:{fields:this.fields,baseTable:this.config.baseTable,regionId:this.config.regionId,clientId:this.config.clientId,terminalSource:this.config.terminalSource,dateColumn:this.config.dateColumn,dateFrom:this.config.dateFrom,dateTo:this.config.dateTo,limit:this.config.limit,sort:this.config.sort} });
+        if (!res.ok) { this.errorMessage = await this.failureText(res); return; }
         const text = await res.text();
         if (text.trim().startsWith('<!')) { this.errorMessage='Session expired.'; return; }
         const r = JSON.parse(text);
