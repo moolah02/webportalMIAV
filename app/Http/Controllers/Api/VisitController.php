@@ -69,8 +69,45 @@ class VisitController extends Controller
         return response()->json([
             'success' => true,
             'count'   => $visits->count(),
-            'data'    => $visits,
+            'data'    => $this->withClientNames($visits),
         ]);
+    }
+
+    /**
+     * Adds the client each visit was for.
+     *
+     * The visit list on the tablet shows a client per row and this payload
+     * never carried one, so every single row read "Unknown Client". A visit
+     * has no client of its own - it reaches one through the terminal it was
+     * about - so it is resolved here in one query rather than letting the
+     * tablet guess.
+     */
+    private function withClientNames($visits)
+    {
+        $terminalIds = $visits
+            ->flatMap(fn ($v) => $v->visitTerminals->pluck('terminal_id'))
+            ->filter()
+            ->unique();
+
+        $clientByTerminal = $terminalIds->isEmpty()
+            ? collect()
+            : DB::table('pos_terminals')
+                ->leftJoin('clients', 'clients.id', '=', 'pos_terminals.client_id')
+                ->whereIn('pos_terminals.id', $terminalIds)
+                ->pluck('clients.company_name', 'pos_terminals.id');
+
+        return $visits->map(function ($visit) use ($clientByTerminal) {
+            $name = $visit->visitTerminals
+                ->map(fn ($vt) => $clientByTerminal[$vt->terminal_id] ?? null)
+                ->filter()
+                ->first();
+
+            $row = $visit->toArray();
+            $row['client']      = $name ? ['name' => $name] : null;
+            $row['client_name'] = $name;
+
+            return $row;
+        });
     }
 
     public function myVisits(Request $request)
@@ -101,7 +138,7 @@ class VisitController extends Controller
     return response()->json([
         'success' => true,
         'count'   => $visits->count(),
-        'data'    => $visits,
+        'data'    => $this->withClientNames($visits),
     ]);
 }
 
