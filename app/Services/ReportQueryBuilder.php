@@ -162,6 +162,16 @@ class ReportQueryBuilder
             $this->applyWhereFilters($query, $config['where']);
         }
 
+        // Whether the terminal has ever been visited.
+        //
+        // This is not a where clause and cannot be written as one: it asks
+        // whether a row exists in another table, and no comparison operator
+        // says that. It is why "terminals nobody has been to yet" could not be
+        // asked for at all before.
+        if (!empty($config['visit_state'])) {
+            $this->applyVisitState($query, $baseTable, $config['visit_state']);
+        }
+
         // Apply HAVING filters (for aggregate conditions on grouped queries)
         if (!empty($config['having'])) {
             $this->applyHavingFilters($query, $config['having']);
@@ -249,6 +259,38 @@ class ReportQueryBuilder
             $graph[$rightTable][$leftTable]  = $condition;
         }
         return $graph;
+    }
+
+    /**
+     * Restricts a terminal report to those never visited, or those visited.
+     *
+     * Deliberately an EXISTS against visit_terminals rather than a condition
+     * on the join: a report that also shows visit columns is already LEFT
+     * JOINed to them, and "no visit row" has to be asked of the table, not of
+     * the joined result, or a terminal with three visits answers three times.
+     */
+    private function applyVisitState($query, string $baseTable, string $state): void
+    {
+        if ($baseTable !== 'pos_terminals') {
+            throw new InvalidArgumentException(
+                'The visited filter only makes sense on a POS Terminals report, '
+                . 'where each row is one terminal.'
+            );
+        }
+
+        if (!in_array($state, ['never', 'visited'], true)) {
+            throw new InvalidArgumentException('Unknown visited filter: ' . $state);
+        }
+
+        $hasAVisit = function ($q) {
+            $q->selectRaw('1')
+              ->from('visit_terminals')
+              ->whereColumn('visit_terminals.terminal_id', 'pos_terminals.id');
+        };
+
+        $state === 'never'
+            ? $query->whereNotExists($hasAVisit)
+            : $query->whereExists($hasAVisit);
     }
 
     private function detectRequiredJoins(string $baseTable, array $referencedTables): array

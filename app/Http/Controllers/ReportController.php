@@ -55,6 +55,7 @@ class ReportController extends Controller
                 'sort_column'       => 'sometimes|nullable|string',
                 'limit'             => 'sometimes|integer|min:1|max:10000',
                 'download_all'      => 'sometimes|boolean',
+                'visit_state'       => 'sometimes|nullable|string|in:never,visited',
             ]);
 
             $queryData = $this->queryBuilder->buildQuery($validated);
@@ -131,6 +132,7 @@ class ReportController extends Controller
                 'title'             => 'sometimes|nullable|string|max:120',
                 'filename'          => 'sometimes|string',
                 'download_all'      => 'sometimes|boolean',
+                'visit_state'       => 'sometimes|nullable|string|in:never,visited',
             ]);
 
             $validated['download_all'] = true;

@@ -494,6 +494,16 @@
                 </select>
             </div>
 
+            <div class="rb-strip-group">
+                <label>Visited</label>
+                <select class="rb-strip-select" x-model="config.visitState" :disabled="!visitStateApplies()"
+                        :title="visitStateApplies() ? 'Whether a technician has ever recorded a visit to the terminal' : 'This filter only applies to a POS Terminals report'">
+                    <option value="">Visited or not</option>
+                    <option value="never">Never visited</option>
+                    <option value="visited">Visited at least once</option>
+                </select>
+            </div>
+
             <div class="rb-strip-sep"></div>
 
             <div class="rb-strip-group">
@@ -910,6 +920,7 @@ document.addEventListener('alpine:init', () => {
       regionId:   '',
       clientId:   '',
       terminalSource: '', // '' | 'office' | 'field_discovery'
+      visitState: '',     // '' | 'never' | 'visited'
       dateColumn: '',
       dateFrom:   '',
       dateTo:     '',
@@ -1374,6 +1385,11 @@ document.addEventListener('alpine:init', () => {
     terminalSourceApplies() {
       return ['pos_terminals', 'technician_visits', 'visits', 'visit_terminals', 'tickets'].includes(this.config.baseTable);
     },
+    // "Never visited" is the absence of a visit row, so it only means
+    // anything when each row of the report IS a terminal.
+    visitStateApplies() {
+      return this.config.baseTable === 'pos_terminals';
+    },
     dateColumnOptions() {
       const inReport = new Set([this.config.baseTable, ...this.fields.map(f => (f.expression || '').split('.')[0])]);
       const out = { inReport: [], other: [] };
@@ -1412,6 +1428,9 @@ document.addEventListener('alpine:init', () => {
       if (this.config.terminalSource && this.terminalSourceApplies()) {
         out.push({ key: 'source', text: this.config.terminalSource === 'office' ? 'Terminals: original list only' : 'Terminals: discovered on site' });
       }
+      if (this.config.visitState && this.visitStateApplies()) {
+        out.push({ key: 'visitState', text: this.config.visitState === 'never' ? 'Never visited' : 'Visited at least once' });
+      }
       if (this.config.dateColumn && (this.config.dateFrom || this.config.dateTo)) {
         out.push({ key: 'date', text: this.dateColumnLabel(this.config.dateColumn) + ': ' + fmt(this.config.dateFrom) + ' to ' + fmt(this.config.dateTo) });
       }
@@ -1424,12 +1443,13 @@ document.addEventListener('alpine:init', () => {
       if (key === 'region') this.config.regionId = '';
       else if (key === 'client') this.config.clientId = '';
       else if (key === 'source') this.config.terminalSource = '';
+      else if (key === 'visitState') this.config.visitState = '';
       else if (key === 'date') { this.config.dateFrom = ''; this.config.dateTo = ''; }
       else if (key.startsWith('having:')) this.having = [];
       this.runReport();
     },
     clearAllFilters() {
-      Object.assign(this.config, { regionId: '', clientId: '', terminalSource: '', dateFrom: '', dateTo: '' });
+      Object.assign(this.config, { regionId: '', clientId: '', terminalSource: '', visitState: '', dateFrom: '', dateTo: '' });
       this.having = [];
       this.runReport();
     },
@@ -1459,6 +1479,9 @@ document.addEventListener('alpine:init', () => {
       if (this.config.dateColumn && (this.config.dateFrom || this.config.dateTo)) {
         where.push({ column:this.config.dateColumn, operator:'between_dates', value:{from:this.config.dateFrom||null, to:this.config.dateTo||null} });
       }
+      // Not a where clause: it asks whether a row exists in another table,
+      // which no comparison operator can say.
+      const visitState = this.visitStateApplies() ? this.config.visitState : '';
       const having = this.having.filter(h => h.fn && h.column && h.operator && h.value !== '');
       // Row order (grouped reports are left unsorted)
       const order = {};
@@ -1467,7 +1490,7 @@ document.addEventListener('alpine:init', () => {
         order.sort = sort;
         if (sort !== 'activity') order.sort_column = this.config.dateColumn;
       }
-      return { base:{table:this.config.baseTable}, select, joins:[], group_by, where, limit:this.config.limit, ...order, ...(having.length ? { having: having.map(h => ({ column: h.fn+'('+h.column+')', operator: h.operator, value: parseFloat(h.value) })) } : {}) };
+      return { base:{table:this.config.baseTable}, select, joins:[], group_by, where, limit:this.config.limit, ...(visitState ? { visit_state: visitState } : {}), ...order, ...(having.length ? { having: having.map(h => ({ column: h.fn+'('+h.column+')', operator: h.operator, value: parseFloat(h.value) })) } : {}) };
     },
 
     // ── Talking to the server ─────────────────────────────────────────
@@ -1821,7 +1844,7 @@ document.addEventListener('alpine:init', () => {
         if (!raw) { this.errorMessage='Template has no payload.'; return; }
         const p = (typeof raw === 'string') ? JSON.parse(raw) : raw;
         this.fields = Array.isArray(p.fields) ? p.fields : [];
-        this.config = { baseTable:p.baseTable||'pos_terminals', regionId:p.regionId||'', clientId:p.clientId||'', terminalSource:p.terminalSource||'', dateColumn:p.dateColumn||'', dateFrom:p.dateFrom||'', dateTo:p.dateTo||'', limit:p.limit||100, sort:p.sort||'activity' };
+        this.config = { baseTable:p.baseTable||'pos_terminals', regionId:p.regionId||'', clientId:p.clientId||'', terminalSource:p.terminalSource||'', visitState:p.visitState||'', dateColumn:p.dateColumn||'', dateFrom:p.dateFrom||'', dateTo:p.dateTo||'', limit:p.limit||100, sort:p.sort||'activity' };
         this.having = Array.isArray(p.having) ? p.having : [];
         this.reportTitle = tpl.name || '';
         this.reportData = null; this.reportColumns = [];
@@ -1832,7 +1855,7 @@ document.addEventListener('alpine:init', () => {
     async saveTemplate() {
       if (!this.saveForm.name) { this.errorMessage='Enter a template name.'; return; }
       try {
-        const res = await this.postJson('/api/report/templates', { name:this.saveForm.name, description:this.saveForm.description, is_global:this.saveForm.isGlobal, payload:{fields:this.fields,baseTable:this.config.baseTable,regionId:this.config.regionId,clientId:this.config.clientId,terminalSource:this.config.terminalSource,dateColumn:this.config.dateColumn,dateFrom:this.config.dateFrom,dateTo:this.config.dateTo,limit:this.config.limit,sort:this.config.sort} });
+        const res = await this.postJson('/api/report/templates', { name:this.saveForm.name, description:this.saveForm.description, is_global:this.saveForm.isGlobal, payload:{fields:this.fields,baseTable:this.config.baseTable,regionId:this.config.regionId,clientId:this.config.clientId,terminalSource:this.config.terminalSource,visitState:this.config.visitState,dateColumn:this.config.dateColumn,dateFrom:this.config.dateFrom,dateTo:this.config.dateTo,limit:this.config.limit,sort:this.config.sort} });
         if (!res.ok) { this.errorMessage = await this.failureText(res); return; }
         const text = await res.text();
         if (text.trim().startsWith('<!')) { this.errorMessage='Session expired.'; return; }
