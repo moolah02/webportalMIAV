@@ -60,9 +60,10 @@ class RoleSeeder extends Seeder
             if (!isset($role['display_name'])) {
                 $role['display_name'] = $role['name'];
             }
-            if (is_array($role['permissions'])) {
-                $role['permissions'] = json_encode($role['permissions']);
-            }
+            // No json_encode here. Role casts `permissions` to array, so
+            // encoding first stored a JSON string *inside* the JSON column -
+            // it then read back as a string, and the roles screen died on
+            // in_array() with "must be of type array, string given".
 
             Role::firstOrCreate(['name' => $role['name']], $role);
         }
