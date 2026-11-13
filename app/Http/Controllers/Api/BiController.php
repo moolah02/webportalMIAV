@@ -29,13 +29,41 @@ class BiController extends Controller
 
     private const DEFAULT_PER_PAGE = 500;
 
+    /**
+     * The client this token is allowed to see, or null for all of them.
+     *
+     * A token minted for an outside analyst carries `bi:client:7` alongside
+     * `bi:read`, and then every dataset below is narrowed to that client.
+     * Without it the feed returns the whole system, which is right for our
+     * own reporting and wrong for anyone else's.
+     */
+    private function clientScope(Request $request): ?int
+    {
+        $token = $request->user()?->currentAccessToken();
+        foreach ((array) ($token->abilities ?? []) as $ability) {
+            if (str_starts_with((string) $ability, 'bi:client:')) {
+                return (int) substr($ability, strlen('bi:client:'));
+            }
+        }
+
+        return null;
+    }
+
     /** What is on offer, so the feed can be explored without documentation. */
     public function index(Request $request): JsonResponse
     {
         $base = rtrim(url('/api/bi'), '/');
 
+        $client = $this->clientScope($request);
+        $clientName = $client
+            ? DB::table('clients')->where('id', $client)->value('company_name')
+            : null;
+
         return response()->json([
             'name'     => 'MIAV reporting feed',
+            'scope'    => $client
+                ? "Limited to {$clientName}"
+                : 'All clients',
             'datasets' => [
                 ['name' => 'terminals', 'url' => "{$base}/terminals", 'description' => 'Every POS terminal and its current state'],
                 ['name' => 'visits',    'url' => "{$base}/visits",    'description' => 'One row per visit, with the technician and client'],
@@ -80,6 +108,10 @@ class BiController extends Controller
             // asks most and the one a plain column cannot answer.
             ->selectRaw('EXISTS (SELECT 1 FROM visit_terminals vt WHERE vt.terminal_id = pos_terminals.id) as has_been_visited');
 
+        if ($client = $this->clientScope($request)) {
+            $query->where('pos_terminals.client_id', $client);
+        }
+
         return $this->page($request, $query, 'pos_terminals.id');
     }
 
@@ -103,6 +135,18 @@ class BiController extends Controller
             ])
             ->selectRaw("TRIM(CONCAT(COALESCE(e.first_name, ''), ' ', COALESCE(e.last_name, ''))) as technician")
             ->selectRaw('e.employee_number as technician_number');
+
+        // A visit carries no client of its own - it belongs to one through the
+        // terminals it was about, so the scope is applied there.
+        if ($client = $this->clientScope($request)) {
+            $query->whereExists(function ($q) use ($client) {
+                $q->selectRaw('1')
+                  ->from('visit_terminals as svt')
+                  ->join('pos_terminals as sp', 'sp.id', '=', 'svt.terminal_id')
+                  ->whereColumn('svt.visit_id', 'v.id')
+                  ->where('sp.client_id', $client);
+            });
+        }
 
         return $this->page($request, $query, 'v.id');
     }
@@ -132,6 +176,10 @@ class BiController extends Controller
                 'vt.updated_at',
             ]);
 
+        if ($client = $this->clientScope($request)) {
+            $query->where('t.client_id', $client);
+        }
+
         return $this->page($request, $query, 'vt.id');
     }
 
@@ -155,6 +203,10 @@ class BiController extends Controller
                 'k.updated_at',
             ]);
 
+        if ($client = $this->clientScope($request)) {
+            $query->where('k.client_id', $client);
+        }
+
         return $this->page($request, $query, 'k.id');
     }
 
@@ -169,6 +221,10 @@ class BiController extends Controller
             'c.created_at',
             'c.updated_at',
         ]);
+
+        if ($client = $this->clientScope($request)) {
+            $query->where('c.id', $client);
+        }
 
         return $this->page($request, $query, 'c.id');
     }
@@ -191,6 +247,19 @@ class BiController extends Controller
                 'r.display_name as role',
             ])
             ->selectRaw("TRIM(CONCAT(COALESCE(e.first_name, ''), ' ', COALESCE(e.last_name, ''))) as name");
+
+        // Only the people who actually worked on this client's sites. The
+        // full staff list is not a client's business.
+        if ($client = $this->clientScope($request)) {
+            $query->whereExists(function ($q) use ($client) {
+                $q->selectRaw('1')
+                  ->from('visits as sv')
+                  ->join('visit_terminals as svt', 'svt.visit_id', '=', 'sv.id')
+                  ->join('pos_terminals as sp', 'sp.id', '=', 'svt.terminal_id')
+                  ->whereColumn('sv.employee_id', 'e.id')
+                  ->where('sp.client_id', $client);
+            });
+        }
 
         return $this->page($request, $query, 'e.id');
     }

@@ -82,7 +82,7 @@ Artisan::command('miav:publish-apk {path} {version} {build} {--channel=current :
 //   php artisan miav:bi-token "Mbonisi - Power BI"
 //   php artisan miav:bi-token --list
 //   php artisan miav:bi-token --revoke=7
-Artisan::command('miav:bi-token {name? : Who the token is for} {--list : Show the tokens already issued} {--revoke= : Withdraw a token by id}', function () {
+Artisan::command('miav:bi-token {name? : Who the token is for} {--client= : Limit it to one client (id or name)} {--list : Show the tokens already issued} {--revoke= : Withdraw a token by id}', function () {
     $owner = \App\Models\Employee::orderBy('id')->first();
     if (! $owner) {
         $this->error('There are no employees, so there is nobody to issue a token against.');
@@ -112,6 +112,7 @@ Artisan::command('miav:bi-token {name? : Who the token is for} {--list : Show th
                 $t->created_at?->toDateString(),
             ]);
         $this->table(['id', 'name', 'can do', 'last used', 'issued'], $rows);
+        $this->line('A token showing bi:client:<id> is limited to that one client.');
         return 0;
     }
 
@@ -123,7 +124,28 @@ Artisan::command('miav:bi-token {name? : Who the token is for} {--list : Show th
 
     // `bi:read` and nothing else: this token cannot file a visit, change a
     // terminal or sign in to the portal.
-    $plain = $owner->createToken($name, ['bi:read'])->plainTextToken;
+    $abilities = ['bi:read'];
+    $client = null;
+
+    if ($given = $this->option('client')) {
+        $client = is_numeric($given)
+            ? \App\Models\Client::find((int) $given)
+            : \App\Models\Client::where('company_name', 'like', '%'.$given.'%')->first();
+
+        if (! $client) {
+            $this->error("No client matching «{$given}».");
+            $this->line('Known clients:');
+            foreach (\App\Models\Client::orderBy('company_name')->get() as $c) {
+                $this->line("  {$c->id}  {$c->company_name}");
+            }
+            return 1;
+        }
+
+        // Narrows every dataset to this client - see BiController::clientScope.
+        $abilities[] = 'bi:client:'.$client->id;
+    }
+
+    $plain = $owner->createToken($name, $abilities)->plainTextToken;
 
     $this->newLine();
     $this->info("Token for «{$name}»:");
@@ -131,6 +153,9 @@ Artisan::command('miav:bi-token {name? : Who the token is for} {--list : Show th
     $this->newLine();
     $this->warn('This is shown once and never again. Send it over something private — not WhatsApp.');
     $this->line('It can read '.url('/api/bi').' and nothing else.');
+    $this->line($client
+        ? "It sees only {$client->company_name}'s terminals, visits, findings and tickets."
+        : 'It sees EVERY client. Use --client to limit it to one.');
     $this->line('Withdraw it later with: php artisan miav:bi-token --revoke=<id>');
 
     return 0;
