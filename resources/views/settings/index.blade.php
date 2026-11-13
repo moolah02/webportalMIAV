@@ -266,6 +266,10 @@
                         <svg class="mv-i" aria-hidden="true"><use href="#i-database"/></svg><span class="st-label">Database Backups</span>
                         <span class="badge-manage">Manage</span><svg class="mv-i st-chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
                     </a></li>
+                    <li><a href="{{ route('settings.reporting-access') }}">
+                        <svg class="mv-i" aria-hidden="true"><use href="#i-chart"/></svg><span class="st-label">Reporting Access</span>
+                        <span class="badge-manage">Manage</span><svg class="mv-i st-chev" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                    </a></li>
                 </ul>
             </div>
             <div class="st-group">

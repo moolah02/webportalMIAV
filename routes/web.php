@@ -936,6 +936,11 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
         Route::post('/asset-categories/{category}/fields/reorder', [AssetCategoryFieldController::class, 'reorder'])->name('asset-category-fields.reorder');
         Route::put('/asset-categories/{category}/settings', [AssetCategoryFieldController::class, 'updateCategory'])->name('asset-category-fields.update-category');
 
+        // Reporting access — the read-only tokens that feed Power BI and the like
+        Route::get('/reporting-access',            [\App\Http\Controllers\ReportingAccessController::class, 'index'])->name('reporting-access');
+        Route::post('/reporting-access',           [\App\Http\Controllers\ReportingAccessController::class, 'store'])->name('reporting-access.store');
+        Route::delete('/reporting-access/{token}', [\App\Http\Controllers\ReportingAccessController::class, 'destroy'])->name('reporting-access.destroy');
+
         // Email Settings
         Route::get('/email',         [SystemSettingController::class, 'emailIndex'])->name('email');
         Route::post('/email',        [SystemSettingController::class, 'emailUpdate'])->name('email.update');
