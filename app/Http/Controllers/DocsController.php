@@ -34,6 +34,12 @@ class DocsController extends Controller
         return view('docs.mobile', compact('page'));
     }
 
+    public function reportingFeed()
+    {
+        $page = $this->loadPage('reporting-feed');
+        return view('docs.reporting-feed', compact('page'));
+    }
+
     public function reports()
     {
         $page = $this->loadPage('reports');

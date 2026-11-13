@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PosTerminal;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -28,6 +30,38 @@ class BiController extends Controller
     private const MAX_PER_PAGE = 1000;
 
     private const DEFAULT_PER_PAGE = 500;
+
+    /**
+     * A dataset as CSV, streamed straight from the database.
+     *
+     * Holding the whole thing in memory first is what makes an export fall
+     * over on the day the data finally gets big, so it is never assembled.
+     */
+    private function csv($query, string $orderBy): StreamedResponse
+    {
+        $name = str_replace('.', '_', explode('.', $orderBy)[0]);
+        $file = 'miav_'.$name.'_'.now()->format('Y-m-d').'.csv';
+
+        return response()->stream(function () use ($query, $orderBy) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "﻿");   // so Excel reads accents properly
+
+            $wroteHeader = false;
+            foreach ($query->orderBy($orderBy)->cursor() as $row) {
+                $row = (array) $row;
+                if (! $wroteHeader) {
+                    fputcsv($out, array_keys($row));
+                    $wroteHeader = true;
+                }
+                fputcsv($out, array_values($row));
+            }
+
+            fclose($out);
+        }, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$file}\"",
+        ]);
+    }
 
     /**
      * The client this token is allowed to see, or null for all of them.
@@ -76,10 +110,14 @@ class BiController extends Controller
                 'parameters'  => ['page', 'per_page (max '.self::MAX_PER_PAGE.')', 'since (ISO date, rows changed on or after)'],
                 'how_to_read' => 'Follow "next_page" until it is null.',
             ],
+            'taking_a_copy' => [
+                'how'  => 'Add ?format=csv to any dataset for the whole thing in one file, unpaged.',
+                'note' => 'Combine with ?since=YYYY-MM-DD to copy only what has changed.',
+            ],
         ]);
     }
 
-    public function terminals(Request $request): JsonResponse
+    public function terminals(Request $request): Response
     {
         // Not aliased: EFFECTIVE_STATUS_SQL names pos_terminals outright, so
         // an alias would leave it pointing at a table that is not in the query.
@@ -115,7 +153,7 @@ class BiController extends Controller
         return $this->page($request, $query, 'pos_terminals.id');
     }
 
-    public function visits(Request $request): JsonResponse
+    public function visits(Request $request): Response
     {
         $query = DB::table('visits as v')
             ->leftJoin('employees as e', 'e.id', '=', 'v.employee_id')
@@ -151,7 +189,7 @@ class BiController extends Controller
         return $this->page($request, $query, 'v.id');
     }
 
-    public function findings(Request $request): JsonResponse
+    public function findings(Request $request): Response
     {
         $query = DB::table('visit_terminals as vt')
             ->leftJoin('visits as v', 'v.id', '=', 'vt.visit_id')
@@ -183,7 +221,7 @@ class BiController extends Controller
         return $this->page($request, $query, 'vt.id');
     }
 
-    public function tickets(Request $request): JsonResponse
+    public function tickets(Request $request): Response
     {
         $query = DB::table('tickets as k')
             ->leftJoin('pos_terminals as t', 't.id', '=', 'k.pos_terminal_id')
@@ -210,7 +248,7 @@ class BiController extends Controller
         return $this->page($request, $query, 'k.id');
     }
 
-    public function clients(Request $request): JsonResponse
+    public function clients(Request $request): Response
     {
         $query = DB::table('clients as c')->select([
             'c.id',
@@ -235,7 +273,7 @@ class BiController extends Controller
      * No address, no personal telephone number, no email: a reporting tool
      * needs to say who did the work, not how to contact them at home.
      */
-    public function technicians(Request $request): JsonResponse
+    public function technicians(Request $request): Response
     {
         $query = DB::table('employees as e')
             ->leftJoin('roles as r', 'r.id', '=', 'e.role_id')
@@ -270,12 +308,13 @@ class BiController extends Controller
      * `since` lets a refresh ask only for what has changed, so a daily pull
      * does not drag the whole history across every morning.
      */
-    private function page(Request $request, $query, string $orderBy): JsonResponse
+    private function page(Request $request, $query, string $orderBy): Response
     {
         $validated = $request->validate([
             'page'     => 'sometimes|integer|min:1',
             'per_page' => 'sometimes|integer|min:1|max:'.self::MAX_PER_PAGE,
             'since'    => 'sometimes|date',
+            'format'   => 'sometimes|in:json,csv',
         ]);
 
         $table = explode(' as ', $orderBy)[0];
@@ -283,6 +322,13 @@ class BiController extends Controller
 
         if (!empty($validated['since'])) {
             $query->where($alias.'.updated_at', '>=', $validated['since']);
+        }
+
+        // A whole dataset as one CSV, for anyone keeping their own copy rather
+        // than querying live. Streamed a row at a time and deliberately not
+        // paged - a copy that stops at page one is not a copy.
+        if (($validated['format'] ?? 'json') === 'csv') {
+            return $this->csv($query, $orderBy);
         }
 
         $perPage = (int) ($validated['per_page'] ?? self::DEFAULT_PER_PAGE);

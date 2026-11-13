@@ -84,6 +84,26 @@
         </div>
     </a>
 
+    <a href="{{ url('/docs/reporting-feed') }}" style="text-decoration:none;">
+        <div style="background:#fff;border:1px solid #d0d7de;border-radius:10px;padding:24px;
+                    transition:all .2s;cursor:pointer;border-top:4px solid #0369a1;"
+             onmouseover="this.style.boxShadow='0 4px 20px rgba(3,105,161,.12)';this.style.transform='translateY(-2px)'"
+             onmouseout="this.style.boxShadow='none';this.style.transform='none'">
+            <div style="font-size:28px;margin-bottom:10px;"></div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#0369a1;margin-bottom:4px;">
+                ADMINS &amp; ANALYSTS
+            </div>
+            <div style="font-size:16px;font-weight:700;color:#0d1117;margin-bottom:8px;">Reporting Feed &amp; Power BI</div>
+            <p style="font-size:13px;color:#57606a;line-height:1.5;margin:0;">
+                Connecting Power BI to MIAV data, issuing and withdrawing access tokens,
+                limiting someone to a single client, and keeping your own copy.
+            </p>
+            <div style="margin-top:14px;font-size:13px;font-weight:600;color:#0369a1;">
+                Open guide &rarr;
+            </div>
+        </div>
+    </a>
+
     <a href="{{ url('/docs/projects') }}" style="text-decoration:none;">
         <div style="background:#fff;border:1px solid #d0d7de;border-radius:10px;padding:24px;
                     transition:all .2s;cursor:pointer;border-top:4px solid #7c3aed;"

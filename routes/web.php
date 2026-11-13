@@ -44,6 +44,7 @@ Route::prefix('docs')->name('docs.')->group(function () {
     Route::get('/system',            [DocsController::class, 'system'])->name('system');
     Route::get('/mobile',            [DocsController::class, 'mobile'])->name('mobile');
     Route::get('/reports',           [DocsController::class, 'reports'])->name('reports');
+    Route::get('/reporting-feed',    [DocsController::class, 'reportingFeed'])->name('reporting-feed');
     Route::get('/projects',          [DocsController::class, 'projects'])->name('projects');
     Route::get('/srs',               [DocsController::class, 'srs'])->name('srs');
     Route::get('/overview',          [DocsController::class, 'overview'])->name('overview');
