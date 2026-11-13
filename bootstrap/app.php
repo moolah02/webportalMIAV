@@ -15,6 +15,19 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('web', \App\Http\Middleware\ForcePasswordChange::class);
+
+        // Lets a route demand a specific token ability. The reporting feed uses
+        // it so a BI token can read the feed and nothing else, even though it
+        // authenticates through the same guard as a technician's tablet.
+        $middleware->alias([
+            'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
+            'ability'   => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
+        ]);
+
+        // The alias above only binds where a route asks for it, and the tablet
+        // API asks only for auth:sanctum - so this runs everywhere and keeps a
+        // reporting token off every endpoint except the feed.
+        $middleware->appendToGroup('api', \App\Http\Middleware\RestrictReportingTokens::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Ensure API consumers (mobile apps) consistently receive JSON for auth failures

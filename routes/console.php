@@ -77,3 +77,61 @@ Artisan::command('miav:publish-apk {path} {version} {build} {--channel=current :
     $this->info("Published [$channel] v{$meta['version']} ({$meta['build']}): {$meta['size']} bytes, sha256 {$meta['sha256']}");
     return 0;
 })->purpose('Publish an Android APK for download on the Mobile App page');
+
+// Mints a token that can read the reporting feed and do nothing else.
+//   php artisan miav:bi-token "Mbonisi - Power BI"
+//   php artisan miav:bi-token --list
+//   php artisan miav:bi-token --revoke=7
+Artisan::command('miav:bi-token {name? : Who the token is for} {--list : Show the tokens already issued} {--revoke= : Withdraw a token by id}', function () {
+    $owner = \App\Models\Employee::orderBy('id')->first();
+    if (! $owner) {
+        $this->error('There are no employees, so there is nobody to issue a token against.');
+        return 1;
+    }
+
+    if ($id = $this->option('revoke')) {
+        $token = \Laravel\Sanctum\PersonalAccessToken::find($id);
+        if (! $token) {
+            $this->error("No token with id {$id}.");
+            return 1;
+        }
+        $this->warn("Withdrawing «{$token->name}» (id {$token->id}) — it stops working immediately.");
+        $token->delete();
+        $this->info('Withdrawn.');
+        return 0;
+    }
+
+    if ($this->option('list')) {
+        $rows = \Laravel\Sanctum\PersonalAccessToken::query()
+            ->get(['id', 'name', 'abilities', 'last_used_at', 'created_at'])
+            ->map(fn ($t) => [
+                $t->id,
+                $t->name,
+                implode(',', (array) $t->abilities),
+                $t->last_used_at?->diffForHumans() ?? 'never used',
+                $t->created_at?->toDateString(),
+            ]);
+        $this->table(['id', 'name', 'can do', 'last used', 'issued'], $rows);
+        return 0;
+    }
+
+    $name = $this->argument('name');
+    if (! $name) {
+        $this->error('Say who the token is for, e.g. php artisan miav:bi-token "Mbonisi - Power BI"');
+        return 1;
+    }
+
+    // `bi:read` and nothing else: this token cannot file a visit, change a
+    // terminal or sign in to the portal.
+    $plain = $owner->createToken($name, ['bi:read'])->plainTextToken;
+
+    $this->newLine();
+    $this->info("Token for «{$name}»:");
+    $this->line($plain);
+    $this->newLine();
+    $this->warn('This is shown once and never again. Send it over something private — not WhatsApp.');
+    $this->line('It can read '.url('/api/bi').' and nothing else.');
+    $this->line('Withdraw it later with: php artisan miav:bi-token --revoke=<id>');
+
+    return 0;
+})->purpose('Issue, list or withdraw a read-only token for the reporting feed');

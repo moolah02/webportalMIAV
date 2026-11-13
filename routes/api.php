@@ -613,3 +613,20 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
 // pointing at Api\ReportController, which has none of those methods, and it
 // registered the same route names — so whichever file loaded first decided
 // whether the builder worked at all.
+
+// ──────────────────────────────────────────────────────────────────────────
+// Reporting feed (Power BI and anything else that reads tables over HTTP).
+//
+// Behind the same token guard as the tablets, but additionally requiring the
+// `bi:read` ability, so a reporting token cannot file a visit and a tablet's
+// token cannot read the feed. Mint one with `php artisan miav:bi-token`.
+// ──────────────────────────────────────────────────────────────────────────
+Route::middleware(['auth:sanctum', 'abilities:bi:read'])->prefix('bi')->group(function () {
+    Route::get('/',            [\App\Http\Controllers\Api\BiController::class, 'index']);
+    Route::get('/terminals',   [\App\Http\Controllers\Api\BiController::class, 'terminals']);
+    Route::get('/visits',      [\App\Http\Controllers\Api\BiController::class, 'visits']);
+    Route::get('/findings',    [\App\Http\Controllers\Api\BiController::class, 'findings']);
+    Route::get('/tickets',     [\App\Http\Controllers\Api\BiController::class, 'tickets']);
+    Route::get('/clients',     [\App\Http\Controllers\Api\BiController::class, 'clients']);
+    Route::get('/technicians', [\App\Http\Controllers\Api\BiController::class, 'technicians']);
+});
