@@ -303,8 +303,10 @@
                         <li>
                             <svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg>
                             <strong>Evidence {{ $idx + 1 }}:</strong>
-                            @if(\Illuminate\Support\Str::startsWith($e, ['http://','https://','/storage/']))
+                            @if(\App\Support\MediaUrl::isViewable($e))
                                 <a href="{{ \App\Support\MediaUrl::display($e) }}" target="_blank" rel="noopener">View Evidence</a>
+                            @elseif(\Illuminate\Support\Str::startsWith($e, ['http://','https://','/storage/']))
+                                <span class="vs-raw">Photo did not reach the server &mdash; ask the technician to send it again.</span>
                             @else
                                 <span class="vs-raw">{{ $e }}</span>
                             @endif

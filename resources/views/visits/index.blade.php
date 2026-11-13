@@ -215,8 +215,10 @@
                                     <summary><svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg>{{ count($evidence) }} {{ count($evidence) === 1 ? 'File' : 'Files' }}</summary>
                                     <div class="vi-files">
                                         @foreach($evidence as $idx => $item)
-                                            @if(\Illuminate\Support\Str::startsWith($item, ['http://', 'https://', '/storage/']))
+                                            @if(\App\Support\MediaUrl::isViewable($item))
                                                 <a href="{{ \App\Support\MediaUrl::display($item) }}" target="_blank" rel="noopener"><svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg>Evidence {{ $idx + 1 }}</a>
+                                            @elseif(\Illuminate\Support\Str::startsWith($item, ['http://', 'https://', '/storage/']))
+                                                <span><svg class="mv-i" aria-hidden="true"><use href="#i-file"/></svg>Evidence {{ $idx + 1 }} &mdash; did not upload</span>
                                             @else
                                                 <span><svg class="mv-i" aria-hidden="true"><use href="#i-file"/></svg>{{ \Illuminate\Support\Str::limit($item, 35) }}</span>
                                             @endif

@@ -11,6 +11,7 @@ use App\Models\JobAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -676,7 +677,27 @@ class VisitController extends Controller
 
         // storage/app/public/visit_evidence/... served via the /storage symlink
         $path = $file->storeAs('visit_evidence', $name, 'public');
-        $url  = url('storage/' . $path);
+
+        // storeAs() returns false when the file could not be written - a full disk,
+        // or a directory the web server may not write into. Saying "success" here
+        // and handing back url('storage/') produced a link to nothing: the photo was
+        // lost, and whoever opened it months later got Forbidden with no explanation.
+        // Fail loudly instead, so the tablet can keep the photo and try again.
+        if ($path === false || $path === '' || ! Storage::disk('public')->exists($path)) {
+            Log::error('Visit evidence could not be stored', [
+                'visit_id'  => $visit->id ?? null,
+                'file_name' => $name,
+                'directory' => storage_path('app/public/visit_evidence'),
+                'writable'  => is_writable(storage_path('app/public/visit_evidence')),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'The photo could not be saved on the server. Keep it on the tablet and try again.',
+            ], 500);
+        }
+
+        $url = url('storage/' . $path);
 
         if ($visit) {
             $evidence   = $visit->evidence ?? [];

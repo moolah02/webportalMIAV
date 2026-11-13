@@ -132,8 +132,10 @@ a.ve-ev-name:hover{text-decoration:underline}
                     <div class="ve-ev-list">
                         @foreach($evidence as $i => $url)
                         <div class="ve-ev">
-                            @if(\Illuminate\Support\Str::startsWith($url, ['http://','https://','/storage/']))
+                            @if(\App\Support\MediaUrl::isViewable($url))
                                 <a href="{{ \App\Support\MediaUrl::display($url) }}" target="_blank" rel="noopener" class="ve-ev-name"><svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg><span>{{ basename($url) }}</span></a>
+                            @elseif(\Illuminate\Support\Str::startsWith($url, ['http://','https://','/storage/']))
+                                <span class="ve-ev-name"><svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg><span>Photo did not upload &mdash; remove this and attach it again</span></span>
                             @else
                                 <span class="ve-ev-name"><svg class="mv-i" aria-hidden="true"><use href="#i-paperclip"/></svg><span>{{ $url }}</span></span>
                             @endif

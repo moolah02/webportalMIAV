@@ -440,7 +440,7 @@
              built, which crashed the whole page. --}}
         @php
             $photos = collect($visit->visit?->evidence ?? [])
-                ->filter(fn ($u) => is_string($u) && str_starts_with($u, 'http'))
+                ->filter(fn ($u) => is_string($u) && \App\Support\MediaUrl::isViewable($u))
                 ->values();
         @endphp
         @if($photos->count())

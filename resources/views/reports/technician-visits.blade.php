@@ -154,7 +154,12 @@
                     @forelse($visits as $visit)
                     @php
                         $terminal = is_array($visit->terminal) ? $visit->terminal : [];
-                        $evidence = is_array($visit->evidence) ? $visit->evidence : [];
+                        // Only photos that actually reached the server are counted; a
+                        // failed upload leaves a link to nothing behind.
+                        $evidence = array_values(array_filter(
+                            is_array($visit->evidence) ? $visit->evidence : [],
+                            fn ($u) => is_string($u) && \App\Support\MediaUrl::isViewable($u)
+                        ));
                     @endphp
                     <tr>
                         <td><span class="tv-id">{{ $visit->id }}</span></td>

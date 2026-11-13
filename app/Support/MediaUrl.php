@@ -42,4 +42,43 @@ class MediaUrl
 
         return url(ltrim($path, '/')).($query ? '?'.$query : '');
     }
+
+    /**
+     * Does this link actually name a file?
+     *
+     * Some stored links point at no file at all - ".../storage" with nothing
+     * after it - because the upload failed and the URL was built from an empty
+     * path anyway. Opening one gives the reader a bare "Forbidden" from the web
+     * server, which says nothing about what went wrong. Checked here so a page
+     * can say "the photo never arrived" instead of offering a link to nothing.
+     */
+    public static function isViewable(?string $url): bool
+    {
+        if ($url === null || trim($url) === '') {
+            return false;
+        }
+
+        $url = trim($url);
+
+        if (! str_starts_with($url, 'http://')
+            && ! str_starts_with($url, 'https://')
+            && ! str_starts_with($url, '/')) {
+            return false;
+        }
+
+        $path = parse_url($url, PHP_URL_PATH);
+
+        if (! is_string($path) || $path === '') {
+            return false;
+        }
+
+        // The last segment has to be a file name, not the folder itself.
+        $last = basename(rtrim($path, '/'));
+
+        if ($last === '' || $last === 'storage' || ! str_contains($last, '.')) {
+            return false;
+        }
+
+        return true;
+    }
 }
