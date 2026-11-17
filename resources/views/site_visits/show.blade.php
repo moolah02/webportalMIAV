@@ -155,6 +155,7 @@
                     'working'           => ['badge-green',  'Working'],
                     'not_working'       => ['badge-red',    'Not Working'],
                     'needs_maintenance' => ['badge-yellow', 'Needs Maintenance'],
+                    'access_denied'     => ['badge-yellow', 'Denied Access'],
                 ];
                 [$tsCls, $tsLbl] = $tsMap[$ts] ?? ['badge-gray', ucwords(str_replace('_',' ',$ts ?? 'Unknown'))];
 
@@ -304,6 +305,7 @@
                                 'working'           => ['badge-green',  'Working'],
                                 'not_working'       => ['badge-red',    'Not Working'],
                                 'needs_maintenance' => ['badge-yellow', 'Needs Maint.'],
+                                'access_denied'     => ['badge-yellow', 'Denied Access'],
                             ];
                             [$htsCls, $htsLbl] = $htsMap[$hts] ?? ['badge-gray', '—'];
                             $hsCls = match($h->status) { 'closed' => 'badge-green', 'in_progress' => 'badge-yellow', default => 'badge-blue' };

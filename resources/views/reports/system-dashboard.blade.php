@@ -708,7 +708,7 @@ function mvStatusColor(key, map) {
     const k = String(key ?? '').toLowerCase().replace(/[\s-]+/g, '_');
     return map[k] || MV.light;
 }
-const TERMINAL_STATUS = { active: MV.good, online: MV.good, working: MV.good, maintenance: MV.warn, needs_attention: MV.warn, pending: MV.warn, faulty: MV.crit, offline: MV.crit, not_working: MV.crit, decommissioned: MV.neutral, inactive: MV.light };
+const TERMINAL_STATUS = { active: MV.good, online: MV.good, working: MV.good, maintenance: MV.warn, needs_attention: MV.warn, pending: MV.warn, access_denied: MV.warn, denied_access: MV.warn, faulty: MV.crit, offline: MV.crit, not_working: MV.crit, decommissioned: MV.neutral, inactive: MV.light };
 const CLIENT_STATUS   = { active: MV.good, prospect: MV.neutral, inactive: MV.light, lost: MV.crit };
 const PRIORITY        = { urgent: MV.crit, critical: MV.crit, high: MV.warn, medium: MV.neutral, low: MV.light };
 const JOB_STATUS      = { completed: MV.good, assigned: MV.accent, in_progress: MV.accent, scheduled: MV.accent, pending: MV.warn, on_hold: MV.warn, cancelled: MV.crit, failed: MV.crit };

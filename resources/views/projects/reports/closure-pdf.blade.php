@@ -744,6 +744,8 @@
                         <span class="badge badge-cancelled">Inactive</span>
                     @elseif($tStatus === 'not_found')
                         <span class="badge badge-assigned" style="background:#f3f4f6; color:#374151;">Not Found</span>
+                    @elseif($tStatus === 'access_denied')
+                        <span class="badge badge-assigned" style="background:#FBF1DE; color:#9A6412;">Denied Access</span>
                     @elseif($tStatus === 'relocated')
                         <span class="badge badge-in-progress">Relocated</span>
                     @elseif($tStatus === 'replaced')

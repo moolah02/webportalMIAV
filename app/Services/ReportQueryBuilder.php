@@ -793,14 +793,14 @@ class ReportQueryBuilder
                 'non_activation_reason' => 'Reason Device Not Active',
                 'escalation_owner_name' => 'Escalation Owner',
                 'visit_date'            => 'Visit Date',
-                'terminal_status'              => 'Status on Visit (Working / Not Working / Not Found)',
+                'terminal_status'              => 'Status on Visit (Working / Not Working / Not Found / Denied Access)',
                 'terminal_status_during_visit' => 'Device State (Active / Inactive)',
             ],
             'visit_terminals' => [
                 'id'          => 'Visit Terminal Record ID',
                 'terminal_id' => 'Terminal (link)',
                 'visit_id'    => 'Visit (link)',
-                'status'      => 'Status on Visit (Working / Not Working / Not Found)',
+                'status'      => 'Status on Visit (Working / Not Working / Not Found / Denied Access)',
                 'state'       => 'Device State (Active / Inactive)',
                 'condition'   => 'Condition (Good / Fair / Bad)',
             ],
@@ -855,8 +855,8 @@ class ReportQueryBuilder
         // Recorded by the technician on the tablet; the same wording on both
         // visit datasets so a report reads the same whichever one it is built on.
         $statusHelp = [
-            'terminal_status'              => 'What the technician chose on the visit: Working, Not Working or Not Found',
-            'terminal_status_during_visit' => 'The same visit reduced to Active or Inactive, for counting',
+            'terminal_status'              => 'What the technician chose on the visit: Working, Not Working, Not Found, or Denied Access when the client would not let them near the device',
+            'terminal_status_during_visit' => 'The same visit reduced for counting: Active, Inactive, or Access Denied where the device could not be checked at all',
         ];
 
         $visitCapture = [
@@ -889,7 +889,7 @@ class ReportQueryBuilder
             'technician_visits' => [
                 'started_at'                   => 'Date and time the technician arrived at the site',
                 'ended_at'                     => 'Date and time the technician left the site',
-                'terminal_status_during_visit' => 'STATE — terminal state recorded by the mobile app during the visit (active, inactive, not found, etc.)',
+                'terminal_status_during_visit' => 'STATE — terminal state recorded by the mobile app during the visit (active, inactive, not found, access denied, etc.)',
                 'terminal_condition'           => 'Physical condition of the terminal (good, fair, poor, damaged)',
                 'issues_found'                 => 'ISSUES FOUND — what the technician found wrong (e.g. "Missing Device", "Not Working", "No issues")',
                 'corrective_action'            => 'CORRECTIVE ACTION — the fix or next step taken by the technician (e.g. "Replacement scheduled", "Follow up needed")',
@@ -968,8 +968,8 @@ class ReportQueryBuilder
         $descriptions['visits'] = ($descriptions['visits'] ?? []) + $visitCapture;
         $descriptions['technician_visits'] = ($descriptions['technician_visits'] ?? []) + $visitCapture + $statusHelp;
         $descriptions['visit_terminals'] = ($descriptions['visit_terminals'] ?? []) + [
-            'status' => 'What the technician chose on the visit: Working, Not Working or Not Found',
-            'state'  => 'Whether the device was live: Active or Inactive',
+            'status' => 'What the technician chose on the visit: Working, Not Working, Not Found, or Denied Access when the client would not let them near the device',
+            'state'  => 'Whether the device was live: Active or Inactive, or N/A where it could not be checked — not found, or access denied',
         ];
 
         return $descriptions[$table][$column] ?? '';

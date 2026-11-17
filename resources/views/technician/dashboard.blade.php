@@ -115,10 +115,15 @@
                                     <div class="text-xs text-gray-400">{{ $visit->started_at?->diffForHumans() }}</div>
                                 </div>
                                 @php
-                                    $vsClass = match($visit->terminal_status ?? '') {
+                                    // terminal_status holds the technician's own words
+                                    // ("Working", "Denied Access"), so match on a
+                                    // normalised copy or every badge comes out grey.
+                                    $vsKey = str_replace(' ', '_', strtolower(trim((string) ($visit->terminal_status ?? ''))));
+                                    $vsClass = match($vsKey) {
                                         'working'           => 'badge-green',
                                         'not_working'       => 'badge-red',
                                         'needs_maintenance' => 'badge-yellow',
+                                        'denied_access', 'access_denied' => 'badge-yellow',
                                         'not_found'         => 'badge-gray',
                                         default             => 'badge-gray',
                                     };

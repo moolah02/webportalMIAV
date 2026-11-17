@@ -316,7 +316,10 @@ class SiteVisitController extends Controller
             'job_assignment_id'     => ['nullable', 'exists:job_assignments,id'],
             'started_at'            => ['required', 'date'],
             'ended_at'              => ['nullable', 'date', 'after_or_equal:started_at'],
-            'terminal_status'       => ['required', 'in:active,inactive,not_found,relocated,replaced'],
+            // access_denied: the technician reached the site but the client
+            // would not let them near the device, so nothing about it could
+            // be established. See the tablet's "Denied Access" status.
+            'terminal_status'       => ['required', 'in:active,inactive,not_found,relocated,replaced,access_denied'],
             'terminal_condition'    => ['nullable', 'in:good,fair,poor,damaged'],
             'condition_notes'       => ['nullable', 'string', 'max:1000'],
             'issues_found'          => ['nullable', 'string', 'in:No issues,Not In Use,Denied access,Missing Device,Technical Issues,Hardware Fault,Device relocated,Merchant Closed,Merchant Relocated,Merchant Not Located,Returned to HQ,Returned to Bank'],
@@ -507,7 +510,7 @@ class SiteVisitController extends Controller
             'corrective_action'             => ['nullable','string'],
             'visit_summary'                 => ['nullable','string'],
             'recommended_next_action'       => ['nullable','string'],
-            'terminal_status_during_visit'  => ['nullable', Rule::in(['active','inactive','not_found','relocated','replaced'])],
+            'terminal_status_during_visit'  => ['nullable', Rule::in(['active','inactive','not_found','relocated','replaced','access_denied'])],
 
             'merchant_sign_off_name'        => ['nullable','string','max:120'],
             'require_signature'             => ['nullable','boolean'],

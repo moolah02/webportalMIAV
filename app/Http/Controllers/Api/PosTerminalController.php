@@ -97,9 +97,9 @@ private const DEVICE_STATUSES = ['active', 'offline', 'maintenance', 'faulty', '
 /**
  * Keeps a device status this column can store, and drops one it cannot.
  *
- * A visit's reading of a device - "Working", "Not Working", "Not Found" - is
- * a different vocabulary from the device's own lifecycle, and it belongs to
- * the visit, which already records it. Tablets have been sending it here as
+ * A visit's reading of a device - "Working", "Not Working", "Not Found",
+ * "Denied Access" - is a different vocabulary from the device's own lifecycle,
+ * and it belongs to the visit, which already records it. Tablets have been sending it here as
  * `status`, and because the column is a NOT NULL enum, MySQL rejected the
  * value and the entire update was lost: the merchant contact, the phone, the
  * serial, the model and the coordinates the technician had just captured all

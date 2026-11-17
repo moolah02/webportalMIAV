@@ -198,6 +198,9 @@
                                 'not_working'       => ['badge-red',    'Not Working'],
                                 'needs_maintenance' => ['badge-yellow', 'Needs Maint.'],
                                 'not_found'         => ['badge-gray',   'Not Found'],
+                                // Reached the site, refused at the device. Amber,
+                                // not red: nothing is known to be wrong with it.
+                                'access_denied'     => ['badge-yellow', 'Denied Access'],
                             ];
                             [$tsCls, $tsLbl] = $tsMap[$ts] ?? ['badge-gray', ucwords(str_replace('_',' ',$ts ?? 'Unknown'))];
                         @endphp

@@ -37,6 +37,12 @@ class ContractReportService
     /** Device status recorded on a visit that means the device was working. */
     private const STATUS_WORKING = 'working';
 
+    /**
+     * Fragments of a recorded device status that mean the technician was not
+     * allowed near the device, so nothing about it was established.
+     */
+    private const STATUS_ACCESS_DENIED = ['denied', 'no access'];
+
     /** Average days per month, used to pro-rata a monthly target over a week. */
     private const DAYS_PER_MONTH = 30.44;
 
@@ -514,9 +520,17 @@ class ContractReportService
 
         $status = $last?->status ?: null;
         $state = $last?->state ? strtoupper($last->state) : null;
-        $working = $status !== null && str_contains(strtolower($status), self::STATUS_WORKING)
-            && ! str_contains(strtolower($status), 'not');
-        $active = $state === 'ACTIVE' || ($state === null && $working);
+
+        // Three outcomes, not two. A device the technician was refused access
+        // to is "unknown", not "not working" - counting it as the latter would
+        // put devices nobody was allowed to look at into the faulty total and
+        // overstate faults in a report the client is invoiced against.
+        $working = $this->isAccessDenied($status)
+            ? null
+            : ($status !== null && str_contains(strtolower($status), self::STATUS_WORKING)
+                && ! str_contains(strtolower($status), 'not'));
+
+        $active = $state === 'ACTIVE' || ($state === null && $working === true);
 
         $faults = [];
         $actions = [];
@@ -594,6 +608,29 @@ class ContractReportService
     }
 
     /**
+     * Was the technician refused access to the device on this reading?
+     *
+     * The site was still attended - the visit counts towards coverage - but
+     * nothing about the device itself could be established, so it must not be
+     * reported as working, nor as faulty.
+     */
+    private function isAccessDenied(?string $status): bool
+    {
+        if ($status === null || trim($status) === '') {
+            return false;
+        }
+
+        $status = strtolower($status);
+        foreach (self::STATUS_ACCESS_DENIED as $fragment) {
+            if (str_contains($status, $fragment)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Reason a device was not visited. In order of authority: what the office
      * recorded for this period, then what the technician wrote on site, then
      * what the jobs and the previous visit imply.
@@ -640,18 +677,29 @@ class ContractReportService
             ];
         }
 
-        if ($lastBefore && str_contains(strtolower((string) $lastBefore->status), 'not found')) {
+        if ($lastBefore) {
+            $lastStatus = strtolower((string) $lastBefore->status);
             $when = $lastBefore->completed_at ?: $lastBefore->created_at;
+            $on = $when ? ' ('.CarbonImmutable::parse($when)->format('d M Y').')' : '';
 
-            return [
-                'source' => 'derived',
-                'code' => null,
-                'reason' => 'Device not found on site on the last visit'
-                    .($when ? ' ('.CarbonImmutable::parse($when)->format('d M Y').')' : ''),
-                'note' => null,
-                'owner' => null,
-                'status' => 'open',
-            ];
+            // Two different stories the last visit can tell, neither of which
+            // is "no visit was scheduled".
+            $lastReason = match (true) {
+                str_contains($lastStatus, 'not found') => 'Device not found on site on the last visit'.$on,
+                $this->isAccessDenied($lastStatus) => 'Access to the device refused on the last visit'.$on,
+                default => null,
+            };
+
+            if ($lastReason !== null) {
+                return [
+                    'source' => 'derived',
+                    'code' => str_contains($lastStatus, 'not found') ? 'device_not_found' : 'access_denied',
+                    'reason' => $lastReason,
+                    'note' => null,
+                    'owner' => null,
+                    'status' => 'open',
+                ];
+            }
         }
 
         return [
@@ -693,8 +741,21 @@ class ContractReportService
         $status = strtolower((string) ($last->status ?? ''));
         if (str_contains($status, 'not found')) {
             return [
-                'source' => 'derived', 'code' => null,
+                'source' => 'derived', 'code' => 'device_not_found',
                 'reason' => 'Device not found on site during the visit',
+                'note' => $faults ? implode('; ', $faults) : null,
+                'owner' => null, 'status' => 'open',
+            ];
+        }
+
+        // The technician reached the site but was not allowed near the device,
+        // so whether it is active was never established. Saying "reason not
+        // recorded" here would blame the field team for a refusal that is the
+        // client's to lift.
+        if ($this->isAccessDenied($status)) {
+            return [
+                'source' => 'derived', 'code' => 'access_denied',
+                'reason' => 'Access to the device refused on site — could not be assessed',
                 'note' => $faults ? implode('; ', $faults) : null,
                 'owner' => null, 'status' => 'open',
             ];

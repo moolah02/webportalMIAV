@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Log;
  */
 class TechnicianVisitMirror
 {
-    private const STATUS_ENUM    = ['active', 'inactive', 'not_found', 'relocated', 'replaced'];
+    private const STATUS_ENUM    = ['active', 'inactive', 'not_found', 'relocated', 'replaced', 'access_denied'];
     private const CONDITION_ENUM = ['good', 'fair', 'poor', 'damaged'];
 
     private const STATUS_ALIASES = [
@@ -31,6 +31,11 @@ class TechnicianVisitMirror
         'not_working' => 'inactive',
         'missing'     => 'not_found',
         'notfound'    => 'not_found',
+        // The tablet offers "Denied Access" when the client would not let the
+        // technician near the device.
+        'denied_access' => 'access_denied',
+        'denied'        => 'access_denied',
+        'no_access'     => 'access_denied',
     ];
 
     private const CONDITION_ALIASES = [
@@ -66,13 +71,15 @@ class TechnicianVisitMirror
             }
 
             // Prefer the terminal state (ACTIVE/INACTIVE); fall back to the visit
-            // status (Working / Not Working / Not Found) when state is N/A or empty.
+            // status (Working / Not Working / Not Found / Denied Access) when
+            // state is N/A or empty.
             $state = $this->normalise($t['state'] ?? null, self::STATUS_ENUM, self::STATUS_ALIASES)
                 ?? $this->normalise($vt->status ?? ($t['status'] ?? null), self::STATUS_ENUM, self::STATUS_ALIASES);
 
-            // What the technician actually chose - Working / Not Working / Not Found -
-            // kept as written. Reports were only ever offered the normalised state
-            // (active / inactive), so the status itself could not be reported on.
+            // What the technician actually chose - Working / Not Working /
+            // Not Found / Denied Access - kept as written. Reports were only
+            // ever offered the normalised state (active / inactive), so the
+            // status itself could not be reported on.
             $recordedStatus = $vt->status ?? ($t['status'] ?? null);
 
             $condition = $this->normalise($vt->condition ?? ($t['condition'] ?? null), self::CONDITION_ENUM, self::CONDITION_ALIASES);
@@ -87,6 +94,11 @@ class TechnicianVisitMirror
                 'not_found' => 'terminal_not_found',
                 'relocated' => 'terminal_relocated',
                 'inactive' => 'partial',
+                // Refused at the door: the visit happened but came away with
+                // no reading. 'could_not_access_site' is the enum's existing
+                // word for that, and the one the Outcome filter already offers
+                // as "No Access".
+                'access_denied' => 'could_not_access_site',
                 'active', 'replaced' => 'completed',
                 default => null,
             };

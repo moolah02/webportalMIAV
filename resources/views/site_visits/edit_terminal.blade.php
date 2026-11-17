@@ -31,6 +31,12 @@
 .et-opt{font-weight:400;color:var(--mv-muted)}
 .et-hint{margin:4px 0 0;font-size:12px;color:var(--mv-muted)}
 .et-err{margin:4px 0 0;font-size:12px;color:var(--mv-crit)}
+/* A field that this visit cannot answer: dimmed and inert, with the reason
+   said above it rather than left as an unexplained dead control. */
+.et-denied-note{margin:0 0 6px;font-size:12px;color:var(--mv-warn)}
+.et-field.is-not-applicable .ui-label{color:var(--mv-muted)}
+.et-field.is-not-applicable .ui-select,
+.et-field.is-not-applicable .ui-textarea{opacity:.55;cursor:not-allowed;background-color:var(--mv-surface-2)}
 .et-static{display:flex;align-items:center;gap:8px;min-height:38px;padding-top:6px;padding-bottom:6px;background-color:var(--mv-surface-2) !important;color:var(--mv-ink);cursor:default;user-select:none}
 .et-avatar{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:var(--mv-accent-soft);color:var(--mv-accent-ink);font-size:10.5px;font-weight:600;letter-spacing:.02em}
 .et-actions,.et-card-actions{display:flex;justify-content:flex-end;gap:8px}
@@ -180,7 +186,7 @@
                 <label class="ui-label" for="upd_terminal_status">State</label>
                 <select id="upd_terminal_status" class="ui-select">
                     <option value="">— No change —</option>
-                    @foreach(['active'=>'Active','inactive'=>'Inactive','not_found'=>'Not Found','relocated'=>'Relocated','replaced'=>'Replaced'] as $val => $lbl)
+                    @foreach(['active'=>'Active','inactive'=>'Inactive','not_found'=>'Not Found','relocated'=>'Relocated','replaced'=>'Replaced','access_denied'=>'Denied Access'] as $val => $lbl)
                         <option value="{{ $val }}" {{ $existingVisit->terminal_status_during_visit === $val ? 'selected' : '' }}>{{ $lbl }}</option>
                     @endforeach
                 </select>
@@ -322,18 +328,19 @@ async function saveUpdate() {
 
             <div class="et-field">
                 <label class="ui-label">Terminal Status <span class="et-req">*</span></label>
-                <select name="terminal_status" required class="ui-select">
+                <select name="terminal_status" id="et_terminal_status" required class="ui-select">
                     <option value="">— Select outcome —</option>
-                    @foreach(['active'=>'Active','inactive'=>'Inactive','not_found'=>'Not Found','relocated'=>'Relocated','replaced'=>'Replaced'] as $val => $lbl)
+                    @foreach(['active'=>'Active','inactive'=>'Inactive','not_found'=>'Not Found','relocated'=>'Relocated','replaced'=>'Replaced','access_denied'=>'Denied Access'] as $val => $lbl)
                         <option value="{{ $val }}" {{ old('terminal_status') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
                     @endforeach
                 </select>
                 @error('terminal_status')<p class="et-err">{{ $message }}</p>@enderror
             </div>
 
-            <div class="et-field">
+            <div class="et-field" id="et_condition_field">
                 <label class="ui-label">Terminal Condition</label>
-                <select name="terminal_condition" class="ui-select">
+                <p class="et-hint et-denied-note hidden">Cannot be assessed — access to the device was denied</p>
+                <select name="terminal_condition" id="et_terminal_condition" class="ui-select">
                     <option value="">— Select condition —</option>
                     @foreach(['good'=>'Good','fair'=>'Fair','poor'=>'Poor','damaged'=>'Damaged'] as $val => $lbl)
                         <option value="{{ $val }}" {{ old('terminal_condition') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
@@ -384,9 +391,10 @@ async function saveUpdate() {
                 </select>
                 @error('corrective_action')<p class="et-err">{{ $message }}</p>@enderror
             </div>
-            <div class="et-field">
+            <div class="et-field" id="et_condition_notes_field">
                 <label class="ui-label">Condition Notes</label>
-                <textarea name="condition_notes" rows="3" class="ui-textarea"
+                <p class="et-hint et-denied-note hidden">Cannot be assessed — access to the device was denied</p>
+                <textarea name="condition_notes" id="et_condition_notes" rows="3" class="ui-textarea"
                           placeholder="General condition of the terminal…">{{ old('condition_notes') }}</textarea>
                 @error('condition_notes')<p class="et-err">{{ $message }}</p>@enderror
             </div>
@@ -406,6 +414,45 @@ async function saveUpdate() {
     </div>
 
 </form>
+
+<script>
+// When the device could not be reached, the fields that can only be filled in
+// by looking at it are taken out of play rather than left inviting a guess.
+// Disabled controls are not submitted, so the visit records nothing for them -
+// which is the honest answer, and what the tablet does too.
+(function () {
+    var status = document.getElementById('et_terminal_status');
+    if (!status) return;
+
+    var dependants = [
+        document.getElementById('et_terminal_condition'),
+        document.getElementById('et_condition_notes'),
+    ].filter(Boolean);
+
+    var fields = [
+        document.getElementById('et_condition_field'),
+        document.getElementById('et_condition_notes_field'),
+    ].filter(Boolean);
+
+    function apply() {
+        var denied = status.value === 'access_denied';
+
+        dependants.forEach(function (el) {
+            el.disabled = denied;
+            if (denied) { el.value = ''; }
+        });
+
+        fields.forEach(function (el) {
+            el.classList.toggle('is-not-applicable', denied);
+            var note = el.querySelector('.et-denied-note');
+            if (note) { note.classList.toggle('hidden', !denied); }
+        });
+    }
+
+    status.addEventListener('change', apply);
+    apply(); // Honour a value restored after a failed validation round-trip.
+})();
+</script>
 
 @endif
 

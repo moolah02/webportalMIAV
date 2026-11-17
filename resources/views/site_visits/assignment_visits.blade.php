@@ -96,6 +96,7 @@
                                     'active', 'working'                   => 'badge-green',
                                     'inactive', 'not_working'             => 'badge-red',
                                     'replaced', 'needs_maintenance'       => 'badge-yellow',
+                                    'access_denied'                       => 'badge-yellow',
                                     'relocated'                           => 'badge-blue',
                                     default                               => 'badge-gray',
                                 };
