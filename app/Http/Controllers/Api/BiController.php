@@ -142,6 +142,10 @@ class BiController extends Controller
                 'c.company_name as client',
             ])
             ->selectRaw(PosTerminal::EFFECTIVE_STATUS_SQL.' as status')
+            // Where the device stands. Kept in a JSON column, pulled out as two
+            // plain numbers so a reporting tool can map them without parsing.
+            ->selectRaw("CAST(JSON_UNQUOTE(JSON_EXTRACT(pos_terminals.coordinates, '$.latitude')) AS DECIMAL(10,8)) as latitude")
+            ->selectRaw("CAST(JSON_UNQUOTE(JSON_EXTRACT(pos_terminals.coordinates, '$.longitude')) AS DECIMAL(11,8)) as longitude")
             // Whether anyone has ever been to it - the question the office
             // asks most and the one a plain column cannot answer.
             ->selectRaw('EXISTS (SELECT 1 FROM visit_terminals vt WHERE vt.terminal_id = pos_terminals.id) as has_been_visited');
@@ -168,6 +172,10 @@ class BiController extends Controller
                 'v.visit_summary',
                 'v.action_points as issues_found',
                 'v.terminal_comments as corrective_action',
+                // Where the technician was standing. Blank where no reading was
+                // taken, so a map built on these must drop the empty rows.
+                'v.latitude',
+                'v.longitude',
                 'v.created_at',
                 'v.updated_at',
             ])

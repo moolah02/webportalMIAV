@@ -233,6 +233,13 @@ class VisitController extends Controller
             'signature'                => ['required','string'],
             'other_terminals_found'    => ['nullable','array'],
             'other_terminals_found.*'  => ['nullable'],
+
+            // Where the technician was standing, from the tablet's GPS. The
+            // tablet has always sent these; without a rule here validate()
+            // dropped them, so every reading was discarded on arrival.
+            'coordinates'              => ['sometimes','nullable','array'],
+            'coordinates.latitude'     => ['sometimes','nullable','numeric','between:-90,90'],
+            'coordinates.longitude'    => ['sometimes','nullable','numeric','between:-180,180'],
         ]);
 
         return DB::transaction(function () use ($data) {
@@ -274,7 +281,7 @@ class VisitController extends Controller
 
                 // store the snapshot exactly as received
                 'terminal'               => $data['terminal'],
-            ]);
+            ] + self::coordinatesFrom($data));
 
             // Persist the normalized single terminal row
             $t = $data['terminal'];
@@ -360,6 +367,10 @@ class VisitController extends Controller
             'remove_evidence.*'=> ['nullable','string'],
             'evidence_replace' => ['sometimes','boolean'],            // true = the sent list is the complete set
             'signature'        => ['sometimes','nullable','string'],
+
+            'coordinates'              => ['sometimes','nullable','array'],
+            'coordinates.latitude'     => ['sometimes','nullable','numeric','between:-90,90'],
+            'coordinates.longitude'    => ['sometimes','nullable','numeric','between:-180,180'],
         ]);
 
         // Mobile sends the corrective action as terminal_comments; accept corrective_action as an alias.
@@ -387,6 +398,15 @@ class VisitController extends Controller
             // the device was not active: there was no device seen to explain.
             if (($data['site_visited'] ?? null) === false) {
                 $visitUpdates['non_activation_reason'] = null;
+            }
+
+            // A reading only overwrites what is already on the visit when the edit
+            // actually carries one. An edit made indoors, or on a tablet that was
+            // refused location, must not erase where the visit was first recorded.
+            foreach (self::coordinatesFrom($data) as $field => $value) {
+                if ($value !== null) {
+                    $visitUpdates[$field] = $value;
+                }
             }
 
             // Photos: an edit ADDS the photos it sends and keeps the ones already on
@@ -664,6 +684,36 @@ class VisitController extends Controller
      *                                           when it creates/updates the visit.
      *  - POST /api/visits/{visit}/evidence   -> also appends the URL to that visit.
      */
+    /**
+     * The GPS reading on a visit payload, or nulls when there isn't one.
+     *
+     * The tablet sends `coordinates: { latitude, longitude }` and falls back to
+     * 0.0 for either when the field is empty - a technician who never pressed
+     * "Get current location", or whose phone refused. Zero/zero is a real place
+     * in the Gulf of Guinea, so storing it would put every such visit three
+     * thousand miles off the coast of Africa and make the map useless. A reading
+     * is kept only when both halves are present and neither is zero.
+     */
+    private static function coordinatesFrom(array $data): array
+    {
+        $lat = $data['coordinates']['latitude']  ?? null;
+        $lng = $data['coordinates']['longitude'] ?? null;
+
+        if ($lat === null || $lng === null || $lat === '' || $lng === '') {
+            return ['latitude' => null, 'longitude' => null];
+        }
+
+        $lat = (float) $lat;
+        $lng = (float) $lng;
+
+        // Treat anything within a metre of the origin as "no reading".
+        if (abs($lat) < 0.00001 && abs($lng) < 0.00001) {
+            return ['latitude' => null, 'longitude' => null];
+        }
+
+        return ['latitude' => $lat, 'longitude' => $lng];
+    }
+
     public function uploadEvidence(Request $request, Visit $visit = null)
     {
         $request->validate([

@@ -28,6 +28,8 @@ class Visit extends Model
         'action_points',
         'terminal_comments', // corrective action (mobile sends this key)
         'condition_notes',   // free-text terminal condition notes (mobile)
+        'latitude',          // where the technician was standing, from the tablet's GPS
+        'longitude',
         'evidence',
         'signature',
         'other_terminals_found',
@@ -40,6 +42,8 @@ class Visit extends Model
         'terminal'              => 'array',   // <-- singular
         'evidence'              => 'array',
         'other_terminals_found' => 'array',
+        'latitude'              => 'float',
+        'longitude'             => 'float',
 
 
     ];
@@ -156,6 +160,9 @@ public function getTerminalId(): ?string
                 'serial_number' => $data['serial_number'] ?? $posTerminal->serial_number ?? null,
                 'last_service_date' => $posTerminal->last_service_date ?? null,
                 'next_service_due' => $posTerminal->next_service_due ?? null,
+                // Where the device is registered as standing, kept under its own
+                // key so it is never confused with where this visit was recorded.
+                'terminal_coordinates' => $posTerminal->coordinates ?? null,
             ], fn ($value) => $value !== null));
         } else {
             $data['found_in_pos_terminals'] = false;

@@ -122,6 +122,11 @@ class TechnicianVisitMirror
                     'other_terminals_found'        => $visit->other_terminals_found ?: null,
                     'serial_snapshot'              => $vt->serial_number ?? ($t['serial_number'] ?? null),
                     'device_type_snapshot'         => $model,
+                    // Where the technician was standing. These columns existed from
+                    // the start but nothing ever filled them, because the visit
+                    // itself was not keeping the reading the tablet sent.
+                    'latitude'                     => $visit->latitude,
+                    'longitude'                    => $visit->longitude,
                 ]
             );
 

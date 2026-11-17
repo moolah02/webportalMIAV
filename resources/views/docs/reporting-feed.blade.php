@@ -70,8 +70,8 @@
 <table>
     <thead><tr><th>Address</th><th>One row is&hellip;</th></tr></thead>
     <tbody>
-        <tr><td><code>{{ url('/api/bi/terminals') }}</code></td><td>a POS terminal, with its client, region and whether it has ever been visited</td></tr>
-        <tr><td><code>{{ url('/api/bi/visits') }}</code></td><td>a visit, with the technician, whether the site was reached and why not</td></tr>
+        <tr><td><code>{{ url('/api/bi/terminals') }}</code></td><td>a POS terminal, with its client, region, GPS position and whether it has ever been visited</td></tr>
+        <tr><td><code>{{ url('/api/bi/visits') }}</code></td><td>a visit, with the technician, whether the site was reached and why not, and where it was recorded</td></tr>
         <tr><td><code>{{ url('/api/bi/findings') }}</code></td><td>one device examined on one visit &mdash; status, state, condition</td></tr>
         <tr><td><code>{{ url('/api/bi/tickets') }}</code></td><td>a support ticket</td></tr>
         <tr><td><code>{{ url('/api/bi/clients') }}</code></td><td>a client</td></tr>

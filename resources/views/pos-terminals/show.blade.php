@@ -159,6 +159,21 @@ $statusBadge = [
                     <dd>{{ $posTerminal->physical_address }}</dd>
                 </div>
                 @endif
+                {{-- Where the device stands, as captured on a tablet at the site. --}}
+                @php [$ptLat, $ptLng] = \App\Support\Geo::fromCoordinates($posTerminal->coordinates); @endphp
+                <div class="pt-kv-wide">
+                    <dt>GPS Coordinates</dt>
+                    <dd>
+                        @if($ptLat !== null)
+                            <span class="pt-v-row">
+                                <span class="mv-mono">{{ \App\Support\Geo::format($ptLat, $ptLng) }}</span>
+                                <a href="{{ \App\Support\Geo::mapUrl($ptLat, $ptLng) }}" target="_blank" rel="noopener" class="pt-link">View on map</a>
+                            </span>
+                        @else
+                            <span class="pt-empty-val">Not captured yet &mdash; a technician records it on site with &ldquo;Get current location&rdquo;.</span>
+                        @endif
+                    </dd>
+                </div>
             </dl>
         </div>
 

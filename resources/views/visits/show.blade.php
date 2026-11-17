@@ -287,6 +287,45 @@
         </section>
         @endif
 
+        {{-- Where the visit was recorded, and how far that is from where the
+             device is registered. The reading comes off the tablet's GPS when
+             the technician presses "Get current location" on the visit form. --}}
+        @php
+            $visitLat = $visit->latitude;
+            $visitLng = $visit->longitude;
+            [$termLat, $termLng] = \App\Support\Geo::fromCoordinates($terminal['terminal_coordinates'] ?? null);
+            $apart = \App\Support\Geo::distanceMetres($visitLat, $visitLng, $termLat, $termLng);
+        @endphp
+        <section class="ui-card">
+            <div class="ui-card-header">
+                <h3>Location</h3>
+            </div>
+            <dl class="vs-list">
+                <div>
+                    <dt>Recorded at</dt>
+                    <dd>
+                        @if(\App\Support\Geo::has($visitLat, $visitLng))
+                            <a href="{{ \App\Support\Geo::mapUrl($visitLat, $visitLng) }}" target="_blank" rel="noopener">{{ \App\Support\Geo::format($visitLat, $visitLng) }}</a>
+                            <span class="vs-sub">Opens on a map</span>
+                        @else
+                            <span class="vs-none">No reading taken on this visit.</span>
+                        @endif
+                    </dd>
+                </div>
+                @if(\App\Support\Geo::has($termLat, $termLng))
+                <div>
+                    <dt>Terminal is registered at</dt>
+                    <dd>
+                        <a href="{{ \App\Support\Geo::mapUrl($termLat, $termLng) }}" target="_blank" rel="noopener">{{ \App\Support\Geo::format($termLat, $termLng) }}</a>
+                        @if($apart !== null)
+                        <span class="vs-sub">{{ \App\Support\Geo::formatDistance($apart) }} from where this visit was recorded</span>
+                        @endif
+                    </dd>
+                </div>
+                @endif
+            </dl>
+        </section>
+
         {{-- Evidence --}}
         @php $evidence = is_array($visit->evidence) ? $visit->evidence : []; @endphp
         <section class="ui-card">

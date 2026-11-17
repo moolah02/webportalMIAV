@@ -29,7 +29,7 @@ class ReportQueryBuilder
             'site_visited', 'non_visit_reason', 'non_activation_reason', 'escalation_owner_name',
             'contact_person', 'phone_number', 'new_contact_person', 'new_phone_number',
             'new_physical_address', 'visit_summary', 'action_points', 'terminal_comments',
-            'condition_notes', 'created_at', 'updated_at'
+            'condition_notes', 'latitude', 'longitude', 'created_at', 'updated_at'
         ],
         'technician_visits' => [
             'id', 'visit_id', 'technician_id', 'pos_terminal_id', 'job_assignment_id',
@@ -37,7 +37,7 @@ class ReportQueryBuilder
             'condition_notes', 'issues_found', 'corrective_action', 'visit_summary',
             'outcome', 'serial_snapshot', 'device_type_snapshot',
             'site_visited', 'non_visit_reason', 'non_activation_reason', 'escalation_owner_name',
-            'created_at', 'updated_at'
+            'latitude', 'longitude', 'created_at', 'updated_at'
         ],
         'visit_terminals' => [
             'id', 'visit_id', 'terminal_id', 'status', 'state', 'condition', 'serial_number', 'terminal_model',
@@ -826,6 +826,8 @@ class ReportQueryBuilder
                 'non_activation_reason' => 'Reason Device Not Active',
                 'escalation_owner_name' => 'Escalation Owner',
                 'condition_notes'       => 'Condition Notes',
+                'latitude'              => 'GPS Latitude',
+                'longitude'             => 'GPS Longitude',
             ],
             'projects' => [
                 'client_id'  => 'Client (link)',
@@ -894,6 +896,8 @@ class ReportQueryBuilder
                 'outcome'                      => 'Outcome of the visit',
                 'serial_snapshot'              => 'Serial number recorded on the tablet during the visit',
                 'device_type_snapshot'         => 'Terminal model recorded on the tablet during the visit',
+                'latitude'                     => 'GPS latitude where the technician recorded the visit (blank if no reading was taken)',
+                'longitude'                    => 'GPS longitude where the technician recorded the visit (blank if no reading was taken)',
             ],
             'visits' => [
                 'contact_person'       => 'Contact person on record at the time of the visit',
