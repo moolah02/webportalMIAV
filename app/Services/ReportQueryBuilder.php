@@ -786,6 +786,8 @@ class ReportQueryBuilder
                 'job_assignment_id' => 'Assignment (link)',
                 'serial_snapshot'      => 'Serial No. (at visit)',
                 'device_type_snapshot' => 'Model (at visit)',
+                'latitude'             => 'GPS Latitude',
+                'longitude'            => 'GPS Longitude',
                 'site_visited'          => 'Site Visited?',
                 'non_visit_reason'      => 'Reason Not Visited',
                 'non_activation_reason' => 'Reason Device Not Active',
