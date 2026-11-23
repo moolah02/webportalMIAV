@@ -124,12 +124,14 @@ public function posTerminal()
     {
         $request->validate([
             'visit_summary'   => ['nullable', 'string', 'max:2000'],
-            // NOTE: this form labels the field "Corrective Action Taken" but
-            // posts it as action_points, which is the Issues Found column
-            // everywhere else (the mobile app sends the corrective action as
-            // terminal_comments). Left as-is here because changing the field
-            // name would overwrite what technicians recorded; logged separately.
-            'action_points'   => ['nullable', 'string', \App\Support\VisitOptions::correctiveActionRule()],
+            // The form is labelled "Corrective Action Taken" and now posts the
+            // column that actually holds it. It used to post `action_points`,
+            // which is Issues Found everywhere else, so saving this form wrote
+            // a corrective action into the issues the technician recorded -
+            // and, because the write was unconditional, saving with the select
+            // empty erased them. No visit had been saved through it yet, so
+            // nothing needed repairing.
+            'terminal_comments' => ['nullable', 'string', \App\Support\VisitOptions::correctiveActionRule()],
             'completed_at'    => ['nullable', 'date'],
             'new_evidence'    => ['nullable', 'array'],
             'new_evidence.*'  => ['file', 'max:5120', 'mimes:jpeg,jpg,png,gif,webp,pdf,doc,docx'],
@@ -154,11 +156,13 @@ public function posTerminal()
             }
         }
 
+        // action_points is deliberately absent: Issues Found belongs to the
+        // technician who was on site, and this form has no field for it.
         $visit->update([
-            'visit_summary' => $request->input('visit_summary'),
-            'action_points' => $request->input('action_points') ?: null,
-            'completed_at'  => $request->input('completed_at') ?: null,
-            'evidence'      => $evidence,
+            'visit_summary'     => $request->input('visit_summary'),
+            'terminal_comments' => $request->input('terminal_comments') ?: null,
+            'completed_at'      => $request->input('completed_at') ?: null,
+            'evidence'          => $evidence,
         ]);
 
         return redirect()->route('visits.show', $visit)->with('success', 'Visit updated successfully.');

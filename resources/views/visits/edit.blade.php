@@ -89,21 +89,32 @@ a.ve-ev-name:hover{text-decoration:underline}
             <div class="ve-grid">
                 <div class="ve-field">
                     <label class="ui-label">Corrective Action Taken</label>
-                    <select name="action_points" class="ui-select">
+                    {{-- Posts terminal_comments, the column that actually holds the
+                         corrective action. It used to post action_points, which is
+                         Issues Found, so saving here overwrote what the technician
+                         recorded on site. --}}
+                    @php $actionNow = old('terminal_comments', $visit->terminal_comments); @endphp
+                    <select name="terminal_comments" class="ui-select">
                         <option value="">— Select action —</option>
                         {{-- Retired wording is offered only when this visit already
                              holds it, so saving an older visit does not silently
                              change what the technician recorded. --}}
                         @foreach(\App\Support\VisitOptions::CORRECTIVE_ACTIONS as $opt)
-                            <option value="{{ $opt }}" {{ old('action_points', $visit->action_points) === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                            <option value="{{ $opt }}" {{ $actionNow === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                         @endforeach
                         @foreach(\App\Support\VisitOptions::CORRECTIVE_ACTIONS_RETIRED as $opt)
-                            @if(old('action_points', $visit->action_points) === $opt)
+                            @if($actionNow === $opt)
                                 <option value="{{ $opt }}" selected>{{ $opt }} (old wording)</option>
                             @endif
                         @endforeach
                     </select>
-                    @error('action_points')<p class="ve-err">{{ $message }}</p>@enderror
+                    @error('terminal_comments')<p class="ve-err">{{ $message }}</p>@enderror
+                    @if($visit->action_points)
+                        <p class="ve-opt" style="margin:6px 0 0;font-size:12.5px;line-height:1.5;">
+                            Issues found on site: <strong>{{ $visit->action_points }}</strong> — recorded by the
+                            technician and not editable here.
+                        </p>
+                    @endif
                 </div>
 
                 <div class="ve-field">
