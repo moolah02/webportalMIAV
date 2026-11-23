@@ -654,6 +654,10 @@ public function storeColumnMapping(Request $request)
         // Count field-discovered terminals for the tab badge (always, regardless of active tab)
         $fieldDiscoveryCount = PosTerminal::where('source', 'field_discovery')->count();
 
+        // Devices collected from a site and waiting to go out again, for the
+        // In Stock tab badge.
+        $stockCount = PosTerminal::where('lifecycle_status', 'collected')->count();
+
         // Field discoveries tab — show only terminals found by technicians on-site
         if ($request->get('tab') === 'discoveries') {
             $discoveries   = $this->discoveryQuery($request)->orderByDesc('created_at')->paginate(20);
@@ -672,7 +676,7 @@ public function storeColumnMapping(Request $request)
 
             return view('pos-terminals.index', compact(
                 'discoveries', 'discoveryInfo', 'terminals', 'clients', 'regions', 'cities',
-                'provinces', 'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount'
+                'provinces', 'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount', 'stockCount'
             ));
         }
 
@@ -741,7 +745,7 @@ public function storeColumnMapping(Request $request)
 
         return view('pos-terminals.index', compact(
             'terminals', 'discoveries', 'clients', 'regions', 'cities',
-            'provinces', 'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount'
+            'provinces', 'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount', 'stockCount'
         ));
     }
 

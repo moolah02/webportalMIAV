@@ -206,6 +206,14 @@
             <span class="pt-count">{{ $fieldDiscoveryCount }}</span>
         @endif
     </a>
+    {{-- Its own page rather than a tab panel: a device in stock has no site,
+         so none of the filters on this page apply to it. --}}
+    <a href="{{ route('pos-terminals.stock') }}" class="tab-btn">
+        <svg class="mv-i" aria-hidden="true"><use href="#i-box"/></svg> In Stock
+        @if(($stockCount ?? 0) > 0)
+            <span class="pt-count">{{ $stockCount }}</span>
+        @endif
+    </a>
     <button type="button" class="tab-btn" onclick="switchTab('import', this)">
         <svg class="mv-i" aria-hidden="true"><use href="#i-upload"/></svg> Smart Import
     </button>
@@ -327,6 +335,11 @@
                                 };
                             @endphp
                             <span class="status-badge {{ $statusClass }}">{{ ucfirst($terminal->status) }}</span>
+                            {{-- A collected device is not at a site, so the row must
+                                 not read as though it still is. --}}
+                            @if(($terminal->lifecycle_status ?? 'deployed') !== 'deployed')
+                                <span class="status-badge {{ $terminal->lifecycle_status === 'retired' ? 'badge-gray' : 'badge-yellow' }}">{{ $terminal->lifecycleLabel() }}</span>
+                            @endif
                         </td>
                         <td>
                             @php $found = $discoveryInfo[$terminal->id] ?? []; @endphp
@@ -509,6 +522,11 @@
                                 };
                             @endphp
                             <span class="status-badge {{ $statusClass }}">{{ ucfirst($terminal->status) }}</span>
+                            {{-- A collected device is not at a site, so the row must
+                                 not read as though it still is. --}}
+                            @if(($terminal->lifecycle_status ?? 'deployed') !== 'deployed')
+                                <span class="status-badge {{ $terminal->lifecycle_status === 'retired' ? 'badge-gray' : 'badge-yellow' }}">{{ $terminal->lifecycleLabel() }}</span>
+                            @endif
                         </td>
                         <td>
                             @if($terminal->last_service_date)

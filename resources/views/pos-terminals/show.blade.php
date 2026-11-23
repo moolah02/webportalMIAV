@@ -57,6 +57,12 @@
 .pt-show .pt-empty { padding: 32px 16px; text-align: center; color: var(--mv-muted); font-size: 13px; }
 .pt-show .pt-empty .mv-i { display: block; width: 32px; height: 32px; margin: 0 auto 8px; color: var(--mv-line-strong); }
 
+/* Site history — where this device has stood */
+.pt-show .pt-card-meta { font-size: 12.5px; color: var(--mv-muted); }
+.pt-show .pt-sh-table { font-size: 13px; }
+.pt-show .pt-sh-when { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pt-show .pt-sh-note { display: block; margin-top: 2px; font-size: 12px; color: var(--mv-muted); }
+
 /* Modals */
 .pt-show .pt-modal { position: fixed; inset: 0; z-index: 1100; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: rgba(22, 32, 44, .45); }
 .pt-show .pt-modal-card { width: 100%; max-width: 520px; max-height: calc(100vh - 48px); display: flex; flex-direction: column; background: var(--mv-surface); border: 1px solid var(--mv-line); border-radius: 12px; box-shadow: 0 16px 40px rgba(22, 32, 44, .14); overflow: hidden; }
@@ -103,11 +109,30 @@ $statusBadge = [
             <div class="pt-head-sub">{{ $posTerminal->client->company_name ?? '—' }}</div>
         </div>
         <span class="status-badge {{ $statusBadge }}">{{ ucfirst($posTerminal->status ?? 'unknown') }}</span>
+        {{-- Where the device is, which is a different question from whether it
+             works. Only shown when it is not simply standing at its site. --}}
+        @if($posTerminal->lifecycle_status && $posTerminal->lifecycle_status !== 'deployed')
+            <span class="status-badge {{ $posTerminal->isRetired() ? 'badge-gray' : 'badge-yellow' }}">
+                {{ $posTerminal->lifecycleLabel() }}
+            </span>
+        @endif
     </div>
     <div class="pt-head-actions">
         <a href="{{ route('pos-terminals.index') }}" class="btn-secondary pt-btn">
             <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-arrow-left"/></svg> Back
         </a>
+        @if($posTerminal->isInStock())
+            <a href="{{ route('pos-terminals.deploy.form', $posTerminal) }}" class="btn-secondary pt-btn">
+                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-truck"/></svg> Send out
+            </a>
+        @elseif(! $posTerminal->isRetired())
+            <a href="{{ route('pos-terminals.migrate.form', $posTerminal) }}" class="btn-secondary pt-btn">
+                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-refresh"/></svg> Replace device
+            </a>
+            <button type="button" onclick="confirmCollect()" class="btn-secondary pt-btn">
+                <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-box"/></svg> Collect
+            </button>
+        @endif
         <button type="button" onclick="confirmDelete()" class="btn-danger pt-btn">
             <svg class="mv-i mv-i-sm" aria-hidden="true"><use href="#i-trash"/></svg> Delete
         </button>
@@ -264,6 +289,62 @@ $statusBadge = [
             </div>
         </div>
         @endif
+
+        {{-- Where this device has been. One row per spell at a site, newest
+             first, so a device that has moved reads as one history rather than
+             several records. --}}
+        @php $spells = $posTerminal->siteAssignments; @endphp
+        <div class="ui-card">
+            <div class="ui-card-header">
+                <h2>Site History</h2>
+                <span class="pt-card-meta">
+                    {{ $spells->count() }} {{ $spells->count() === 1 ? 'site' : 'sites' }}
+                </span>
+            </div>
+            @if($spells->isEmpty())
+                <div class="pt-empty">
+                    <svg class="mv-i" aria-hidden="true"><use href="#i-history"/></svg>
+                    Nothing recorded yet — this device has not been sent out from here.
+                </div>
+            @else
+                <table class="ui-table pt-sh-table">
+                    <thead>
+                        <tr><th>Site</th><th>From</th><th>Until</th><th>How it ended</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach($spells as $spell)
+                        <tr>
+                            <td>
+                                {{ $spell->siteLabel() }}
+                                @if($spell->notes)
+                                    <span class="pt-sh-note">{{ \Illuminate\Support\Str::limit($spell->notes, 120) }}</span>
+                                @endif
+                            </td>
+                            <td class="pt-sh-when">{{ $spell->started_at?->format('d M Y') ?: '—' }}</td>
+                            <td class="pt-sh-when">
+                                @if($spell->isOpen())
+                                    <span class="badge badge-green">Here now</span>
+                                @else
+                                    {{ $spell->ended_at?->format('d M Y') ?: '—' }}
+                                @endif
+                            </td>
+                            <td>
+                                @if($spell->isOpen())
+                                    <span class="pt-empty-val">—</span>
+                                @else
+                                    {{ $spell->endedReasonLabel() ?: '—' }}
+                                    @if($spell->replacedBy)
+                                        <a href="{{ route('pos-terminals.show', $spell->replacedBy) }}"
+                                           class="pt-link pt-sh-note mv-mono">{{ $spell->replacedBy->terminal_id }}</a>
+                                    @endif
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
 
         {{-- Service History --}}
         <div class="ui-card">
@@ -527,6 +608,12 @@ $statusBadge = [
 <form id="deleteForm" action="{{ route('pos-terminals.destroy', $posTerminal) }}" method="POST" class="hidden">
     @csrf @method('DELETE')
 </form>
+@if(! $posTerminal->isInStock() && ! $posTerminal->isRetired())
+<form id="collectForm" action="{{ route('pos-terminals.collect', $posTerminal) }}" method="POST" class="hidden">
+    @csrf
+    <input type="hidden" name="notes" id="collectNotes">
+</form>
+@endif
 
 </div>
 
@@ -537,6 +624,28 @@ function updateStatus(status) {
         document.getElementById('statusInput').value = status;
         document.getElementById('statusUpdateForm').submit();
     }
+}
+
+// Taking the device off its site and into stock. Nothing is deleted, so this
+// asks once and says what it keeps rather than warning about loss.
+function confirmCollect() {
+    const form = document.getElementById('collectForm');
+    if (!form) { return; }
+
+    const site = @json($posTerminal->merchant_name ?: 'its site');
+    const why = window.prompt(
+        'Collect this device from ' + site + '?\n\n'
+        + 'It moves into stock, ready to go out again. Its visit history and '
+        + 'the record of where it has been are kept.\n\n'
+        + 'Why is it being collected? (optional)',
+        ''
+    );
+
+    // Cancel returns null; an empty note is a legitimate answer.
+    if (why === null) { return; }
+
+    document.getElementById('collectNotes').value = why;
+    form.submit();
 }
 
 function confirmDelete() {

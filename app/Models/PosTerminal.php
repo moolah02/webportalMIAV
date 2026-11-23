@@ -38,6 +38,21 @@ class PosTerminal extends Model
         'coordinates',
     ];
 
+    /**
+     * Where the device is, as opposed to whether it works.
+     *
+     * Deliberately NOT in $fillable: it changes only through
+     * App\Services\TerminalLifecycle, which moves the device row and its site
+     * history together. A mass-assigned update that set it on its own would
+     * leave a device marked in stock while still holding an open spell at a
+     * site.
+     */
+    public const LIFECYCLE_LABELS = [
+        'deployed' => 'At a site',
+        'collected' => 'In stock',
+        'retired' => 'Out of service',
+    ];
+
     protected $casts = [
         'installation_date' => 'date',
         'last_service_date' => 'date',
@@ -152,6 +167,37 @@ class PosTerminal extends Model
     public function latestVisit()
     {
         return $this->hasOne(TechnicianVisit::class, 'pos_terminal_id')->latest('visit_date');
+    }
+
+    /** Every site this device has stood at, most recent first. */
+    public function siteAssignments()
+    {
+        return $this->hasMany(TerminalSiteAssignment::class, 'pos_terminal_id')
+            ->orderByDesc('started_at');
+    }
+
+    /** The site it is at now, if it is at one. */
+    public function currentSiteAssignment()
+    {
+        return $this->hasOne(TerminalSiteAssignment::class, 'pos_terminal_id')
+            ->whereNull('ended_at')
+            ->latest('started_at');
+    }
+
+    /** Where the device is, in words. */
+    public function lifecycleLabel(): string
+    {
+        return self::LIFECYCLE_LABELS[$this->lifecycle_status] ?? 'At a site';
+    }
+
+    public function isInStock(): bool
+    {
+        return $this->lifecycle_status === 'collected';
+    }
+
+    public function isRetired(): bool
+    {
+        return $this->lifecycle_status === 'retired';
     }
 
     public function technicianTickets()

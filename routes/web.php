@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\PosTerminalController;
+use App\Http\Controllers\TerminalLifecycleController;
 use App\Http\Controllers\AssetApprovalController;
 use App\Http\Controllers\AssetRequestController;
 use App\Http\Controllers\AssetController;
@@ -241,9 +242,35 @@ Route::middleware(['auth', 'active.employee'])->group(function () {
             ->middleware('permission:manage_terminals,all')
             ->name('store');
 
+        // Devices in stock. Must stay ABOVE /{posTerminal} or the wildcard
+        // swallows "stock" and tries to look up a device by that name.
+        Route::get('/stock', [TerminalLifecycleController::class, 'stock'])
+            ->middleware('permission:view_terminals,manage_terminals,all')
+            ->name('stock');
+
         Route::get('/{posTerminal}', [PosTerminalController::class, 'show'])
             ->middleware('permission:view_terminals,manage_terminals,all')
             ->name('show');
+
+        // Moving a device through its life: off a site into stock, out to a
+        // site, swapped for a replacement, or out of service.
+        Route::middleware('permission:manage_terminals,all')->group(function () {
+            Route::post('/{posTerminal}/collect', [TerminalLifecycleController::class, 'collect'])
+                ->name('collect');
+
+            Route::get('/{posTerminal}/migrate', [TerminalLifecycleController::class, 'showMigrate'])
+                ->name('migrate.form');
+            Route::post('/{posTerminal}/migrate', [TerminalLifecycleController::class, 'migrate'])
+                ->name('migrate');
+
+            Route::get('/{posTerminal}/deploy', [TerminalLifecycleController::class, 'showDeploy'])
+                ->name('deploy.form');
+            Route::post('/{posTerminal}/deploy', [TerminalLifecycleController::class, 'deploy'])
+                ->name('deploy');
+
+            Route::post('/{posTerminal}/retire', [TerminalLifecycleController::class, 'retire'])
+                ->name('retire');
+        });
 
         Route::get('/{posTerminal}/edit', [PosTerminalController::class, 'edit'])
             ->middleware('permission:manage_terminals,all')
