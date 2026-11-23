@@ -94,10 +94,14 @@
                 </div>
                 <div>
                     <label class="ui-label">Terminal Model</label>
+                    @php $modelNow = old('terminal_model', $posTerminal->terminal_model); @endphp
                     <select name="terminal_model" class="ui-select">
                         <option value="">Select Model</option>
-                        @foreach(['Ingenico iWL220','Verifone VX520','PAX A920','Ingenico Move 5000'] as $model)
-                            <option value="{{ $model }}" {{ old('terminal_model', $posTerminal->terminal_model) == $model ? 'selected' : '' }}>{{ $model }}</option>
+                        {{-- A model recorded while the field was free text is kept
+                             on the list, clearly marked, so saving this device does
+                             not quietly erase what the office holds. --}}
+                        @foreach(\App\Support\VisitOptions::terminalModelChoices($modelNow) as $value => $label)
+                            <option value="{{ $value }}" {{ $modelNow === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>

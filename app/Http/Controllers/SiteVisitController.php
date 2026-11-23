@@ -323,7 +323,7 @@ class SiteVisitController extends Controller
             'terminal_condition'    => ['nullable', 'in:good,fair,poor,damaged'],
             'condition_notes'       => ['nullable', 'string', 'max:1000'],
             'issues_found'          => ['nullable', 'string', 'in:No issues,Not In Use,Denied access,Missing Device,Technical Issues,Hardware Fault,Device relocated,Merchant Closed,Merchant Relocated,Merchant Not Located,Returned to HQ,Returned to Bank'],
-            'corrective_action'     => ['nullable', 'string', 'in:Resolved,No action needed,To collect device,Follow-up needed,Replacement needed'],
+            'corrective_action'     => ['nullable', 'string', \App\Support\VisitOptions::correctiveActionRule()],
             'visit_summary'         => ['nullable', 'string', 'max:2000'],
         ]);
 

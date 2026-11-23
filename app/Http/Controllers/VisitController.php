@@ -124,7 +124,12 @@ public function posTerminal()
     {
         $request->validate([
             'visit_summary'   => ['nullable', 'string', 'max:2000'],
-            'action_points'   => ['nullable', 'string', 'in:Resolved,No action needed,To collect device,Follow-up needed,Replacement needed'],
+            // NOTE: this form labels the field "Corrective Action Taken" but
+            // posts it as action_points, which is the Issues Found column
+            // everywhere else (the mobile app sends the corrective action as
+            // terminal_comments). Left as-is here because changing the field
+            // name would overwrite what technicians recorded; logged separately.
+            'action_points'   => ['nullable', 'string', \App\Support\VisitOptions::correctiveActionRule()],
             'completed_at'    => ['nullable', 'date'],
             'new_evidence'    => ['nullable', 'array'],
             'new_evidence.*'  => ['file', 'max:5120', 'mimes:jpeg,jpg,png,gif,webp,pdf,doc,docx'],

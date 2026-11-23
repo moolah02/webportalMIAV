@@ -91,8 +91,16 @@ a.ve-ev-name:hover{text-decoration:underline}
                     <label class="ui-label">Corrective Action Taken</label>
                     <select name="action_points" class="ui-select">
                         <option value="">— Select action —</option>
-                        @foreach(['Resolved','No action needed','To collect device','Follow-up needed','Replacement needed'] as $opt)
+                        {{-- Retired wording is offered only when this visit already
+                             holds it, so saving an older visit does not silently
+                             change what the technician recorded. --}}
+                        @foreach(\App\Support\VisitOptions::CORRECTIVE_ACTIONS as $opt)
                             <option value="{{ $opt }}" {{ old('action_points', $visit->action_points) === $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                        @endforeach
+                        @foreach(\App\Support\VisitOptions::CORRECTIVE_ACTIONS_RETIRED as $opt)
+                            @if(old('action_points', $visit->action_points) === $opt)
+                                <option value="{{ $opt }}" selected>{{ $opt }} (old wording)</option>
+                            @endif
                         @endforeach
                     </select>
                     @error('action_points')<p class="ve-err">{{ $message }}</p>@enderror

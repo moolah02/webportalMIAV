@@ -191,7 +191,7 @@ body > .ts-dropdown .ts-no-results{padding:8px 10px;color:var(--mv-muted)}
                 <label class="ui-label">Corrective Action Taken</label>
                 <select name="corrective_action" id="corrective_action" class="ui-select">
                     <option value="">— Select action —</option>
-                    @foreach(['Resolved','No action needed','To collect device','Follow-up needed','Replacement needed'] as $opt)
+                    @foreach(\App\Support\VisitOptions::CORRECTIVE_ACTIONS as $opt)
                         <option value="{{ $opt }}" {{ old('corrective_action') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
                 </select>

@@ -204,7 +204,7 @@
                 <label class="ui-label" for="upd_corrective_action">Corrective Action</label>
                 <select id="upd_corrective_action" class="ui-select">
                     <option value="">— No change —</option>
-                    @foreach(['Resolved','No action needed','To collect device','Follow-up needed','Replacement needed'] as $opt)
+                    @foreach(\App\Support\VisitOptions::CORRECTIVE_ACTIONS as $opt)
                         <option value="{{ $opt }}" {{ $existingVisit->corrective_action === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
                 </select>
@@ -385,7 +385,7 @@ async function saveUpdate() {
                 <label class="ui-label">Corrective Action Taken</label>
                 <select name="corrective_action" class="ui-select">
                     <option value="">— Select action —</option>
-                    @foreach(['Resolved','No action needed','To collect device','Follow-up needed','Replacement needed'] as $opt)
+                    @foreach(\App\Support\VisitOptions::CORRECTIVE_ACTIONS as $opt)
                         <option value="{{ $opt }}" {{ old('corrective_action') === $opt ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
                 </select>

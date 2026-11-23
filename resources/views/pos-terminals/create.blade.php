@@ -77,7 +77,7 @@
                     <label class="ui-label">Terminal Model</label>
                     <select name="terminal_model" class="ui-select">
                         <option value="">Select Model</option>
-                        @foreach(['Ingenico iWL220','Verifone VX520','PAX A920','Ingenico Move 5000'] as $model)
+                        @foreach(\App\Support\VisitOptions::TERMINAL_MODELS as $model)
                             <option value="{{ $model }}" {{ old('terminal_model') == $model ? 'selected' : '' }}>{{ $model }}</option>
                         @endforeach
                     </select>
