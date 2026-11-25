@@ -576,7 +576,8 @@ public function preview(Request $request)
                 'index' => $sheet['index'],
                 'title' => $sheet['title'],
                 'data_rows' => $sheet['data_rows'],
-                'columns' => count($sheet['headers']),
+                // Columns that actually carry a name, not the raw span.
+                'columns' => $sheet['named_columns'],
                 'headers' => array_slice($sheet['headers'], 0, 12),
                 'mapped_fields' => $sheet['mapped_fields'],
                 'missing_required' => $sheet['missing_required'],
@@ -690,19 +691,42 @@ public function preview(Request $request)
     try {
         $reader = $this->createStreamReader($filePath, $sheetIndex);
 
-        // The header is the first row with anything in it, not simply the
-        // first row. Tabs often open with a blank line or a title above the
-        // real header, and taking that as the header mis-maps every column.
-        // readWorkbookOverview() finds the header the same way, so the preview
-        // and the import agree on which row it is.
+        // Find the header exactly as readWorkbookOverview() does, or the
+        // preview and the import would disagree about which row it is - and
+        // about every column index that follows from it.
+        $candidates = [];
         $lineNumber = 0;
-        do {
-            $headerRow = $reader->getNextRow();
+
+        while (count($candidates) < self::HEADER_SEARCH_ROWS
+            && ($row = $reader->getNextRow()) !== null) {
             $lineNumber++;
-        } while ($headerRow !== null && $this->rowIsBlank($headerRow));
+            if ($this->rowIsBlank($row)) {
+                continue;
+            }
+            $candidates[] = ['row' => $row, 'number' => $lineNumber];
+        }
+
+        [, $afterHeader] = $this->splitHeaderFromRows(array_column($candidates, 'row'));
+        // The rows the header split handed back, with their real line numbers.
+        $buffered = array_slice($candidates, count($candidates) - count($afterHeader));
 
         $rowCount = 0;
-        $chunk = [];
+        $chunk = $buffered;
+        $rowCount += count($buffered);
+
+        $flush = function () use (&$chunk, &$created, &$updated, &$skipped, &$errors, &$errorMsgs, $columnMapping, $clientId, $options): void {
+            if ($chunk === []) {
+                return;
+            }
+
+            $chunkResult = $this->processChunk($chunk, $columnMapping, $clientId, $options);
+            $created += $chunkResult['created'];
+            $updated += $chunkResult['updated'];
+            $skipped += $chunkResult['skipped'];
+            $errors += $chunkResult['errors'];
+            $errorMsgs = array_merge($errorMsgs, $chunkResult['errorMsgs']);
+            $chunk = [];
+        };
 
         while (($row = $reader->getNextRow()) !== null) {
             $lineNumber++;
@@ -715,17 +739,15 @@ public function preview(Request $request)
             $rowCount++;
             $chunk[] = ['row' => $row, 'number' => $lineNumber];
 
-            if (count($chunk) >= $chunkSize || $reader->isEOF()) {
-                $chunkResult = $this->processChunk($chunk, $columnMapping, $clientId, $options);
-                $created += $chunkResult['created'];
-                $updated += $chunkResult['updated'];
-                $skipped += $chunkResult['skipped'];
-                $errors  += $chunkResult['errors'];
-                $errorMsgs = array_merge($errorMsgs, $chunkResult['errorMsgs']);
-                $chunk = [];
+            if (count($chunk) >= $chunkSize) {
+                $flush();
                 if ($rowCount % 2000 === 0) gc_collect_cycles();
             }
         }
+
+        // Whatever is left, including the case where every row fitted in the
+        // header buffer and the loop above never ran once.
+        $flush();
 
     } catch (\Throwable $e) {
         Log::error('Chunked processing failed', [
@@ -984,6 +1006,15 @@ private function createStreamReader(string $filePath, ?int $sheetIndex = null): 
             $headers = [];
             $samples = [];
             $dataRows = 0;
+            $candidates = [];
+            $headerSettled = false;
+
+            $takeDataRow = function (array $cells) use (&$dataRows, &$samples, $sampleSize): void {
+                $dataRows++;
+                if (count($samples) < $sampleSize) {
+                    $samples[] = $cells;
+                }
+            };
 
             foreach ($sheet->getRowIterator() as $row) {
                 $cells = [];
@@ -992,25 +1023,38 @@ private function createStreamReader(string $filePath, ?int $sheetIndex = null): 
                 }
 
                 // Blank rows are skipped wherever they fall: tabs often start
-                // with an empty row or a title above the real header.
+                // with an empty row, and some have gaps between groups.
                 if ($this->rowIsBlank($cells)) {
                     continue;
                 }
 
-                if ($headers === []) {
-                    foreach ($cells as $cell) {
-                        $headers[] = $this->normalizeHeader(trim((string) ($cell ?? '')));
+                if (! $headerSettled) {
+                    $candidates[] = $cells;
+                    if (count($candidates) < self::HEADER_SEARCH_ROWS) {
+                        continue;
                     }
-                    $headers = array_values(array_filter($headers, fn ($h) => $h !== ''));
+
+                    [$headers, $rest] = $this->splitHeaderFromRows($candidates);
+                    $headerSettled = true;
+                    foreach ($rest as $dataRow) {
+                        $takeDataRow($dataRow);
+                    }
 
                     continue;
                 }
 
-                $dataRows++;
-                if (count($samples) < $sampleSize) {
-                    $samples[] = $cells;
+                $takeDataRow($cells);
+            }
+
+            // A short sheet ends before the candidate buffer fills.
+            if (! $headerSettled) {
+                [$headers, $rest] = $this->splitHeaderFromRows($candidates);
+                foreach ($rest as $dataRow) {
+                    $takeDataRow($dataRow);
                 }
             }
+
+            $namedColumns = count(array_filter($headers, fn ($h) => $h !== ''));
 
             $mapping = $headers === []
                 ? ['mapped' => [], 'extra' => [], 'missing_required' => $requiredFields]
@@ -1019,7 +1063,7 @@ private function createStreamReader(string $filePath, ?int $sheetIndex = null): 
             $missing = $mapping['missing_required'] ?? [];
 
             $skipReason = null;
-            if ($headers === []) {
+            if ($namedColumns === 0) {
                 $skipReason = 'No column headers - this looks like an empty tab.';
             } elseif ($missing !== []) {
                 $skipReason = 'No '.implode(' or ', $missing).' column, so there is nothing to identify a device by.';
@@ -1032,6 +1076,7 @@ private function createStreamReader(string $filePath, ?int $sheetIndex = null): 
                 'title' => $sheet->getTitle(),
                 'is_active_sheet' => $index === $activeIndex,
                 'headers' => $headers,
+                'named_columns' => $namedColumns,
                 'data_rows' => $dataRows,
                 'sample_rows' => $samples,
                 'mapped_fields' => array_keys($mapping['mapped']),
@@ -1083,6 +1128,76 @@ private function createStreamReader(string $filePath, ?int $sheetIndex = null): 
         if ($encoding && method_exists($reader, 'setInputEncoding')) {
             $reader->setInputEncoding($encoding);
         }
+    }
+
+    /**
+     * How many leading rows to consider before settling on the header.
+     *
+     * Sheets routinely open with a title ("MASVINGO DEPLOYMENT - NOVEMBER"),
+     * sometimes a blank line, and only then the real header. Taking the first
+     * row with anything in it picks the title and mis-maps every column.
+     */
+    private const HEADER_SEARCH_ROWS = 10;
+
+    /**
+     * Splits the leading rows into the header row and the data rows under it.
+     *
+     * The header is the first candidate row that maps to everything a device
+     * needs to be identified by; a title line maps to nothing, so it is
+     * passed over. With no such row the first one is used, which keeps the
+     * "no terminal_id column" message pointing at something recognisable.
+     *
+     * Returns [positional headers, the rows after the header].
+     */
+    private function splitHeaderFromRows(array $candidates): array
+    {
+        if ($candidates === []) {
+            return [[], []];
+        }
+
+        $headerAt = 0;
+        foreach ($candidates as $i => $row) {
+            $headers = $this->normaliseHeaderRow($row);
+            if ($headers === []) {
+                continue;
+            }
+
+            $mapping = $this->detectHeaderMapping($headers);
+            if (($mapping['missing_required'] ?? []) === []) {
+                $headerAt = $i;
+                break;
+            }
+        }
+
+        return [
+            $this->normaliseHeaderRow($candidates[$headerAt]),
+            array_slice($candidates, $headerAt + 1),
+        ];
+    }
+
+    /**
+     * A row of cells as normalised header names, keeping every column in its
+     * own position.
+     *
+     * The position IS the mapping: detectHeaderMapping() records the array
+     * index and the row reader reads that index back out. Dropping blank
+     * header cells and reindexing would quietly shift every column after a
+     * gap onto the wrong field.
+     */
+    private function normaliseHeaderRow(array $row): array
+    {
+        $headers = [];
+        foreach ($row as $cell) {
+            $headers[] = $this->normalizeHeader(trim((string) ($cell ?? '')));
+        }
+
+        // Trailing empties only - they sit past the last real column, so
+        // removing them cannot move anything.
+        while ($headers !== [] && end($headers) === '') {
+            array_pop($headers);
+        }
+
+        return $headers;
     }
 
     /** True when every cell in the row is empty. */
