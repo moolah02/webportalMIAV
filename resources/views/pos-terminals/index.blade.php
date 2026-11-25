@@ -331,10 +331,13 @@
                                     'offline'     => 'badge-gray',
                                     'maintenance' => 'badge-yellow',
                                     'faulty'      => 'badge-red',
+                                    // A device the office has only ever had on
+                                    // paper makes no claim either way.
+                                    'unseen'      => 'badge-gray',
                                     default       => 'badge-gray',
                                 };
                             @endphp
-                            <span class="status-badge {{ $statusClass }}">{{ ucfirst($terminal->status) }}</span>
+                            <span class="status-badge {{ $statusClass }}">{{ $terminal->statusLabel() }}</span>
                             {{-- A collected device is not at a site, so the row must
                                  not read as though it still is. --}}
                             @if(($terminal->lifecycle_status ?? 'deployed') !== 'deployed')
@@ -413,7 +416,11 @@
             <label class="ui-label pt-sr" for="filter-status">Status</label>
             <select name="status" id="filter-status" class="ui-select" onchange="this.form.submit()">
                 <option value="">All Status</option>
-                <option value="active"       {{ request('status') == 'active'       ? 'selected' : '' }}>Active</option>
+                {{-- Devices loaded from a sheet that no technician has reached
+                     yet. After a bulk import this is most of the list, and it
+                     is the work queue. --}}
+                <option value="unseen"       {{ request('status') == 'unseen'       ? 'selected' : '' }}>Not yet visited</option>
+                <option value="active"       {{ request('status') == 'active'       ? 'selected' : '' }}>Working</option>
                 <option value="offline"      {{ request('status') == 'offline'      ? 'selected' : '' }}>Offline</option>
                 <option value="faulty"       {{ request('status') == 'faulty'       ? 'selected' : '' }}>Faulty</option>
                 <option value="maintenance"  {{ request('status') == 'maintenance'  ? 'selected' : '' }}>Maintenance</option>
@@ -518,10 +525,13 @@
                                     'offline'     => 'badge-gray',
                                     'maintenance' => 'badge-yellow',
                                     'faulty'      => 'badge-red',
+                                    // A device the office has only ever had on
+                                    // paper makes no claim either way.
+                                    'unseen'      => 'badge-gray',
                                     default       => 'badge-gray',
                                 };
                             @endphp
-                            <span class="status-badge {{ $statusClass }}">{{ ucfirst($terminal->status) }}</span>
+                            <span class="status-badge {{ $statusClass }}">{{ $terminal->statusLabel() }}</span>
                             {{-- A collected device is not at a site, so the row must
                                  not read as though it still is. --}}
                             @if(($terminal->lifecycle_status ?? 'deployed') !== 'deployed')

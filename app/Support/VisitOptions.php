@@ -56,6 +56,9 @@ class VisitOptions
         'Ingenico SIS',
         'Ingenico ZSS',
         'VX',
+        // Added 2026-11-25: the sheets being imported hold VL devices, which
+        // were not in the six Nonoe first listed.
+        'VL',
     ];
 
     /** Everything a stored corrective action is allowed to be. */

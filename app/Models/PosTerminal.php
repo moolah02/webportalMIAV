@@ -81,6 +81,42 @@ class PosTerminal extends Model
         return strtolower((string) ($this->current_status ?: $this->status));
     }
 
+    /**
+     * The state of a device nobody has been to yet.
+     *
+     * `status` used to default to 'active', so every device loaded from a
+     * bank's spreadsheet claimed to be working before a technician had seen
+     * it. This value is the absence of a reading, which is the truth about a
+     * device the office has only ever had on paper.
+     */
+    public const STATUS_UNSEEN = 'unseen';
+
+    /** How each status reads on screen; the raw words are for the database. */
+    public const STATUS_LABELS = [
+        'unseen' => 'Not yet visited',
+        'active' => 'Working',
+        'offline' => 'Offline',
+        'maintenance' => 'Needs attention',
+        'faulty' => 'Faulty',
+        'decommissioned' => 'Decommissioned',
+    ];
+
+    /** The label for whatever this device's status currently is. */
+    public function statusLabel(): string
+    {
+        $status = strtolower((string) ($this->status ?? ''));
+
+        return self::STATUS_LABELS[$status]
+            ?? ($status === '' ? 'Not yet visited' : ucfirst($status));
+    }
+
+    /** True while no field visit has ever recorded a state for this device. */
+    public function isUnseen(): bool
+    {
+        return (string) ($this->current_status ?? '') === ''
+            && strtolower((string) ($this->status ?? '')) === self::STATUS_UNSEEN;
+    }
+
     /** Counts/filters terminals by the effective status above. */
     public function scopeEffectiveStatus($query, string|array $status)
     {

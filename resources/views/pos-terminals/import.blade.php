@@ -119,6 +119,18 @@
 .pt-imp .status-badge { gap: 6px; padding: 2px 8px; font-size: 12px; line-height: 18px; }
 .pt-imp .status-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 .pt-imp .pt-row-error { display: block; margin-top: 3px; font-size: 12px; color: var(--mv-crit); }
+/* Sheet picker, shown only for a workbook with more than one tab. */
+.pt-imp .pt-sheets { margin-bottom: 16px; }
+.pt-imp .pt-sheet-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1px; background: var(--mv-line); }
+.pt-imp .pt-sheet { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 11px 14px; background: var(--mv-surface); cursor: pointer; }
+.pt-imp .pt-sheet.is-off { background: var(--mv-surface-2); cursor: default; }
+.pt-imp .pt-sheet input { margin: 2px 0 0; flex-shrink: 0; }
+.pt-imp .pt-sheet-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pt-imp .pt-sheet-name { font-size: 13px; font-weight: 500; color: var(--mv-ink); word-break: break-word; }
+.pt-imp .pt-sheet.is-off .pt-sheet-name { color: var(--mv-muted); }
+.pt-imp .pt-sheet-meta { font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.pt-imp .pt-sheet-note { margin-top: 3px; font-size: 11.5px; line-height: 1.45; color: var(--mv-ink-2); }
+.pt-imp .pt-sheet-foot { margin: 0; padding: 9px 14px; font-size: 12px; line-height: 1.5; color: var(--mv-muted); border-top: 1px solid var(--mv-line); }
 @media (max-width: 760px) { .pt-imp .pt-summary, .pt-imp .pt-preview-grid { grid-template-columns: 1fr; } }
 </style>
 @endpush
@@ -598,6 +610,21 @@ $(document).ready(function() {
 
     // Proceed with import button
     $('#proceedImport').on('click', function() {
+        // Carry the ticked sheets over to the real import. Without this the
+        // server falls back to importing every sheet that holds devices.
+        $('#importForm').find('input[name="sheets[]"]').remove();
+        const picked = $('.pt-sheet-pick:checked').map(function () { return this.value; }).get();
+        const anyPicker = $('.pt-sheet-pick').length > 0;
+
+        if (anyPicker && picked.length === 0) {
+            alert('Tick at least one sheet to import.');
+            return;
+        }
+
+        picked.forEach(function (index) {
+            $('<input>', { type: 'hidden', name: 'sheets[]', value: index }).appendTo('#importForm');
+        });
+
         $('#previewModal').modal('hide');
         // Auto-submit the form to start the real import
         $('#importForm').trigger('submit');
@@ -693,8 +720,49 @@ $(document).ready(function() {
         return false;
     });
 
+    // Builds the sheet picker. A workbook's tabs used to be invisible here:
+    // only the one Excel had selected when the file was saved was ever read,
+    // and the other tabs went by in silence.
+    function sheetPickerHtml(sheets) {
+        if (!sheets || sheets.length < 2) return '';
+
+        const usable = sheets.filter(s => s.importable).length;
+        const rows = sheets.map(s => {
+            const refNote = (s.reference_only_fields || []).length
+                ? `<div class="pt-sheet-note">Status column kept as reference only &mdash; it will not become the device's state.</div>`
+                : '';
+            const detail = s.importable
+                ? `${s.data_rows} row${s.data_rows === 1 ? '' : 's'}, ${s.columns} columns`
+                : (s.skip_reason || 'Cannot be imported');
+            return `
+                <label class="pt-sheet ${s.importable ? '' : 'is-off'}">
+                    <input type="checkbox" class="pt-sheet-pick" value="${s.index}"
+                           ${s.importable ? 'checked' : 'disabled'}>
+                    <span class="pt-sheet-body">
+                        <span class="pt-sheet-name">${$('<div>').text(s.title).html()}</span>
+                        <span class="pt-sheet-meta">${$('<div>').text(detail).html()}</span>
+                        ${refNote}
+                    </span>
+                </label>`;
+        }).join('');
+
+        return `
+            <div class="pt-subcard pt-sheets">
+                <div class="pt-subcard-head">
+                    Sheets in this file &mdash; ${usable} of ${sheets.length} hold devices
+                </div>
+                <div class="pt-sheet-list">${rows}</div>
+                <p class="pt-sheet-foot">
+                    Only the ticked sheets are imported. Every sheet you leave out is
+                    named in the result, so nothing goes in or stays out quietly.
+                </p>
+            </div>`;
+    }
+
     function displayPreview(response) {
-        let html = `
+        const refOnly = (response.column_mapping_info.reference_only_fields || []);
+
+        let html = sheetPickerHtml(response.sheets) + `
             <div class="pt-summary">
                 <div class="pt-summary-box">
                     <p class="pt-summary-title">File Analysis</p>
@@ -702,6 +770,11 @@ $(document).ready(function() {
                         <li><strong>Mapping:</strong> ${response.mapping_name}</li>
                         <li><strong>Columns Found:</strong> ${response.headers.length}</li>
                         <li><strong>Preview Rows:</strong> ${response.preview_data.length}</li>
+                        ${
+                            refOnly.length
+                            ? `<li><strong>Kept as reference:</strong> ${refOnly.join(', ')} &mdash; a device's state comes from a field visit, never from the sheet</li>`
+                            : ''
+                        }
                     </ul>
                 </div>
                 <div class="pt-summary-box">

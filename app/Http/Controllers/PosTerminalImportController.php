@@ -15,6 +15,26 @@ use Illuminate\Support\Arr;
 
 class PosTerminalImportController extends Controller
 {
+    /**
+     * Columns a spreadsheet is never allowed to put on the device record.
+     *
+     * A device's state is what a technician found standing in front of it. A
+     * bank's sheet saying "active" is the bank's paperwork, not a reading, and
+     * before this list existed every imported device arrived claiming to be
+     * working - and so did every device with no status column at all, because
+     * the importer defaulted it. The sheet's own words are kept beside the
+     * record under a `sheet_` prefix as reference, and `pos_terminals.status`
+     * is left to its default of `unseen`: the absence of a reading, not a
+     * false one. The first visit fills `current_status`, which
+     * PosTerminal::EFFECTIVE_STATUS_SQL already prefers over it.
+     */
+    private const FIELDS_THE_OFFICE_CANNOT_SET = [
+        'status',
+        'current_status',
+        'condition_status',
+        'deployment_status',
+    ];
+
     // Define your template - these are the fields your system recognizes
     private const FIELD_TEMPLATE = [
         // Required fields
@@ -196,6 +216,9 @@ public function import(Request $request)
             'mapping_id' => 'nullable|exists:import_mappings,id',
             'options' => 'array',
             'options.*' => 'in:skip_duplicates,update_existing',
+            // Which tabs of a workbook to take, as ticked in the preview.
+            'sheets' => 'nullable|array',
+            'sheets.*' => 'integer|min:0',
         ]);
 
         Log::info('Validation passed');
@@ -220,52 +243,122 @@ public function import(Request $request)
             'update_existing' => $updateExisting
         ]);
 
-        // Read file with streaming for large files
+        // Look at every tab, not just the one that happened to be selected
+        // when the file was saved. A ten-tab workbook used to import one tab
+        // and ignore the other nine without saying a word.
         try {
-            [$headers, $totalRows] = $this->readFileStream($file->getRealPath());
-
-            Log::info('File structure detected', [
-                'headers' => $headers,
-                'total_rows' => $totalRows,
-                'columns' => count($headers)
-            ]);
-
-            if (empty($headers)) {
-                throw new \Exception('No headers found in file');
-            }
-
+            $overview = $this->readWorkbookOverview($file->getRealPath(), 0);
         } catch (\Throwable $e) {
             Log::error('File reading failed', ['error' => $e->getMessage()]);
-            return back()->with('error', 'Could not read file: ' . $e->getMessage());
+
+            return back()->with('error', 'Could not read file: '.$e->getMessage());
         }
 
-        // Detect column mapping
-        $columnMapping = $mapping ?
-            $this->useCustomMapping($mapping) :
-            $this->detectHeaderMapping($headers);
-
-        Log::info('Column mapping result', [
-            'mapped_fields' => array_keys($columnMapping['mapped']),
-            'extra_fields' => array_keys($columnMapping['extra']),
-            'missing_required' => $columnMapping['missing_required']
-        ]);
-
-        // Check for required fields
-        if (!empty($columnMapping['missing_required'])) {
-            $errorMessage = 'Missing required fields: ' . implode(', ', $columnMapping['missing_required']) .
-                '. Available columns: ' . implode(', ', $headers);
-            Log::error($errorMessage);
-            return back()->with('error', $errorMessage);
+        if ($overview === []) {
+            return back()->with('error', 'That file has no sheets in it.');
         }
 
-        // Process with chunked reading for large files
-        $result = $this->processFileInChunks($file->getRealPath(), $columnMapping, $client->id, [
-            'skip_duplicates' => $skipDuplicates,
-            'update_existing' => $updateExisting
+        // The preview sends the tabs that were ticked. With no list - a direct
+        // post, or an older page - take every tab that holds devices.
+        $requested = array_map('intval', (array) $request->input('sheets', []));
+        $chosen = array_values(array_filter(
+            $overview,
+            fn ($sheet) => $sheet['importable']
+                && ($requested === [] || in_array($sheet['index'], $requested, true))
+        ));
+
+        Log::info('Sheets to import', [
+            'in_file' => array_map(fn ($s) => $s['title'].' ('.$s['data_rows'].' rows)', $overview),
+            'requested' => $requested,
+            'chosen' => array_map(fn ($s) => $s['title'], $chosen),
         ]);
 
-        Log::info('Import completed successfully');
-        return $result;
+        if ($chosen === []) {
+            // Say which tab failed and why, rather than one flat message.
+            $why = [];
+            foreach ($overview as $sheet) {
+                if ($requested !== [] && ! in_array($sheet['index'], $requested, true)) {
+                    continue;
+                }
+                $why[] = '"'.$sheet['title'].'": '.($sheet['skip_reason'] ?? 'not selected');
+            }
+
+            return back()->with('error', 'Nothing could be imported. '.implode('  ', $why));
+        }
+
+        $totals = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => 0];
+        $errorMsgs = [];
+        $perSheet = [];
+
+        foreach ($chosen as $sheet) {
+            // Each tab gets its own mapping: tabs in one workbook routinely
+            // put the same columns in a different order.
+            $columnMapping = $mapping
+                ? $this->useCustomMapping($mapping)
+                : $this->detectHeaderMapping($sheet['headers']);
+
+            $result = $this->processSheet(
+                $file->getRealPath(),
+                $sheet['index'],
+                $columnMapping,
+                $client->id,
+                ['skip_duplicates' => $skipDuplicates, 'update_existing' => $updateExisting]
+            );
+
+            foreach (['created', 'updated', 'skipped', 'errors'] as $key) {
+                $totals[$key] += $result[$key];
+            }
+            foreach ($result['errorMsgs'] as $msg) {
+                $errorMsgs[] = $sheet['title'].' - '.$msg;
+            }
+
+            $perSheet[] = sprintf(
+                '%s: %d added, %d updated, %d skipped, %d failed',
+                $sheet['title'],
+                $result['created'],
+                $result['updated'],
+                $result['skipped'],
+                $result['errors']
+            );
+
+            Log::info('Sheet imported', ['sheet' => $sheet['title']] + $result);
+        }
+
+        $ignored = array_values(array_filter(
+            $overview,
+            fn ($s) => ! in_array($s['index'], array_column($chosen, 'index'), true)
+        ));
+
+        $summary = sprintf(
+            'Imported %d sheet%s — Created: %d, Updated: %d, Skipped: %d, Errors: %d',
+            count($chosen),
+            count($chosen) === 1 ? '' : 's',
+            $totals['created'],
+            $totals['updated'],
+            $totals['skipped'],
+            $totals['errors']
+        );
+
+        if (count($overview) > 1) {
+            $summary .= "\n\n".implode("\n", $perSheet);
+        }
+
+        // Never let a tab go by in silence - that was the whole bug.
+        if ($ignored !== []) {
+            $summary .= "\n\nNot imported: ".implode('; ', array_map(
+                fn ($s) => '"'.$s['title'].'" ('.($s['skip_reason'] ?? 'not selected').')',
+                $ignored
+            ));
+        }
+
+        if ($totals['errors'] > 0) {
+            $summary .= "\n\nError sample: ".implode(' | ', array_slice($errorMsgs, 0, 3));
+        }
+
+        Log::info('Import completed successfully', $totals);
+
+        return redirect()->route('pos-terminals.index')
+            ->with($totals['errors'] > $totals['created'] ? 'error' : 'success', $summary);
 
     } catch (\Illuminate\Validation\ValidationException $e) {
         Log::error('Validation failed', ['errors' => $e->errors()]);
@@ -361,9 +454,29 @@ public function preview(Request $request)
                 throw new \Exception('PhpSpreadsheet library not found. Please install it with: composer require phpoffice/phpspreadsheet');
             }
 
-            [$headers, $sampleRows] = $this->readSampleRows($filePath, $previewRows);
+            $sheets = $this->readWorkbookOverview($filePath, $previewRows);
+
+            if ($sheets === []) {
+                throw new \Exception('That file has no sheets in it.');
+            }
+
+            // The rows shown in detail come from the first tab that holds
+            // devices; every tab is listed either way, so nothing is hidden.
+            $primary = null;
+            foreach ($sheets as $sheet) {
+                if ($sheet['importable']) {
+                    $primary = $sheet;
+                    break;
+                }
+            }
+            $primary ??= $sheets[0];
+
+            $headers = $primary['headers'];
+            $sampleRows = $primary['sample_rows'];
 
             Log::info('File read successfully', [
+                'sheets' => count($sheets),
+                'primary_sheet' => $primary['title'],
                 'headers_count' => count($headers),
                 'sample_rows_count' => count($sampleRows),
                 'headers' => array_slice($headers, 0, 5) // Log first 5 headers
@@ -448,8 +561,29 @@ public function preview(Request $request)
             'column_mapping_info' => [
                 'mapped_fields' => array_keys($columnMapping['mapped']),
                 'extra_fields' => array_keys($columnMapping['extra']),
-                'missing_required' => $columnMapping['missing_required'] ?? []
-            ]
+                'missing_required' => $columnMapping['missing_required'] ?? [],
+                // Columns that will be kept as reference beside the device
+                // instead of becoming its state.
+                'reference_only_fields' => array_values(array_intersect(
+                    array_keys($columnMapping['mapped']),
+                    self::FIELDS_THE_OFFICE_CANNOT_SET
+                )),
+            ],
+            'primary_sheet' => $primary['index'],
+            // Every tab in the workbook, so the page can show them and let the
+            // user pick. Sample rows are left out to keep the payload small.
+            'sheets' => array_map(fn ($sheet) => [
+                'index' => $sheet['index'],
+                'title' => $sheet['title'],
+                'data_rows' => $sheet['data_rows'],
+                'columns' => count($sheet['headers']),
+                'headers' => array_slice($sheet['headers'], 0, 12),
+                'mapped_fields' => $sheet['mapped_fields'],
+                'missing_required' => $sheet['missing_required'],
+                'reference_only_fields' => $sheet['reference_only_fields'],
+                'importable' => $sheet['importable'],
+                'skip_reason' => $sheet['skip_reason'],
+            ], $sheets),
         ]);
 
     } catch (\Illuminate\Validation\ValidationException $e) {
@@ -544,30 +678,42 @@ public function preview(Request $request)
     }
 
     /**
-     * Process file in chunks for large files
+     * Imports one sheet and reports what it did. The caller aggregates across
+     * sheets, so this returns counts rather than a redirect.
      */
-    private function processFileInChunks(string $filePath, array $columnMapping, int $clientId, array $options): \Illuminate\Http\RedirectResponse
+    private function processSheet(string $filePath, ?int $sheetIndex, array $columnMapping, int $clientId, array $options): array
 {
     $chunkSize = 500;
     $created = 0; $updated = 0; $skipped = 0; $errors = 0;
     $errorMsgs = [];
 
     try {
-        $reader = $this->createStreamReader($filePath);
+        $reader = $this->createStreamReader($filePath, $sheetIndex);
 
-        // consume header row exactly once
-        $headerRow = $reader->getNextRow();
+        // The header is the first row with anything in it, not simply the
+        // first row. Tabs often open with a blank line or a title above the
+        // real header, and taking that as the header mis-maps every column.
+        // readWorkbookOverview() finds the header the same way, so the preview
+        // and the import agree on which row it is.
+        $lineNumber = 0;
+        do {
+            $headerRow = $reader->getNextRow();
+            $lineNumber++;
+        } while ($headerRow !== null && $this->rowIsBlank($headerRow));
 
         $rowCount = 0;
         $chunk = [];
 
         while (($row = $reader->getNextRow()) !== null) {
+            $lineNumber++;
+
+            // A blank row is not an error, it is just nothing.
+            if ($this->rowIsBlank($row)) {
+                continue;
+            }
+
             $rowCount++;
-
-            // REMOVE this (it was dropping your first data row):
-            // if ($rowCount === 1) continue;
-
-            $chunk[] = ['row' => $row, 'number' => $rowCount + 1]; // +1 to reflect actual CSV row number
+            $chunk[] = ['row' => $row, 'number' => $lineNumber];
 
             if (count($chunk) >= $chunkSize || $reader->isEOF()) {
                 $chunkResult = $this->processChunk($chunk, $columnMapping, $clientId, $options);
@@ -582,18 +728,21 @@ public function preview(Request $request)
         }
 
     } catch (\Throwable $e) {
-        Log::error('Chunked processing failed', ['error' => $e->getMessage()]);
-        return back()->with('error', 'Processing failed: ' . $e->getMessage());
+        Log::error('Chunked processing failed', [
+            'sheet' => $sheetIndex,
+            'error' => $e->getMessage(),
+        ]);
+
+        return [
+            'created' => $created,
+            'updated' => $updated,
+            'skipped' => $skipped,
+            'errors' => $errors + 1,
+            'errorMsgs' => array_merge($errorMsgs, ['Processing failed: '.$e->getMessage()]),
+        ];
     }
 
-    $summary = "Import completed — Created: {$created}, Updated: {$updated}, Skipped: {$skipped}, Errors: {$errors}";
-    if ($errors > 0) {
-        $errorSample = implode(' | ', array_slice($errorMsgs, 0, 3));
-        $summary .= "\n\nError sample: " . $errorSample;
-    }
-    $messageType = ($errors > $created) ? 'error' : 'success';
-
-    return redirect()->route('pos-terminals.index')->with($messageType, $summary);
+    return compact('created', 'updated', 'skipped', 'errors', 'errorMsgs');
 }
 
 
@@ -663,12 +812,26 @@ public function preview(Request $request)
 
         // Map standard fields
         foreach ($columnMapping['mapped'] as $field => $columnIndex) {
-            if (isset($row[$columnIndex])) {
-                $value = $this->processFieldValue($row[$columnIndex], $field);
-                if ($value !== null) {
-                    $dbField = self::FIELD_TEMPLATE[$field]['database_field'];
-                    $data[$dbField] = $value;
+            if (! isset($row[$columnIndex])) {
+                continue;
+            }
+
+            // A status column in the sheet is the office's paperwork, not a
+            // reading off the device. Keep it, clearly labelled, but never let
+            // it become the device's state - see FIELDS_THE_OFFICE_CANNOT_SET.
+            if (in_array($field, self::FIELDS_THE_OFFICE_CANNOT_SET, true)) {
+                $asWritten = $this->cleanValue($row[$columnIndex]);
+                if ($asWritten !== null && $asWritten !== '') {
+                    $extraFields['sheet_'.$field] = $asWritten;
                 }
+
+                continue;
+            }
+
+            $value = $this->processFieldValue($row[$columnIndex], $field);
+            if ($value !== null) {
+                $dbField = self::FIELD_TEMPLATE[$field]['database_field'];
+                $data[$dbField] = $value;
             }
         }
 
@@ -687,9 +850,9 @@ public function preview(Request $request)
             $data['extra_fields'] = json_encode($extraFields);
         }
 
-        // Set defaults
-        if (empty($data['status'])) $data['status'] = 'active';
-        if (empty($data['current_status'])) $data['current_status'] = $data['status'];
+        // No status default on purpose. `pos_terminals.status` defaults to
+        // `unseen` in the database, so a device loaded from the office holds
+        // no claim about its state until a technician records one.
 
         return $data;
     }
@@ -727,7 +890,7 @@ public function preview(Request $request)
 /**
  * Stream reader for large files (CSV/XLSX/XLS)
  */
-private function createStreamReader(string $filePath): object
+private function createStreamReader(string $filePath, ?int $sheetIndex = null): object
 {
     $type   = IOFactory::identify($filePath);
     $reader = IOFactory::createReader($type);
@@ -736,26 +899,30 @@ private function createStreamReader(string $filePath): object
         $reader->setReadDataOnly(true);
     }
 
-    if ($reader instanceof \PhpOffice\PhpSpreadsheet\Reader\Csv) {
-        $reader->setDelimiter(',');
-        $reader->setEnclosure('"');
-        if (method_exists($reader, 'setSheetIndex')) {
-            $reader->setSheetIndex(0);
-        }
+    $this->configureCsvReader($reader, $filePath);
+    if ($reader instanceof \PhpOffice\PhpSpreadsheet\Reader\Csv
+        && method_exists($reader, 'setSheetIndex')) {
+        $reader->setSheetIndex(0);
     }
 
     // IMPORTANT: don't skip the first row here. Let callers decide.
-    return new class($reader, $filePath) {
+    return new class($reader, $filePath, $sheetIndex) {
         private $reader;
         private $spreadsheet;
         private $worksheet;
         private $rowIterator;
 
-        public function __construct($reader, $filePath)
+        public function __construct($reader, $filePath, ?int $sheetIndex)
         {
             $this->reader       = $reader;
             $this->spreadsheet  = $reader->load($filePath);
-            $this->worksheet    = $this->spreadsheet->getActiveSheet();
+            // A named sheet when the caller asked for one. Without it this
+            // used to take getActiveSheet(), which is whichever tab happened
+            // to be selected when the file was saved - so a ten-tab workbook
+            // imported one tab and silently ignored the other nine.
+            $this->worksheet    = $sheetIndex === null
+                ? $this->spreadsheet->getActiveSheet()
+                : $this->spreadsheet->getSheet($sheetIndex);
             $this->rowIterator  = $this->worksheet->getRowIterator();
             $this->rowIterator->rewind(); // now current row is header
         }
@@ -783,91 +950,156 @@ private function createStreamReader(string $filePath): object
 
 
 
-private function readSampleRows(string $filePath, int $sampleSize = 5): array
-{
-    try {
-        if (!file_exists($filePath) || !is_readable($filePath)) {
-            throw new \Exception('File not found or not readable');
-        }
 
+    /**
+     * Every sheet in the workbook, each described on its own terms.
+     *
+     * A CSV has exactly one sheet. A workbook can have ten, and the tabs are
+     * rarely alike - different column orders, and usually a summary or notes
+     * tab holding no devices at all. So each sheet gets its own header row and
+     * its own detected mapping, and the caller picks which ones to take. Rows
+     * are counted through the iterator rather than pulled into an array,
+     * because this server has under a gigabyte of memory.
+     */
+    private function readWorkbookOverview(string $filePath, int $sampleSize = 5): array
+    {
         $type = IOFactory::identify($filePath);
-        Log::info('File type identified', ['type' => $type, 'file' => basename($filePath)]);
-
         $reader = IOFactory::createReader($type);
 
-        // Configure reader
         if (method_exists($reader, 'setReadDataOnly')) {
             $reader->setReadDataOnly(true);
         }
+        $this->configureCsvReader($reader, $filePath);
 
-        // CSV-specific settings
-        if ($reader instanceof \PhpOffice\PhpSpreadsheet\Reader\Csv) {
-            $reader->setDelimiter(',');
-            $reader->setEnclosure('"');
-            $reader->setEscapeCharacter('\\');
+        $spreadsheet = $reader->load($filePath);
+        $activeIndex = $spreadsheet->getActiveSheetIndex();
+        $requiredFields = array_keys(array_filter(
+            self::FIELD_TEMPLATE,
+            fn ($config) => ! empty($config['required'])
+        ));
 
-            // Try to detect encoding
-            if (function_exists('mb_detect_encoding')) {
-                $content = file_get_contents($filePath, false, null, 0, 1024);
-                $encoding = mb_detect_encoding($content, ['UTF-8', 'UTF-16', 'Windows-1252', 'ISO-8859-1'], true);
-                if ($encoding && method_exists($reader, 'setInputEncoding')) {
-                    $reader->setInputEncoding($encoding);
+        $sheets = [];
+
+        foreach ($spreadsheet->getAllSheets() as $index => $sheet) {
+            $headers = [];
+            $samples = [];
+            $dataRows = 0;
+
+            foreach ($sheet->getRowIterator() as $row) {
+                $cells = [];
+                foreach ($row->getCellIterator() as $cell) {
+                    $cells[] = $cell->getCalculatedValue();
                 }
+
+                // Blank rows are skipped wherever they fall: tabs often start
+                // with an empty row or a title above the real header.
+                if ($this->rowIsBlank($cells)) {
+                    continue;
+                }
+
+                if ($headers === []) {
+                    foreach ($cells as $cell) {
+                        $headers[] = $this->normalizeHeader(trim((string) ($cell ?? '')));
+                    }
+                    $headers = array_values(array_filter($headers, fn ($h) => $h !== ''));
+
+                    continue;
+                }
+
+                $dataRows++;
+                if (count($samples) < $sampleSize) {
+                    $samples[] = $cells;
+                }
+            }
+
+            $mapping = $headers === []
+                ? ['mapped' => [], 'extra' => [], 'missing_required' => $requiredFields]
+                : $this->detectHeaderMapping($headers);
+
+            $missing = $mapping['missing_required'] ?? [];
+
+            $skipReason = null;
+            if ($headers === []) {
+                $skipReason = 'No column headers - this looks like an empty tab.';
+            } elseif ($missing !== []) {
+                $skipReason = 'No '.implode(' or ', $missing).' column, so there is nothing to identify a device by.';
+            } elseif ($dataRows === 0) {
+                $skipReason = 'Headers but no rows underneath them.';
+            }
+
+            $sheets[] = [
+                'index' => $index,
+                'title' => $sheet->getTitle(),
+                'is_active_sheet' => $index === $activeIndex,
+                'headers' => $headers,
+                'data_rows' => $dataRows,
+                'sample_rows' => $samples,
+                'mapped_fields' => array_keys($mapping['mapped']),
+                'extra_fields' => array_keys($mapping['extra']),
+                'missing_required' => $missing,
+                'reference_only_fields' => array_values(array_intersect(
+                    array_keys($mapping['mapped']),
+                    self::FIELDS_THE_OFFICE_CANNOT_SET
+                )),
+                'importable' => $skipReason === null,
+                'skip_reason' => $skipReason,
+            ];
+        }
+
+        $spreadsheet->disconnectWorksheets();
+        unset($spreadsheet);
+
+        return $sheets;
+    }
+
+    /**
+     * CSV reader settings, including the file's encoding.
+     *
+     * Without the encoding sniff a Windows-1252 export (which is what Excel
+     * produces on a Windows machine unless you ask otherwise) comes through
+     * with mangled accents and currency signs. The preview used to do this
+     * and the import did not, so the two could disagree about the headers.
+     */
+    private function configureCsvReader(object $reader, string $filePath): void
+    {
+        if (! $reader instanceof \PhpOffice\PhpSpreadsheet\Reader\Csv) {
+            return;
+        }
+
+        $reader->setDelimiter(',');
+        $reader->setEnclosure('"');
+        $reader->setEscapeCharacter('\\');
+
+        if (! function_exists('mb_detect_encoding')) {
+            return;
+        }
+
+        $head = file_get_contents($filePath, false, null, 0, 1024);
+        if ($head === false) {
+            return;
+        }
+
+        $encoding = mb_detect_encoding($head, ['UTF-8', 'UTF-16', 'Windows-1252', 'ISO-8859-1'], true);
+        if ($encoding && method_exists($reader, 'setInputEncoding')) {
+            $reader->setInputEncoding($encoding);
+        }
+    }
+
+    /** True when every cell in the row is empty. */
+    private function rowIsBlank(array $row): bool
+    {
+        foreach ($row as $cell) {
+            if (trim((string) ($cell ?? '')) !== '') {
+                return false;
             }
         }
 
-        $spreadsheet = $reader->load($filePath);
-        $sheet = $spreadsheet->getActiveSheet();
-
-        // Get all data as array
-        $allData = $sheet->toArray(null, true, true, false);
-
-        if (empty($allData)) {
-            throw new \Exception('File appears to be empty or contains no readable data');
-        }
-
-        // Clean and normalize headers
-        $headers = array_shift($allData);
-        $headers = array_map(function($header) {
-            return $this->normalizeHeader(trim((string)($header ?? '')));
-        }, $headers);
-
-        // Filter out completely empty headers
-        $headers = array_filter($headers, function($header) {
-            return !empty($header) && $header !== '';
-        });
-
-        if (empty($headers)) {
-            throw new \Exception('No valid column headers found in the first row');
-        }
-
-        // Get sample rows and clean them
-        $sampleRows = array_slice($allData, 0, $sampleSize);
-        $sampleRows = array_map(function($row) {
-            return array_map(function($cell) {
-                return is_string($cell) ? trim($cell) : $cell;
-            }, $row);
-        }, $sampleRows);
-
-        Log::info('Sample data read successfully', [
-            'headers_count' => count($headers),
-            'sample_rows' => count($sampleRows)
-        ]);
-
-        return [array_values($headers), $sampleRows];
-
-    } catch (\Exception $e) {
-        Log::error('Error reading sample rows', [
-            'error' => $e->getMessage(),
-            'file' => basename($filePath)
-        ]);
-        throw new \Exception('Could not read file: ' . $e->getMessage());
+        return true;
     }
-}
 
-    private function readFileStream(string $filePath): array
+    private function readFileStream(string $filePath, ?int $sheetIndex = null): array
 {
-    $reader = $this->createStreamReader($filePath);
+    $reader = $this->createStreamReader($filePath, $sheetIndex);
 
     // real header row
     $headers = $reader->getNextRow();

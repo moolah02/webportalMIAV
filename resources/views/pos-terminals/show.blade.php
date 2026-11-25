@@ -95,7 +95,9 @@ $statusBadge = [
     'maintenance' => 'badge-yellow',
     'offline'     => 'badge-gray',
     'faulty'      => 'badge-red',
-][$posTerminal->status ?? 'inactive'] ?? 'badge-gray';
+    // A device nobody has visited makes no claim either way.
+    'unseen'      => 'badge-gray',
+][$posTerminal->status ?? 'unseen'] ?? 'badge-gray';
 @endphp
 
 <div class="pt-show">
@@ -108,7 +110,7 @@ $statusBadge = [
             <div class="pt-head-name">{{ $posTerminal->merchant_name ?? '—' }}</div>
             <div class="pt-head-sub">{{ $posTerminal->client->company_name ?? '—' }}</div>
         </div>
-        <span class="status-badge {{ $statusBadge }}">{{ ucfirst($posTerminal->status ?? 'unknown') }}</span>
+        <span class="status-badge {{ $statusBadge }}">{{ $posTerminal->statusLabel() }}</span>
         {{-- Where the device is, which is a different question from whether it
              works. Only shown when it is not simply standing at its site. --}}
         @if($posTerminal->lifecycle_status && $posTerminal->lifecycle_status !== 'deployed')
@@ -160,7 +162,7 @@ $statusBadge = [
                 </div>
                 <div>
                     <dt>Status</dt>
-                    <dd><span class="status-badge {{ $statusBadge }}">{{ ucfirst($posTerminal->status ?? 'unknown') }}</span></dd>
+                    <dd><span class="status-badge {{ $statusBadge }}">{{ $posTerminal->statusLabel() }}</span></dd>
                 </div>
                 <div>
                     <dt>Model</dt>
