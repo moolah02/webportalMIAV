@@ -36,6 +36,9 @@ class PosTerminal extends Model
         'next_service_due',
         'status_info',
         'coordinates',
+        // Columns an import carried that have no field of their own. Reference
+        // only - a device's state never comes from here.
+        'extra_fields',
     ];
 
     /**
@@ -59,6 +62,7 @@ class PosTerminal extends Model
         'next_service_due' => 'date',
         'status_info' => 'array',
         'coordinates' => 'array',
+        'extra_fields' => 'array',
     ];
 
     /**

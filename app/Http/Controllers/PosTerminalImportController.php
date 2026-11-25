@@ -867,9 +867,11 @@ public function preview(Request $request)
             }
         }
 
-        // Store extra fields as JSON
-        if (!empty($extraFields)) {
-            $data['extra_fields'] = json_encode($extraFields);
+        // Kept beside the record. Handed over as an array, not a JSON string:
+        // the model casts this column, so encoding it here would store a
+        // string inside the JSON instead of an object.
+        if (! empty($extraFields)) {
+            $data['extra_fields'] = $extraFields;
         }
 
         // No status default on purpose. `pos_terminals.status` defaults to
