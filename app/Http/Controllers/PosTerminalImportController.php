@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\PosTerminal;
 use App\Models\ImportMapping;
+use App\Support\TerminalLocation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -115,7 +116,11 @@ class PosTerminalImportController extends Controller
         ],
         'city' => [
             'exact' => ['city', 'town'],
-            'patterns' => ['/^city$/i', '/^town$/i'],
+            // A sheet that carries the town in more than one column heads them
+            // "City 1" and "City 2". Both are a city; the numbered ones used to
+            // match nothing and were filed away as unrecognised columns, so the
+            // city field stayed empty on every imported device.
+            'patterns' => ['/^(city|town)(\s*\d+)?$/i'],
             'validation' => 'text'
         ],
         'province' => [
@@ -615,10 +620,27 @@ public function preview(Request $request)
     private function detectHeaderMapping(array $headers): array
     {
         $mapped = [];
+        $alternates = [];
         $extra = [];
         $usedIndices = [];
 
         Log::info('Starting header detection', ['headers' => $headers]);
+
+        // A second column for a field the sheet already gave us is not a
+        // mistake - "City 1" and "City 2" are both the town, one filled in
+        // where the other was left blank. Keep the first as the field and the
+        // rest as fallbacks, read in order until one has something in it.
+        // They used to overwrite each other: the later column won and the
+        // earlier one was dropped without reaching the unrecognised-column
+        // list either, so its data vanished with nothing said.
+        $claim = function (string $field, int $index) use (&$mapped, &$alternates, &$usedIndices): void {
+            if (isset($mapped[$field])) {
+                $alternates[$field][] = $index;
+            } else {
+                $mapped[$field] = $index;
+            }
+            $usedIndices[] = $index;
+        };
 
         // First pass: exact matches
         foreach ($headers as $index => $header) {
@@ -626,27 +648,23 @@ public function preview(Request $request)
 
             foreach (self::HEADER_PATTERNS as $field => $patterns) {
                 if (in_array($normalizedHeader, $patterns['exact'])) {
-                    $mapped[$field] = $index;
-                    $usedIndices[] = $index;
+                    $claim($field, $index);
                     Log::debug("Exact match: '{$header}' -> {$field}");
                     break;
                 }
             }
         }
 
-        // Second pass: pattern matches for unmapped headers
+        // Second pass: pattern matches for headers no exact match claimed
         foreach ($headers as $index => $header) {
             if (in_array($index, $usedIndices)) continue;
 
             $normalizedHeader = $this->normalizeHeader($header);
 
             foreach (self::HEADER_PATTERNS as $field => $patterns) {
-                if (isset($mapped[$field])) continue; // Already mapped
-
                 foreach ($patterns['patterns'] as $pattern) {
                     if (preg_match($pattern, $normalizedHeader)) {
-                        $mapped[$field] = $index;
-                        $usedIndices[] = $index;
+                        $claim($field, $index);
                         Log::debug("Pattern match: '{$header}' -> {$field}");
                         break 2;
                     }
@@ -654,13 +672,28 @@ public function preview(Request $request)
             }
         }
 
-        // Third pass: Store unmapped columns as extra fields
+        // Third pass: keep every column that did not become a field of its own
+        // verbatim beside the record. A fallback column is kept here too: it is
+        // only read when the field's own column is blank, so without this its
+        // contents would go unrecorded whenever the first column was filled.
+        $primaryIndices = array_values($mapped);
         foreach ($headers as $index => $header) {
-            if (!in_array($index, $usedIndices)) {
-                $fieldName = $this->sanitizeFieldName($header);
-                $extra[$fieldName] = $index;
-                Log::debug("Extra field: '{$header}' -> {$fieldName}");
+            if (in_array($index, $primaryIndices, true)) {
+                continue;
             }
+
+            // Two columns under the same heading, or an unheaded one, must not
+            // land on the same key - the second would quietly replace the first.
+            $fieldName = $this->sanitizeFieldName($header);
+            if ($fieldName === '') {
+                $fieldName = 'column_'.($index + 1);
+            }
+            if (isset($extra[$fieldName])) {
+                $fieldName .= '_'.($index + 1);
+            }
+
+            $extra[$fieldName] = $index;
+            Log::debug("Extra field: '{$header}' -> {$fieldName}");
         }
 
         // Check for missing required fields
@@ -673,6 +706,7 @@ public function preview(Request $request)
 
         return [
             'mapped' => $mapped,
+            'alternates' => $alternates,
             'extra' => $extra,
             'missing_required' => $missingRequired
         ];
@@ -834,7 +868,10 @@ public function preview(Request $request)
 
         // Map standard fields
         foreach ($columnMapping['mapped'] as $field => $columnIndex) {
-            if (! isset($row[$columnIndex])) {
+            // A row that ends early has no cell at this index at all. That is
+            // not a reason to skip the field: a fallback column may still
+            // carry it, so let it fall through to the lookup below.
+            if (! isset($row[$columnIndex]) && ($columnMapping['alternates'][$field] ?? []) === []) {
                 continue;
             }
 
@@ -842,7 +879,7 @@ public function preview(Request $request)
             // reading off the device. Keep it, clearly labelled, but never let
             // it become the device's state - see FIELDS_THE_OFFICE_CANNOT_SET.
             if (in_array($field, self::FIELDS_THE_OFFICE_CANNOT_SET, true)) {
-                $asWritten = $this->cleanValue($row[$columnIndex]);
+                $asWritten = $this->cleanValue($row[$columnIndex] ?? null);
                 if ($asWritten !== null && $asWritten !== '') {
                     $extraFields['sheet_'.$field] = $asWritten;
                 }
@@ -850,7 +887,24 @@ public function preview(Request $request)
                 continue;
             }
 
-            $value = $this->processFieldValue($row[$columnIndex], $field);
+            $value = isset($row[$columnIndex])
+                ? $this->processFieldValue($row[$columnIndex], $field)
+                : null;
+
+            // Where the sheet gave the same thing in more than one column,
+            // fall back through the rest until one of them has a value.
+            if ($value === null) {
+                foreach ($columnMapping['alternates'][$field] ?? [] as $alternateIndex) {
+                    if (! isset($row[$alternateIndex])) {
+                        continue;
+                    }
+                    $value = $this->processFieldValue($row[$alternateIndex], $field);
+                    if ($value !== null) {
+                        break;
+                    }
+                }
+            }
+
             if ($value !== null) {
                 $dbField = self::FIELD_TEMPLATE[$field]['database_field'];
                 $data[$dbField] = $value;
@@ -866,6 +920,14 @@ public function preview(Request $request)
                 }
             }
         }
+
+        // Region and province are the same thing here: the `regions` table
+        // holds Zimbabwe's ten provinces, and that list is what the Region
+        // dropdown offers and what every filter, the dashboard and job
+        // assignment compare against. A sheet usually names only one of the
+        // two, so fill each from the other rather than leaving the one the
+        // system actually reads empty.
+        TerminalLocation::pair($data);
 
         // Kept beside the record. Handed over as an array, not a JSON string:
         // the model casts this column, so encoding it here would store a

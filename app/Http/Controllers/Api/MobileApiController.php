@@ -70,7 +70,12 @@ class MobileApiController extends Controller
                     'contact_person' => $terminal->merchant_contact_person,
                     'phone'          => $terminal->merchant_phone,
                     'address'        => $terminal->physical_address,
-                    'region'         => $terminal->region->name ?? null,
+                    // `region` is a column, not a relation: the attribute wins
+                    // over the belongsTo of the same name, so reading ->name
+                    // off it was reading a property of a string and handing
+                    // the tablet null for every device. `region_name` prefers
+                    // the regions row and falls back to the column.
+                    'region'         => $terminal->region_name,
                     'client'         => $terminal->client->name ?? null,
                     'current_status' => $terminal->current_status,
                     'last_visit'     => $terminal->latestVisit

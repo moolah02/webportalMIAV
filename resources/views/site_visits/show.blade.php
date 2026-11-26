@@ -387,10 +387,13 @@
                     <dd>{{ $visit->posTerminal->physical_address }}</dd>
                 </dl>
                 @endif
-                @if($visit->posTerminal->region ?? false)
+                {{-- `region` is a column on pos_terminals as well as the name
+                     of a relation, and the column wins, so ->region->name was
+                     reading a property off a string and printing nothing. --}}
+                @if($visit->posTerminal->region_name ?? false)
                 <dl class="ss-item">
                     <dt>Region</dt>
-                    <dd>{{ $visit->posTerminal->region->name }}</dd>
+                    <dd>{{ $visit->posTerminal->region_name }}</dd>
                 </dl>
                 @endif
                 @if($visit->posTerminal->client)

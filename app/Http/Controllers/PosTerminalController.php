@@ -9,6 +9,7 @@ use App\Models\ImportMapping;
 use App\Models\Category;
 use App\Models\JobAssignment;
 use App\Models\VisitTerminal;
+use App\Support\TerminalLocation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Facade;
@@ -73,13 +74,10 @@ class PosTerminalController extends Controller
         // never set or default it. Ignore any status sent from the web form.
         unset($validated['status'], $validated['current_status']);
 
-        // Sync region_id FK from region name
-        if (!empty($validated['region'])) {
-            $regionRecord = Region::where('name', $validated['region'])->first();
-            if ($regionRecord) {
-                $validated['region_id'] = $regionRecord->id;
-            }
-        }
+        // Region and province are one idea with two column names, so the form
+        // asks for it once (the Region dropdown) and the other is kept in step
+        // here. Also resolves the region_id the job-assignment screens read.
+        TerminalLocation::pair($validated);
 
         PosTerminal::create($validated);
 
@@ -230,13 +228,8 @@ public function getFilteredStats(Request $request)
         // never change it. Ignore any status sent from the web form.
         unset($validated['status'], $validated['current_status']);
 
-        // Sync region_id FK from region name
-        if (!empty($validated['region'])) {
-            $regionRecord = Region::where('name', $validated['region'])->first();
-            if ($regionRecord) {
-                $validated['region_id'] = $regionRecord->id;
-            }
-        }
+        // Region and province are one idea with two column names - see store().
+        TerminalLocation::pair($validated);
 
         $posTerminal->update($validated);
 

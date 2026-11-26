@@ -31,6 +31,7 @@
 .pt-form .ui-hint { font-size: 12px; margin: 5px 0 0; }
 .pt-form .pt-req { color: var(--mv-crit); }
 .pt-form .pt-error { margin: 5px 0 0; font-size: 12px; color: var(--mv-crit); }
+.pt-form .pt-hint { margin: 5px 0 0; font-size: 12px; color: var(--mv-muted); }
 .pt-form .pt-readonly { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 1px dashed var(--mv-line-strong); border-radius: 8px; background: var(--mv-surface-2); color: var(--mv-muted); font-size: 13.5px; cursor: not-allowed; }
 .pt-form .pt-form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 </style>
@@ -161,22 +162,26 @@
         <section class="ui-card pt-section">
             <div class="ui-card-header"><h2>Location Information</h2></div>
             <div class="ui-card-body pt-grid pt-grid-3">
+                {{-- Region is the province. There used to be a separate
+                     Province box here that copied whatever Region was set to,
+                     so the two could never disagree and nobody could tell what
+                     the second one was for. Region is the field the device
+                     list, the dashboard and job assignment all read; the
+                     province column is kept in step on save. --}}
                 <div>
                     <label class="ui-label">Region</label>
-                    <select name="region" class="ui-select" onchange="document.getElementById('edit_province').value=this.value">
+                    <select name="region" class="ui-select">
                         <option value="">Select Region</option>
                         @foreach($regions as $reg)
                             <option value="{{ $reg }}" {{ old('region', $posTerminal->region) == $reg ? 'selected' : '' }}>{{ $reg }}</option>
                         @endforeach
                     </select>
+                    <p class="pt-hint">The province the device sits in. Work is assigned and filtered by this.</p>
                 </div>
                 <div>
                     <label class="ui-label">City</label>
-                    <input type="text" name="city" value="{{ old('city', $posTerminal->city) }}" placeholder="e.g., Harare" class="ui-input">
-                </div>
-                <div>
-                    <label class="ui-label">Province</label>
-                    <input type="text" name="province" id="edit_province" value="{{ old('province', $posTerminal->province) }}" placeholder="e.g., Harare Province" class="ui-input">
+                    <input type="text" name="city" value="{{ old('city', $posTerminal->city) }}" placeholder="e.g., Gweru" class="ui-input">
+                    <p class="pt-hint">The town, not the province.</p>
                 </div>
                 <div class="pt-span-all">
                     <label class="ui-label">Physical Address</label>
