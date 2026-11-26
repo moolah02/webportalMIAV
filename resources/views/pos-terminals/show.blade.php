@@ -241,13 +241,13 @@ $statusBadge = [
                     <dd>{{ $posTerminal->business_type ?: '—' }}</dd>
                 </div>
                 <div>
-                    <dt>Region</dt>
-                    <dd>{{ $posTerminal->region ?: '—' }}</dd>
+                    <dt>Location</dt>
+                    <dd>{{ $posTerminal->region_name ?: '—' }}</dd>
                 </div>
-                @if($posTerminal->city || $posTerminal->province)
+                @if($posTerminal->city)
                 <div>
-                    <dt>City / Province</dt>
-                    <dd>{{ $posTerminal->city ?? '' }}@if($posTerminal->city && $posTerminal->province), @endif{{ $posTerminal->province ?? '' }}</dd>
+                    <dt>City</dt>
+                    <dd>{{ $posTerminal->city }}</dd>
                 </div>
                 @endif
             </dl>

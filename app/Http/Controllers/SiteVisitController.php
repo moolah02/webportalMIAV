@@ -84,7 +84,7 @@ class SiteVisitController extends Controller
             'serial_number'  => $t->serial_number,
             'address'        => $t->physical_address,
             'city'           => $t->city,
-            'province'       => $t->province,
+            'region'         => $t->region,
             'area'           => $t->area,
             'contact_person' => $t->merchant_contact_person ?? $t->site_contact_person,
             'contact_phone'  => $t->merchant_phone ?? $t->site_contact_number,
@@ -127,7 +127,7 @@ class SiteVisitController extends Controller
                     'serial'        => $t->serial_number,
                     'address'       => $t->physical_address,
                     'city'          => $t->city,
-                    'province'      => $t->province,
+                    'region'        => $t->region,
                 ];
             })
             ->values();

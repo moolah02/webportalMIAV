@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\PosTerminal;
+use App\Support\TerminalLocation;
 use App\Services\TerminalLifecycle;
 use Illuminate\Http\Request;
 
@@ -166,13 +167,16 @@ class TerminalLifecycleController extends Controller
             'physical_address' => ['nullable', 'string', 'max:1000'],
             'city' => ['nullable', 'string', 'max:255'],
             'region' => ['nullable', 'string', 'max:255'],
-            'province' => ['nullable', 'string', 'max:255'],
             'area' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $notes = $data['notes'] ?? null;
         unset($data['notes']);
+
+        // The form asks for the location once. Province is the same thing
+        // under a second column name, kept in step here.
+        TerminalLocation::pair($data);
 
         $this->lifecycle->deploy(
             $posTerminal,

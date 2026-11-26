@@ -275,7 +275,7 @@
                                 <li>Phone Number</li>
                                 <li>Email Address</li>
                                 <li>Physical Address</li>
-                                <li>City, Province, Region</li>
+                                <li>City, and Location (a Region or a Province column &mdash; either one)</li>
                             </ul>
                         </div>
                         <div>

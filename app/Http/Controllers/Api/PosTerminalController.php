@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\PosTerminal;
+use App\Support\TerminalLocation;
 use App\Models\Client;
 use App\Models\Ticket;
 use App\Models\ActivityLog;
@@ -322,6 +323,12 @@ public function store(Request $request)
     // Left unset, the effective status falls back to the lifecycle column
     // until a technician actually reports what they found.
     $data['source'] = $data['source'] ?? 'field_discovery';
+
+    // Region and province are one idea with two column names, and `region` is
+    // the one the portal reads. A device discovered in the field should land
+    // with both set and its region_id resolved, exactly as an imported or
+    // hand-entered one does.
+    TerminalLocation::pair($data);
 
     $terminal = PosTerminal::create($data);
 

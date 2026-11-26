@@ -162,7 +162,7 @@
                     $t->merchant_name, $t->terminal_id,
                     $t->terminal_model ?? '', $t->serial_number ?? '',
                     $t->physical_address ?? $t->address ?? '',
-                    $t->city ?? '', $t->province ?? ''
+                    $t->city ?? '', $t->region ?? ''
                 ])));
                 $statusText = $latestVisit ? ($latestVisit->terminal_status_during_visit ?? $latestVisit->status) : null;
                 @endphp
@@ -175,7 +175,7 @@
                     <td class="mv-mono">{{ $t->serial_number ?? '—' }}</td>
                     <td class="sd-addr" title="{{ $t->physical_address ?? $t->address ?? '' }}">{{ $t->physical_address ?? $t->address ?? '—' }}</td>
                     <td>
-                        {{ $t->city ?? '—' }}@if($t->province), <span class="sd-muted">{{ $t->province }}</span>@endif
+                        {{ $t->city ?? '—' }}@if($t->region), <span class="sd-muted">{{ $t->region }}</span>@endif
                     </td>
                     <td>
                         @if($statusText)
@@ -287,14 +287,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const newRow = document.createElement('tr');
       newRow.className = 'terminal-row';
       newRow.dataset.terminalId = t.id;
-      newRow.dataset.searchable = [t.merchant_name, t.terminal_id, t.terminal_model, t.serial_number, t.address, t.city, t.province].filter(Boolean).join(' ').toLowerCase();
+      newRow.dataset.searchable = [t.merchant_name, t.terminal_id, t.terminal_model, t.serial_number, t.address, t.city, t.region].filter(Boolean).join(' ').toLowerCase();
       newRow.innerHTML = `
         <td><span class="mv-mono sd-tid">${t.terminal_id ?? '—'}</span></td>
         <td>${t.merchant_name ?? '—'}</td>
         <td>${t.terminal_model ?? '—'}</td>
         <td class="mv-mono">${t.serial_number ?? '—'}</td>
         <td class="sd-addr">${t.address ?? '—'}</td>
-        <td>${t.city ?? '—'}${t.province ? ', <span class="sd-muted">'+t.province+'</span>' : ''}</td>
+        <td>${t.city ?? '—'}${t.region ? ', <span class="sd-muted">'+t.region+'</span>' : ''}</td>
         <td><span class="sd-muted">Not visited</span></td>
         <td>
           <div class="sd-actions">

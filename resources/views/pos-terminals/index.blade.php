@@ -427,9 +427,9 @@
             </select>
         </div>
         <div class="filter-group">
-            <label class="ui-label pt-sr" for="filter-region">Region</label>
+            <label class="ui-label pt-sr" for="filter-region">Location</label>
             <select name="region" id="filter-region" class="ui-select" onchange="this.form.submit()">
-                <option value="">All Regions</option>
+                <option value="">All Locations</option>
                 @foreach($regions as $region)
                     <option value="{{ $region }}" {{ request('region') == $region ? 'selected' : '' }}>{{ $region }}</option>
                 @endforeach
@@ -722,7 +722,7 @@
                 </ul>
                 <p class="pt-side-label">Optional</p>
                 <p class="pt-side-text">
-                    Contact Person, Phone, Email, Address, City, Province, Region,
+                    Contact Person, Phone, Email, Address, City, Location (a Region or Province column),
                     Business Type, Terminal Model, Serial Number, Installation Date, Status, etc.
                 </p>
             </div>

@@ -151,14 +151,14 @@ $canManage = $me->hasPermission('manage_jobs') || $me->hasPermission('all');
                 $ts = strtolower($t->current_status ?? $t->status ?? 'unknown');
                 $tb = ['active' => 'is-good', 'inactive' => 'is-crit', 'offline' => 'is-crit', 'faulty' => 'is-crit', 'maintenance' => 'is-warn'][$ts] ?? '';
                 @endphp
-                <tr class="terminal-row" data-searchable="{{ strtolower($t->merchant_name . ' ' . $t->terminal_id . ' ' . ($t->physical_address ?? $t->address ?? '') . ' ' . ($t->city ?? '') . ' ' . ($t->province ?? '')) }}">
+                <tr class="terminal-row" data-searchable="{{ strtolower($t->merchant_name . ' ' . $t->terminal_id . ' ' . ($t->physical_address ?? $t->address ?? '') . ' ' . ($t->city ?? '') . ' ' . ($t->region ?? '')) }}">
                     <td>
                         <div class="js-strong">{{ $t->merchant_name ?? '—' }}</div>
                         <div class="js-sub">{{ $t->client->company_name ?? '—' }}</div>
                     </td>
                     <td><span class="js-mono">{{ $t->terminal_id }}</span></td>
                     <td>{{ $t->physical_address ?? $t->address ?? '—' }}</td>
-                    <td>{{ $t->city ?? '—' }}@if($t->province)<span class="js-muted">, {{ $t->province }}</span>@endif</td>
+                    <td>{{ $t->city ?? '—' }}@if($t->region)<span class="js-muted">, {{ $t->region }}</span>@endif</td>
                     <td><span class="js-chip {{ $tb }}">{{ \Illuminate\Support\Str::headline($t->current_status ?? $t->status ?? 'unknown') }}</span></td>
                 </tr>
                 @endforeach

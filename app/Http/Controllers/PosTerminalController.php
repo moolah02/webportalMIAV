@@ -62,7 +62,6 @@ class PosTerminalController extends Controller
             'physical_address' => 'nullable|string',
             'region' => 'nullable|string',
             'city' => 'nullable|string',
-            'province' => 'nullable|string',
             'business_type' => 'nullable|string',
             'terminal_model' => 'nullable|string',
             'serial_number' => 'nullable|string',
@@ -162,10 +161,6 @@ public function getFilteredStats(Request $request)
         $query->where('pos_terminals.city', $request->city);
     }
 
-    if ($request->filled('province')) {
-        $query->where('pos_terminals.province', $request->province);
-    }
-
     $stats = $this->calculateFilteredStats($query);
     $chartData = $this->generateChartData($query->get());
 
@@ -214,7 +209,6 @@ public function getFilteredStats(Request $request)
             'physical_address' => 'nullable|string',
             'region' => 'nullable|string',
             'city' => 'nullable|string',
-            'province' => 'nullable|string',
             'business_type' => 'nullable|string',
             'terminal_model' => 'nullable|string',
             'serial_number' => 'nullable|string',
@@ -346,10 +340,6 @@ public function getFilteredStats(Request $request)
             $query->where('pos_terminals.city', $request->string('city'));
         }
 
-        if ($request->filled('province')) {
-            $query->where('pos_terminals.province', $request->string('province'));
-        }
-
         $filename = 'pos_terminals_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
 
         return response()->streamDownload(function () use ($query) {
@@ -368,8 +358,7 @@ public function getFilteredStats(Request $request)
                 'Email',
                 'Address',
                 'City',
-                'Province',
-                'Region',
+                'Location',
                 'Business Type',
                 'Terminal Model',
                 'Serial Number',
@@ -393,7 +382,6 @@ public function getFilteredStats(Request $request)
                               $terminal->merchant_email,
                               $terminal->physical_address,
                               $terminal->city,
-                              $terminal->province,
                               $terminal->region,
                               $terminal->business_type,
                               $terminal->terminal_model,
@@ -659,7 +647,6 @@ public function storeColumnMapping(Request $request)
             $clients      = Client::orderBy('company_name')->get();
             $regions      = Region::orderBy('name')->pluck('name');
             $cities       = PosTerminal::distinct()->pluck('city')->filter()->sort();
-            $provinces    = PosTerminal::distinct()->pluck('province')->filter()->sort();
             $statusOptions = ['active' => 'Active', 'offline' => 'Offline', 'faulty' => 'Faulty', 'maintenance' => 'Maintenance'];
             $mappings     = collect();
             $terminals    = $discoveries; // satisfies compact; view uses $discoveries directly
@@ -669,7 +656,7 @@ public function storeColumnMapping(Request $request)
 
             return view('pos-terminals.index', compact(
                 'discoveries', 'discoveryInfo', 'terminals', 'clients', 'regions', 'cities',
-                'provinces', 'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount', 'stockCount'
+                'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount', 'stockCount'
             ));
         }
 
@@ -709,17 +696,12 @@ public function storeColumnMapping(Request $request)
             $query->where('pos_terminals.city', $request->city);
         }
 
-        if ($request->filled('province')) {
-            $query->where('pos_terminals.province', $request->province);
-        }
-
         $stats     = $this->calculateFilteredStats(clone $query);
         $terminals = $query->paginate(20);
 
         $clients      = Client::orderBy('company_name')->get();
         $regions      = Region::orderBy('name')->pluck('name');
         $cities       = PosTerminal::distinct()->pluck('city')->filter()->sort();
-        $provinces    = PosTerminal::distinct()->pluck('province')->filter()->sort();
         $statusOptions = ['active' => 'Active', 'offline' => 'Offline', 'faulty' => 'Faulty', 'maintenance' => 'Maintenance'];
         $discoveries  = collect(); // empty for default tab
 
@@ -738,7 +720,7 @@ public function storeColumnMapping(Request $request)
 
         return view('pos-terminals.index', compact(
             'terminals', 'discoveries', 'clients', 'regions', 'cities',
-            'provinces', 'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount', 'stockCount'
+            'statusOptions', 'mappings', 'stats', 'fieldDiscoveryCount', 'stockCount'
         ));
     }
 
@@ -1031,10 +1013,6 @@ public function storeColumnMapping(Request $request)
 
             if ($request->filled('city')) {
                 $query->where('pos_terminals.city', $request->city);
-            }
-
-            if ($request->filled('province')) {
-                $query->where('pos_terminals.province', $request->province);
             }
 
             $stats = $this->calculateFilteredStats(clone $query);

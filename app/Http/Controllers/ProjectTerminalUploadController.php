@@ -478,7 +478,7 @@ class ProjectTerminalUploadController extends Controller
             // Full template for creating new terminals
             $headers = [
                 'terminal_id', 'merchant_name', 'merchant_phone', 'physical_address',
-                'city', 'region', 'province', 'status', 'inclusion_reason', 'notes'
+                'city', 'region', 'status', 'inclusion_reason', 'notes'
             ];
             $filename = 'project_terminals_full_template_' . date('Y-m-d') . '.csv';
 

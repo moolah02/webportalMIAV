@@ -286,23 +286,13 @@
                                 </div>
 
                                 <div class="field-mapping">
-                                    <label class="field-label">Province</label>
-                                    <input type="number"
-                                           name="column_mappings[province]"
-                                           placeholder="Column index"
-                                           min="0" max="50"
-                                           class="column-input">
-                                    <small class="field-help">Province or state</small>
-                                </div>
-
-                                <div class="field-mapping">
-                                    <label class="field-label">Region</label>
+                                    <label class="field-label">Location</label>
                                     <input type="number"
                                            name="column_mappings[region]"
                                            placeholder="Column index"
                                            min="0" max="50"
                                            class="column-input">
-                                    <small class="field-help">Service region</small>
+                                    <small class="field-help">A region or a province column &mdash; either one</small>
                                 </div>
                             </div>
                         </div>
@@ -566,8 +556,9 @@ function loadDefaultMapping() {
         'merchant_name': 4,
         'physical_address': 5,
         'city': 6,
-        'province': 7,
         'merchant_phone': 8,
+        // A province column maps straight onto Location: they are the same
+        // thing, and `region` is the column the system reads.
         'region': 9,
         'installation_date': 10,
         'merchant_contact_person': 11,

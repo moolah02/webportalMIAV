@@ -11,7 +11,7 @@ class ReportQueryBuilder
     private const ALLOWED_TABLES = [
         'pos_terminals' => [
             'id', 'terminal_id', 'client_id', 'merchant_name', 'merchant_contact_person',
-            'merchant_phone', 'physical_address', 'region', 'city', 'province', 'area', 'business_type',
+            'merchant_phone', 'physical_address', 'region', 'city', 'area', 'business_type',
             'installation_date', 'terminal_model', 'serial_number', 'status', 'last_service_date',
             'created_at', 'updated_at', 'current_status', 'source'
         ],
@@ -873,7 +873,7 @@ class ReportQueryBuilder
                 'merchant_contact_person' => 'Main contact person at the merchant',
                 'merchant_phone'     => 'Phone number for the merchant',
                 'physical_address'   => 'Street address where the terminal is located',
-                'region'             => 'Region or province the terminal is in',
+                'region'             => 'Location of the terminal - one of the ten provinces',
                 'city'               => 'City where the terminal is located',
                 'province'           => 'Province the terminal is in',
                 'area'               => 'Area or district within the city',

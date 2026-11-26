@@ -110,16 +110,12 @@
                     @error('area')<p class="td-err">{{ $message }}</p>@enderror
                 </div>
 
+                {{-- One location field. The separate Province box is gone;
+                     the province column is kept in step on save. --}}
                 <div>
-                    <label class="td-label" for="region">Region</label>
+                    <label class="td-label" for="region">Location</label>
                     <input type="text" name="region" id="region" value="{{ old('region') }}" class="ui-input">
                     @error('region')<p class="td-err">{{ $message }}</p>@enderror
-                </div>
-
-                <div>
-                    <label class="td-label" for="province">Province</label>
-                    <input type="text" name="province" id="province" value="{{ old('province') }}" class="ui-input">
-                    @error('province')<p class="td-err">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="td-span">

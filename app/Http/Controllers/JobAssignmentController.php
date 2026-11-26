@@ -755,7 +755,7 @@ public function generateReport($assignmentId)
                     'terminal_id'   => $t->terminal_id,
                     'merchant_name' => $t->merchant_name,
                     'city'          => $t->city,
-                    'province'      => $t->province,
+                    'region'        => $t->region,
                     'status'        => $t->current_status ?? $t->status,
                 ];
             });

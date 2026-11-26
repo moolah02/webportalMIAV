@@ -58,7 +58,6 @@ class ReportController extends Controller
                         ['name' => 'terminal_id', 'type' => 'string', 'label' => 'Terminal Code'],
                         ['name' => 'merchant_name', 'type' => 'string', 'label' => 'Merchant Name'],
                         ['name' => 'city', 'type' => 'string', 'label' => 'City'],
-                        ['name' => 'province', 'type' => 'string', 'label' => 'Province'],
                         ['name' => 'status', 'type' => 'string', 'label' => 'Status'],
                         ['name' => 'terminal_model', 'type' => 'string', 'label' => 'Terminal Model'],
                         ['name' => 'installation_date', 'type' => 'date', 'label' => 'Installation Date']

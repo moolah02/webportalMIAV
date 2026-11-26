@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Employee;
 use App\Models\JobAssignment;
 use App\Models\Region;
+use App\Support\TerminalLocation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -97,46 +98,30 @@ private function getCurrentWorkload($technician)
     {
         $result = [];
 
-        foreach ($hierarchy as $province) {
-            $provinceData = [
-                'id' => $province['id'],
-                'name' => $province['name'],
-                'type' => 'province',
-                'terminal_count' => $province['terminal_count'],
-                'assigned_count' => $province['assigned_count'],
+        foreach ($hierarchy as $location) {
+            $locationData = [
+                'id' => $location['id'],
+                'name' => $location['name'],
+                'type' => 'location',
+                'terminal_count' => $location['terminal_count'],
+                'assigned_count' => $location['assigned_count'],
                 'children' => [],
-                'collapsed' => $province['collapsed']
+                'collapsed' => $location['collapsed']
             ];
 
-            foreach ($province['children'] as $city) {
-                $cityData = [
+            foreach ($location['children'] as $city) {
+                $locationData['children'][] = [
                     'id' => $city['id'],
                     'name' => $city['name'],
                     'type' => 'city',
                     'terminal_count' => $city['terminal_count'],
                     'assigned_count' => $city['assigned_count'],
-                    'children' => [],
+                    'terminals' => $city['terminals'],
                     'collapsed' => $city['collapsed']
                 ];
-
-                foreach ($city['children'] as $region) {
-                    $regionData = [
-                        'id' => $region['id'],
-                        'name' => $region['name'],
-                        'type' => 'region',
-                        'terminal_count' => $region['terminal_count'],
-                        'assigned_count' => $region['assigned_count'],
-                        'terminals' => $region['terminals'],
-                        'collapsed' => $region['collapsed']
-                    ];
-
-                    $cityData['children'][] = $regionData;
-                }
-
-                $provinceData['children'][] = $cityData;
             }
 
-            $result[] = $provinceData;
+            $result[] = $locationData;
         }
 
         return $result;
@@ -259,7 +244,7 @@ private function getCurrentWorkload($technician)
 
             // Group terminals by location for efficient routing
             $terminalGroups = $unassignedTerminals->groupBy(function($terminal) {
-                return $terminal->province . '|' . $terminal->city;
+                return $terminal->region_name . '|' . $terminal->city;
             });
 
             foreach ($terminalGroups as $location => $terminals) {
@@ -522,7 +507,7 @@ $workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk-
             'total_terminals' => $terminals->count(),
             'assigned_terminals' => $assignedCount,
             'unassigned_terminals' => $terminals->count() - $assignedCount,
-            'provinces' => $terminals->pluck('province')->unique()->filter()->count(),
+            'locations' => $terminals->pluck('region')->unique()->filter()->count(),
             'cities' => $terminals->pluck('city')->unique()->filter()->count(),
             'clients' => $terminals->pluck('client_id')->unique()->count(),
             'status_breakdown' => $terminals->groupBy('current_status')->map->count(),
@@ -541,7 +526,7 @@ $workload[$bestTechnician->id] = ($workload[$bestTechnician->id] ?? 0) + $chunk-
             'total_terminals' => 0,
             'assigned_terminals' => 0,
             'unassigned_terminals' => 0,
-            'provinces' => 0,
+            'locations' => 0,
             'cities' => 0,
             'clients' => 0,
             'status_breakdown' => [],
@@ -618,16 +603,18 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
         ->toArray();
 
     foreach ($terminals as $terminal) {
-        $province = $terminal->province ?: 'Unknown Province';
+        // Location -> City -> terminals. This used to be
+        // Province -> City -> Region, but the regions table holds the ten
+        // provinces, so the first and third levels were the same name
+        // printed twice.
+        $location = $terminal->region_name ?: 'Unknown Location';
         $city = $terminal->city ?: 'Unknown City';
-        $region = $terminal->regionModel?->name ?: $terminal->area ?: 'Unknown Region';
 
-        // Initialize hierarchy levels
-        if (!isset($hierarchy[$province])) {
-            $hierarchy[$province] = [
-                'id' => 'province-' .  Str::slug($province),
-                'name' => strtoupper($province),
-                'type' => 'province',
+        if (!isset($hierarchy[$location])) {
+            $hierarchy[$location] = [
+                'id' => 'location-' . Str::slug($location),
+                'name' => strtoupper($location),
+                'type' => 'location',
                 'terminal_count' => 0,
                 'assigned_count' => 0,
                 'children' => [],
@@ -635,23 +622,11 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
             ];
         }
 
-        if (!isset($hierarchy[$province]['children'][$city])) {
-            $hierarchy[$province]['children'][$city] = [
-                'id' => 'city-' . Str::slug($city . '-' . $province),
+        if (!isset($hierarchy[$location]['children'][$city])) {
+            $hierarchy[$location]['children'][$city] = [
+                'id' => 'city-' . Str::slug($city . '-' . $location),
                 'name' => $city,
                 'type' => 'city',
-                'terminal_count' => 0,
-                'assigned_count' => 0,
-                'children' => [],
-                'collapsed' => false
-            ];
-        }
-
-        if (!isset($hierarchy[$province]['children'][$city]['children'][$region])) {
-            $hierarchy[$province]['children'][$city]['children'][$region] = [
-                'id' => 'region-' . Str::slug($region . '-' . $city),
-                'name' => $region,
-                'type' => 'region',
                 'terminal_count' => 0,
                 'assigned_count' => 0,
                 'terminals' => [],
@@ -672,7 +647,7 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
             ],
             'address' => $terminal->physical_address,
             'city' => $terminal->city,
-            'province' => $terminal->province,
+            'region' => $terminal->region_name,
             'area' => $terminal->area,
             'status' => $terminal->current_status,
             'phone' => $terminal->merchant_phone,
@@ -681,17 +656,15 @@ private function buildTerminalHierarchy($terminals, $projectIds = [])
             'type' => 'terminal'
         ];
 
-        $hierarchy[$province]['children'][$city]['children'][$region]['terminals'][] = $terminalData;
+        $hierarchy[$location]['children'][$city]['terminals'][] = $terminalData;
 
         // Update counters
-        $hierarchy[$province]['terminal_count']++;
-        $hierarchy[$province]['children'][$city]['terminal_count']++;
-        $hierarchy[$province]['children'][$city]['children'][$region]['terminal_count']++;
+        $hierarchy[$location]['terminal_count']++;
+        $hierarchy[$location]['children'][$city]['terminal_count']++;
 
         if ($isAssigned) {
-            $hierarchy[$province]['assigned_count']++;
-            $hierarchy[$province]['children'][$city]['assigned_count']++;
-            $hierarchy[$province]['children'][$city]['children'][$region]['assigned_count']++;
+            $hierarchy[$location]['assigned_count']++;
+            $hierarchy[$location]['children'][$city]['assigned_count']++;
         }
     }
 
@@ -896,26 +869,21 @@ private function getOrCreateRegionId($terminal)
         return $terminal->region_id;
     }
 
-    // If no region_id, try to find or create based on area/location
-    $regionName = $terminal->area ?: $terminal->city ?: 'Unknown Region';
+    // Resolve it from the device's own location, and only ever to one of
+    // the regions already on file. This used to invent a region named
+    // after the device's area or city - which would have put town names
+    // like "Karoi" into the Location dropdown alongside the ten
+    // provinces. Nothing calls this method today; it is left safe rather
+    // than left as a trap.
+    $regionId = TerminalLocation::regionId($terminal->region ?: $terminal->province);
 
-    // Try to find existing region
-    $region = Region::where('name', $regionName)->first();
-
-    if (!$region) {
-        // Create a new region
-        $region = Region::create([
-            'name' => $regionName,
-            'province' => $terminal->province ?: 'Unknown Province',
-            'status' => 'active',
-            'created_by' => Auth::id()
-        ]);
+    if ($regionId === null) {
+        return null;
     }
 
-    // Update the terminal with the region_id for future use
-    $terminal->update(['region_id' => $region->id]);
+    $terminal->update(['region_id' => $regionId]);
 
-    return $region->id;
+    return $regionId;
 }
 
 // app/Http/Controllers/TerminalDeploymentController.php
@@ -1137,7 +1105,7 @@ private function prepareAssignmentData($request)
                 'terminal_id' => $terminal->terminal_id,
                 'merchant_name' => $terminal->merchant_name,
                 'client_name' => $terminal->client->company_name ?? 'Unknown',
-                'province' => $terminal->province,
+                'location' => $terminal->region_name,
                 'city' => $terminal->city,
                 'area' => $terminal->area,
                 'address' => $terminal->physical_address,
@@ -1220,7 +1188,7 @@ private function exportToCsv($assignments)
             'Terminal ID',
             'Merchant Name',
             'Client Name',
-            'Province',
+            'Location',
             'City',
             'Area',
             'Address',
@@ -1236,7 +1204,7 @@ private function exportToCsv($assignments)
                 $assignment['terminal_id'],
                 $assignment['merchant_name'],
                 $assignment['client_name'],
-                $assignment['province'],
+                $assignment['location'],
                 $assignment['city'],
                 $assignment['area'],
                 $assignment['address'],

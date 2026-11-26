@@ -377,9 +377,9 @@
                 <!-- Filters -->
                 <div class="dp-filter-grid">
                     <div>
-                        <label class="dp-label" for="provinceFilter">Province</label>
-                        <select id="provinceFilter" onchange="applyFilters()" class="deployment-select">
-                            <option value="">All Provinces</option>
+                        <label class="dp-label" for="locationFilter">Location</label>
+                        <select id="locationFilter" onchange="applyFilters()" class="deployment-select">
+                            <option value="">All Locations</option>
                         </select>
                     </div>
                     <div>
@@ -389,9 +389,9 @@
                         </select>
                     </div>
                     <div>
-                        <label class="dp-label" for="regionFilter">Region</label>
-                        <select id="regionFilter" onchange="applyFilters()" class="deployment-select">
-                            <option value="">All Regions</option>
+                        <label class="dp-label" for="areaFilter">Area</label>
+                        <select id="areaFilter" onchange="applyFilters()" class="deployment-select">
+                            <option value="">All Areas</option>
                         </select>
                     </div>
                     <div>
@@ -427,9 +427,9 @@
                             <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" aria-label="Select all on this page"></th>
                             <th>Terminal ID</th>
                             <th>Merchant Name</th>
-                            <th>Province</th>
+                            <th>Location</th>
                             <th>City</th>
-                            <th>Region</th>
+                            <th>Area</th>
                             <th class="dp-c">Assignment</th>
                             <th class="dp-c">Status</th>
                             <th class="dp-c">Actions</th>
@@ -725,9 +725,9 @@ let deploymentState = {
     deploymentDate: null,
     isLoading: false,
     filters: {
-        province: '',
+        location: '',
         city: '',
-        region: '',
+        area: '',
         status: '',
         assignment: '', // New assignment filter
         search: ''
@@ -1435,21 +1435,21 @@ function refreshAssignedTerminals() {
 }
 
 function populateFilterOptions(terminals) {
-    const provinces = new Set();
+    const locations = new Set();
     const cities = new Set();
-    const regions = new Set();
+    const areas = new Set();
 
     terminals.forEach(terminal => {
-        if (terminal.province) provinces.add(terminal.province);
+        if (terminal.region) locations.add(terminal.region);
         if (terminal.city) cities.add(terminal.city);
-        if (terminal.area) regions.add(terminal.area);
+        if (terminal.area) areas.add(terminal.area);
     });
 
-    // Populate Province filter
-    const provinceFilter = document.getElementById('provinceFilter');
-    provinceFilter.innerHTML = '<option value="">All Provinces</option>';
-    Array.from(provinces).sort().forEach(province => {
-        provinceFilter.innerHTML += `<option value="${province}">${province}</option>`;
+    // Populate Location filter
+    const locationFilter = document.getElementById('locationFilter');
+    locationFilter.innerHTML = '<option value="">All Locations</option>';
+    Array.from(locations).sort().forEach(location => {
+        locationFilter.innerHTML += `<option value="${location}">${location}</option>`;
     });
 
     // Populate City filter
@@ -1459,19 +1459,19 @@ function populateFilterOptions(terminals) {
         cityFilter.innerHTML += `<option value="${city}">${city}</option>`;
     });
 
-    // Populate Region filter
-    const regionFilter = document.getElementById('regionFilter');
-    regionFilter.innerHTML = '<option value="">All Regions</option>';
-    Array.from(regions).sort().forEach(region => {
-        regionFilter.innerHTML += `<option value="${region}">${region}</option>`;
+    // Populate Area filter
+    const areaFilter = document.getElementById('areaFilter');
+    areaFilter.innerHTML = '<option value="">All Areas</option>';
+    Array.from(areas).sort().forEach(area => {
+        areaFilter.innerHTML += `<option value="${area}">${area}</option>`;
     });
 }
 
 function applyFilters() {
     // Get filter values
-    deploymentState.filters.province = document.getElementById('provinceFilter').value;
+    deploymentState.filters.location = document.getElementById('locationFilter').value;
     deploymentState.filters.city = document.getElementById('cityFilter').value;
-    deploymentState.filters.region = document.getElementById('regionFilter').value;
+    deploymentState.filters.area = document.getElementById('areaFilter').value;
     deploymentState.filters.status = document.getElementById('statusFilter').value;
     deploymentState.filters.assignment = document.getElementById('assignmentFilter').value;
     deploymentState.filters.search = document.getElementById('searchFilter').value.toLowerCase();
@@ -1484,8 +1484,8 @@ function applyFilters() {
     deploymentState.filteredTerminals = allTerminals.filter(terminal => {
         const terminalId = terminal.id.replace('terminal-', '');
 
-        // Province filter
-        if (deploymentState.filters.province && terminal.province !== deploymentState.filters.province) {
+        // Location filter
+        if (deploymentState.filters.location && terminal.region !== deploymentState.filters.location) {
             return false;
         }
 
@@ -1494,8 +1494,8 @@ function applyFilters() {
             return false;
         }
 
-        // Region filter
-        if (deploymentState.filters.region && terminal.area !== deploymentState.filters.region) {
+        // Area filter
+        if (deploymentState.filters.area && terminal.area !== deploymentState.filters.area) {
             return false;
         }
 
@@ -1520,7 +1520,7 @@ function applyFilters() {
             const searchText = (
                 terminal.terminal_id + ' ' +
                 terminal.merchant_name + ' ' +
-                (terminal.province || '') + ' ' +
+                (terminal.region || '') + ' ' +
                 (terminal.city || '') + ' ' +
                 (terminal.area || '')
             ).toLowerCase();
@@ -1543,56 +1543,56 @@ function applyFilters() {
 }
 
 function updateDependentFilters() {
-    const selectedProvince = deploymentState.filters.province;
+    const selectedLocation = deploymentState.filters.location;
     const selectedCity = deploymentState.filters.city;
 
-    // Update City filter based on Province selection
-    if (selectedProvince) {
+    // Narrow the City list to the chosen Location
+    if (selectedLocation) {
         const cityFilter = document.getElementById('cityFilter');
-        const citiesInProvince = new Set();
+        const citiesInLocation = new Set();
 
         Array.from(deploymentState.allTerminals.values()).forEach(terminal => {
-            if (terminal.province === selectedProvince && terminal.city) {
-                citiesInProvince.add(terminal.city);
+            if (terminal.region === selectedLocation && terminal.city) {
+                citiesInLocation.add(terminal.city);
             }
         });
 
         const currentCity = cityFilter.value;
         cityFilter.innerHTML = '<option value="">All Cities</option>';
-        Array.from(citiesInProvince).sort().forEach(city => {
+        Array.from(citiesInLocation).sort().forEach(city => {
             const selected = city === currentCity ? 'selected' : '';
             cityFilter.innerHTML += `<option value="${city}" ${selected}>${city}</option>`;
         });
 
         // Reset city if it's not in the new list
-        if (currentCity && !citiesInProvince.has(currentCity)) {
+        if (currentCity && !citiesInLocation.has(currentCity)) {
             deploymentState.filters.city = '';
         }
     }
 
-    // Update Region filter based on Province and City selection
-    const regionFilter = document.getElementById('regionFilter');
-    const regionsFiltered = new Set();
+    // Narrow the Area list to the chosen Location and City
+    const areaFilter = document.getElementById('areaFilter');
+    const areasFiltered = new Set();
 
     Array.from(deploymentState.allTerminals.values()).forEach(terminal => {
-        const matchesProvince = !selectedProvince || terminal.province === selectedProvince;
+        const matchesLocation = !selectedLocation || terminal.region === selectedLocation;
         const matchesCity = !deploymentState.filters.city || terminal.city === deploymentState.filters.city;
 
-        if (matchesProvince && matchesCity && terminal.area) {
-            regionsFiltered.add(terminal.area);
+        if (matchesLocation && matchesCity && terminal.area) {
+            areasFiltered.add(terminal.area);
         }
     });
 
-    const currentRegion = regionFilter.value;
-    regionFilter.innerHTML = '<option value="">All Regions</option>';
-    Array.from(regionsFiltered).sort().forEach(region => {
-        const selected = region === currentRegion ? 'selected' : '';
-        regionFilter.innerHTML += `<option value="${region}" ${selected}>${region}</option>`;
+    const currentArea = areaFilter.value;
+    areaFilter.innerHTML = '<option value="">All Areas</option>';
+    Array.from(areasFiltered).sort().forEach(area => {
+        const selected = area === currentArea ? 'selected' : '';
+        areaFilter.innerHTML += `<option value="${area}" ${selected}>${area}</option>`;
     });
 
-    // Reset region if it's not in the new list
-    if (currentRegion && !regionsFiltered.has(currentRegion)) {
-        deploymentState.filters.region = '';
+    // Reset area if it's not in the new list
+    if (currentArea && !areasFiltered.has(currentArea)) {
+        deploymentState.filters.area = '';
     }
 }
 
@@ -1634,7 +1634,7 @@ function renderTerminalTable() {
                 </td>
                 <td><span class="dp-tid">${terminal.terminal_id}</span></td>
                 <td class="dp-merchant">${terminal.merchant_name}</td>
-                <td>${terminal.province || '<span class="dp-muted">Unknown</span>'}</td>
+                <td>${terminal.region || '<span class="dp-muted">Unknown</span>'}</td>
                 <td>${terminal.city || '<span class="dp-muted">Unknown</span>'}</td>
                 <td>${terminal.area || '<span class="dp-muted">Unknown</span>'}</td>
                 <td class="dp-c">
@@ -2270,9 +2270,9 @@ function exportTableData() {
     const data = deploymentState.filteredTerminals.map(terminal => ({
         'Terminal ID': terminal.terminal_id,
         'Merchant Name': terminal.merchant_name,
-        'Province': terminal.province || 'Unknown',
+        'Location': terminal.region || 'Unknown',
         'City': terminal.city || 'Unknown',
-        'Region': terminal.area || 'Unknown',
+        'Area': terminal.area || 'Unknown',
         'Status': terminal.status || 'unknown',
         'Address': terminal.address || '',
         'Phone': terminal.phone || ''

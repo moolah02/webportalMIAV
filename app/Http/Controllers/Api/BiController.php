@@ -129,7 +129,6 @@ class BiController extends Controller
                 'pos_terminals.merchant_name',
                 'pos_terminals.region',
                 'pos_terminals.city',
-                'pos_terminals.province',
                 'pos_terminals.area',
                 'pos_terminals.business_type',
                 'pos_terminals.terminal_model',

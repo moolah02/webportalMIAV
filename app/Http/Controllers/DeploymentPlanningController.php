@@ -149,7 +149,7 @@ class DeploymentPlanningController extends Controller
             'template_name'            => 'required|string|max:255|unique:deployment_templates,template_name',
             'client_id'                => 'required|exists:clients,id', 
             'pos_terminals'            => 'required|string|min:3',
-            'group_by'                 => 'required|in:city,province,area,address',
+            'group_by'                 => 'required|in:city,region,area,address',
             'location_value'           => 'required|string',
             'service_type'             => 'nullable|string',
             'priority'                 => 'nullable|in:low,normal,high,emergency',
@@ -237,7 +237,7 @@ public function getClientLocations($clientId, $locationType)
         // Map the location type to the correct database field
         $fieldMap = [
             'cities' => 'city',
-            'provinces' => 'province', 
+            'locations' => 'region',
             'areas' => 'area',
             'addresses' => 'physical_address'
         ];
@@ -614,31 +614,32 @@ public function getCitiesByClient($clientId)
 }
 
 /**
- * Get provinces for a specific client
+ * The locations a client's devices sit in - the ten provinces, which is what
+ * the `region` column holds and what the Location dropdown offers.
  */
-public function getProvincesByClient($clientId)
+public function getLocationsByClient($clientId)
 {
     try {
-        \Log::info("Getting provinces for client: " . $clientId);
+        \Log::info("Getting locations for client: " . $clientId);
         
-        $provinces = PosTerminal::where('client_id', $clientId)
-            ->whereNotNull('province')
-            ->where('province', '!=', '')
+        $locations = PosTerminal::where('client_id', $clientId)
+            ->whereNotNull('region')
+            ->where('region', '!=', '')
             ->distinct()
-            ->orderBy('province')
-            ->pluck('province')
+            ->orderBy('region')
+            ->pluck('region')
             ->filter()
             ->values();
 
-        \Log::info("Found provinces: " . $provinces->count());
+        \Log::info("Found locations: " . $locations->count());
 
-        return response()->json($provinces);
+        return response()->json($locations);
 
     } catch (\Exception $e) {
-        \Log::error('Error loading provinces: ' . $e->getMessage());
+        \Log::error('Error loading locations: ' . $e->getMessage());
         
         return response()->json([
-            'error' => 'Error loading provinces: ' . $e->getMessage(),
+            'error' => 'Error loading locations: ' . $e->getMessage(),
             'client_id' => $clientId
         ], 500);
     }
@@ -731,8 +732,8 @@ public function getFilteredTerminals(Request $request)
             case 'city':
                 $query->where('city', $filterValue);
                 break;
-            case 'province':
-                $query->where('province', $filterValue);
+            case 'region':
+                $query->where('region', $filterValue);
                 break;
             case 'area':
                 $query->where('area', $filterValue);
@@ -744,7 +745,7 @@ public function getFilteredTerminals(Request $request)
 
         $terminals = $query->select([
     'id', 'terminal_id', 'merchant_name', 'physical_address', 
-    'city', 'province', 'area', 'region', 'merchant_phone'  
+    'city', 'area', 'region', 'merchant_phone'  
       ])->orderBy('terminal_id')->get();
 
         \Log::info("Found terminals: " . $terminals->count());

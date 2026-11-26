@@ -139,27 +139,28 @@
         <section class="ui-card pt-section">
             <div class="ui-card-header"><h2>Location Information</h2></div>
             <div class="ui-card-body pt-grid pt-grid-3">
-                {{-- Region is the province. There used to be a separate
-                     Province box here that copied whatever Region was set to,
-                     so the two could never disagree and nobody could tell what
-                     the second one was for. Region is the field the device
-                     list, the dashboard and job assignment all read; the
-                     province column is kept in step on save. --}}
+                {{-- One location field, asked once. The form used to carry a
+                     Region dropdown and a Province box that JavaScript filled
+                     from it, so the two could never disagree and nobody could
+                     tell what the second one was for. The select still posts
+                     as `region`, which is the column the device list, the
+                     dashboard and job assignment all read; the province column
+                     is kept in step on save by TerminalLocation::pair(). --}}
                 <div>
-                    <label class="ui-label">Region</label>
+                    <label class="ui-label">Location</label>
                     <select name="region" class="ui-select">
-                        <option value="">Select Region</option>
+                        <option value="">Select Location</option>
                         @foreach($regions as $reg)
                             <option value="{{ $reg }}" {{ old('region') == $reg ? 'selected' : '' }}>{{ $reg }}</option>
                         @endforeach
                     </select>
-                    <p class="pt-hint">The province the device sits in. Work is assigned and filtered by this.</p>
+                    <p class="pt-hint">Where the device is. Work is assigned and filtered by this.</p>
                     @error('region')<p class="pt-error">{{ $message }}</p>@enderror
                 </div>
                 <div>
                     <label class="ui-label">City</label>
                     <input type="text" name="city" value="{{ old('city') }}" placeholder="e.g., Gweru" class="ui-input">
-                    <p class="pt-hint">The town, not the province.</p>
+                    <p class="pt-hint">The town.</p>
                     @error('city')<p class="pt-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="pt-span-all">
