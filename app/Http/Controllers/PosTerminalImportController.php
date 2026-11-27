@@ -80,8 +80,12 @@ class PosTerminalImportController extends Controller
             'validation' => 'terminal_id'
         ],
         'merchant_name' => [
-            'exact' => ['merchant_name', 'merchant name', 'business_name', 'business name', 'name', 'merchantname', 'company name', 'client full name'],
-            'patterns' => ['/merchant.*name/i', '/business.*name/i', '/company.*name/i', '/^name$/i', '/client.*name/i'],
+            // A bank's extract heads this column plain "MERCHANT". That matched
+            // nothing - not the exact list, and not /merchant.*name/ either -
+            // so merchant_name came up missing and every tab of the workbook
+            // was refused for having nothing to identify a device by.
+            'exact' => ['merchant_name', 'merchant name', 'merchant', 'merchants', 'business_name', 'business name', 'name', 'merchantname', 'company name', 'client full name', 'trading name'],
+            'patterns' => ['/merchant.*name/i', '/^merchants?$/i', '/business.*name/i', '/company.*name/i', '/^name$/i', '/client.*name/i', '/trading.*name/i'],
             'validation' => 'text'
         ],
         'merchant_id' => [
@@ -95,8 +99,11 @@ class PosTerminalImportController extends Controller
             'validation' => 'text'
         ],
         'merchant_contact_person' => [
-            'exact' => ['contact_person', 'contact person', 'merchant_contact_person', 'merchant contact person', 'contact name'],
-            'patterns' => ['/contact.*person/i', '/merchant.*contact/i', '/contact.*name/i'],
+            // A column headed plain "CONTACT" or "CONTACTS" is who to ask for
+            // at the site. It used to match nothing and be filed away as an
+            // unrecognised column.
+            'exact' => ['contact_person', 'contact person', 'contact', 'contacts', 'merchant_contact_person', 'merchant contact person', 'contact name'],
+            'patterns' => ['/contact.*person/i', '/^contacts?$/i', '/merchant.*contact/i', '/contact.*name/i'],
             'validation' => 'text'
         ],
         'merchant_phone' => [
@@ -110,8 +117,14 @@ class PosTerminalImportController extends Controller
             'validation' => 'email'
         ],
         'physical_address' => [
-            'exact' => ['address', 'physical_address', 'location', 'street', 'street address'],
-            'patterns' => ['/address/i', '/location/i', '/street/i'],
+            // "Location" used to live here, and because this field is declared
+            // before region it won the race: a sheet with both a LOCATION
+            // column (holding the province) and a PHYSICAL ADDRESS column put
+            // the province into the address and left the device with no
+            // location at all. Location is the name of the region field in the
+            // portal, so that is where a column of that name belongs.
+            'exact' => ['address', 'physical_address', 'physical address', 'street', 'street address', 'site address'],
+            'patterns' => ['/address/i', '/street/i'],
             'validation' => 'text'
         ],
         'city' => [
@@ -129,8 +142,11 @@ class PosTerminalImportController extends Controller
             'validation' => 'text'
         ],
         'region' => [
-            'exact' => ['region', 'area', 'zone'],
-            'patterns' => ['/region/i', '/area/i', '/zone/i'],
+            // Location is what the portal calls this field, so a column headed
+            // LOCATION lands here - which is also what such a column holds in
+            // the bank's extracts ("Harare Province", "Midlands").
+            'exact' => ['region', 'location', 'area', 'zone'],
+            'patterns' => ['/region/i', '/^location$/i', '/area/i', '/zone/i'],
             'validation' => 'text'
         ],
         'business_type' => [
@@ -585,6 +601,9 @@ public function preview(Request $request)
                 'columns' => $sheet['named_columns'],
                 'headers' => array_slice($sheet['headers'], 0, 12),
                 'mapped_fields' => $sheet['mapped_fields'],
+                // What this tab carries that has no field of its own, so the
+                // page can say it is kept rather than leave the user guessing.
+                'extra_fields' => $sheet['extra_fields'],
                 'missing_required' => $sheet['missing_required'],
                 'reference_only_fields' => $sheet['reference_only_fields'],
                 'importable' => $sheet['importable'],

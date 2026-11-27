@@ -102,13 +102,30 @@ final class TerminalLocation
         $region = trim((string) ($data['region'] ?? ''));
         $province = trim((string) ($data['province'] ?? ''));
 
+        // Whichever of the two the sheet gave, that is the location.
+        $asWritten = $region !== '' ? $region : $province;
+
         if ($region === '' && $province !== '') {
-            $region = self::canonicalRegionName($province) ?? $province;
+            $region = $province;
+        }
+
+        // Store the name the dropdown offers. A sheet writes "Harare Province"
+        // and a person types "harare"; both are the Harare region, and unless
+        // they are written down the same way every filter, every grouping and
+        // every count compares them as different places.
+        $canonical = self::canonicalRegionName($region);
+        if ($canonical !== null) {
+            $region = $canonical;
+        }
+
+        if ($region !== '') {
             $data['region'] = $region;
         }
 
-        if ($province === '' && $region !== '') {
-            $data['province'] = $region;
+        // The province column keeps the sheet's own wording where it has none
+        // of its own, so nothing about how the office writes it is lost.
+        if ($province === '' && $asWritten !== '') {
+            $data['province'] = $asWritten;
         }
 
         if ($region !== '' && empty($data['region_id'])) {
