@@ -423,6 +423,20 @@ public function index(Request $request)
     if ($paginated) {
         $perPage = min($perPage, 2000);
         $totalCount = (clone $query)->count();
+
+        // created_at is nowhere near unique - the bulk imports left 18,542
+        // devices sharing 27 timestamps, 842 of them on one second - so on its
+        // own it cannot order pages. MySQL is free to break those ties
+        // differently from one query to the next, and it does: paging the
+        // whole table in blocks of 2000 returned 18,542 rows of which only
+        // 18,428 were distinct, so 114 devices came twice and 114 never came
+        // at all. The id settles every tie, which makes the pages add up.
+        //
+        // Only on this path: without paging the order among ties has never
+        // mattered, and leaving it alone keeps the payload the tablets in the
+        // field already receive byte-for-byte what it was.
+        $query->orderBy('id', 'desc');
+
         $query->forPage($page, $perPage);
     }
 
