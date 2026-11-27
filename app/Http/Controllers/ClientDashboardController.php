@@ -19,8 +19,13 @@ class ClientDashboardController extends Controller
 {
     public function index()
     {
-        $clients = Client::with(['posTerminals'])
-            ->withCount(['posTerminals'])
+        // No with(['posTerminals']) here. It eager-loaded every device of every
+        // client - all 18,542 of them as models, 62MB of this page's 90MB - and
+        // nothing read the collection: the number on screen comes from
+        // withCount, and the breakdown below runs its own grouped query off the
+        // relation. The page is the same, it just no longer carries the table
+        // around to look at a count of it.
+        $clients = Client::withCount(['posTerminals'])
             ->orderBy('company_name')
             ->get()
             ->map(function ($client) {
