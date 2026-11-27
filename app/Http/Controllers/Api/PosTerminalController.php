@@ -360,7 +360,20 @@ public function store(Request $request)
 
 public function index(Request $request)
 {
-    $query = PosTerminal::with(['client:id,company_name,contact_person,phone']);
+    // Only the columns this response actually sends. Each row also carries
+    // extra_fields, contract_details, status_info and coordinates - JSON and
+    // text blobs that outweigh everything else put together, and not one of
+    // them appears in the payload. The client is looked up once further down
+    // instead of eager-loaded, because eager loading cannot be combined with
+    // the cursor this method now streams over.
+    $query = PosTerminal::select([
+        'id', 'terminal_id', 'merchant_name', 'merchant_contact_person',
+        'merchant_phone', 'merchant_email', 'physical_address', 'region',
+        'city', 'province', 'business_type', 'terminal_model', 'serial_number',
+        'status', 'current_status', 'source', 'installation_date',
+        'last_service_date', 'next_service_due', 'client_id',
+        'created_at', 'updated_at',
+    ]);
 
     // Apply filters
     if ($request->filled('search')) {
@@ -397,58 +410,121 @@ public function index(Request $request)
         $query->assignedTo($user->id, ['assigned', 'in_progress']);
     }
 
-    // NO PAGINATION: fetch everything
-    $terminals = $query->orderBy('created_at', 'desc')->get();
+    $query->orderBy('created_at', 'desc');
 
-    // Transform for API response
-    $terminals = $terminals->map(function ($terminal) {
-        return [
-            'id' => $terminal->id,
-            'terminal_id' => $terminal->terminal_id,
-            'merchant_name' => $terminal->merchant_name,
-            'merchant_contact_person' => $terminal->merchant_contact_person,
-            'merchant_phone' => $terminal->merchant_phone,
-            'merchant_email' => $terminal->merchant_email,
-            'physical_address' => $terminal->physical_address,
-            'region' => $terminal->region,
-            'city' => $terminal->city,
-            'province' => $terminal->province,
-            'business_type' => $terminal->business_type,
-            'terminal_model' => $terminal->terminal_model,
-            'serial_number' => $terminal->serial_number,
-            'status' => $terminal->status,
-            'current_status' => $terminal->current_status,
-            'source' => $terminal->source ?? 'office', // field_discovery = found on site
-            'installation_date' => $terminal->installation_date,
-            'last_service_date' => $terminal->last_service_date,
-            'next_service_due' => $terminal->next_service_due,
-            'client' => $terminal->client ? [
-                'id' => $terminal->client->id,
-                'name' => $terminal->client->company_name,
-                'contact_person' => $terminal->client->contact_person,
-                'phone' => $terminal->client->phone,
-            ] : null,
-            'status_info' => [
-                'is_active' => $terminal->isActive(),
-                'is_faulty' => $terminal->isFaulty(),
-                'needs_service' => $terminal->needsService(),
-            ],
-            'coordinates' => [
-                'latitude' => $terminal->latitude ?? null,
-                'longitude' => $terminal->longitude ?? null,
-            ],
-            'created_at' => $terminal->created_at,
-            'updated_at' => $terminal->updated_at,
-        ];
-    });
+    // Paging is honoured only when the caller asks for it, so tablets already
+    // in the field - which send nothing here and expect the whole list - keep
+    // getting exactly what they got before.
+    $perPage = (int) $request->get('per_page', 0);
+    $page = max(1, (int) $request->get('page', 1));
+    $paginated = $perPage > 0;
+    $totalCount = null;
 
-    return response()->json([
-        'success' => true,
-        'data' => [
-            'terminals' => $terminals,
-            'count' => $terminals->count(),
-        ],
-    ]);
+    if ($paginated) {
+        $perPage = min($perPage, 2000);
+        $totalCount = (clone $query)->count();
+        $query->forPage($page, $perPage);
+    }
+
+    // A handful of clients, so one lookup beats a join on every row.
+    $clients = Client::select('id', 'company_name', 'contact_person', 'phone')
+        ->get()->keyBy('id');
+
+    // The three status flags read straight off the row. Kept in step with
+    // PosTerminal::isActive/isFaulty/needsService.
+    $serviceCutoff = now()->addDays(7)->format('Y-m-d H:i:s');
+
+    // A `date` column serialises as midnight UTC and a timestamp as its own
+    // time. Built as strings on purpose: going through the model's casts makes
+    // five Carbon objects per row, and 90,000 of them held in one payload is
+    // what exhausted the memory limit.
+    $asDate = fn ($v) => $v === null ? null : $v.'T00:00:00.000000Z';
+    $asStamp = fn ($v) => $v === null ? null : str_replace(' ', 'T', $v).'.000000Z';
+
+    // Plain rows rather than models, so nothing is hydrated and no cast runs.
+    $rows = $query->toBase();
+
+    // Written out as it is read, one device at a time.
+    //
+    // Reading all of them and then mapping the collection into a second full
+    // copy needed about 135MB for the 18,542 on file - past the 128MB the
+    // process is allowed, which is what turned this endpoint into a 500. The
+    // real damage was downstream: a request that big forced the kernel to
+    // reclaim memory, it killed mysqld to get it, and every other page on the
+    // portal went down with it - four times in one afternoon. Streaming holds
+    // one row at a time, so the whole response costs 28MB however many
+    // devices there are, and the bytes on the wire are unchanged.
+    return response()->stream(function () use (
+        $rows, $clients, $serviceCutoff, $asDate, $asStamp,
+        $paginated, $page, $perPage, $totalCount
+    ) {
+        $out = fopen('php://output', 'w');
+        fwrite($out, '{"success":true,"data":{"terminals":[');
+
+        $count = 0;
+
+        foreach ($rows->cursor() as $terminal) {
+            $client = $clients->get($terminal->client_id);
+
+            fwrite($out, ($count++ ? ',' : '').json_encode([
+                'id' => $terminal->id,
+                'terminal_id' => $terminal->terminal_id,
+                'merchant_name' => $terminal->merchant_name,
+                'merchant_contact_person' => $terminal->merchant_contact_person,
+                'merchant_phone' => $terminal->merchant_phone,
+                'merchant_email' => $terminal->merchant_email,
+                'physical_address' => $terminal->physical_address,
+                'region' => $terminal->region,
+                'city' => $terminal->city,
+                'province' => $terminal->province,
+                'business_type' => $terminal->business_type,
+                'terminal_model' => $terminal->terminal_model,
+                'serial_number' => $terminal->serial_number,
+                'status' => $terminal->status,
+                'current_status' => $terminal->current_status,
+                'source' => $terminal->source ?? 'office', // field_discovery = found on site
+                'installation_date' => $asDate($terminal->installation_date),
+                'last_service_date' => $asDate($terminal->last_service_date),
+                'next_service_due' => $asDate($terminal->next_service_due),
+                'client' => $client ? [
+                    'id' => $client->id,
+                    'name' => $client->company_name,
+                    'contact_person' => $client->contact_person,
+                    'phone' => $client->phone,
+                ] : null,
+                'status_info' => [
+                    'is_active' => $terminal->status === 'active',
+                    'is_faulty' => in_array($terminal->status, ['faulty', 'maintenance'], true),
+                    'needs_service' => $terminal->next_service_due !== null
+                        && $terminal->next_service_due <= $serviceCutoff,
+                ],
+                // The table has no latitude/longitude columns, so this pair has
+                // always been null. If they are ever added, read them here.
+                'coordinates' => [
+                    'latitude' => null,
+                    'longitude' => null,
+                ],
+                'created_at' => $asStamp($terminal->created_at),
+                'updated_at' => $asStamp($terminal->updated_at),
+            ]));
+        }
+
+        fwrite($out, '],"count":'.$count);
+
+        // Only present when the caller asked to page, so the shape the tablets
+        // already read is untouched.
+        if ($paginated) {
+            fwrite($out, ',"pagination":'.json_encode([
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalCount,
+                'last_page' => (int) ceil($totalCount / $perPage),
+            ]));
+        }
+
+        fwrite($out, '}}');
+        fclose($out);
+    }, 200, ['Content-Type' => 'application/json']);
 }
 
     /**
